@@ -91,3 +91,4 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     cs_true = true_output.compsegs.set_index("WELL")
     cs_true.sort_values(["WELL", "STARTMD"], inplace=True)
     cs_test = test_output.compsegs.set_index("WELL")
+    cs_test.sort_values(["WELL", "STARTMD"], inplace=True)
