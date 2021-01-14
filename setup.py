@@ -28,3 +28,5 @@ TEST_REQUIREMENTS = [
     "check-manifest",
     "flake8",
     "pre-commit",
+    "pytest",
+    "pytest-cov",
