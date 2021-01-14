@@ -707,3 +707,4 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
                 pass
             except Exception as err:
                 raise err
+    return df
