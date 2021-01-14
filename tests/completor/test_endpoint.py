@@ -37,3 +37,14 @@ def test_run_completor_without_schedule(tmpdir):
     with pytest.raises(subprocess.CalledProcessError) as err:
         subprocess.run(["completor", "-i", "perf_gp_nosched.case", "-o", "perf_gp_nosched.out"], check=True)
     assert err.value.returncode == 1
+    assert not Path("perf_gp_nosched.out").is_file()
+
+
+def test_figure(tmpdir):
+    """Test Completor for command line run including figure option."""
+    shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
+    shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
+    tmpdir.chdir()
+    subprocess.run(
+        ["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch", "-o", "perf_gp.out", "--figure"], check=True
+    )
