@@ -800,3 +800,7 @@ class CreateWells:
         and :ref:`df_reservoir`.
         """
         if lateral == self.laterals[0]:
+            self.df_well_all = self.df_well.copy(deep=True)
+            self.df_reservoir_all = self.df_reservoir.copy(deep=True)
+        else:
+            self.df_well_all = pd.concat([self.df_well_all, self.df_well], sort=False)
