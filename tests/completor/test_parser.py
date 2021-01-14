@@ -25,3 +25,5 @@ def test_locate_keyword():
     test1 = ["COMPDAT", "1 2 3 /", "/", "COMPDAT", "2 3 4 /", "/"]
 
     start_compdat, end_compdat = parse.locate_keyword(test1, "COMPDAT", "/", take_first=False)
+    np.testing.assert_array_equal(start_compdat, [0, 3])
+    np.testing.assert_array_equal(end_compdat, [2, 5])
