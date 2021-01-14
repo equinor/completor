@@ -564,3 +564,11 @@ def main() -> None:
 
     handle_error_messages(create)(
         case_file_content, schedule_file_content, inputs.outputfile, inputs.figure, paths=paths_input_schedule
+    )
+
+    logger.debug("Total runtime: %d", (time.time() - start_a))
+    logger.debug("-" * 60)
+
+
+if __name__ == "__main__":
+    main()
