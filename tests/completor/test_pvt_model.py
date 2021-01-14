@@ -5,3 +5,6 @@ from pathlib import Path
 from completor import pvt_model  # type: ignore
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
+
+
+def test_correlation_udq():
