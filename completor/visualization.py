@@ -169,3 +169,4 @@ def create_figure(figsize: list[int] | tuple[int, int] | None = (18, 12)) -> Fig
 
 def close_figure() -> None:
     """Close all matplotlib figures."""
+    plt.close("all")
