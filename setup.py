@@ -25,3 +25,6 @@ REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "autoapi",
     "black",
+    "check-manifest",
+    "flake8",
+    "pre-commit",
