@@ -525,3 +525,5 @@ def main() -> None:
 
     Raises:
         SystemExit: If input schedule file is not defined as input or in case file.
+    """
+    parser = get_parser()
