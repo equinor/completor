@@ -30,3 +30,4 @@ TEST_REQUIREMENTS = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "rstcheck",
