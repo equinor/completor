@@ -872,3 +872,18 @@ class ReadCasefile:
                     lateral.BRANCH = branch_no
                     # add new entry
                     self.completion_table = pd.concat([self.completion_table, lateral])
+
+    def connect_to_tubing(self, well_name: str, lateral: int) -> bool:
+        """
+        Connect a branch to the tubing- or device-layer.
+
+        Args:
+            well_name: Well name
+            lateral: Lateral number
+
+        Returns:
+            TRUE if lateral is connected to tubing layer.
+            FALSE if lateral is connected to device layer.
+
+        The function uses the class property DataFrame lat2device defined in
+        ``read_lat2device``.
