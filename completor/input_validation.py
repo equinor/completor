@@ -285,3 +285,6 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         Updated WSEGAICV
+
+    The format of the WSEGAICV table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_wsegaicv``.
