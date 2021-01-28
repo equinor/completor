@@ -221,3 +221,8 @@ def prepare_tubing_layer(
         start_segment: Start number of the first tubing segment
         branch_no: Branch number for this tubing layer
         completion_table: DataFrame with completion data.
+
+    Returns:
+        DataFrame for tubing layer
+
+    The DataFrame df_well has the format shown in
