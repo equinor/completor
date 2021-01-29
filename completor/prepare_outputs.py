@@ -359,3 +359,8 @@ def connect_lateral(
                 well_name,
                 lateral,
             )
+        if case.connect_to_tubing(well_name, lateral):
+            df_segm0 = data[lateral0][0]  # df_tubing
+        else:
+            df_segm0 = data[lateral0][1]  # df_device
+        try:
