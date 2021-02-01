@@ -42,3 +42,5 @@ DOCS_REQUIREMENTS = [
     "sphinx-autodoc-typehints",
     "sphinx_rtd_theme",
 ]
+
+EXTRAS_REQUIRE = {"tests": TEST_REQUIREMENTS, "docs": DOCS_REQUIREMENTS}
