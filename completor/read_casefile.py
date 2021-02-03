@@ -120,3 +120,65 @@ class ReadCasefile:
         self.wsegaicv_table = pd.DataFrame()
         self.wsegicv_table = pd.DataFrame()
         self.lat2device = pd.DataFrame()
+        self.mapfile: pd.DataFrame | str | None = None
+        self.mapper: Mapping[str, str] | None = None
+
+        # Run programs
+        self.read_completion()
+        self.read_joint_length()
+        self.read_segment_length()
+        self.read_strictness()
+        self.read_gp_perf_devicelayer()
+        self.read_mapfile()
+        self.read_wsegaicd()
+        self.read_wsegvalv()
+        self.read_wsegsicd()
+        self.read_wsegdar()
+        self.read_wsegaicv()
+        self.read_wsegicv()
+        self.read_lat2device()
+        self.read_minimum_segment_length()
+
+    def read_completion(self) -> None:
+        """
+        Read the COMPLETION keyword in the case file.
+
+        Raises:
+            ValueError: If COMPLETION keyword is not defined in the case.
+
+        The COMPLETION keyword information is stored in a class property
+        DataFrame ``self.completion_table`` with the following format:
+
+        .. list-table:: completion_table
+          :widths: 10 10
+          :header-rows: 1
+
+          * - COLUMN
+            - TYPE
+          * - WELL
+            - str
+          * - BRANCH
+            - int
+          * - STARTMD
+            - float
+          * - ENDMD
+            - float
+          * - INNER_ID
+            - float
+          * - OUTER_ID
+            - float
+          * - ROUGHNESS
+            - float
+          * - ANNULUS
+            - str
+          * - NVALVEPERJOINT
+            - float
+          * - DEVICETYPE
+            - str
+          * - DEVICENUMBER
+            - int
+
+        """
+        start_index, end_index = self.locate_keyword("COMPLETION")
+        if start_index == end_index:
+            raise ValueError("No completion is defined in the case file.")
