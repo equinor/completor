@@ -447,3 +447,4 @@ def create(
         if len(schedule.active_wells) == 0:
             return chunks, case, schedule, wells
         else:
+            raise ValueError(
