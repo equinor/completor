@@ -945,3 +945,26 @@ class WellSchedule:
         for rec in recs:
             well_name = rec[0]
             if well_name in list(self.active_wells):
+                well_names.add(well_name)
+            else:
+                remains.append(rec)
+        # make df
+        columns = [
+            "WELL",
+            "I",
+            "J",
+            "K",
+            "K2",
+            "STATUS",
+            "SATNUM",
+            "CF",
+            "DIAM",
+            "KH",
+            "SKIN",
+            "DFACT",
+            "COMPDAT_DIRECTION",
+            "RO",
+        ]
+        df = pd.DataFrame(recs, columns=columns[0 : len(recs[0])])
+        if "RO" in df.columns:
+            df["RO"] = df["RO"].fillna("1*")
