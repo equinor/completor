@@ -24,3 +24,10 @@ def test_nan(tmpdir):
 
 
 def test_nan_2(tmpdir):
+    """
+    Test that the correct amount of output elements are produced with fixed input.
+
+    Completor should produce 1* in rows with 13 elements in the COMPDAT output when the
+    input number of columns is 13.
+    """
+    tmpdir.chdir()
