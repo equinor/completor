@@ -535,3 +535,9 @@ def test_read_outputfile_from_casefile(outfilestring, tmpdir):
     # Create case_content with the non-clean path to the schedule file
     case_content = f"OUTFILE\n'{outfilestring}'\n/"
     _, path_from_case = main.get_content_and_path(case_content, None, "OUTFILE")
+    assert path_from_case == "testdir/testfile"
+
+
+def test_wrong_well_id(tmpdir):
+    """Test output to screen from Completor when inner ID > outer ID."""
+    tmpdir.chdir()
