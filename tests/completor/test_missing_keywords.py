@@ -81,3 +81,93 @@ COMPSEGS
 A1 /
 -- I J K BRANCH STARTMD ENDMD DIR DEF SEG
    1 1 1    1     0.0    0.1   1* 3*   31 /
+/
+"""
+CASE_KEYWORDS = {
+    "completion": COMPLETION,
+    "wsegaicd": WSEGAICD,
+    "wsegsicd": WSEGSICD,
+    "wsegvalv": WSEGVALV,
+    "wsegaicv": WSEGAICV,
+    "wsegdar": WSEGDAR,
+}
+SCHEDULE_KEYWORDS = {"welspecs": WELSPECS, "compdat": COMPDAT, "welsegs": WELSEGS, "compsegs": COMPSEGS}
+
+
+def set_files(tmpdir):
+    """Set the file names to be read by create()."""
+    tmpdir.chdir()
+    _testdir = Path(tmpdir).absolute().parent
+    _outfile = "test.out"
+    case_file = Path(_testdir / "file.case")
+    schedule_file = Path(_testdir / "file.sch")
+    return _testdir, _outfile, case_file, schedule_file
+
+
+def set_case(completion_type, combination, case_file):
+    """Set contents of case file from a completion type and combination of keywords."""
+    case_content = ""
+    for case_keyword in combination:
+        case_content += CASE_KEYWORDS[case_keyword].replace("__TYPE__", completion_type)
+    Path(case_file).write_text(case_content, encoding="utf-8")
+
+
+def set_schedule(combination, schedule_file):
+    """Set up the contents of the schedule file from a combination of keywords."""
+    schedule_content = ""
+    for keyword in combination:
+        schedule_content += SCHEDULE_KEYWORDS[keyword]
+    Path(schedule_file).write_text(schedule_content, encoding="utf-8")
+
+
+def test_minimum_input(tmpdir, capsys):
+    """
+    Test output to screen from Completor.
+
+    Uses combinations of keywords in input case- and schedule files.
+    """
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    set_case("PERF", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    common.open_files_run_create(case_file, schedule_file, _outfile)
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == ""
+
+
+def test_missing_welspecs(tmpdir, capsys):
+    """Test output to screen from Completor missing WELSPECS."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    set_case("PERF", ["completion"], case_file)
+    set_schedule(["compdat", "welsegs", "compsegs"], schedule_file)
+    common.open_files_run_create(case_file, schedule_file, _outfile)
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == ""
+
+
+def test_missing_compdat(tmpdir):
+    """Test output to screen from Completor missing COMPDAT."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    outputmessage = "Input schedule file missing COMPDAT keyword."
+    set_case("PERF", ["completion"], case_file)
+    set_schedule(["welspecs", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=outputmessage):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_missing_welsegs(tmpdir):
+    """Test output to screen from Completor missing WELSEGS."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    outputmessage = "Input schedule file missing WELSEGS keyword."
+    set_case("PERF", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=outputmessage):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_inconsistent_files(tmpdir):
