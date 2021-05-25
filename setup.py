@@ -16,3 +16,4 @@ REQUIREMENTS = [
     "matplotlib",
     "numpy<2",
     "pandas",
+    "scipy",
