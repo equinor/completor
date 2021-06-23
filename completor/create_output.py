@@ -582,3 +582,52 @@ class CreateOutput:
             logger.warning("Could not resolve case-file path to output file")
         header += f"-- Schedule file : {self.schedule_path}\n"
 
+        header += f"""\
+-- Created by : {(getpass.getuser()).upper()}
+-- Created at : {datetime.now().strftime('%Y %B %d %H:%M')}
+{'-' * 100}{self.newline1}
+"""
+        return header
+
+    def check_welsegs1(self) -> None:
+        """
+        Check whether the MD of the first segment is deeper than first cell STARTMD.
+
+        If this is the case, adjust SEGMENTMD to be 1 meter shallower.
+
+        Uses DataFrame df_reservoir with format shown in ``CreateOutput``.
+        """
+        start_md = self.df_reservoir["STARTMD"].iloc[0]
+        if self.welsegs_header["SEGMENTMD"].iloc[0] > start_md:
+            self.welsegs_header["SEGMENTMD"] = start_md - 1.0
+
+    def check_segments(self, lateral: int) -> None:
+        """
+        Check whether there is annular flow in the well.
+
+        Also checks if there are any connections from the reservoir to the tubing
+        in a well.
+
+        Uses DataFrame :ref:`df_annulus` and :ref:`df_device`
+        with formats shown in ``CreateOutput``.
+        """
+        if self.df_annulus.shape[0] == 0:
+            logger.info("No annular flow in Well : %s Lateral : %d", self.well_name, lateral)
+        if self.df_device.shape[0] == 0:
+            logger.warning(
+                "No connection from reservoir to tubing in " "Well : %s Lateral : %d", self.well_name, lateral
+            )
+
+    def update_segmentbranch(self) -> None:
+        """
+        Update the numbering of the tubing segment and branch.
+
+        Uses DataFrame :ref:`df_annulus` and :ref:`df_device`
+        with formats shown in ``CreateOutput``.
+        """
+        if self.df_annulus.shape[0] == 0 and self.df_device.shape[0] > 0:
+            self.start_segment = max(self.df_device["SEG"].to_numpy()) + 1
+            self.start_branch = max(self.df_device["BRANCH"].to_numpy()) + 1
+        elif self.df_annulus.shape[0] > 0:
+            self.start_segment = max(self.df_annulus["SEG"].to_numpy()) + 1
+            self.start_branch = max(self.df_annulus["BRANCH"].to_numpy()) + 1
