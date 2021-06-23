@@ -502,3 +502,21 @@ class CreateWells:
              - int
         """
         self.df_completion = completion.define_annulus_zone(self.df_completion)
+
+    def create_tubing_segments(self) -> None:
+        """
+        Create tubing segments as the basis.
+
+        The function creates a class property DataFrame df_tubing_segments
+        from the class property DataFrames df_reservoir, df_completion, and df_mdtvd.
+
+        The behavior of the df_tubing_segments will vary depending on
+        the existence of the ICV keyword. When the ICV keyword is present,
+        it always creates a lumped tubing segment on its interval,
+        whereas other types of devices follow the default input.
+        If there is a combination of an ICV and other devices (with devicetype >1),
+        this results in a combination of ICV segment length with
+        segment lumping, and default segment length on other devices.
+
+        The format of df_completion is shown in ``define_annuluszone`` and the
+        format of df_mdtvd is given in ``well_trajectory``. The formats of
