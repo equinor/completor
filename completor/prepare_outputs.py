@@ -1073,3 +1073,151 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegvalv["L"] = "5*"
         wsegvalv["AC_MAX"] = df_merge["AC_MAX"].to_numpy()
         wsegvalv["AC_MAX"].fillna(df_merge["AC"], inplace=True)
+        wsegvalv[""] = "/"
+    return wsegvalv
+
+
+def prepare_wsegicv(
+    well_name: str,
+    lateral: int,
+    df_well: pd.DataFrame,
+    df_device: pd.DataFrame,
+    df_tubing: pd.DataFrame,
+    df_icv_tubing: pd.DataFrame,
+    df_icv: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Prepare WSEGICV DataFrame with WSEGVALV format.
+    Include ICVs in device and tubing layer.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: df_well from class CreateWells
+        df_device: From function prepare_device_layer for this well and this lateral
+        df_tubing: From function prepare_tubing_layer for this well and this lateral
+        df_icv_tubing: df_icv_tubing completion from class ReadCaseFile
+        df_icv: df_icv for WSEGICV keyword from class ReadCaseFile
+
+    Returns:
+        Dataframe for ICV
+    """
+    df_well = df_well[(df_well["LATERAL"] == lateral) & ((df_well["DEVICETYPE"] == "PERF") | (df_well["NDEVICES"] > 0))]
+    if df_well.empty:
+        return df_well
+    df_merge = pd.merge_asof(left=df_device, right=df_well, left_on="MD", right_on="TUB_MD", direction="nearest")
+    wsegicv = pd.DataFrame()
+    df_merge = df_merge[df_merge["DEVICETYPE"] == "ICV"]
+    if not df_merge.empty:
+        wsegicv = df_merge.copy()
+        wsegicv = wsegicv[["SEG", "CV", "AC", "AC_MAX"]]
+        wsegicv["WELL"] = [well_name] * df_merge.shape[0]
+        wsegicv["DEFAULTS"] = "5*"
+        wsegicv["AC_MAX"].fillna(df_merge["AC"], inplace=True)
+        wsegicv = wsegicv.reindex(columns=["WELL", "SEG", "CV", "AC", "DEFAULTS", "AC_MAX"])
+        wsegicv[""] = "/"
+        # create tubing icv table
+    if not df_icv_tubing.empty:
+        mask = (df_icv_tubing["WELL"] == well_name) & (df_icv_tubing["BRANCH"] == lateral)
+        df_icv_tubing = df_icv_tubing.loc[mask]
+        df_merge_tubing = pd.merge_asof(left=df_icv_tubing, right=df_icv, on="DEVICENUMBER", direction="nearest")
+        df_merge_tubing = pd.merge_asof(
+            left=df_merge_tubing, right=df_tubing, left_on="STARTMD", right_on="MD", direction="nearest"
+        )
+        df_temp = df_merge_tubing.copy()
+        df_temp = df_temp[["SEG", "CV", "AC", "AC_MAX"]]
+        df_temp["WELL"] = [well_name] * df_merge_tubing.shape[0]
+        df_temp["DEFAULTS"] = "5*"
+        df_temp["AC_MAX"].fillna(math.pi * 0.5 * df_tubing["DIAM"] ** 2, inplace=True)
+        df_temp = df_temp.reindex(columns=["WELL", "SEG", "CV", "AC", "DEFAULTS", "AC_MAX"])
+        df_temp[""] = "/"
+        wsegicv = pd.concat([wsegicv, df_temp], axis=0).reset_index(drop=True)
+    return wsegicv
+
+
+def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepare data frame for DAR.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: df_well from class CreateWells
+        df_device: From function prepare_device_layer for this well and this lateral
+
+    Returns:
+        DataFrame for DAR
+    """
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[(df_well["DEVICETYPE"] == "PERF") | (df_well["NDEVICES"] > 0)]
+    if df_well.shape[0] == 0:
+        return pd.DataFrame()
+    df_merge = pd.merge_asof(left=df_device, right=df_well, left_on=["MD"], right_on=["TUB_MD"], direction="nearest")
+    df_merge = df_merge[df_merge["DEVICETYPE"] == "DAR"]
+    wsegdar = pd.DataFrame()
+    if df_merge.shape[0] > 0:
+        wsegdar["WELL"] = [well_name] * df_merge.shape[0]
+        wsegdar["SEG"] = df_merge["SEG"].to_numpy()
+        # the Cv is already corrected by the scaling factor
+        wsegdar["CV_DAR"] = df_merge["CV_DAR"].to_numpy()
+        wsegdar["AC_OIL"] = df_merge["AC_OIL"].to_numpy()
+        wsegdar["AC_GAS"] = df_merge["AC_GAS"].to_numpy()
+        wsegdar["AC_WATER"] = df_merge["AC_WATER"].to_numpy()
+        wsegdar["WHF_LCF_DAR"] = df_merge["WHF_LCF_DAR"].to_numpy()
+        wsegdar["WHF_HCF_DAR"] = df_merge["WHF_HCF_DAR"].to_numpy()
+        wsegdar["GHF_LCF_DAR"] = df_merge["GHF_LCF_DAR"].to_numpy()
+        wsegdar["GHF_HCF_DAR"] = df_merge["GHF_HCF_DAR"].to_numpy()
+        wsegdar["DEFAULTS"] = "5*"
+        wsegdar["AC_MAX"] = wsegdar["AC_OIL"].to_numpy()
+        wsegdar[""] = "/"
+    return wsegdar
+
+
+def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepare data frame for AICV.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: df_well from class CreateWells
+        df_device: From function prepare_device_layer for this well and this lateral
+
+    Returns:
+        DataFrame for AICV
+    """
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[(df_well["DEVICETYPE"] == "PERF") | (df_well["NDEVICES"] > 0)]
+    if df_well.shape[0] == 0:
+        return pd.DataFrame()
+    df_merge = pd.merge_asof(left=df_device, right=df_well, left_on=["MD"], right_on=["TUB_MD"], direction="nearest")
+    df_merge = df_merge[df_merge["DEVICETYPE"] == "AICV"]
+    wsegaicv = pd.DataFrame()
+    if df_merge.shape[0] > 0:
+        wsegaicv["WELL"] = [well_name] * df_merge.shape[0]
+        wsegaicv["SEG"] = df_merge["SEG"].to_numpy()
+        wsegaicv["SEG2"] = df_merge["SEG"].to_numpy()
+        wsegaicv["ALPHA_MAIN"] = df_merge["ALPHA_MAIN"].to_numpy()
+        wsegaicv["SF"] = df_merge["SCALINGFACTOR"].to_numpy()
+        wsegaicv["RHO"] = df_merge["RHOCAL_AICV"].to_numpy()
+        wsegaicv["VIS"] = df_merge["VISCAL_AICV"].to_numpy()
+        wsegaicv["DEF"] = ["5*"] * df_merge.shape[0]
+        wsegaicv["X_MAIN"] = df_merge["X_MAIN"].to_numpy()
+        wsegaicv["Y_MAIN"] = df_merge["Y_MAIN"].to_numpy()
+        wsegaicv["FLAG"] = ["OPEN"] * df_merge.shape[0]
+        wsegaicv["A_MAIN"] = df_merge["A_MAIN"].to_numpy()
+        wsegaicv["B_MAIN"] = df_merge["B_MAIN"].to_numpy()
+        wsegaicv["C_MAIN"] = df_merge["C_MAIN"].to_numpy()
+        wsegaicv["D_MAIN"] = df_merge["D_MAIN"].to_numpy()
+        wsegaicv["E_MAIN"] = df_merge["E_MAIN"].to_numpy()
+        wsegaicv["F_MAIN"] = df_merge["F_MAIN"].to_numpy()
+        wsegaicv["ALPHA_PILOT"] = df_merge["ALPHA_PILOT"].to_numpy()
+        wsegaicv["X_PILOT"] = df_merge["X_PILOT"].to_numpy()
+        wsegaicv["Y_PILOT"] = df_merge["Y_PILOT"].to_numpy()
+        wsegaicv["A_PILOT"] = df_merge["A_PILOT"].to_numpy()
+        wsegaicv["B_PILOT"] = df_merge["B_PILOT"].to_numpy()
+        wsegaicv["C_PILOT"] = df_merge["C_PILOT"].to_numpy()
+        wsegaicv["D_PILOT"] = df_merge["D_PILOT"].to_numpy()
+        wsegaicv["E_PILOT"] = df_merge["E_PILOT"].to_numpy()
+        wsegaicv["F_PILOT"] = df_merge["F_PILOT"].to_numpy()
+        wsegaicv["WCT_AICV"] = df_merge["WCT_AICV"].to_numpy()
