@@ -834,3 +834,5 @@ class ReadCasefile:
         If one branch is completed, all branches must be completed,
         unless not 'strict'. This function relates to the USE_STRICT <bool> keyword
         used in the case file. When a branch is undefined in the case file,
+        but appears in the schedule file, the completion selected by Completor is gravel
+        packed perforations if USE_STRICT is set to False.
