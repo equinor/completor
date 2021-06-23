@@ -242,3 +242,57 @@ def _create_record(content: list[str], keyword: str, irec: int, start: int) -> l
     _record = list(filter(None, _record.rsplit("/", 1)))[0]
     # split each column
     record = list(filter(None, _record.split(" ")))
+    # unpack records
+    record = unpack_records(record)
+    # complete records
+    record = complete_records(record, "WELSEGS_H" if keyword == "WELSEGS" and irec == start + 1 else keyword)
+    return record
+
+
+def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Return dataframe table of WELSEGS.
+
+    Args:
+        collections:  ContentCollection class
+
+    Returns:
+        | header_table - The header of WELSEGS
+        | record_table - the record of WELSEGS
+    Raises:
+        ValueError: If collection does not contain the 'WELSEGS' keyword
+
+    The first DataFrame has the following format:
+
+    .. list-table:: First DataFrame (WELSEGS header)
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - SEGMENTTVD
+         - float
+       * - SEGMENTMD
+         - float
+       * - WBVOLUME
+         - float
+       * - INFOTYPE
+         - str
+       * - PDROPCOMP
+         - str
+       * - MPMODEL
+         - str
+       * - ITEM8
+         - object
+       * - ITEM9
+         - object
+       * - ITEM10
+         - object
+       * - ITEM11
+         - object
+       * - ITEM12
+         - object
+
+    The second DataFrame has the following format:
