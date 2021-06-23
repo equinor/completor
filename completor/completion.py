@@ -534,3 +534,81 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             f"idx0 == idx1 + 1 (idx0={idx0}). "
             "For the time being, the reason is unknown. "
             "Please reach out to the Equinor Inflow Control Team, "
+            "with the case/schedule file that causes it"
+        )
+    return information
+
+
+def complete_the_well(
+    df_tubing_segments: pd.DataFrame, df_completion: pd.DataFrame, joint_length: float
+) -> pd.DataFrame:
+    """
+    Complete the well with the user completion.
+
+    Args:
+        df_tubing_segments: Output from function create_tubing_segments
+        df_completion: Output from define_annulus_zone
+        joint_length: Length of a joint
+
+    Returns:
+        Well information.
+
+    | The formats of DataFrames are shown in
+    | ``df_completion`` (:ref:`create_wells.CreateWells.select_well <df_completion>`)
+    | ``df_tubing_segments``
+        (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
+    | ``df_well`` (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
+    """
+    nrow = df_tubing_segments.shape[0]
+    start = df_tubing_segments[Completion.START_MD].to_numpy()
+    end = df_tubing_segments[Completion.END_MD].to_numpy()
+    # initiate completion
+    information = Information()
+    # loop through the cells
+    for idx in range(nrow):
+        information += get_completion(start[idx], end[idx], df_completion, joint_length)
+
+    # get the well geometry
+    # e.g. inner and outer diameter
+    df_well = as_data_frame(
+        {
+            "TUB_MD": df_tubing_segments["TUB_MD"].to_numpy(),
+            "TUB_TVD": df_tubing_segments["TUB_TVD"].to_numpy(),
+            "LENGTH": end - start,
+            "SEGMENT_DESC": df_tubing_segments["SEGMENT_DESC"].to_numpy(),
+            "NDEVICES": information.num_device,
+            "DEVICENUMBER": information.device_number,
+            "DEVICETYPE": information.device_type,
+            "INNER_DIAMETER": information.inner_diameter,
+            "OUTER_DIAMETER": information.outer_diameter,
+            "ROUGHNESS": information.roughness,
+            "ANNULUS_ZONE": information.annulus_zone,
+        }
+    )
+
+    # lumping segments
+    df_well = lumping_segments(df_well)
+
+    # create scaling factor
+    df_well["SCALINGFACTOR"] = np.where(df_well["NDEVICES"] > 0.0, -1.0 / df_well["NDEVICES"], 0.0)
+    return df_well
+
+
+def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
+    """
+    Lump additional segments to the original segments.
+
+    This only applies if the additional segments have an annulus zone.
+
+    Args:
+        df_well: Must contain ``ANNULUS_ZONE``, ``NDEVICES``, and ``SEGMENT_DESC``
+
+    Returns:
+        Updated well information.
+
+    The DataFrame format for df_well is shown in
+    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
+    """
+    ndevices = df_well["NDEVICES"].to_numpy()
+    annulus_zone = df_well["ANNULUS_ZONE"].to_numpy()
+    seg_desc = df_well["SEGMENT_DESC"].to_numpy()
