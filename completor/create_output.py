@@ -531,3 +531,4 @@ class CreateOutput:
                 self.df_device,
                 self.df_annulus,
                 completion_table_lateral,
+                self.case.segment_length,
