@@ -759,3 +759,10 @@ def connect_cells_to_segments(
         # Associate reservoir cells with tubing segment midpoints using markers
         marker = 1
         df_res["MARKER"] = pd.Series([0 for _ in range(len(df_reservoir.index))])
+        df_wel["MARKER"] = pd.Series([x + 1 for x in range(len(df_well.index))])
+        for idx in df_wel["TUB_MD"].index:
+            start_md = df_tubing_segments["STARTMD"].iloc[idx]
+            end_md = df_tubing_segments["ENDMD"].iloc[idx]
+            df_res.loc[df_res["MD"].between(start_md, end_md), "MARKER"] = marker
+            marker += 1
+        # Merge
