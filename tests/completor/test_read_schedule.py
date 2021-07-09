@@ -141,3 +141,8 @@ ITEM11,ITEM12
             "TUBINGMD": np.float64,
             "TUBINGTVD": np.float64,
             "TUBINGROUGHNESS": np.float64,
+        }
+    )
+    true_welsegs1_well4 = true_welsegs1[true_welsegs1["WELL"] == "WELL4"]
+    true_welsegs1_well4.reset_index(drop=True, inplace=True)
+
