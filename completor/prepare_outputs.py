@@ -255,3 +255,60 @@ def prepare_tubing_layer(
     df_tubing_with_overburden.reset_index(drop=True, inplace=True)
     # set out-segment to be successive.
     # The first item will be updated in connect_lateral
+    df_tubing_with_overburden["OUT"] = df_tubing_with_overburden["SEG"] - 1
+    # make sure order is correct
+    df_tubing_with_overburden = df_tubing_with_overburden.reindex(columns=["SEG", "SEG2", "BRANCH", "OUT"] + cols)
+    df_tubing_with_overburden[""] = "/"  # for printing
+    # locate where it attached to (the top segment)
+    wsa = schedule.get_welsegs(well_name)[1]  # all laterals
+    top = wsa[wsa.TUBINGSEGMENT == well_segments.iloc[0].TUBINGOUTLET]  # could be empty
+
+    return df_tubing_with_overburden, top
+
+
+def fix_tubing_inner_diam_roughness(
+    well_name: str, overburden: pd.DataFrame, completion_table: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Ensure roughness and inner diameter of the overburden segments are
+    taken from the case file and not the input schedule file.
+
+    Overburden segments are WELSEGS segments located above the top COMPSEGS segment.
+
+    Args:
+        well_name: Well name
+        overburden: Input schedule WELSEGS segments in the overburden
+        completion_table: Completion table from the case file, ReadCasefile object.
+
+    Returns:
+        Corrected overburden DataFrame with inner diameter and roughness taken
+        from the ReadCasefile object.
+
+    Raises:
+        ValueError: If the well completion in not found in overburden at overburden_md
+    """
+
+    overburden_out = overburden.copy(deep=True)
+    completion_table_well = completion_table.loc[completion_table["WELL"] == well_name]
+    completion_table_well = completion_table_well.loc[
+        completion_table_well["BRANCH"] == overburden_out["TUBINGBRANCH"].iloc[0]
+    ]
+    overburden_found_in_completion = False
+
+    for idx_overburden in range(overburden_out.shape[0]):
+        overburden_md = overburden_out["MD"].iloc[idx_overburden]
+        overburden_found_in_completion = False
+        for idx_completion_table_well in range(completion_table_well.shape[0]):
+            completion_table_start = completion_table_well["STARTMD"].iloc[idx_completion_table_well]
+            completion_table_end = completion_table_well["ENDMD"].iloc[idx_completion_table_well]
+            if (completion_table_end >= overburden_md >= completion_table_start) and not overburden_found_in_completion:
+                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc("DIAM")] = completion_table_well[
+                    "INNER_ID"
+                ].iloc[idx_completion_table_well]
+                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc("ROUGHNESS")] = (
+                    completion_table_well["ROUGHNESS"].iloc[idx_completion_table_well]
+                )
+                overburden_found_in_completion = True
+                break
+    if overburden_found_in_completion:
+        return overburden_out
