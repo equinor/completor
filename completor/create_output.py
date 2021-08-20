@@ -481,3 +481,27 @@ class CreateOutput:
 -- The value of Cv is adjusted according to the segment length and the number of
 -- devices per joint. The constriction area varies according to values of
 -- volume fractions.
+{"-" * 100}{self.newline1}"""
+
+        self.print_wsegdarinit = self.print_wsegdar
+        self.print_wsegaicv = f"""\
+{"-" * 100}
+-- This is how we model AICV technology using sets of ACTIONX keyword
+-- the DP parameters change according to the segment water cut (at downhole condition )
+-- and gas volume fraction (at downhole condition)
+{"-" * 100}{self.newline1}"""
+        self.print_wsegaicvinit = self.print_wsegaicv
+
+        (self.start_segment, self.start_branch) = (2, 1)
+        #
+        # pre-preparations
+        data = {}  # just a container. need to to loop twice to make connect_lateral work
+        for lateral in self.laterals:
+            self.df_tubing, top = po.prepare_tubing_layer(
+                self.schedule,
+                self.well_name,
+                lateral,
+                self.df_well,
+                self.start_segment,
+                self.start_branch,
+                self.case.completion_table,
