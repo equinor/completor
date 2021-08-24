@@ -11,3 +11,12 @@ COMPLETION
 --     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1     0  10000  0.15364  0.1905 1.524E-005   GP     1   __TYPE__   1
+/
+GP_PERF_DEVICELAYER
+  TRUE
+/
+"""
+SCHFILE = """
+SCHFILE
+data/file.sch
+/
