@@ -74,3 +74,47 @@ class CreateWells:
             well_name: Well name
             schedule: ReadSchedule object
 
+        """
+        self.well_name = well_name
+        self._active_laterals()
+        for lateral in self.laterals:
+            self.select_well(schedule, lateral)
+            self.well_trajectory()
+            self.define_annulus_zone()
+            self.create_tubing_segments()
+            self.insert_missing_segments()
+            self.complete_the_well()
+            self.get_devices()
+            self.correct_annulus_zone()
+            self.connect_cells_to_segments()
+            self.add_well_lateral_column(lateral)
+            self.combine_df(lateral)
+
+    def _active_wells(self) -> npt.NDArray[np.unicode_]:
+        """
+        Get a list of active wells specified by users.
+
+        If the well has annulus content set to gravel pack and the well is perforated,
+        Completor will not add a device layer. In fact, completor do nothing to
+        gravel-packed perforated wells by default. This behavior can be changed by
+        setting the GP_PERF_DEVICELAYER keyword in the case file to true.
+
+        ``get_activewells`` uses the case class DataFrame property ``completion_table``
+        with a format as shown in the function
+        ``read_casefile.ReadCasefile.read_completion``.
+
+        Returns:
+            Active wells
+        """
+        # Need to check completion of all wells in completion table to remove
+        # GP-PERF type wells
+        active_wells = list(set(self.case.completion_table["WELL"]))
+        # We cannot update a list while iterating of it
+        for well_name in active_wells.copy():
+            # Annulus content of each well
+            ann_series = self.case.completion_table[self.case.completion_table["WELL"] == well_name]["ANNULUS"]
+            type_series = self.case.completion_table[self.case.completion_table["WELL"] == well_name]["DEVICETYPE"]
+            gp_check = not ann_series.isin(["OA"]).any()
+            perf_check = not type_series.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"]).any()
+            if gp_check and perf_check and not self.case.gp_perf_devicelayer:
+                # De-activate wells with GP_PERF if instructed to do so:
