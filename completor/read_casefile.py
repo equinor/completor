@@ -335,3 +335,42 @@ class ReadCasefile:
                     raise abort("SEGMENTLENGTH takes float or string") from err
         else:
             # 'Cells' method if value is 0.0 or undefined
+            logger.info("No segment length is defined. " "Segments are created based on the grid dimension.")
+
+    def read_strictness(self) -> None:
+        """
+        Read the USE_STRICT keyword in the case file.
+
+        If USE_STRICT = True the program exits if a branch in the schedule file
+        is not defined in the case file. The default value is True, meaning that
+        to allow for Completor to ignore missing branches in the case file it
+        has to be set to False. This feature was introduced when comparing
+        Completor with a different advanced well modelling tool using a complex
+        simulation model.
+
+        Best practice: All branches in all wells should be defined in the case file.
+
+        """
+        start_index, end_index = self.locate_keyword("USE_STRICT")
+        if end_index == start_index + 2:
+            strict = self.content[start_index + 1]
+            if strict.upper() == "FALSE":
+                self.strict = False
+        logger.info("case-strictness is set to %d", self.strict)
+
+    def read_gp_perf_devicelayer(self) -> None:
+        """
+        Read the GP_PERF_DEVICELAYER keyword in the case file.
+
+        If GP_PERF_DEVICELAYER = True the program assigns a device layer to
+        wells with GP PERF type completions. If GP_PERF_DEVICELAYER = False, the
+        program does not add a device layer to the well. I.e. the well is
+        untouched by the program. The default value is False.
+
+        """
+        start_index, end_index = self.locate_keyword("GP_PERF_DEVICELAYER")
+        if end_index == start_index + 2:
+            gp_perf_devicelayer = self.content[start_index + 1]
+            self.gp_perf_devicelayer = gp_perf_devicelayer.upper() == "TRUE"
+        logger.info("gp_perf_devicelayer is set to %s", self.gp_perf_devicelayer)
+
