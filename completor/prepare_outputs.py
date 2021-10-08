@@ -90,3 +90,12 @@ def dataframe_tostring(
     columns = df_temp.columns.to_numpy()
     if columns[-1] != "":
         if trim_df:
+            df_temp = trim_pandas(df_temp)
+        df_temp = add_columns_first_last(df_temp, add_first=False, add_last=True)
+        columns = df_temp.columns.to_numpy()
+    if columns[0] != "--":
+        # then add first column
+        df_temp = add_columns_first_last(df_temp, add_first=True, add_last=False)
+    # Add single quotes around well names in output file
+    if "WELL" in df_temp.columns:
+        df_temp["WELL"] = "'" + df_temp["WELL"].astype(str) + "'"
