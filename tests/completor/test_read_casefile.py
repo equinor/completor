@@ -139,3 +139,27 @@ def test_read_case_wsegdar():
             "AC_OIL",
             "AC_GAS",
             "AC_WATER",
+            "WHF_LCF_DAR",
+            "WHF_HCF_DAR",
+            "GHF_LCF_DAR",
+            "GHF_HCF_DAR",
+        ],
+    )
+    df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
+    df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
+    pd.testing.assert_frame_equal(df_true, _THECASE.wsegdar_table)
+
+
+def test_new_dar_old_parameters():
+    """Test the function which reads WSEGDAR keyword."""
+    with open(Path(_TESTDIR / "dar.testfile"), encoding="utf-8") as old_dar_case:
+        _OLDDARCASE = old_dar_case.read()
+
+    with pytest.raises(CaseReaderFormatError) as err:
+        ReadCasefile(_OLDDARCASE)
+
+    expected_err = "Too few entries in data for keyword 'WSEGDAR', expected 9"
+    assert expected_err in str(err.value)
+
+
+def test_read_case_wsegaicv():
