@@ -778,3 +778,56 @@ class CreateOutput:
             self.print_wsegaicv += po.print_wsegaicv(self.df_wsegaicv, self.iwell + 1) + "\n"
 
     def fix_printing(self) -> None:
+        """Avoid printing non-existing keywords."""
+        # if no compdat then dont print it
+        if self.print_compdat == self.print_compdatinit:
+            self.print_compdat = ""
+        else:
+            self.print_compdat += self.newline3
+        # if no welsegs then dont print it
+        if self.print_welsegs == self.print_welsegsinit:
+            self.print_welsegs = ""
+        else:
+            self.print_welsegs += self.newline3
+        # if no compsegs then dont print it
+        if self.print_compsegs == self.print_compsegsinit:
+            self.print_compsegs = ""
+        else:
+            self.print_compsegs += self.newline3
+        # if no weseglink then dont print it
+        if self.print_wseglink == "WSEGLINK\n":
+            self.print_wseglink = ""
+        else:
+            self.print_wseglink += self.newline3
+        # if no VALVE then dont print
+        if self.print_wsegvalv == "WSEGVALV\n":
+            self.print_wsegvalv = ""
+        else:
+            self.print_wsegvalv += self.newline3
+        # if no ICD then dont print
+        if self.print_wsegsicd == "WSEGSICD\n":
+            self.print_wsegsicd = ""
+        else:
+            self.print_wsegsicd += self.newline3
+        # if no AICD then dont print
+        if self.print_wsegaicd == "WSEGAICD\n":
+            self.print_wsegaicd = ""
+        else:
+            self.print_wsegaicd += self.newline3
+        # if no DAR then dont print
+        if self.print_wsegdar == self.print_wsegdarinit:
+            self.print_wsegdar = ""
+        else:
+            self.print_wsegdar += self.newline1
+        # if no DAR then dont print
+        if self.print_wsegaicv == self.print_wsegaicvinit:
+            self.print_wsegaicv = ""
+        else:
+            self.print_wsegaicv += self.newline1
+        # if no ICV then dont print
+        if self.print_wsegicv == "WSEGVALV\n":
+            self.print_wsegicv = ""
+        else:
+            self.print_wsegicv += self.newline3
+
+    def print_per_well(self) -> None:
