@@ -31,3 +31,8 @@ def test_nan_2(tmpdir):
     input number of columns is 13.
     """
     tmpdir.chdir()
+    case_file = Path(_TESTDIR / "nan.casefile")
+    schedule_file = Path(_TESTDIR / "nan2.sch")
+    true_file = Path(_TESTDIR / "nan2.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
