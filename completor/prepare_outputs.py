@@ -1221,3 +1221,225 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv["E_PILOT"] = df_merge["E_PILOT"].to_numpy()
         wsegaicv["F_PILOT"] = df_merge["F_PILOT"].to_numpy()
         wsegaicv["WCT_AICV"] = df_merge["WCT_AICV"].to_numpy()
+        wsegaicv["GHF_AICV"] = df_merge["GHF_AICV"].to_numpy()
+        wsegaicv[""] = "/"
+    return wsegaicv
+
+
+def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
+    """
+    Print DAR devices.
+
+    Args:
+        df_wsegdar: Output from function prepare_wsegdar
+        well_number: Well number
+
+    Returns:
+        Formatted actions to be included in the output file
+
+    Raises:
+        SystemExit: If there are to many wells and/or segments with DAR
+    """
+    header = [
+        ["WELL", "SEG", "CV_DAR", "AC_GAS", "DEFAULTS", "AC_MAX"],
+        ["WELL", "SEG", "CV_DAR", "AC_WATER", "DEFAULTS", "AC_MAX"],
+        ["WELL", "SEG", "CV_DAR", "AC_OIL", "DEFAULTS", "AC_MAX"],
+        ["WELL", "SEG", "CV_DAR", "AC_OIL", "DEFAULTS", "AC_MAX"],
+    ]
+    sign_water = ["<=", ">", "", "<"]
+    sign_gas = [">", "<=", "<", ""]
+    suvtrig = ["0", "0", "1", "2"]
+    action = "UDQ\n"
+    for idx in range(df_wsegdar.shape[0]):
+        segment_number = df_wsegdar["SEG"].iloc[idx]
+        well_name = df_wsegdar["WELL"].iloc[idx]
+        action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
+    action += "/\n\n"
+    iaction = 3
+    action += "WSEGVALV\n"
+    header_string = "--"
+    for itm in header[iaction]:
+        header_string += "  " + itm
+    action += header_string.rstrip() + "\n"
+    for idx in range(df_wsegdar.shape[0]):
+        segment_number = df_wsegdar["SEG"].iloc[idx]
+        well_name = df_wsegdar["WELL"].iloc[idx]
+        print_df = df_wsegdar[df_wsegdar["SEG"] == segment_number]
+        print_df = print_df[header[iaction]]
+        print_df = dataframe_tostring(print_df, True, False, False) + "\n"
+        action += print_df
+    action += "/\n\n"
+    for idx in range(df_wsegdar.shape[0]):
+        segment_number = df_wsegdar["SEG"].iloc[idx]
+        well_name = df_wsegdar["WELL"].iloc[idx]
+        water_holdup_fraction_low_cutoff = df_wsegdar["WHF_LCF_DAR"].iloc[idx]
+        water_holdup_fraction_high_cutoff = df_wsegdar["WHF_HCF_DAR"].iloc[idx]
+        gas_holdup_fraction_low_cutoff = df_wsegdar["GHF_LCF_DAR"].iloc[idx]
+        gas_holdup_fraction_high_cutoff = df_wsegdar["GHF_HCF_DAR"].iloc[idx]
+        for iaction in range(2):
+            act_number = iaction + 1
+            act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
+            if len(act_name) > 8:
+                raise abort("Too many wells and/or too many segments with DAR")
+            action += (
+                f"ACTIONX\n{act_name} 1000000 /\n"
+                f"SWHF '{well_name}' {segment_number} "
+                f"{sign_water[iaction]} {water_holdup_fraction_high_cutoff} AND /\n"
+                f"SGHF '{well_name}' {segment_number} "
+                f"{sign_gas[iaction]} {gas_holdup_fraction_high_cutoff} AND /\n"
+                f"SUVTRIG '{well_name}' {segment_number} "
+                f"= {suvtrig[iaction]} /\n/\n\n"
+            )
+            print_df = df_wsegdar[df_wsegdar["SEG"] == segment_number]
+            print_df = print_df[header[iaction]]  # type: ignore
+            header_string = "WSEGVALV\n--"
+            for item in header[iaction]:
+                header_string += "  " + item
+            header_string = header_string.rstrip() + "\n"
+            print_df = header_string + dataframe_tostring(print_df, True, False, False)  # type: ignore
+            print_df += "\n/\n"
+            if iaction == 0:
+                print_df += "\nUDQ\n" f"  ASSIGN SUVTRIG '{well_name}' {segment_number} 1 /\n/\n"
+            elif iaction == 1:
+                print_df += "\nUDQ\n" f"  ASSIGN SUVTRIG '{well_name}' {segment_number} 2 /\n/\n"
+            action += print_df + "\nENDACTIO\n\n"
+
+        iaction = 2
+        act_number = iaction + 1
+        act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
+        if len(act_name) > 8:
+            raise abort("Too many wells and/or too many segments with DAR")
+        action += (
+            f"ACTIONX\n{act_name} 1000000 /\n"
+            f"SGHF '{well_name}' {segment_number} "
+            f"{sign_gas[iaction]} {gas_holdup_fraction_low_cutoff} AND /\n"
+            f"SUVTRIG '{well_name}' {segment_number} "
+            f"= {suvtrig[iaction]} /\n/\n\n"
+        )
+        print_df = df_wsegdar[df_wsegdar["SEG"] == segment_number]
+        print_df = print_df[header[iaction]]  # type: ignore
+        header_string = "WSEGVALV\n--"
+        for item in header[iaction]:
+            header_string += "  " + item
+        header_string = header_string.rstrip() + "\n"
+        print_df = header_string + dataframe_tostring(print_df, True, False, False)  # type: ignore
+        print_df += "\n/\n"
+        print_df += "\nUDQ\n" f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n/\n"
+        action += print_df + "\nENDACTIO\n\n"
+
+        iaction = 3
+        act_number = iaction + 1
+        act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
+        if len(act_name) > 8:
+            raise abort("Too many wells and/or too many segments with DAR")
+        action += (
+            f"ACTIONX\n{act_name} 1000000 /\n"
+            f"SWHF '{well_name}' {segment_number} "
+            f"{sign_water[iaction]} {water_holdup_fraction_low_cutoff} AND /\n"
+            f"SUVTRIG '{well_name}' {segment_number} "
+            f"= {suvtrig[iaction]} /\n/\n\n"
+        )
+        print_df = df_wsegdar[df_wsegdar["SEG"] == segment_number]
+        print_df = print_df[header[iaction]]  # type: ignore
+        header_string = "WSEGVALV\n--"
+        for item in header[iaction]:
+            header_string += "  " + item
+        header_string = header_string.rstrip() + "\n"
+        print_df = header_string + dataframe_tostring(print_df, True, False, False)  # type: ignore
+        print_df += "\n/\n"
+        print_df += f"UDQ\n  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n/\n"
+        action += print_df + "\nENDACTIO\n\n"
+    return action
+
+
+def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
+    """
+    Print for AICV devices.
+
+    Args:
+        df_wsegaicv: Output from function prepare_wsegaicv
+        well_number: Well number
+
+    Returns:
+        Formatted actions to be included in the output file
+
+    Raises:
+        SystemExit: If there are too many wells and/or segments with AICV
+    """
+    header = [
+        [
+            "WELL",
+            "SEG",
+            "SEG2",
+            "ALPHA_MAIN",
+            "SF",
+            "RHO",
+            "VIS",
+            "DEF",
+            "X_MAIN",
+            "Y_MAIN",
+            "FLAG",
+            "A_MAIN",
+            "B_MAIN",
+            "C_MAIN",
+            "D_MAIN",
+            "E_MAIN",
+            "F_MAIN",
+            "",
+        ],
+        [
+            "WELL",
+            "SEG",
+            "SEG2",
+            "ALPHA_PILOT",
+            "SF",
+            "RHO",
+            "VIS",
+            "DEF",
+            "X_PILOT",
+            "Y_PILOT",
+            "FLAG",
+            "A_PILOT",
+            "B_PILOT",
+            "C_PILOT",
+            "D_PILOT",
+            "E_PILOT",
+            "F_PILOT",
+            "",
+        ],
+    ]
+    new_column = [
+        "WELL",
+        "SEG",
+        "SEG2",
+        "ALPHA",
+        "SF",
+        "RHO",
+        "VIS",
+        "DEF",
+        "X",
+        "Y",
+        "FLAG",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "",
+    ]
+    sign_water = ["<", ">="]
+    sign_gas = ["<", ">="]
+    operator = ["AND", "OR"]
+    action = ""
+    for idx in range(df_wsegaicv.shape[0]):
+        segment_number = df_wsegaicv["SEG"].iloc[idx]
+        well_name = df_wsegaicv["WELL"].iloc[idx]
+        wct = df_wsegaicv["WCT_AICV"].iloc[idx]
+        ghf = df_wsegaicv["GHF_AICV"].iloc[idx]
+        # LOWWCT_LOWGHF
+        for iaction in range(2):
+            act_number = iaction + 1
+            act_name = f"V{well_number:03d}{segment_number:03d}{act_number:1d}"
+            if len(act_name) > 8:
+                raise abort("Too many wells and/or too many segments with AICV")
