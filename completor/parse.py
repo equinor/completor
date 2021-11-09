@@ -217,3 +217,10 @@ def read_schedule_keywords(
     # get the contents correspond to the list_keywords
     for keyword in keywords:
         start_index, end_index = locate_keyword(content, keyword, take_first=False)
+        if start_index[0] == end_index[0]:
+            raise abort(f"Keyword {keyword} is not found")
+        for idx, start in enumerate(start_index):
+            end = end_index[idx]
+            used_index = np.append(used_index, np.arange(start, end + 1))
+            keyword_content = [_create_record(content, keyword, irec, start) for irec in range(start + 1, end)]
+            collection = ContentCollection(keyword_content, name=keyword)
