@@ -224,3 +224,6 @@ def read_schedule_keywords(
             used_index = np.append(used_index, np.arange(start, end + 1))
             keyword_content = [_create_record(content, keyword, irec, start) for irec in range(start + 1, end)]
             collection = ContentCollection(keyword_content, name=keyword)
+            if keyword in ["WELSEGS", "COMPSEGS"]:
+                # remove string characters
+                collection.well = remove_string_characters(keyword_content[0][0])
