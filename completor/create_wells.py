@@ -125,3 +125,44 @@ class CreateWells:
                     "(GP) and valve type PERF. If you want these wells to be active set GP_PERF_DEVICELAYER to TRUE."
                 )
                 return np.array([])
+        return np.array(active_wells)
+
+    def _method(self) -> SegmentCreationMethod:
+        """
+        Define how the user wants to create segments.
+
+        Returns:
+            Creation method enum OR ValueError
+
+        Raises:
+            ValueError: If method is not one of the defined methods
+        """
+        if isinstance(self.case.segment_length, float):
+            if float(self.case.segment_length) > 0.0:
+                return SegmentCreationMethod.FIX
+            if float(self.case.segment_length) == 0.0:
+                return SegmentCreationMethod.CELLS
+            if self.case.segment_length < 0.0:
+                return SegmentCreationMethod.USER
+            else:
+                raise ValueError(
+                    f"Unrecognized method '{self.case.segment_length}' in "
+                    "SEGMENTLENGTH keyword. The value should be one of: "
+                    "'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', "
+                    "0 for 'CELLS', positive number for 'FIX'."
+                )
+
+        elif isinstance(self.case.segment_length, str):
+            if "welsegs" in self.case.segment_length.lower() or "infill" in self.case.segment_length.lower():
+                return SegmentCreationMethod.WELSEGS
+            if "cell" in self.case.segment_length.lower():
+                return SegmentCreationMethod.CELLS
+            if "user" in self.case.segment_length.lower():
+                return SegmentCreationMethod.USER
+            else:
+                raise ValueError(
+                    f"Unrecognized method '{self.case.segment_length}' in SEGMENTLENGTH keyword. "
+                    "The value should be one of: "
+                    "'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', 0 for 'CELLS', positive number for 'FIX'."
+                )
+        else:
