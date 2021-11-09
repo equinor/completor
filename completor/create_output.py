@@ -849,3 +849,5 @@ class CreateOutput:
             + self.print_wsegdar
             + self.print_wsegaicv
             + self.print_wsegicv
+        )
+        self.finalprint = finalprint
