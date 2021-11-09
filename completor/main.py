@@ -454,3 +454,33 @@ def create(
 
 
 COMPLETOR_DESCRIPTION = """Completor models advanced well completions for Eclipse.
+It generates all necessary keywords for Eclipse simulation
+according to a completion description. See the Completor Wiki
+for modeling details.
+"""
+
+COMPLETOR_HELP = """
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Execute completor with the following command
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+completor -help -about -i input.case -s input.wells -p pvt.inc -o output.wells --figure
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Required:
+---------
+-i      : followed by full definition of a completor case file (with extension)
+-s      : followed by full definition of a schedule file (which contains basic
+          COMPDAT, COMPSEGS and WELSEGS) (required if it is not specified in
+          the case file)
+
+Optional:
+---------
+--help   : how to run the program
+--about  : about completor
+-o      : followed by full definition of completor output file
+--figure : ask the program to generate a pdf file which contains the well's
+          schematic diagram
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"""
