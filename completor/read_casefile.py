@@ -182,3 +182,93 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword("COMPLETION")
         if start_index == end_index:
             raise ValueError("No completion is defined in the case file.")
+
+        # Table headers
+        header = [
+            "WELL",
+            "BRANCH",
+            "STARTMD",
+            "ENDMD",
+            "INNER_ID",
+            "OUTER_ID",
+            "ROUGHNESS",
+            "ANNULUS",
+            "NVALVEPERJOINT",
+            "DEVICETYPE",
+            "DEVICENUMBER",
+        ]
+        df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
+        # Set default value for packer segment
+        df_temp = val.set_default_packer_section(df_temp)
+        # Set default value for PERF segments
+        df_temp = val.set_default_perf_section(df_temp)
+        # Give errors if 1* is found for non packer segments
+        df_temp = val.check_default_non_packer(df_temp)
+        # Fix the data types format
+        df_temp = val.set_format_completion(df_temp)
+        # Check overall user inputs on completion
+        val.assess_completion(df_temp)
+        df_temp = self.read_icv_tubing(df_temp)
+        self.completion_table = df_temp.copy(deep=True)
+
+    def read_icv_tubing(self, df_temp: pd.DataFrame) -> pd.DataFrame:
+        """
+        Split the ICV Tubing definition from the completion table
+
+        Args:
+            df_temp: COMPLETION table
+
+        Returns:
+            Updated COMPLETION table
+
+        """
+        if not df_temp.loc[(df_temp["STARTMD"] == df_temp["ENDMD"]) & (df_temp["DEVICETYPE"] == "ICV")].empty:
+            # take ICV tubing table
+            self.completion_icv_tubing = df_temp.loc[
+                (df_temp["STARTMD"] == df_temp["ENDMD"]) & (df_temp["DEVICETYPE"] == "ICV")
+            ].reset_index(drop=True)
+            # drop its line
+            df_temp = df_temp.drop(
+                df_temp.loc[(df_temp["STARTMD"] == df_temp["ENDMD"]) & (df_temp["DEVICETYPE"] == "ICV")].index[:]
+            ).reset_index(drop=True)
+        return df_temp
+
+    def read_lat2device(self) -> None:
+        """
+        Read the LATERAL_TO_DEVICE keyword in the case file.
+
+        The keyword takes two arguments, a well name and a branch number.
+        The branch will be connected to the device layer in the mother branch.
+        If a branch number is not given, the specific branch will be connected to the
+        tubing layer in the mother branch. E.g. assume that A-1 is a three branch well
+        where branch 2 is connected to the tubing layer in the mother branch and
+        branch 3 is connected to the device layer in the mother branch.
+        The LATERAL_TO_DEVICE keyword will then look like this:
+
+        LATERAL_TO_DEVICE
+        --WELL    BRANCH
+        A-1       3
+        /
+
+        The LATERAL_TO_DEVICE keyword information is stored in a class property
+        DataFrame ``lat2device`` with the following format:
+
+        .. _lat2device:
+        .. list-table:: lat2device
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMN
+             - TYPE
+           * - WELL
+             - str
+           * - BRANCH
+             - int
+
+        """
+        # Table headers
+        header = ["WELL", "BRANCH"]
+        start_index, end_index = self.locate_keyword("LATERAL_TO_DEVICE")
+
+        if start_index == end_index:
+            # set default behaviour (if keyword not in case file)
