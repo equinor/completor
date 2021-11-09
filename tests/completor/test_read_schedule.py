@@ -126,3 +126,5 @@ ITEM11,ITEM12
     """
     )
     true_well4 = Path(_TESTDIR / "welsegs_well4.true")
+    true_welsegs1 = pd.read_csv(true_welsegs1, sep=",", dtype=object)
+    true_welsegs1 = fr.remove_string_characters(true_welsegs1)
