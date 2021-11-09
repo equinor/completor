@@ -16,3 +16,11 @@ def test_nan(tmpdir):
     input number of columns changes between 13 and 14.
     """
     tmpdir.chdir()
+    case_file = Path(_TESTDIR / "nan.casefile")
+    schedule_file = Path(_TESTDIR / "nan.sch")
+    true_file = Path(_TESTDIR / "nan.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_nan_2(tmpdir):
