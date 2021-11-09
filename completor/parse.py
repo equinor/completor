@@ -704,3 +704,4 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
                 df[column] = remove_quotes(df[column].str)
             except AttributeError:
                 # Some dataframes contains numeric data, which we ignore
+                pass
