@@ -10,3 +10,5 @@ import pandas as pd
 from completor import input_validation as val
 from completor import parse
 from completor.completion import WellSchedule
+from completor.exceptions import CaseReaderFormatError
+from completor.logger import logger
