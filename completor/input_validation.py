@@ -198,3 +198,82 @@ def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
     # set data type
     df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
     df_temp[["CV", "AC", "AC_MAX"]] = df_temp[["CV", "AC", "AC_MAX"]].astype(np.float64)
+    # allows column L to have default value 1* thus it is not set to float
+    # Create ID device column
+    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], fill_value="VALVE"))
+    return df_temp
+
+
+def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """
+    Format the WSEGSICD table.
+
+    Args:
+        df_temp: WSEGSICD table
+
+    Returns:
+        Updated WSEGSICD
+
+    The format of the WSEGSICD table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_wsegsicd``.
+    """
+    # if WCUT is defaulted then set to 0.5
+    # the same default value as in Eclipse
+    df_temp["WCUT"].replace("1*", 0.5, inplace=True)
+    # set data type
+    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    # left out devicenumber because it has been formatted as integer
+    columns = df_temp.columns.to_numpy()[1:]
+    df_temp[columns] = df_temp[columns].astype(np.float64)
+    # Create ID device column
+    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "ICD"))
+    return df_temp
+
+
+def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """
+    Format the WSEGAICD table.
+
+    Args:
+        df_temp: WSEGAICD table
+
+    Returns:
+        Updated WSEGAICD
+
+    The format of the WSEGAICD table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_wsegaicd``.
+    """
+    # Fix table format
+    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    # left out devicenumber because it has been formatted as integer
+    columns = df_temp.columns.to_numpy()[1:]
+    df_temp[columns] = df_temp[columns].astype(np.float64)
+    # Create ID device column
+    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "AICD"))
+    return df_temp
+
+
+def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """
+    Format the WSEGDAR table.
+
+    Args:
+        df_temp: WSEGDAR table
+
+    Returns:
+        Updated WSEGDAR
+
+    The format of the WSEGDAR table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_wsegdar``.
+    """
+    # Set data type
+    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    # left out devicenumber because it has been formatted as integer
+    columns = df_temp.columns.to_numpy()[1:]
+    df_temp[columns] = df_temp[columns].astype(np.float64)
+    # Create ID device column
+    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "DAR"))
+    return df_temp
+
+
+def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
