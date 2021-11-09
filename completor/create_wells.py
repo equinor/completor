@@ -798,3 +798,5 @@ class CreateWells:
 
         The function uses the class property DataFrames :ref:`df_well`,
         and :ref:`df_reservoir`.
+        """
+        if lateral == self.laterals[0]:
