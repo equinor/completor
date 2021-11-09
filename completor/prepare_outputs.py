@@ -1448,3 +1448,10 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
                 f"SUWCT '{well_name}' {segment_number} {sign_water[iaction]} "
                 f"{wct} {operator[iaction]} /\n"
                 f"SGHF '{well_name}' {segment_number} {sign_gas[iaction]} {ghf} /\n/\n"
+            )
+
+            print_df = df_wsegaicv[df_wsegaicv["SEG"] == segment_number]
+            print_df = print_df[header[iaction]]
+            print_df.columns = new_column
+            print_df = "WSEGAICD\n" + dataframe_tostring(print_df, True)
+            action += f"{print_df}\n/\nENDACTIO\n\n"
