@@ -40,3 +40,39 @@ def abort(message: str, status: int = 1) -> SystemExit:
     else:
         logger.error(message)
     return sys.exit(status)
+
+
+def sort_by_midpoint(df: pd.DataFrame, end_md: np.ndarray, start_md: np.ndarray) -> pd.DataFrame:
+    """
+    Sort DataFrame on midpoint calculated from the new start and end measured depths.
+
+    Arguments:
+        df: DataFrame to be sorted
+        end_md: End measured depth
+        start_md: Start measured depth
+
+    Returns:
+        Sorted DataFrame
+    """
+    df["STARTMD"] = start_md
+    df["ENDMD"] = end_md
+    # sort the data frame based on the mid point
+    df["MID"] = (df["STARTMD"] + df["ENDMD"]) * 0.5
+    df.sort_values(by=["MID"], inplace=True)
+    # drop the MID column
+    df.drop(["MID"], axis=1, inplace=True)
+    return df
+
+
+def as_data_frame(args: dict[str, Any] | None = None, **kwargs) -> pd.DataFrame:
+    """Helper function to create a data frame from a dictionary, or keywords."""
+    if (args is None and kwargs is None) or (not args and not kwargs):
+        raise ValueError("`as_data_frame` requires either a single dictionary, or keywords")
+
+    if args:
+        kwargs = args
+    data = pd.DataFrame()
+    for key, value in kwargs.items():
+        data[key] = value
+
+    return data
