@@ -421,3 +421,4 @@ def create(
                     schedule,
                     wells,
                     well_name,
+                    schedule.get_well_number(well_name),
