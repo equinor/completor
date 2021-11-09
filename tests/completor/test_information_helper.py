@@ -110,3 +110,5 @@ def test_add_non_empty_information_objects():
     assert info.device_number == [1, 2]
     assert info.inner_diameter == [1.0, 2.0]
     assert info.outer_diameter == [3.0, 4.0]
+    assert info.roughness == [1.0, 2.1]
+    assert info.annulus_zone == [4, 2]
