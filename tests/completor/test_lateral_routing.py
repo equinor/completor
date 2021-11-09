@@ -134,3 +134,20 @@ COMPLETION
 A1     1        0  2190.166  0.15  0.2159  0.00065   GP      0      AICD  1
 A1     1 2190.166     99999  0.15  0.2159  0.00065   GP      1      AICD  1
 A1     2        0     99999  0.15  0.2159  0.00065   GP      1      AICD  1
+/
+
+{USE_STRICT_JOINT_LENGTH}
+{WSEGAICD}
+
+-- Lateral 2 in well A1 is routed to the device layer in lateral 1.
+LATERAL_TO_DEVICE
+--WELL  LATERAL
+    A1        2
+/
+    """
+    schedule_file = Path(_TESTDIR / "ml_well_l2d_nodevicetest.sch")
+    with pytest.raises(SystemExit) as pytest_wrapped_exc:
+        common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    assert pytest_wrapped_exc.type == SystemExit
+    assert pytest_wrapped_exc.value.code == 1
+    assert "Cannot find a device layer at junction of lateral 2 in A1" in caplog.text
