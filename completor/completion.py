@@ -752,3 +752,10 @@ def connect_cells_to_segments(
     # Calculate mid cell MD
     df_reservoir["MD"] = (df_reservoir["STARTMD"] + df_reservoir["ENDMD"]) * 0.5
     if method == SegmentCreationMethod.USER:
+        df_res = df_reservoir.copy(deep=True)
+        df_wel = df_well.copy(deep=True)
+        # Ensure that tubing segment boundaries as described in the case file
+        # are honored.
+        # Associate reservoir cells with tubing segment midpoints using markers
+        marker = 1
+        df_res["MARKER"] = pd.Series([0 for _ in range(len(df_reservoir.index))])
