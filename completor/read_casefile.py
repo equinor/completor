@@ -836,3 +836,17 @@ class ReadCasefile:
         used in the case file. When a branch is undefined in the case file,
         but appears in the schedule file, the completion selected by Completor is gravel
         packed perforations if USE_STRICT is set to False.
+
+        Args:
+            well_name: Well name
+            schedule: Schedule object
+
+        Returns:
+            COMPLETION for that well and branch
+
+        The function updates the class property DataFrame completion_table defined
+        in ``read_completion``.
+
+        """
+        msw = schedule.msws[well_name]
+        compl = self.completion_table[self.completion_table.WELL == well_name]
