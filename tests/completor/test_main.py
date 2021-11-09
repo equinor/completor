@@ -541,3 +541,38 @@ def test_read_outputfile_from_casefile(outfilestring, tmpdir):
 def test_wrong_well_id(tmpdir):
     """Test output to screen from Completor when inner ID > outer ID."""
     tmpdir.chdir()
+    output_message = "Check screen/tubing and well/casing ID in case file."
+    case_file = f"""
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1     1    0  3000    0.3      0.2    1.00E-4    GP      1     AICD     1
+/
+    {WSEGAICD}
+    """
+    with pytest.raises(ValueError, match=output_message):
+        common.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+
+
+def test_well_name_in_quotes(tmpdir):
+    """Test completor schedule with wellname in quotes."""
+    tmpdir.chdir()
+    case_file = WB_PERF_TEST
+    schedule_file = Path(_TESTDIR / "welldefinition_quotes.testfile")
+    true_file = Path(_TESTDIR / "wb_perf_quotes.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_well_name_in_single_quotes(tmpdir):
+    """Test completor schedule with wellname in single quotation marks."""
+    tmpdir.chdir()
+    case_file = WB_PERF_TEST
+    schedule_file = Path(_TESTDIR / "welldefinition_single_quotes.testfile")
+    true_file = Path(_TESTDIR / "wb_perf_single_quotes.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_well_name_with_slash(tmpdir):
