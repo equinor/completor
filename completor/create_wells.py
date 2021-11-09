@@ -778,3 +778,11 @@ class CreateWells:
             self.df_reservoir,
             self.df_tubing_segments,
             method,
+        )
+
+    def add_well_lateral_column(self, lateral: int) -> None:
+        """
+        Add well and lateral column in df_well and df_compsegs.
+
+        The format of the class property DataFrame df_well is described in
+        ``complete_the_well`` and df_reservoir in ``select_well``.
