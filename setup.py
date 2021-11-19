@@ -31,3 +31,5 @@ TEST_REQUIREMENTS = [
     "pytest",
     "pytest-cov",
     "rstcheck",
+    "setuptools_scm",
+    "promise",
