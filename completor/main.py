@@ -441,3 +441,6 @@ def create(
     if pdf_file is not None:
         pdf_file.close()
 
+    try:
+        return chunks, case, schedule, wells, output  # for debug ...
+    except NameError:
