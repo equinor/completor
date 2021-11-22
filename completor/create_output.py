@@ -776,3 +776,5 @@ class CreateOutput:
         """
         if self.df_wsegaicv.shape[0] > 0:
             self.print_wsegaicv += po.print_wsegaicv(self.df_wsegaicv, self.iwell + 1) + "\n"
+
+    def fix_printing(self) -> None:
