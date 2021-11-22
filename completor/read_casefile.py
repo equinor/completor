@@ -955,3 +955,15 @@ class ReadCasefile:
 
         df_temp = pd.read_csv(StringIO(table), sep=" ", dtype="object", index_col=False)
         return parse.remove_string_characters(df_temp)
+
+
+def check_contents(values: np.ndarray, reference: np.ndarray) -> bool:
+    """
+    Check if all members of a list is in another list.
+
+    Args:
+        val_array: Array to be evaluated
+        ref_array: Reference array
+
+    Returns:
+        True if members of val_array are present in ref_array, false otherwise
