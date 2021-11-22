@@ -607,3 +607,106 @@ class CreateWells:
             self.method,
             self.case.segment_length,  # TODO(#322): What if this is a string?
             self.case.minimum_segment_length,
+        )
+
+        df_tubing_user = completion.create_tubing_segments(
+            self.df_reservoir,
+            self.df_completion,
+            self.df_mdtvd,
+            SegmentCreationMethod.USER,
+            self.case.segment_length,
+            self.case.minimum_segment_length,
+        )
+
+        if (len(self.df_completion["DEVICETYPE"].unique()) > 1) & (
+            (self.df_completion["DEVICETYPE"] == "ICV") & (self.df_completion["NVALVEPERJOINT"] > 0)
+        ).any():
+            self.df_tubing_segments = fix_compsegs_by_priority(self.df_completion, df_tubing_cells, df_tubing_user)
+
+        # If all the devices are ICVs, lump the segments.
+        elif (self.df_completion["DEVICETYPE"] == "ICV").all():
+            self.df_tubing_segments = df_tubing_user
+        # If none of the devices are ICVs use defined method.
+        else:
+            self.df_tubing_segments = df_tubing_cells
+
+    def insert_missing_segments(self) -> None:
+        """
+        Create a dummy segment for inactive cells.
+
+        Uses the class property DataFrame df_tubing_segments, which is described in
+        ``create_tubing_segments``.
+        """
+        self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, self.well_name)
+
+    def complete_the_well(self) -> None:
+        """
+        Complete the well with users completion design.
+
+        Uses the class property DataFrames df_tubing_segments,
+        see ``create_tubing_segments``, and df_completion, see ``select_well``.
+        Sets the class property DataFrame df_well with the following format
+        (for an AICD example):
+
+        .. _df_well:
+        .. list-table:: df_well
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - TUB_MD
+             - float
+           * - TUB_TVD
+             - float
+           * - LENGTH
+             - float
+           * - SEGMENT_DESC
+             - str
+           * - NDEVICES
+             - float
+           * - DEVICENUMBER
+             - int
+           * - DEVICETYPE
+             - str
+           * - INNER_DIAMETER
+             - float
+           * - OUTER_DIAMETER
+             - float
+           * - ROUGHNESS
+             - float
+           * - ANNULUS_ZONE
+             - int
+           * - SCALINGFACTOR
+             - float
+           * - ALPHA
+             - float
+           * - X
+             - float
+           * - Y
+             - float
+           * - A
+             - float
+           * - B
+             - float
+           * - C
+             - float
+           * - D
+             - float
+           * - E
+             - float
+           * - F
+             - float
+           * - RHOCAL_AICD
+             - float
+           * - VISCAL_AICD
+             - float
+           * - WELL
+             - str
+           * - LATERAL
+             - int
+        """
+        self.df_well = completion.complete_the_well(self.df_tubing_segments, self.df_completion, self.case.joint_length)
+        self.df_well["ROUGHNESS"] = self.df_well["ROUGHNESS"].apply(lambda x: f"{x:.3E}")
+
+    def get_devices(self) -> None:
