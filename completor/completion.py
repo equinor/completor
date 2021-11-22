@@ -517,3 +517,20 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             # set prev_length to this segment
             prev_length = comp_length
 
+        try:
+            information = Information(
+                num_device, device_type, device_number, inner_diameter, outer_diameter, roughness, annulus_zone
+            )
+        except NameError as err:
+            # I.e. `if comp_length > prev_length:` never happens
+            raise ValueError(
+                f"The well {df_completion[Completion.WELL][completion_idx]}'s "
+                f"completion data contains illegal / invalid row(s). "
+                f"Please check their start mD / end mD columns, and ensure "
+                f"that they start before they end"
+            ) from err
+    if information is None:
+        raise ValueError(
+            f"idx0 == idx1 + 1 (idx0={idx0}). "
+            "For the time being, the reason is unknown. "
+            "Please reach out to the Equinor Inflow Control Team, "
