@@ -279,3 +279,9 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
 def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     """
     Format the WSEGAICV table.
+
+    Args:
+        df_temp: WSEGAICV table
+
+    Returns:
+        Updated WSEGAICV
