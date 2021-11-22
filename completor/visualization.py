@@ -153,3 +153,18 @@ def create_pdfpages(file_name: str) -> PdfPages:
 
 
 def create_figure(figsize: list[int] | tuple[int, int] | None = (18, 12)) -> Figure:
+    """
+    Create a matplotlib figure.
+
+    Args:
+        figsize: [Width, height]
+
+    Returns:
+        Matplotlib figure
+    """
+    if figsize is None:
+        return plt.figure()
+    return plt.figure(figsize=figsize)
+
+
+def close_figure() -> None:
