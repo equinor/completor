@@ -698,3 +698,9 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
             else:
                 iterator = columns
         for column in iterator:
+            try:
+                df.iloc[:, column] = remove_quotes(df.iloc[:, column].str)
+            except ValueError:
+                df[column] = remove_quotes(df[column].str)
+            except AttributeError:
+                # Some dataframes contains numeric data, which we ignore
