@@ -680,3 +680,6 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
 
     Raises:
         Exception: If an unexpected error occurred
+    """
+    if columns is None:
+        columns = []
