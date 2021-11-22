@@ -312,3 +312,5 @@ def fix_tubing_inner_diam_roughness(
                 break
     if overburden_found_in_completion:
         return overburden_out
+
+    try:
