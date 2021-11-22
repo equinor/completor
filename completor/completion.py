@@ -1314,3 +1314,9 @@ class WellSchedule:
     def get_well_number(self, well_name: str) -> int:
         """
         Well number in the active_wells list.
+
+        Args:
+            well_name: Well name
+
+        Returns:
+            Well number
