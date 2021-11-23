@@ -494,3 +494,26 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
                 "Start depth %s stop depth, in row %s, for well %s",
                 ("equals" if comp_length == 0 else "less than"),
                 completion_idx,
+                df_completion[Completion.WELL][completion_idx],
+            )
+        # calculate cumulative parameter
+        num_device += (comp_length / joint_length) * df_completion[Completion.NUM_VALVES_PER_JOINT].iloc[completion_idx]
+
+        if comp_length > prev_length:
+            # get well geometry
+            inner_diameter = df_completion[Completion.INNER_ID].iloc[completion_idx]
+            outer_diameter = df_completion[Completion.OUTER_ID].iloc[completion_idx]
+            roughness = df_completion[Completion.ROUGHNESS].iloc[completion_idx]
+            if outer_diameter > inner_diameter:
+                outer_diameter = (outer_diameter**2 - inner_diameter**2) ** 0.5
+            else:
+                raise ValueError("Check screen/tubing and well/casing ID in case file.")
+
+            # get device information
+            device_type = df_completion[Completion.DEVICE_TYPE].iloc[completion_idx]
+            device_number = df_completion[Completion.DEVICE_NUMBER].iloc[completion_idx]
+            # other information
+            annulus_zone = df_completion[Completion.ANNULUS_ZONE].iloc[completion_idx]
+            # set prev_length to this segment
+            prev_length = comp_length
+
