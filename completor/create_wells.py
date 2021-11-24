@@ -795,3 +795,6 @@ class CreateWells:
     def combine_df(self, lateral: int) -> None:
         """
         Combine all DataFrames for this well.
+
+        The function uses the class property DataFrames :ref:`df_well`,
+        and :ref:`df_reservoir`.
