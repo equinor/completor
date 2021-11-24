@@ -628,3 +628,32 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
             the_collection = np.asarray(collection[1:])
             # add additional well column
             well_column = np.full(the_collection.shape[0], collection.well)
+            the_collection = np.column_stack((well_column, the_collection))
+            if compsegs_table is None:
+                compsegs_table = np.copy(the_collection)
+            else:
+                compsegs_table = np.row_stack((compsegs_table, the_collection))
+
+    if compsegs_table is None:
+        raise ValueError("Collection does not contain the 'COMPSEGS' keyword")
+
+    compsegs_table = pd.DataFrame(
+        compsegs_table,
+        columns=[
+            "WELL",
+            "I",
+            "J",
+            "K",
+            "BRANCH",
+            "STARTMD",
+            "ENDMD",
+            "COMPSEGS_DIRECTION",
+            "ENDGRID",
+            "PERFDEPTH",
+            "THERM",
+            "SEGMENT",
+        ],
+    )
+    # replace string component " or ' in the columns
+    compsegs_table = remove_string_characters(compsegs_table)
+    return compsegs_table
