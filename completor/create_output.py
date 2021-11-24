@@ -631,3 +631,145 @@ class CreateOutput:
         elif self.df_annulus.shape[0] > 0:
             self.start_segment = max(self.df_annulus["SEG"].to_numpy()) + 1
             self.start_branch = max(self.df_annulus["BRANCH"].to_numpy()) + 1
+
+    def make_compdat(self, lateral: int) -> None:
+        """
+        Print COMPDAT to file.
+
+        Uses DataFrame df_compdat with format shown in ``CreateOutput``.
+        """
+        nchar = po.get_number_of_characters(self.df_compdat)
+        if self.df_compdat.shape[0] > 0:
+            self.print_compdat += (
+                po.get_header(self.well_name, "COMPDAT", lateral, "", nchar)
+                + po.dataframe_tostring(self.df_compdat, True)
+                + "\n"
+            )
+
+    def make_welsegs(self, lateral: int) -> None:
+        """
+        Print WELSEGS to file.
+
+        Uses DataFrame :ref:`df_tubing` and :ref:`df_device`
+        with formats shown in ``CreateOutput``.
+        """
+        nchar = po.get_number_of_characters(self.df_tubing)
+        if self.df_device.shape[0] > 0:
+            self.print_welsegs += (
+                po.get_header(self.well_name, "WELSEGS", lateral, "Tubing", nchar)
+                + po.dataframe_tostring(self.df_tubing, True)
+                + "\n"
+            )
+        if self.df_device.shape[0] > 0:
+            nchar = po.get_number_of_characters(self.df_tubing)
+            self.print_welsegs += (
+                po.get_header(self.well_name, "WELSEGS", lateral, "Device", nchar)
+                + po.dataframe_tostring(self.df_device, True)
+                + "\n"
+            )
+        if self.df_annulus.shape[0] > 0:
+            nchar = po.get_number_of_characters(self.df_tubing)
+            self.print_welsegs += (
+                po.get_header(self.well_name, "WELSEGS", lateral, "Annulus", nchar)
+                + po.dataframe_tostring(self.df_annulus, True)
+                + "\n"
+            )
+
+    def make_wseglink(self, lateral: int) -> None:
+        """
+        Print WSEGLINK to file.
+
+        Uses DataFrame df_wseglink with format shown in ``CreateOutput``.
+        """
+        if self.df_wseglink.shape[0] > 0:
+            nchar = po.get_number_of_characters(self.df_wseglink)
+            self.print_wseglink += (
+                po.get_header(self.well_name, "WSEGLINK", lateral, "", nchar)
+                + po.dataframe_tostring(self.df_wseglink, True)
+                + "\n"
+            )
+
+    def make_compsegs(self, lateral: int) -> None:
+        """
+        Print COMPSEGS to file.
+
+        Uses DataFrame :ref:`df_compsegs` with format shown in ``CreateOutput``.
+        """
+        nchar = po.get_number_of_characters(self.df_compsegs)
+        if self.df_compsegs.shape[0] > 0:
+            self.print_compsegs += (
+                po.get_header(self.well_name, "COMPSEGS", lateral, "", nchar)
+                + po.dataframe_tostring(self.df_compsegs, True)
+                + "\n"
+            )
+
+    def make_wsegaicd(self, lateral: int) -> None:
+        """
+        Print WSEGAICD to file.
+
+        Uses DataFrame :ref:`df_wsegaicd` with format shown in ``CreateOutput``.
+        """
+        if self.df_wsegaicd.shape[0] > 0:
+            nchar = po.get_number_of_characters(self.df_wsegaicd)
+            self.print_wsegaicd += (
+                po.get_header(self.well_name, "WSEGAICD", lateral, "", nchar)
+                + po.dataframe_tostring(self.df_wsegaicd, True)
+                + "\n"
+            )
+
+    def make_wsegsicd(self, lateral: int) -> None:
+        """
+        Print WSEGSICD to file.
+
+        Uses DataFrame :ref:`df_wsegsicd` with format shown in ``CreateOutput``.
+        """
+        if self.df_wsegsicd.shape[0] > 0:
+            nchar = po.get_number_of_characters(self.df_wsegsicd)
+            self.print_wsegsicd += (
+                po.get_header(self.well_name, "WSEGSICD", lateral, "", nchar)
+                + po.dataframe_tostring(self.df_wsegsicd, True)
+                + "\n"
+            )
+
+    def make_wsegvalv(self, lateral: int) -> None:
+        """
+        Print WSEGVALV to file.
+
+        Uses DataFrame :ref:`df_wsegvalv` with format shown in ``CreateOutput``.
+        """
+        if self.df_wsegvalv.shape[0] > 0:
+            nchar = po.get_number_of_characters(self.df_wsegvalv)
+            self.print_wsegvalv += (
+                po.get_header(self.well_name, "WSEGVALV", lateral, "", nchar)
+                + po.dataframe_tostring(self.df_wsegvalv, True)
+                + "\n"
+            )
+
+    def make_wsegicv(self, lateral: int) -> None:
+        """
+        Print WSEGICV to file.
+
+        Uses DataFrame :ref:`df_wsegicv` with format shown in ``CreateOutput``.
+        """
+        if self.df_wsegicv.shape[0] > 0:
+            nchar = po.get_number_of_characters(self.df_wsegicv)
+            self.print_wsegicv += (
+                po.get_header(self.well_name, "WSEGVALV", lateral, "", nchar)
+                + po.dataframe_tostring(self.df_wsegicv, True)
+                + "\n"
+            )
+
+    def make_wsegdar(self) -> None:
+        """
+        Print WSEGDAR to file.
+
+        Uses DataFrame :ref:`df_wsegdar` with format shown in ``CreateOutput``.
+        """
+        if self.df_wsegdar.shape[0] > 0:
+            self.print_wsegdar += po.print_wsegdar(self.df_wsegdar, self.iwell + 1) + "\n"
+
+    def make_wsegaicv(self) -> None:
+        """
+        Print WSEGAICV to file.
+
+        Uses DataFrame :ref:`df_wsegaicv` with format shown in ``CreateOutput``.
