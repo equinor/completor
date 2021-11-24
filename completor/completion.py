@@ -1282,3 +1282,16 @@ class WellSchedule:
             df = df[df["BRANCH"] == branch]
         df.reset_index(drop=True, inplace=True)  # reset index after filtering
         # (why??)
+        return fix_compsegs(df, well_name)
+
+    def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Get-function for WELSEGS.
+
+        Args:
+            well_name: Well name
+            branch: Branch number
+
+        Returns:
+            | :ref:`WELSEGS header <welsegs_header_format>`
+            | :ref:`WELSEGS records <welsegs_content_format>`
