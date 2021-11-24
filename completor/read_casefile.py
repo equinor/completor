@@ -753,3 +753,84 @@ class ReadCasefile:
             ].to_numpy()
             if not check_contents(device_checks, self.wsegaicv_table["DEVICENUMBER"].to_numpy()):
                 raise abort("Not all devices in COMPLETION are specified in WSEGAICV")
+
+    def read_wsegicv(self) -> None:
+        """
+        Read WSEGICV keyword in the case file.
+
+        Raises:
+            ValueError: If invalid entries in WSEGICV.
+            SystemExit: WSEGICV keyword not defined when ICV is used in completion.
+
+        The function uses the class property DataFrame completion_table defined
+        in ``read_completion``. It generates a class property
+        DataFrame wsegicv_table with the following format:
+        .. _wsegicv_table:
+        .. list-table:: wsegicv_table
+            :widths: 10 10
+            :header-rows: 1
+
+            * - COLUMN
+              - TYPE
+            * - DEVICETYPE
+              - str
+            * - DEVICENUMBER
+              - int
+            * - CV
+              - float
+            * - AC
+              - float
+            * - DEFAULTS
+              - float
+            * - AC_MAX
+              - float
+        """
+
+        start_index, end_index = self.locate_keyword("WSEGICV")
+        if start_index == end_index:
+            if "ICV" in self.completion_table["DEVICETYPE"]:
+                raise abort("WSEGICV keyword must be defined, " "if ICV is used in the completion")
+        else:
+            # Table headers
+            header = ["DEVICENUMBER", "CV", "AC"]
+            try:
+                df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
+                df_temp["AC_MAX"] = np.nan
+            except CaseReaderFormatError:
+                header += ["AC_MAX"]
+                df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
+            # Fix format
+            self.wsegicv_table = val.set_format_wsegicv(df_temp)
+            # Check if the device in COMPLETION exists in WSEGICV
+            device_checks = self.completion_table[self.completion_table["DEVICETYPE"] == "ICV"][
+                "DEVICENUMBER"
+            ].to_numpy()
+            if not check_contents(device_checks, self.wsegicv_table["DEVICENUMBER"].to_numpy()):
+                raise abort("Not all device in COMPLETION is specified in WSEGICV")
+
+    def get_completion(self, well_name: str | None, branch: int) -> pd.DataFrame:
+        """
+        Create the COMPLETION table for the selected well and branch.
+
+        Args:
+            well_name: Well name
+            branch: Branch/lateral number
+
+        Returns:
+            COMPLETION for that well and branch
+
+        The function uses the class property DataFrame completion_table defined
+        in ``read_completion``.
+
+        """
+        df_temp = self.completion_table[self.completion_table["WELL"] == well_name]
+        df_temp = df_temp[df_temp["BRANCH"] == branch]
+        return df_temp
+
+    def check_input(self, well_name: str, schedule: WellSchedule) -> None:
+        """
+        Ensure that the completion table (given in the case-file) is complete.
+
+        If one branch is completed, all branches must be completed,
+        unless not 'strict'. This function relates to the USE_STRICT <bool> keyword
+        used in the case file. When a branch is undefined in the case file,
