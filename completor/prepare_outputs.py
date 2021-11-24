@@ -226,3 +226,6 @@ def prepare_tubing_layer(
         DataFrame for tubing layer
 
     The DataFrame df_well has the format shown in
+    ``create_wells.complete_the_well``.
+    """
+    # for convenience
