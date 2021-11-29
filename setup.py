@@ -84,3 +84,4 @@ if __name__ == "__main__":
         test_suite="tests",
         extras_require=EXTRAS_REQUIRE,
         zip_safe=False,
+    )
