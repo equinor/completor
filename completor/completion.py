@@ -968,3 +968,9 @@ class WellSchedule:
         df = pd.DataFrame(recs, columns=columns[0 : len(recs[0])])
         if "RO" in df.columns:
             df["RO"] = df["RO"].fillna("1*")
+        for idx in range(len(recs[0]), len(columns)):
+            df[columns[idx]] = ["1*"] * len(recs)
+        # data types
+        df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
+        # Change default value '1*' to equivalent float
+        df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
