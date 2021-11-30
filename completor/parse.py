@@ -208,3 +208,12 @@ def read_schedule_keywords(
         df_collection - Object collection (pd.DataFrame)
         remaining_content - List of strings of un-listed keywords
 
+    Raises:
+        SystemExit: If keyword is not found
+    """
+    content = deepcopy(content)
+    used_index = np.asarray([-1])
+    collections = []
+    # get the contents correspond to the list_keywords
+    for keyword in keywords:
+        start_index, end_index = locate_keyword(content, keyword, take_first=False)
