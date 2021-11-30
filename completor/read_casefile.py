@@ -722,3 +722,34 @@ class ReadCasefile:
                 "DEVICENUMBER",
                 "WCT_AICV",
                 "GHF_AICV",
+                "RHOCAL_AICV",
+                "VISCAL_AICV",
+                "ALPHA_MAIN",
+                "X_MAIN",
+                "Y_MAIN",
+                "A_MAIN",
+                "B_MAIN",
+                "C_MAIN",
+                "D_MAIN",
+                "E_MAIN",
+                "F_MAIN",
+                "ALPHA_PILOT",
+                "X_PILOT",
+                "Y_PILOT",
+                "A_PILOT",
+                "B_PILOT",
+                "C_PILOT",
+                "D_PILOT",
+                "E_PILOT",
+                "F_PILOT",
+            ]
+            # Fix table format
+            self.wsegaicv_table = val.set_format_wsegaicv(
+                self._create_dataframe_with_columns(header, start_index, end_index)
+            )
+            # Check if the device in COMPLETION is exist in WSEGAICV
+            device_checks = self.completion_table[self.completion_table["DEVICETYPE"] == "AICV"][
+                "DEVICENUMBER"
+            ].to_numpy()
+            if not check_contents(device_checks, self.wsegaicv_table["DEVICENUMBER"].to_numpy()):
+                raise abort("Not all devices in COMPLETION are specified in WSEGAICV")
