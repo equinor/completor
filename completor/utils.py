@@ -101,3 +101,8 @@ def log_and_raise_exception(message: str, kind: type = ValueError, throw: bool =
     """
     logger.error(message)
     if not isinstance(kind, (Exception, BaseException)):
+        raise ValueError(f"The provided exception type ({kind}) does not inherit from Exception")
+    if throw:
+        raise kind(message)
+    else:
+        return kind(message)
