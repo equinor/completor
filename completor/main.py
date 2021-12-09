@@ -10,3 +10,5 @@ import time
 from collections.abc import Callable, Mapping
 from typing import overload
 
+import numpy as np
+
