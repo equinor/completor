@@ -30,3 +30,10 @@ repos:
     -   id: python-no-log-warn          # logger.warning(), not old .warn()
     -   id: python-use-type-annotations # Enforce that python3.6+ type annotations are used instead of type comments
 
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        name: isort
+        args: ["--settings-path", "pyproject.toml"]
+
