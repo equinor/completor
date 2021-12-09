@@ -1455,3 +1455,4 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             print_df.columns = new_column
             print_df = "WSEGAICD\n" + dataframe_tostring(print_df, True)
             action += f"{print_df}\n/\nENDACTIO\n\n"
+    return action
