@@ -70,3 +70,5 @@ def test_run_completor_without_schedule_output(tmpdir):
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
     subprocess.run(["completor", "-i", "perf_gp.case"], check=True)
+    assert Path("drogon_input_advanced.wells").is_file()
+    assert os.path.getsize("drogon_input_advanced.wells") > 0
