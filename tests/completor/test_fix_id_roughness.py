@@ -97,3 +97,4 @@ def test_overburden_md_outside_completion_table():
         columns=["WELL", "BRANCH", "STARTMD", "ENDMD", "INNER_ID", "ROUGHNESS"],
     )
     with pytest.raises(ValueError, match="Cannot find A1 completion in overburden at 5000.0 mMD"):
+        fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)
