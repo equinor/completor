@@ -278,3 +278,6 @@ def test_missing_wsegaicv(tmpdir):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICV' in input files."
     set_case("AICV", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=expected_error_message):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
