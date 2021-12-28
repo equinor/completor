@@ -1229,3 +1229,38 @@ class WellSchedule:
             self.msws[well_name] = {}
         self.msws[well_name]["compsegs"] = df
         logger.debug("set_compsegs for %s", well_name)
+        return well_name
+
+    def get_welspecs(self, well_name: str) -> pd.DataFrame:
+        """
+        Get-function for WELSPECS.
+
+        Args:
+            well_name: Well name
+
+        Returns:
+            :ref:`WELSPECS DataFrame <welspecs_format>`
+
+        """
+        return self.msws[well_name]["welspecs"]
+
+    def get_compdat(self, well_name: str) -> pd.DataFrame:
+        """
+        Get-function for COMPDAT.
+
+        Args:
+            well_name: Well name
+
+        Returns:
+            :ref:`COMPDAT DataFrame <compdat_format>`
+
+        Raises:
+            ValueError: If COMPDAT keyword is missing in input schedule file
+
+        """
+        try:
+            return self.msws[well_name]["compdat"]
+        except KeyError as err:
+            if "'compdat'" in str(err):
+                raise ValueError("Input schedule file missing COMPDAT keyword.") from err
+            raise err
