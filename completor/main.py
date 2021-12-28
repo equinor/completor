@@ -407,3 +407,17 @@ def create(
                         f"token ({eclipse_keyword} is one of "
                         f"{', '.join(Keywords.segments)})"
                     ) from err
+
+                if well_name not in written:
+                    write_welsegs = True  # will only write WELSEGS once
+                    written.add(well_name)
+                else:
+                    write_welsegs = False
+                figno += 1
+                logger.debug("Writing new MSW info for well %s", well_name)
+                wells.update(well_name, schedule)
+                output = CreateOutput(
+                    case,
+                    schedule,
+                    wells,
+                    well_name,
