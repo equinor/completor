@@ -386,3 +386,24 @@ def create(
                     # Add single quotes to non-active well names
                     for remain in remains:
                         remain[0] = "'" + remain[0] + "'"
+                    outfile.write(eclipse_keyword, remains, end_of_record=True)  # write any 'none-active' wells here
+                line_number += 1  # ready for next line
+                continue
+
+            elif eclipse_keyword == Keywords.WELSEGS:
+                schedule.set_welsegs(chunk)  # update with new data
+
+            elif eclipse_keyword == Keywords.COMPSEGS:
+                # this is COMPSEGS'. will now update and write out new data
+                schedule.set_compsegs(chunk)
+
+                try:
+                    case.check_input(well_name, schedule)
+                except NameError as err:
+                    # This might mean that `Keywords.segments` has changed to
+                    # not include `Keywords.COMPSEGS`
+                    raise SystemError(
+                        "Well name not defined, even though it should be defined when "
+                        f"token ({eclipse_keyword} is one of "
+                        f"{', '.join(Keywords.segments)})"
+                    ) from err
