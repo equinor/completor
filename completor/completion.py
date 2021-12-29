@@ -974,3 +974,258 @@ class WellSchedule:
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
         df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
+        df[["DIAM", "SKIN"]] = df[["DIAM", "SKIN"]].astype(np.float64)
+        # check if CF, KH, and RO are defaulted by the users
+        try:
+            df[["CF"]] = df[["CF"]].astype(np.float64)
+        except ValueError:
+            pass
+        try:
+            df[["KH"]] = df[["KH"]].astype(np.float64)
+        except ValueError:
+            pass
+        try:
+            df[["RO"]] = df[["RO"]].astype(np.float64)
+        except ValueError:
+            pass
+        # compdat could be for multiple wells - split it
+        for well_name in well_names:
+            if well_name not in self.msws:
+                self.msws[well_name] = {}
+            self.msws[well_name]["compdat"] = df[df["WELL"] == well_name]
+            logger.debug("handle_compdat for %s", well_name)
+        return remains
+
+    def set_welsegs(self, recs: list[list[str]]) -> str | None:
+        """Update WELSEGS for a given well if it is an active well.
+
+        * Pads missing record columns in header and contents with default values
+        * Converts header and column records to Pandas DataFrames
+        * Sets proper DataFrame column types and titles
+        * Converts segment depth specified by INC to ABS using fix_welsegs
+
+        Args:
+            recs: Record set of header and contents data
+
+        Returns:
+            Name of well if it was updated, or None if it is\
+            not in the active_wells list.
+
+        The function creates two DataFrames stored in the tuple variable\
+        msws[well_name]['welsegs']. The first tuple element is the welsegs header\
+        and the second is the record DataFrame with following formats:
+
+        .. _welsegs_header_format:
+        .. list-table:: msws[well_name]['welsegs'][0] - Header
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - WELL
+             - str
+           * - SEGMENTTVD
+             - float
+           * - SEGMENTMD
+             - float
+           * - WBVOLUME
+             - float
+           * - INFOTYPE
+             - object
+           * - PDROPCOMP
+             - object
+           * - MPMODEL
+             - object
+           * - ITEM8
+             - object
+           * - ITEM9
+             - object
+           * - ITEM10
+             - object
+           * - ITEM11
+             - object
+           * - ITEM12
+             - object
+
+        .. _welsegs_content_format:
+        .. list-table:: msws[well_name]['welsegs'][1] - Record
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - TUBINGSEGMENT
+             - int
+           * - TUBINGSEGMENT2
+             - int
+           * - TUBINGBRANCH
+             - int
+           * - TUBINGOUTLET
+             - int
+           * - TUBINGMD
+             - float
+           * - TUBINGTVD
+             - float
+           * - TUBINGID
+             - float
+           * - TUBINGROUGHNESS
+             - float
+           * - CROSS
+             - float
+           * - VSEG
+             - float
+           * - ITEM11
+             - object
+           * - ITEM12
+             - object
+           * - ITEM13
+             - object
+           * - ITEM14
+             - object
+           * - ITEM15
+             - object
+
+        """
+        well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
+        if well_name not in self.active_wells:
+            return None
+
+        # make df for header record
+        columns = [
+            "WELL",
+            "SEGMENTTVD",
+            "SEGMENTMD",
+            "WBVOLUME",
+            "INFOTYPE",
+            "PDROPCOMP",
+            "MPMODEL",
+            "ITEM8",
+            "ITEM9",
+            "ITEM10",
+            "ITEM11",
+            "ITEM12",
+        ]
+        ncols = len(columns)
+        # pad header with default values (1*)
+        header = recs[0] + ["1*"] * (ncols - len(recs[0]))
+        dfh = pd.DataFrame(np.array(header).reshape((1, ncols)), columns=columns)
+        dfh[columns[1:3]] = dfh[columns[1:3]].astype(np.float64)  # data types
+
+        # make df for data records
+        columns = [
+            "TUBINGSEGMENT",
+            "TUBINGSEGMENT2",
+            "TUBINGBRANCH",
+            "TUBINGOUTLET",
+            "TUBINGMD",
+            "TUBINGTVD",
+            "TUBINGID",
+            "TUBINGROUGHNESS",
+            "CROSS",
+            "VSEG",
+            "ITEM11",
+            "ITEM12",
+            "ITEM13",
+            "ITEM14",
+            "ITEM15",
+        ]
+        ncols = len(columns)
+        # pad with default values (1*)
+        recs = [rec + ["1*"] * (ncols - len(rec)) for rec in recs[1:]]
+        dfr = pd.DataFrame(recs, columns=columns)
+        # data types
+        dfr[columns[:4]] = dfr[columns[:4]].astype(np.int64)
+        dfr[columns[4:7]] = dfr[columns[4:7]].astype(np.float64)
+        # fix abs/inc issue with welsegs
+        dfh, dfr = fix_welsegs(dfh, dfr)
+
+        # Warn user if the tubing segments' measured depth for a branch
+        # is not sorted in ascending order (monotonic)
+        for branch_num in dfr["TUBINGBRANCH"].unique():
+            if not dfr["TUBINGMD"].loc[dfr["TUBINGBRANCH"] == branch_num].is_monotonic_increasing:
+                logger.warning(
+                    "The branch %s in well %s contains negative length segments. "
+                    "Check the input schedulefile WELSEGS keyword for inconsistencies "
+                    "in measured depth (MD) of Tubing layer.",
+                    branch_num,
+                    well_name,
+                )
+
+        if well_name not in self.msws:
+            self.msws[well_name] = {}
+        self.msws[well_name]["welsegs"] = dfh, dfr
+        return well_name
+
+    def set_compsegs(self, recs: list[list[str]]) -> str | None:
+        """
+        Update COMPSEGS for a well if it is an active well.
+
+        * Pads missing record columns in header and contents with default 1*
+        * Converts header and column records to Pandas DataFrames
+        * Sets proper DataFrame column types and titles
+
+        Args:
+            recs: Record set of header and contents data
+
+        Returns:
+            Name of well if it was updated, or None if it is not in active_wells
+
+        The function creates the class property DataFrame
+        ``msws[well_name]['compsegs']`` with the following format:
+
+        .. list-table:: ``msws[well_name]['compsegs']``
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - I
+             - int
+           * - J
+             - int
+           * - K
+             - int
+           * - BRANCH
+             - int
+           * - STARTMD
+             - float
+           * - ENDMD
+             - float
+           * - COMPSEGS_DIRECTION
+             - object
+           * - ENDGRID
+             - object
+           * - PERFDEPTH
+             - object
+           * - THERM
+             - object
+           * - SEGMENT
+             - int
+
+        """
+        well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
+        if well_name not in self.active_wells:
+            return None
+        columns = [
+            "I",
+            "J",
+            "K",
+            "BRANCH",
+            "STARTMD",
+            "ENDMD",
+            "COMPSEGS_DIRECTION",
+            "ENDGRID",
+            "PERFDEPTH",
+            "THERM",
+            "SEGMENT",
+        ]
+        ncols = len(columns)
+        recs = [rec + ["1*"] * (ncols - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
+        df = pd.DataFrame(recs, columns=columns)
+        #  datatypes
+        df[columns[:4]] = df[columns[:4]].astype(np.int64)
+        df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
+        if well_name not in self.msws:
+            self.msws[well_name] = {}
+        self.msws[well_name]["compsegs"] = df
+        logger.debug("set_compsegs for %s", well_name)
