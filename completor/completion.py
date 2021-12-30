@@ -1305,3 +1305,4 @@ class WellSchedule:
         except KeyError as err:
             if "'welsegs'" in str(err):
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
+            raise err
