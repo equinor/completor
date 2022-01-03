@@ -388,3 +388,4 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
         raise abort(
             "Schedule file is missing data for one or more branches defined in the "
             f"case file. Please check the data for Well {well_name}."
+        )
