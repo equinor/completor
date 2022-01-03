@@ -18,3 +18,4 @@ _TEST_FILE = "test.sch"
 def test_duplicates(tmpdir):
     """Test completor case with duplicated entries in COMPDAT and COMPSEGS.
     Completor produces a number for the second COMPDAT entry, but it is a mistake."""
+    tmpdir.chdir()
