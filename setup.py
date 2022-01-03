@@ -33,3 +33,5 @@ TEST_REQUIREMENTS = [
     "rstcheck",
     "setuptools_scm",
     "promise",
+]
+
