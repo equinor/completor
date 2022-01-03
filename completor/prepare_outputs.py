@@ -763,3 +763,17 @@ def prepare_compsegs(
         df_annulus = df_annulus.sort_values(by=["MD"])
         if isinstance(segment_length, float):
             # SEGMENTLENGTH = FIXED
+            if segment_length >= 0:
+                df_compseg_annulus = pd.merge_asof(left=df_reservoir, right=df_annulus, on=["MD"], direction="nearest")
+                df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=["MD"], direction="nearest")
+            else:
+                # Ensure that tubing segment boundaries as described in the case
+                # file are honored.
+                # Associate reservoir cells with tubing segment midpoints using
+                # markers
+                df_compseg_device, df_compseg_annulus = connect_compseg_usersegment(
+                    df_reservoir, df_device, df_annulus, df_completion_table
+                )
+                # Restore original sorting of DataFrames
+                df_compseg_annulus.sort_values(by=["STARTMD"], inplace=True)
+                df_compseg_device.sort_values(by=["STARTMD"], inplace=True)
