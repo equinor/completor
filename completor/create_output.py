@@ -505,3 +505,29 @@ class CreateOutput:
                 self.start_segment,
                 self.start_branch,
                 self.case.completion_table,
+            )
+            self.df_device = po.prepare_device_layer(self.well_name, lateral, self.df_well, self.df_tubing)
+            self.df_annulus, self.df_wseglink = po.prepare_annulus_layer(
+                self.well_name, lateral, self.df_well, self.df_device
+            )
+            self.update_segmentbranch()
+            self.check_segments(lateral)
+            data[lateral] = (self.df_tubing, self.df_device, self.df_annulus, self.df_wseglink, top)
+        # attach lateral to their proper segments (in overburden, potentially)
+        for lateral in data:
+            po.connect_lateral(self.well_name, lateral, data, self.case)
+        # main preparations
+        for lateral in self.laterals:
+            self.df_tubing, self.df_device, self.df_annulus, self.df_wseglink = data[lateral][:4]
+
+            self.branch_revision(lateral)
+
+            completion_table_well = case.completion_table[case.completion_table["WELL"] == self.well_name]
+            completion_table_lateral = completion_table_well[completion_table_well["BRANCH"] == lateral]
+            self.df_compsegs = po.prepare_compsegs(
+                self.well_name,
+                lateral,
+                self.df_reservoir,
+                self.df_device,
+                self.df_annulus,
+                completion_table_lateral,
