@@ -364,3 +364,9 @@ class CreateWells:
         df_compdat = schedule.get_compdat(self.well_name)
         self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=["I", "J", "K"])
 
+        # remove WELL column in the df_reservoir
+        self.df_reservoir.drop(["WELL"], inplace=True, axis=1)
+        # if multiple occurrences of same IJK in compdat/compsegs --> keep last
+        # as Eclipse does.
+        self.df_reservoir.drop_duplicates(subset="STARTMD", keep="last", inplace=True)
+        self.df_reservoir.reset_index(inplace=True)
