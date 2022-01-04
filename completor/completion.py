@@ -1264,3 +1264,21 @@ class WellSchedule:
             if "'compdat'" in str(err):
                 raise ValueError("Input schedule file missing COMPDAT keyword.") from err
             raise err
+
+    def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
+        """
+        Get-function for COMPSEGS.
+
+        Args:
+           well_name: Well name
+           branch: Branch number
+
+        Returns:
+            :ref:`COMPSEGS DataFrame <compsegs_format>`
+
+        """
+        df = self.msws[well_name]["compsegs"].copy()
+        if branch is not None:
+            df = df[df["BRANCH"] == branch]
+        df.reset_index(drop=True, inplace=True)  # reset index after filtering
+        # (why??)
