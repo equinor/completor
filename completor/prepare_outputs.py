@@ -364,3 +364,11 @@ def connect_lateral(
         else:
             df_segm0 = data[lateral0][1]  # df_device
         try:
+            if case.connect_to_tubing(well_name, lateral):
+                # Since md_junct (top.TUBINGMD) has segment tops and
+                # segm0.MD has grid block midpoints, a junction at the top of the
+                # well may not be found. Therefore, we try the following:
+                if (~(df_segm0.MD <= md_junct)).all():
+                    md_junct = df_segm0.MD.iloc[0]
+                    idx = np.where(df_segm0.MD <= md_junct)[0][-1]
+                else:
