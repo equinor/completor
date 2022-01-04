@@ -277,3 +277,11 @@ class ReadCasefile:
         self.lat2device = self._create_dataframe_with_columns(header, start_index, end_index)
         self.lat2device["BRANCH"] = self.lat2device["BRANCH"].astype(np.int64)
         val.validate_lateral2device(self.lat2device, self.completion_table)
+
+    def read_joint_length(self) -> None:
+        """Read the JOINTLENGTH keyword in the case file."""
+        start_index, end_index = self.locate_keyword("JOINTLENGTH")
+        if end_index == start_index + 2:
+            self.joint_length = float(self.content[start_index + 1])
+            if self.joint_length <= 0:
+                logger.warning("Invalid joint length. It is set to default 12.0 m")
