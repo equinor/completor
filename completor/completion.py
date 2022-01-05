@@ -480,3 +480,16 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
 
     if idx0 == -1 or idx1 == -1:
         well_name = df_completion["WELL"].iloc[0]
+        log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
+
+    # previous length start with 0
+    prev_length = 0.0
+    num_device = 0.0
+    information = None
+
+    for completion_idx in range(idx0, idx1 + 1):
+        comp_length = min(end_completion[completion_idx], end) - max(start_completion[completion_idx], start)
+        if comp_length <= 0:
+            logger.warning(
+                "Start depth %s stop depth, in row %s, for well %s",
+                ("equals" if comp_length == 0 else "less than"),
