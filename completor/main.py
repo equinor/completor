@@ -192,3 +192,27 @@ class FileWriter:
                     my_value = start + str(value) + end
                     text = text.replace(my_key, my_value)
         return text
+
+    def close(self) -> None:
+        """Close FileWriter."""
+        self.fh.close()
+
+
+class ProgressStatus:
+    """
+    Bookmark the reading progress of a schedule file.
+
+    See https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
+    for improved functionality.
+    """
+
+    def __init__(self, num_lines: int, percent: float):
+        """
+        Initialize ProgressStatus.
+
+        Args:
+            num_lines: Number of lines in schedule file
+            percent: Indicates schedule file processing progress (in per cent)
+        """
+        self.percent = percent
+        self.nlines = num_lines
