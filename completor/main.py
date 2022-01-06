@@ -444,3 +444,4 @@ def create(
     try:
         return chunks, case, schedule, wells, output  # for debug ...
     except NameError:
+        if len(schedule.active_wells) == 0:
