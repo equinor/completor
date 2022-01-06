@@ -193,3 +193,5 @@ def test_fix_compsegs():
 def test_fix_welsegs():
     """
     Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
+
+    Completor works with ABS in the WELSEGS.
