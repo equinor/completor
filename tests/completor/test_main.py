@@ -630,3 +630,76 @@ def test_error_missing_keywords(tmpdir, capfd):
     _, err = capfd.readouterr()
     assert exc.value.returncode == 1
     assert "Keyword WELSPECS is not found" in err
+
+
+def test_wsegicv_bottom(tmpdir):
+    """Test completor case with ICV to create a special tubing segmentation.
+    Completor will produce mixes of tubing segmentation between lumped and default.
+    Placing ICV below ICD segments."""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "icv_device1.case")
+    schedule_file = Path(_TESTDIR / "icv_sch.sch")
+    true_file = Path(_TESTDIR / "icv_device1.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_wsegicv_top(tmpdir):
+    """Test completor case with ICV to create a special tubing segmentation.
+    Completor will produce mixes of tubing segmentation between lumped and default.
+    Placing ICV above ICD segments and on overlapping depths.
+    """
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "icv_device2.case")
+    schedule_file = Path(_TESTDIR / "icv_sch.sch")
+    true_file = Path(_TESTDIR / "icv_device2.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_wsegicv_mix(tmpdir):
+    """Test completor case with ICV to create a special tubing segmentation.
+    Completor will produce mixes of tubing segmentation between lumped and default.
+    Placing ICV in the middle of ICDs segments"""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "icv_device3.case")
+    schedule_file = Path(_TESTDIR / "icv_sch.sch")
+    true_file = Path(_TESTDIR / "icv_device3.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_wsegicv_mid(tmpdir):
+    """Test completor case with ICV to create a special tubing segmentation.
+    Completor will produce mixes of tubing segmentation between lumped and default.
+    Placing ICVs in middle and in between of ICDs segments"""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "icv_device4.case")
+    schedule_file = Path(_TESTDIR / "icv_sch.sch")
+    true_file = Path(_TESTDIR / "icv_device4.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_rathole_gp(tmpdir):
+    """Test completor case with rathole on the end of the well with extending
+    tubing segment further top on the reservoir and bottom of the well.
+    Placing gravel pack in the annulus layer."""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "rathole_gp.case")
+    schedule_file = Path(_TESTDIR / "rathole.sch")
+    true_file = Path(_TESTDIR / "rathole_gp.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_rathole_oapa(tmpdir):
+    """Test completor case with rathole on the end of the well with extending
+    tubing segment further top on the reservoir and bottom of the well.
+    Placing combination of annulus and packer in annulus layer."""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "rathole_oapa.case")
+    schedule_file = Path(_TESTDIR / "rathole.sch")
+    true_file = Path(_TESTDIR / "rathole_oapa.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
