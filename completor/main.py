@@ -514,3 +514,14 @@ def get_parser() -> argparse.ArgumentParser:
         version="%(prog)s (completor version " + completor.__version__ + ")",
     )
 
+    return parser
+
+
+def main() -> None:
+    """
+    Generate a Completor output schedule file from the input given from user.
+
+    Also sets the correct loglevel based on user input. Defaults to WARNING if not set.
+
+    Raises:
+        SystemExit: If input schedule file is not defined as input or in case file.
