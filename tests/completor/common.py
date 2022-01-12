@@ -79,3 +79,15 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     wsh_test.sort_values("WELL", inplace=True)
     pd.testing.assert_frame_equal(wsh_true, wsh_test, check_exact=check_exact, rtol=relative_tolerance)
     # WELSEGS content
+    wsc_true = true_output.welsegs_content
+    wsc_true.set_index("WELL", inplace=True)
+    wsc_true.sort_values(["WELL", "TUBINGMD"], inplace=True)
+    wsc_test = test_output.welsegs_content
+    wsc_test.set_index("WELL", inplace=True)
+    wsc_test.sort_values(["WELL", "TUBINGMD"], inplace=True)
+    pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
+
+    # COMPSEGS
+    cs_true = true_output.compsegs.set_index("WELL")
+    cs_true.sort_values(["WELL", "STARTMD"], inplace=True)
+    cs_test = test_output.compsegs.set_index("WELL")
