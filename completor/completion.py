@@ -1306,3 +1306,11 @@ class WellSchedule:
             if "'welsegs'" in str(err):
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
             raise err
+        if branch is not None:
+            dfr = dfr[dfr["TUBINGBRANCH"] == branch]
+        dfr.reset_index(drop=True, inplace=True)  # reset index after filtering (why??)
+        return dfh, dfr
+
+    def get_well_number(self, well_name: str) -> int:
+        """
+        Well number in the active_wells list.
