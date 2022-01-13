@@ -370,3 +370,19 @@ def create(
                 raw.append(lines[line_number])
                 if line_number in clean_lines_map:
                     chunk_str += clean_lines_map[line_number]
+            chunk = format_chunk(chunk_str)
+            chunks.append((eclipse_keyword, chunk))  # for debug ...
+
+            # use data to update our schedule
+            if eclipse_keyword == Keywords.WELSPECS:
+                schedule.set_welspecs(chunk)  # update with new data
+                outfile.write(eclipse_keyword, raw, chunk=False)  # but write it back 'untouched'
+                line_number += 1  # ready for next line
+                continue
+
+            elif eclipse_keyword == Keywords.COMPDAT:
+                remains = schedule.handle_compdat(chunk)  # update with new data
+                if remains:
+                    # Add single quotes to non-active well names
+                    for remain in remains:
+                        remain[0] = "'" + remain[0] + "'"
