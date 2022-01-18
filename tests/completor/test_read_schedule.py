@@ -149,3 +149,47 @@ ITEM11,ITEM12
     # get the program reading
     well4_first, well4_second = _SCHEDULE.get_welsegs("WELL4", 1)
 
+    pd.testing.assert_frame_equal(true_welsegs1, _SCHEDULE.welsegs_header)
+    pd.testing.assert_frame_equal(true_welsegs1_well4, well4_first)
+    pd.testing.assert_frame_equal(true_well4, well4_second)
+
+
+def test_fix_compsegs():
+    """
+    Test that fix_compsegs correctly assigns start and end measured depths.
+
+    In cases where there are overlapping segments in compsegs, also test zero
+    length segments.
+    """
+    df_test = pd.DataFrame(
+        [
+            [3000.82607, 3026.67405],
+            [2984.458, 3006.55],
+            [3006.55, 3013.000],
+            [3013.147, 3013.147],
+            [3014.000, 3019.764],
+            [3019.764, 3039.297],
+            [3039.297, 3041.915],
+        ],
+        columns=["STARTMD", "ENDMD"],
+    )
+
+    df_true = pd.DataFrame(
+        [
+            [2984.458, 3000.82607],
+            [3000.82607, 3013],
+            [3013, 3013.147],
+            [3013.147, 3014],
+            [3014, 3026.67405],
+            [3026.67405, 3039.297],
+            [3039.297, 3041.915],
+        ],
+        columns=["STARTMD", "ENDMD"],
+    )
+    df_test = fix_compsegs(df_test, "")
+    pd.testing.assert_frame_equal(df_true, df_test)
+
+
+def test_fix_welsegs():
+    """
+    Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
