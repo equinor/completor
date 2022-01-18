@@ -213,3 +213,14 @@ def test_fix_welsegs():
 
     df_header_true = pd.DataFrame(
         [[1000.0, 1500.0, "ABS"]],
+        columns=["SEGMENTTVD", "SEGMENTMD", "INFOTYPE"],
+    )
+    df_content_true = pd.DataFrame(
+        [
+            [2, 1, 1010.0, 1550.0],
+            [3, 2, 1030.0, 1570.0],
+            [4, 3, 1060.0, 1600.0],
+            [5, 4, 1100.0, 1640.0],
+        ],
+        columns=["TUBINGSEGMENT", "TUBINGOUTLET", "TUBINGTVD", "TUBINGMD"],
+    )
