@@ -130,3 +130,25 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
                 end_md_new[idx] = end_md[idx]
             else:
                 logger.info(
+                    "Overlapping in COMPSEGS for %s. Sorts the depths accordingly",
+                    well_name,
+                )
+                comb_depth = np.append(start_md, end_md)
+                comb_depth = np.sort(comb_depth)
+                start_md_new = np.copy(comb_depth[::2])
+                end_md_new = np.copy(comb_depth[1::2])
+                break
+        else:
+            start_md_new[idx] = start_md[idx]
+            end_md_new[idx] = end_md[idx]
+    # In some instances with complex overlapping segments, the algorithm above
+    # creates segments where start == end. To overcome this, the following is added.
+    for idx in range(1, len(start_md_new) - 1):
+        if start_md_new[idx] == end_md_new[idx]:
+            if start_md_new[idx + 1] >= end_md_new[idx]:
+                end_md_new[idx] = start_md_new[idx + 1]
+            if start_md_new[idx] >= end_md_new[idx - 1]:
+                start_md_new[idx] = end_md_new[idx - 1]
+            else:
+                logger.error("Cannot construct COMPSEGS segments based on current input")
+    return sort_by_midpoint(df_compsegs, end_md_new, start_md_new)
