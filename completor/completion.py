@@ -1320,3 +1320,6 @@ class WellSchedule:
 
         Returns:
             Well number
+
+        """
+        return (self.active_wells == well_name).nonzero()[0][0]
