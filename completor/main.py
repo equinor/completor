@@ -486,3 +486,13 @@ Optional:
 """
 
 COMPLETOR_VERSION = get_completor_version()
+
+
+def get_parser() -> argparse.ArgumentParser:
+    """
+    Parse user input from the command line.
+
+    Returns:
+        argparse.ArgumentParser
+    """
+    parser = argparse.ArgumentParser(description=COMPLETOR_DESCRIPTION)
