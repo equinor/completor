@@ -190,3 +190,5 @@ class FileWriter:
                 my_key = start + str(key) + start
                 if my_key in text:
                     my_value = start + str(value) + end
+                    text = text.replace(my_key, my_value)
+        return text
