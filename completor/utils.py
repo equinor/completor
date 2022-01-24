@@ -132,3 +132,19 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
     # Replace tabs with spaces, remove newlines and remove trailing spaces.
     line = line.replace("\t", " ").replace("\n", "")
     # Remove quotation marks if specified
+    if remove_quotation_marks:
+        line = line.replace("'", " ").replace('"', " ")
+    # Remove trailing whitespace
+    line = line.strip(" ")
+    # Find comments and replace with single '/'.
+    # Checks that the / is not part of a file path.
+    line = re.sub(r"/[^/']*$", "/", line)
+    # Remove consecutive spaces
+    line = " ".join(line.split())
+
+    return line
+
+
+def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
+    """
+    Remove comments, tabs, newlines and consecutive spaces from file lines.
