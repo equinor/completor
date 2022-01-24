@@ -106,3 +106,29 @@ def log_and_raise_exception(message: str, kind: type = ValueError, throw: bool =
         raise kind(message)
     else:
         return kind(message)
+
+
+def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_marks: bool = False) -> str:
+    """
+    Remove comments, tabs, newlines and consecutive spaces from a string.
+
+    Also remove trailing '/' comments, but ignore lines containing a file path.
+
+    Args:
+        line: A string containing a single file line
+        comment_prefix: The prefix used to denote a comment in the file
+        remove_quotation_marks: Whether quotation marks should be removed from the line
+                                Used for cleaning schedule files
+
+    Returns:
+        A cleaned line. Returns an empty string in the case of a comment or empty line.
+    """
+
+    # Remove trailing comments
+    line = line.split(comment_prefix)[0]
+    # Skip cleaning process if the line was a comment
+    if not line:
+        return ""
+    # Replace tabs with spaces, remove newlines and remove trailing spaces.
+    line = line.replace("\t", " ").replace("\n", "")
+    # Remove quotation marks if specified
