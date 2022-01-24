@@ -357,3 +357,16 @@ def create(
             if eclipse_keyword in Keywords.segments:  # check if it is an active well
                 logger.debug(well_name)
                 if well_name not in list(schedule.active_wells):
+                    outfile.write(eclipse_keyword, "")
+                    line_number += 1
+                    continue  # not an active well
+
+            # first, collect data for this keyword into a 'chunk'
+            chunk_str = ""
+            raw = []  # only used for WELSPECS which we dont modify
+            # concatenate and look for 'end of records' => //
+            while not re.search(r"/\s*/$", chunk_str):
+                line_number += 1
+                raw.append(lines[line_number])
+                if line_number in clean_lines_map:
+                    chunk_str += clean_lines_map[line_number]
