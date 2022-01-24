@@ -158,3 +158,7 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
     """
     clean_lines = []
     for line in lines:
+        cleaned_line = clean_file_line(line, comment_prefix=comment_prefix)
+        # If clean_file_line returns "", don't process the line.
+        if cleaned_line:
+            clean_lines.append(cleaned_line)
