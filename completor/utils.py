@@ -148,3 +148,10 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
 def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
     """
     Remove comments, tabs, newlines and consecutive spaces from file lines.
+
+    Args:
+        lines: A list of file lines
+        comment_prefix: The prefix used to denote a file comment
+
+    Returns:
+        A list with the cleaned lines
