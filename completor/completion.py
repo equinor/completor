@@ -612,3 +612,24 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     ndevices = df_well["NDEVICES"].to_numpy()
     annulus_zone = df_well["ANNULUS_ZONE"].to_numpy()
     seg_desc = df_well["SEGMENT_DESC"].to_numpy()
+    number_of_rows = df_well.shape[0]
+    for idx in range(number_of_rows):
+        if seg_desc[idx] != "AdditionalSegment":
+            continue
+
+        # only additional segments
+        if annulus_zone[idx] > 0:
+            # meaning only annular zones
+            # compare it to the segment before and after
+            been_lumped = False
+            if idx - 1 >= 0 and not been_lumped and annulus_zone[idx] == annulus_zone[idx - 1]:
+                # compare it to the segment before
+                ndevices[idx - 1] = ndevices[idx - 1] + ndevices[idx]
+                been_lumped = True
+            if idx + 1 < number_of_rows and not been_lumped and annulus_zone[idx] == annulus_zone[idx + 1]:
+                # compare it to the segment after
+                ndevices[idx + 1] = ndevices[idx + 1] + ndevices[idx]
+        # update the ndevice to 0 for this segment
+        # because it is lumped to others
+        # and it is 0 if it has no annulus zone
+        ndevices[idx] = 0.0
