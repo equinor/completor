@@ -314,3 +314,38 @@ def fix_tubing_inner_diam_roughness(
         return overburden_out
 
     try:
+        raise ValueError(f"Cannot find {well_name} completion in overburden at {overburden_md} mMD")
+    except NameError as err:
+        raise ValueError(f"Cannot find {well_name} in completion overburden; it is empty") from err
+
+
+def connect_lateral(
+    well_name: str,
+    lateral: int,
+    data: dict[int, tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]],
+    case: ReadCasefile,
+) -> None:
+    """
+    Connect lateral to main wellbore/branch.
+
+    The main branch can either have a tubing- or device-layer connected.
+    By default the lateral will be connected to tubing-layer, but if
+    connect_to_tubing is False it will be connected to device-layer.
+    Aborts if cannot find device layer at junction depth
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        data: Dict with integer key 'lateral' containing:
+            df_tubing: DataFrame tubing layer
+            df_device: DataFrame device layer
+            df_annulus: DataFrame annulus layer
+            df_wseglink: DataFrame WSEGLINK
+            top: DataFrame of first connection
+        case: ReadCasefile object
+
+    Raises:
+        SystemExit: If there is no device layer at junction of lateral
+    """
+    df_tubing, _, _, _, top = data[lateral]
+    if not top.empty:
