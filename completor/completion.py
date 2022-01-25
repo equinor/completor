@@ -356,3 +356,35 @@ def create_tubing_segments(
 
     # md for tubing segments
     md_ = 0.5 * (start_measure_depth + end_measure_depth)
+    # estimate TVD
+    tvd = np.interp(md_, df_mdtvd["MD"].to_numpy(), df_mdtvd["TVD"].to_numpy())
+    # create data frame
+    return as_data_frame({"STARTMD": start_measure_depth, "ENDMD": end_measure_depth, "TUB_MD": md_, "TUB_TVD": tvd})
+
+
+def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | None) -> pd.DataFrame:
+    """
+    Create segments for inactive cells.
+
+    Sometimes inactive cells have no segments. It is required to create segments for
+    these cells to get the scaling factor correct. Inactive cells are indicated if
+    there are segments starting at MD deeper than the end MD of the previous cell.
+
+    Args:
+        df_tubing_segments: Must contain column ``STARTMD`` and ``ENDMD``
+        well_name: Name of well
+
+    Returns:
+        Updated dataframe if missing cells are found
+
+    Raises:
+        SystemExit: If the Schedule file is missing data for one or more branches
+                    in the case file
+
+    The format of the DataFrame df_tubing_segments is shown in
+    :ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`.
+    """
+    if df_tubing_segments.empty:
+        raise abort(
+            "Schedule file is missing data for one or more branches defined in the "
+            f"case file. Please check the data for Well {well_name}."
