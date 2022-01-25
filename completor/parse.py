@@ -113,3 +113,59 @@ def locate_keyword(
 
         try:
             end_index = np.append(end_index, idx)
+        except NameError as err:
+            # TODO: check which function it was called from, in order
+            #       to determine if case file or schedule file
+            raise ValueError(f"Cannot find keyword {keyword} in file") from err
+    # return all in a numpy array format
+    end_index = np.asarray(end_index)
+    if take_first:
+        return start_index[0], end_index[0]
+    return start_index, end_index
+
+
+def take_first_record(
+    start_index: list[float] | npt.NDArray[np.float64], end_index: list[float] | npt.NDArray[np.float64]
+) -> tuple[float | int, float | int]:
+    """
+    Take the first record of a list.
+
+    Args:
+        start_index
+        end_index
+
+    Returns:
+        Tuple of floats
+    """
+    return start_index[0], end_index[0]
+
+
+def unpack_records(record: list[str]) -> list[str]:
+    """
+    Unpack the keyword content.
+
+    E.g. 3* --> 1* 1* 1*
+
+    Args:
+        record: List of strings
+
+    Returns:
+        Updated record of strings
+    """
+    record = deepcopy(record)
+    record_length = len(record)
+    idx = -1
+    while idx < record_length - 1:
+        # Loop and find if default records are found
+        idx = idx + 1
+        if "*" in str(record[idx]):
+            # default is found and get the number before the star *
+            ndefaults = re.search(r"\d+", record[idx])
+            record[idx] = "1*"
+            if ndefaults:
+                _ndefaults = int(ndefaults.group())
+                idef = 0
+                while idef < _ndefaults - 1:
+                    record.insert(idx, "1*")
+                    idef = idef + 1
+            record_length = len(record)
