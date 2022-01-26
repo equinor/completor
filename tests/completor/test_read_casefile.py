@@ -163,3 +163,4 @@ def test_new_dar_old_parameters():
 
 
 def test_read_case_wsegaicv():
+    """Test the function which reads WSEGAICV keyword."""
