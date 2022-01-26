@@ -7,3 +7,33 @@ from pathlib import Path
 
 import pytest
 
+_TESTDIR_DROGON = Path(__file__).absolute().parent / "data" / "drogon"
+
+
+def test_run_completor(tmpdir):
+    """Test Completor for command line run. Schedule included on command line."""
+    shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
+    shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
+    tmpdir.chdir()
+    subprocess.run(["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch", "-o", "perf_gp.out"], check=True)
+    assert Path("perf_gp.out").is_file()
+    assert os.path.getsize("perf_gp.out") > 0
+
+
+def test_run_completor_schedule_in_case(tmpdir):
+    """Test Completor with schedule file given in the case file and not in the CLI."""
+    shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
+    shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
+    tmpdir.chdir()
+    subprocess.run(["completor", "-i", "perf_gp.case", "-o", "perf_gp.out"], check=True)
+    assert Path("perf_gp.out").is_file()
+    assert os.path.getsize("perf_gp.out") > 0
+
+
+def test_run_completor_without_schedule(tmpdir):
+    """Test Completor without input schedule file."""
+    shutil.copy(_TESTDIR_DROGON / "perf_gp_nosched.case", tmpdir)
+    tmpdir.chdir()
+    with pytest.raises(subprocess.CalledProcessError) as err:
+        subprocess.run(["completor", "-i", "perf_gp_nosched.case", "-o", "perf_gp_nosched.out"], check=True)
+    assert err.value.returncode == 1
