@@ -162,3 +162,4 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
         # If clean_file_line returns "", don't process the line.
         if cleaned_line:
             clean_lines.append(cleaned_line)
+    return clean_lines
