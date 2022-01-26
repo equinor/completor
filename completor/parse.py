@@ -705,3 +705,5 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
             except AttributeError:
                 # Some dataframes contains numeric data, which we ignore
                 pass
+            except Exception as err:
+                raise err
