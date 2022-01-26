@@ -10,3 +10,4 @@ import pandas as pd
 
 from completor.constants import Completion, SegmentCreationMethod
 from completor.logger import logger
+from completor.read_schedule import fix_compsegs, fix_welsegs
