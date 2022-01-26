@@ -967,3 +967,6 @@ def check_contents(values: np.ndarray, reference: np.ndarray) -> bool:
 
     Returns:
         True if members of val_array are present in ref_array, false otherwise
+
+    """
+    return all(comp in reference for comp in values)
