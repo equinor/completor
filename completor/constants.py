@@ -53,3 +53,14 @@ class SegmentCreationMethod(Enum):
     FIX = auto()
     USER = auto()
     WELSEGS = auto()
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Implement the equality function to compare enums with their string literal.
+
+        Arguments:
+            other (SegmentCreationMethod, str): other item to be compared with
+
+        Returns:
+            bool: Whether enums are equal
+
