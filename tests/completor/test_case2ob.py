@@ -114,3 +114,4 @@ WSEGAICD
     """
 
     common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
