@@ -493,3 +493,4 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             logger.warning(
                 "Start depth %s stop depth, in row %s, for well %s",
                 ("equals" if comp_length == 0 else "less than"),
+                completion_idx,
