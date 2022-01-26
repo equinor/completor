@@ -831,3 +831,13 @@ class CreateOutput:
             self.print_wsegicv += self.newline3
 
     def print_per_well(self) -> None:
+        """Collect final printing for all wells."""
+        # here starts active wells
+        finalprint = self.finalprint + self.print_compdat
+        if self.write_welsegs:
+            finalprint += self.print_welsegs
+        finalprint += self.print_wseglink
+        finalprint += self.print_compsegs
+        # print udq parameter if relevant
+        if self.well_name in self.udq_parameter and self.print_udq:
+            finalprint += self.udq_parameter[self.well_name]
