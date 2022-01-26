@@ -7,3 +7,5 @@ import pytest
 from completor.input_validation import validate_minimum_segment_length
 from completor.read_casefile import ReadCasefile
 
+_TESTDIR = Path(__file__).absolute().parent / "data"
+_TEST_FILE = "test.sch"
