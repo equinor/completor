@@ -786,3 +786,12 @@ class CreateWells:
 
         The format of the class property DataFrame df_well is described in
         ``complete_the_well`` and df_reservoir in ``select_well``.
+        """
+        self.df_well["WELL"] = self.well_name
+        self.df_reservoir["WELL"] = self.well_name
+        self.df_well["LATERAL"] = lateral
+        self.df_reservoir["LATERAL"] = lateral
+
+    def combine_df(self, lateral: int) -> None:
+        """
+        Combine all DataFrames for this well.
