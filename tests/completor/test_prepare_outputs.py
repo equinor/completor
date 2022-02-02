@@ -416,3 +416,17 @@ COMPLETION
 --                      Diameter Diameter
   A1     1   0.0  2451.78 0.15   0.19    0.00035     GP      1     PERF    1
   A1     2   0.0  2450.0  0.15   0.19    0.00035     GP      1     PERF    1
+/
+SEGMENTLENGTH
+ 0
+/
+GP_PERF_DEVICELAYER
+ TRUE
+/"""
+        ),
+        "dummy_schedule",
+    )
+
+    prepare_outputs.connect_lateral("A1", 2, data, case)
+    assert len(caplog.text) > 0
+    assert "WARNING" in caplog.text
