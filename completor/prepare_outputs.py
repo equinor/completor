@@ -349,3 +349,13 @@ def connect_lateral(
     """
     df_tubing, _, _, _, top = data[lateral]
     if not top.empty:
+        lateral0 = top.TUBINGBRANCH.to_numpy()[0]
+        md_junct = top.TUBINGMD.to_numpy()[0]
+        if md_junct > df_tubing["MD"][0]:
+            logger.warning(
+                "Found a junction above the start of the tubing layer, well %s, "
+                "branch %s. Check the depth of segments pointing at the main stem "
+                "in schedule-file",
+                well_name,
+                lateral,
+            )
