@@ -118,3 +118,10 @@ class CreateWells:
             perf_check = not type_series.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"]).any()
             if gp_check and perf_check and not self.case.gp_perf_devicelayer:
                 # De-activate wells with GP_PERF if instructed to do so:
+                active_wells.remove(well_name)
+            if not active_wells:
+                logger.warning(
+                    "There are no active wells for Completor to work on. E.g. all wells are defined with Gravel Pack "
+                    "(GP) and valve type PERF. If you want these wells to be active set GP_PERF_DEVICELAYER to TRUE."
+                )
+                return np.array([])
