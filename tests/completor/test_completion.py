@@ -957,3 +957,18 @@ def test_skin():
     well_schedule.handle_compdat(compdat)
     df_out = well_schedule.msws["A1"]["compdat"]
     pd.testing.assert_frame_equal(df_out, df_true)
+
+
+def test_set_welsegs_negative_length_segments(caplog):
+    """Test that negative segments inside of a branch gives a warning."""
+    schedule = completion.WellSchedule(["A1"])
+    well_segments = [
+        ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],
+        [2, 2, 1, 1, 2202.75139, 2005.28911, 0.15200, 0.0000100],
+        [3, 3, 1, 2, 2200.73413, 2007.00000, 0.15200, 0.0000100],
+        [4, 4, 1, 3, 2219.76749, 2008.87380, 0.15200, 0.0000100],
+    ]
+
+    schedule.set_welsegs(well_segments)
+    assert len(caplog.text) > 0
+    assert "WARNING" in caplog.text
