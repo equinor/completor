@@ -131,3 +131,7 @@ def dump_debug_information(**kwargs) -> None:
             if isinstance(value, (Path, str)):
                 try:
                     with open(value, encoding="utf-8") as f:
+                        dump(f"{key}.txt", f.read())
+                except Exception as ex:
+                    dump(f"{key}.traceback.txt", traceback.format_exc())
+                    dump(f"{key}.txt", ex.__repr__())
