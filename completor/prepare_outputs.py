@@ -740,3 +740,26 @@ def prepare_compsegs(
                 # file are honored.
                 # Associate reservoir cells with tubing segment midpoints using
                 # markers
+                df_compseg_device, df_compseg_annulus = connect_compseg_usersegment(
+                    df_reservoir, df_device, df_annulus, df_completion_table
+                )
+        else:
+            df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=["MD"], direction="nearest")
+        if icv_segmenting:
+            df_compseg_device, _ = connect_compseg_icv(df_reservoir, df_device, df_annulus, df_completion_table)
+        compseg = pd.DataFrame()
+        compseg["I"] = df_compseg_device["I"].to_numpy()
+        compseg["J"] = df_compseg_device["J"].to_numpy()
+        compseg["K"] = df_compseg_device["K"].to_numpy()
+        # take the BRANCH column from df_device
+        compseg["BRANCH"] = df_compseg_device["BRANCH"].to_numpy()
+        compseg["STARTMD"] = df_compseg_device["STARTMD"].to_numpy()
+        compseg["ENDMD"] = df_compseg_device["ENDMD"].to_numpy()
+        compseg["DIR"] = df_compseg_device["COMPSEGS_DIRECTION"].to_numpy()
+        compseg["DEF"] = "3*"
+        compseg["SEG"] = df_compseg_device["SEG"].to_numpy()
+    else:
+        # sort the df_annulus and df_device
+        df_annulus = df_annulus.sort_values(by=["MD"])
+        if isinstance(segment_length, float):
+            # SEGMENTLENGTH = FIXED
