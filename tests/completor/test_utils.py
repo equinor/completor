@@ -38,3 +38,47 @@ def test_clean_file_line_with_well_name_quotes():
     true_removed_quotes = "A1 35 113 72 72 OPEN /"
     assert clean_file_line(clean_test, remove_quotation_marks=True) == true_removed_quotes
     clean_test_with_slash = "\t'A/1'       35   113    72    72  OPEN    / trailing comment"
+    true_test_with_slash = "'A/1' 35 113 72 72 OPEN /"
+    assert clean_file_line(clean_test_with_slash) == true_test_with_slash
+
+
+def test_clean_file_lines():
+    """
+    Test the clean_file_lines function.
+
+    Should remove all comments and empty lines.
+    Should remove trailing comments, but preserve file paths and quoted well names.
+    """
+    test_lines = [
+        "COMPDAT",
+        "--WELL",
+        "-----------------------------",
+        "\tA1       35   113    72  / trailing comment",
+        "\t'A1'       35   113    72  / trailing comment",
+        '\t"A1"       35   113    72  / trailing comment',
+        "\t'A/1'       35   113    72  / trailing comment",
+        "/",
+    ]
+    true_lines = [
+        "COMPDAT",
+        "A1 35 113 72 /",
+        "'A1' 35 113 72 /",
+        '"A1" 35 113 72 /',
+        "'A/1' 35 113 72 /",
+        "/",
+    ]
+    assert clean_file_lines(test_lines) == true_lines
+
+
+def test_get_completor_version():
+    """
+    Test that the version format is correct.
+
+    Version format should match 'vX.X.X' where X is a valid digit.
+    A version digit should be either 0 or start with 1-9.
+    """
+    version = get_completor_version()
+    # Regex for checking correct format
+    assert re.match(
+        r"^v(0|[1-9]\d*)\.(0|[1-9\d]*)\.(0|[1-9\d]*)$", version
+    ), "Version has incorrect format. Should be on the form v1.2.3"
