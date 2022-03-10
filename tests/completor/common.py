@@ -65,3 +65,17 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     # test COMPDAT, COMPSEGS and WELSEGS
     with open(test_file, encoding="utf-8") as file:
         test_output = ReadSchedule(file.read())
+
+    # COMPDAT
+    pd.testing.assert_frame_equal(
+        true_output.compdat, test_output.compdat, check_exact=check_exact, rtol=relative_tolerance
+    )
+    # WELSEGS header
+    wsh_true = true_output.welsegs_header
+    wsh_true.set_index("WELL", inplace=True)
+    wsh_true.sort_values("WELL", inplace=True)
+    wsh_test = test_output.welsegs_header
+    wsh_test.set_index("WELL", inplace=True)
+    wsh_test.sort_values("WELL", inplace=True)
+    pd.testing.assert_frame_equal(wsh_true, wsh_test, check_exact=check_exact, rtol=relative_tolerance)
+    # WELSEGS content
