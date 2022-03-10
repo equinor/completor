@@ -109,3 +109,8 @@ WSEGAICD
 -- WELL  SEG  SEG2   ALPHA  SF     RHO  VIS DEF   X   Y FLAG   A   B   C   D   E   F
 'A1' 6 6 0.00021 -0.5047955578 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
 'A1' 7 7 0.00021 -0.2311559725 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
+/
+
+    """
+
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
