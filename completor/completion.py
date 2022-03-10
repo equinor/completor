@@ -681,3 +681,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
               - :ref:`read_casefile.ReadCasefile.read_wsegaicv <wsegaicv_table>`
             * - ``wsegicv_table``
               - :ref:`read_casefile.ReadCasefile.read_wsegicv <wsegicv_table>`
+    """
+    columns = ["DEVICETYPE", "DEVICENUMBER"]
+    try:
+        df_well = pd.merge(df_well, df_device, how="left", on=columns)
