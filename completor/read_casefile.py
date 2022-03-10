@@ -58,3 +58,54 @@ class ReadCasefile:
         segment_length (float): SEGMENTLENGTH keyword. Default: 0.0
         pvt_file (str): The pvt file content
         pvt_file_name (str): The pvt file name
+        completion_table (pd.DataFrame): ...
+        wsegaicd_table (pd.DataFrame): WSEGAICD
+        wsegsicd_table (pd.DataFrame): WSEGSICD
+        wsegvalv_table (pd.DataFrame): WSEGVALV
+        wsegicv_table (pd.DataFrame): WSEGICV
+        wsegdar_table (pd.DataFrame): WSEGDAR
+        wsegaicv_table (pd.DataFrame): WSEGAICV
+        strict (bool): USE_STRICT. If TRUE it will exit if
+            any lateral is not defined in the case-file. Default: TRUE
+        lat2device (pd.DataFrame): LATERAL_TO_DEVICE
+        gp_perf_devicelayer (bool): GP_PERF_DEVICELAYER. If TRUE all wells with
+            gravel pack and perforation completion are given a device layer. If FALSE
+            (default) all wells with this type of completions are untouched by Completor
+
+
+    See the following functions for a description of the DataFrame formats:
+    * `wsegvalv_table <wsegvalv_table>`
+    * `wsegsicd_table <wsegsicd_table>`
+    * `wsegaicd_table <wsegaicd_table>`
+    * `wsegdar_table <wsegdar_table>`
+    * `wsegaicv_table <wsegaicv_table>`
+    * `lat2device <lat2device>`
+
+    """
+
+    def __init__(
+        self,
+        case_file: str,
+        schedule_file: str | None = None,
+        output_file: str | None = None,
+    ):
+        """
+        Initialize ReadCasefile.
+
+        Args:
+            case_file: Case/input file name
+            user_schedule_file: Schedule/well file if not defined in case file
+            user_pvt: PVT file if not defined in case file
+
+        """
+        self.case_file = case_file.splitlines()
+        self.content = clean_file_lines(self.case_file, "--")
+        self.n_content = len(self.content)
+
+        # assign default values
+        self.joint_length = 12.0
+        self.segment_length: float | str = 0.0
+        self.minimum_segment_length: float = 0.0
+        self.strict = True
+        self.gp_perf_devicelayer = False
+        self.schedule_file = schedule_file
