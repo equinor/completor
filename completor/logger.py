@@ -69,3 +69,34 @@ def handle_error_messages(func):
                 _kwargs["schedule_file"] = kwargs["paths"][1]
                 _kwargs["new_file"] = args[2]
                 _kwargs["show_fig"] = args[3]
+                kwargs = _kwargs
+
+            dump_debug_information(**kwargs)
+            exit(exit_code)
+
+    return wrapper
+
+
+def _convert_paths_to_strings(dict_) -> dict:
+    kwargs = {}
+    for key, value in dict_.items():
+        if len(str(value).splitlines()) < 2:
+            if isinstance(value, Path):
+                value = str(value)
+            kwargs[key] = value
+    return kwargs
+
+
+def dump_debug_information(**kwargs) -> None:
+    """Helper method to create, and write all the files to a zip archive."""
+    import random
+    import socket
+    import string
+    import traceback
+    from zipfile import ZIP_DEFLATED, ZipFile
+
+    when = time.localtime()
+    random_suffix = "".join(random.choices(string.ascii_letters) + random.choices(string.digits, k=5))
+    name = (
+        f"Completor-{when.tm_year}{when.tm_mon:02}{when.tm_mday:02}-"
+        f"{when.tm_hour:02}{when.tm_min:02}{when.tm_sec:02}-{random_suffix}"
