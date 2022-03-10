@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "Completor"
+description = "Advanced well completion"
+authors = ["Equinor ASA"]
+readme = "README.md"
+packages = [
+    {include = "completor/completor"}
+]
+
+
+[tool.poetry.group.main.dependencies]
+python = ">=3.8 <3.12"
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+include='\.pyi?$'
+extend-exclude = '''\.git |
+            \.__pycache__|
+            \.hg|
+            \.mypy_cache|
+            \.tox|
+            \.venv|
+            _build|
+            buck-out|
+            build|
+            dist'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.flake8]
+max_line_length="132"
+ignore="E203, W503, E704"

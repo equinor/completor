@@ -1,0 +1,23 @@
+COMPLETION
+-- Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter  roughness  Annulus     Nvalve/Joint     ValveType     DeviceNumber
+--         Number                      Tubing     Casing               roughness  Content 
+--                                     Diameter   Diameter
+'A1'      1     5900.53	5940.53        0.151      0.216                1.1       OA            1             AICD             1
+'A1'      1     5940.53	5940.53        0.151      0.216                1.1       PA            1             AICD             1
+'A1'      1     5940.53	5974.53        0.151      0.216                1.1       OA            1             AICD             1
+'A1'      1     5974.53	5974.53        0.151      0.216                1.1       PA            1             AICD             1
+'A1'      1     5974.53	6018.66        0.151      0.216                1.1       OA            1             AICD             1
+'A1'      1     6018.66	6018.66        0.151      0.216                1.1       PA            1             AICD             1
+'A1'      1     6018.66	6168.69        0.151      0.216                1.1       OA            1             AICD             1
+'A1'      1     6168.69	6168.69        0.151      0.216                1.1       PA            1             AICD             1
+'A1'      1     6168.69	6222.82        0.151      0.216                1.1       OA            1             AICD             1
+/
+
+SEGMENTLENGTH
+-1.0
+/
+
+WSEGAICD
+--Number   Alpha     x       y         a     b     c     d       e     f   rhocal   viscal
+1           1.0    2.0     3.0         1     1	   1	 2.0	 1.00     1.00   1000     1
+/
