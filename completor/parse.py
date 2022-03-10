@@ -657,3 +657,26 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     # replace string component " or ' in the columns
     compsegs_table = remove_string_characters(compsegs_table)
     return compsegs_table
+
+
+@overload
+def remove_string_characters(df: pd.DataFrame, columns: list[str] | None = ...) -> pd.DataFrame: ...
+
+
+@overload
+def remove_string_characters(df: str, columns: list[str] | None = ...) -> str: ...
+
+
+def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None = None) -> pd.DataFrame | str:
+    """
+    Remove string characters `"` and `'`.
+
+    Args:
+        df: DataFrame or string
+        columns: List of column names to be checked
+
+    Returns:
+        DataFrame without string characters
+
+    Raises:
+        Exception: If an unexpected error occurred
