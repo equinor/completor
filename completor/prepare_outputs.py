@@ -229,3 +229,29 @@ def prepare_tubing_layer(
     ``create_wells.complete_the_well``.
     """
     # for convenience
+    rnm = {"TUBINGMD": "MD", "TUBINGTVD": "TVD", "TUBINGID": "DIAM", "TUBINGROUGHNESS": "ROUGHNESS"}
+    cols = list(rnm.values())
+    #
+    df_well = df_well[df_well["WELL"] == well_name]
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_tubing_in_reservoir = as_data_frame(
+        MD=df_well["TUB_MD"], TVD=df_well["TUB_TVD"], DIAM=df_well["INNER_DIAMETER"], ROUGHNESS=df_well["ROUGHNESS"]
+    )
+    # handle overburden
+    well_segments = schedule.get_welsegs(well_name, lateral)[1]
+    md_input_welsegs = well_segments["TUBINGMD"]
+    md_welsegs_in_reservoir = df_tubing_in_reservoir["MD"]
+    # TODO: check if ok. should it be ENDMD above (not available here)
+    overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
+    if not overburden.empty:
+        overburden = overburden.rename(index=str, columns=rnm)
+        overburden_fixed = fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)
+        df_tubing_with_overburden = pd.concat([overburden_fixed[cols], df_tubing_in_reservoir])
+    else:
+        df_tubing_with_overburden = df_tubing_in_reservoir
+    df_tubing_with_overburden["SEG"] = start_segment + np.arange(df_tubing_with_overburden.shape[0])
+    df_tubing_with_overburden["SEG2"] = df_tubing_with_overburden["SEG"]
+    df_tubing_with_overburden["BRANCH"] = branch_no
+    df_tubing_with_overburden.reset_index(drop=True, inplace=True)
+    # set out-segment to be successive.
+    # The first item will be updated in connect_lateral
