@@ -568,3 +568,17 @@ class CreateOutput:
                 logger.info("creating schematics: %s.pdf", figure_name)
             elif show_figure and figure_name is None:
                 raise ValueError("Cannot show figure without filename supplied.")
+        self.fix_printing()
+        self.print_per_well()
+
+    def make_completor_header(self) -> str:
+        """Print header note."""
+        header = f"{'-' * 100}\n"
+        header += f"-- Output from completor {self.version}\n"
+        try:
+            header += f"-- Case file : {self.case_path}\n"
+        except AttributeError:
+            header += "-- Case file : No path found \n"
+            logger.warning("Could not resolve case-file path to output file")
+        header += f"-- Schedule file : {self.schedule_path}\n"
+
