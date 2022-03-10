@@ -102,3 +102,5 @@ def test_mix_multibranch(tmpdir):
     """
     with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as f:
         schedule_file = f.read()
+    true_file = Path(_TESTDIR / "wb_perf_mix_multibranch.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
