@@ -166,3 +166,7 @@ class CreateWells:
                     "'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', 0 for 'CELLS', positive number for 'FIX'."
                 )
         else:
+            raise ValueError(
+                f"Unrecognized type of '{self.case.segment_length}' in "
+                "SEGMENTLENGTH keyword. The keyword must either be float or string."
+            )
