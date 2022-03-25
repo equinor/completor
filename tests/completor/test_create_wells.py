@@ -84,3 +84,5 @@ SEGMENTLENGTH
     assert well.method == SegmentCreationMethod.CELLS
 
     with pytest.raises(ValueError):
+        well = replace_segment_length_value(base_case, "NON-VALID-INPUT")
+        assert well.method is None
