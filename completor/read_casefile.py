@@ -285,3 +285,53 @@ class ReadCasefile:
             self.joint_length = float(self.content[start_index + 1])
             if self.joint_length <= 0:
                 logger.warning("Invalid joint length. It is set to default 12.0 m")
+                self.joint_length = 12.0
+        else:
+            logger.info("No joint length is defined. It is set to default 12.0 m")
+
+    def read_segment_length(self) -> None:
+        """
+        Read the SEGMENTLENGTH keyword in the case file.
+
+        Raises:
+            SystemExit: If SEGMENTLENGTH is not float or string.
+
+        """
+        start_index, end_index = self.locate_keyword("SEGMENTLENGTH")
+        if end_index == start_index + 2:
+            try:
+                self.segment_length = float(self.content[start_index + 1])
+                # 'Fix' method, if value is positive
+                if self.segment_length > 0.0:
+                    logger.info("Segments are defined per %s meters.", self.segment_length)
+                # 'User' method if value is negative
+                elif self.segment_length < 0.0:
+                    logger.info(
+                        "Segments are defined based on the COMPLETION keyword. "
+                        "Attempting to pick segments' measured depth from .case file."
+                    )
+                # 'Cells' method if value is zero
+                elif self.segment_length == 0:
+                    logger.info("Segments are defined based on the grid dimensions.")
+            except ValueError:
+                try:
+                    self.segment_length = str(self.content[start_index + 1])
+                    # 'Welsegs' method
+                    if "welsegs" in self.segment_length.lower() or "infill" in self.segment_length.lower():
+                        logger.info(
+                            "Segments are defined based on the WELSEGS keyword. "
+                            "Retaining the original tubing segment structure."
+                        )
+                    # 'User' method if value is negative
+                    elif "user" in self.segment_length.lower():
+                        logger.info(
+                            "Segments are defined based on the COMPLETION keyword. "
+                            "Attempting to pick segments' measured depth from casefile."
+                        )
+                    # 'Cells' method
+                    elif "cell" in self.segment_length.lower():
+                        logger.info("Segment lengths are created based on the grid dimensions.")
+                except ValueError as err:
+                    raise abort("SEGMENTLENGTH takes float or string") from err
+        else:
+            # 'Cells' method if value is 0.0 or undefined
