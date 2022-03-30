@@ -208,3 +208,25 @@ def visualize_well(
         min_md = min(df_well["TUB_MD"].to_numpy())
     else:
         raise TypeError(f"segment_length has invalid type ({type(segment_length)})")
+    for lateral_idx, lateral in enumerate(laterals):
+        df_this_well = df_well[df_well["LATERAL"] == lateral]
+        df_this_reservoir = df_reservoir[df_reservoir["LATERAL"] == lateral]
+        axs = figure.add_subplot(len(laterals), 1, lateral_idx + 1)
+        axs.get_yaxis().set_visible(False)
+        axs.set_title(f" Well : {well_name} : Lateral : {lateral}")
+        ax_twinx = axs.twinx()
+        axs.tick_params(which="both", direction="in")
+        ax_twinx.tick_params(which="both", direction="in")
+        # Tubing layer
+        axs = visualize_tubing(axs, df_this_well)
+        # Device / screen layer
+        axs = visualize_device(axs, df_this_well)
+        # Annulus layer
+        axs = visualize_annulus(axs, df_this_well)
+        # Reservoir layer
+        axs, ax_twinx = visualize_reservoir(axs, ax_twinx, df_this_reservoir)
+        # print annotation in the plot
+        axs, ax_twinx = visualize_annotation(axs, ax_twinx, max_md, min_md)
+    figure.subplots_adjust(hspace=0.5, wspace=0.5)
+    figure.set_size_inches(18, 3 * len(laterals))
+    return figure
