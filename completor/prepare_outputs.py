@@ -511,3 +511,232 @@ def prepare_annulus_layer(
             try:
                 df_branch_downstream = df_branch.iloc[0 : idx_connection[0], :]
                 df_branch_upstream = df_branch.iloc[idx_connection[0] :,]
+            except TypeError:
+                raise abort(
+                    "Most likely error is that Completor cannot have "
+                    "open annulus above top reservoir with"
+                    " zero valves pr joint. Please contact user support"
+                    " if this is not the case."
+                )
+            # downstream part
+            df_annulus_downstream = pd.DataFrame()
+            df_annulus_downstream["SEG"] = start_segment + np.arange(df_branch_downstream.shape[0])
+            df_annulus_downstream["SEG2"] = df_annulus_downstream["SEG"]
+            df_annulus_downstream["BRANCH"] = start_branch
+            df_annulus_downstream["OUT"] = df_annulus_downstream["SEG"] + 1
+            df_annulus_downstream["MD"] = df_branch_downstream["TUB_MD"].to_numpy() + annulus_length
+            df_annulus_downstream["TVD"] = df_branch_downstream["TUB_TVD"].to_numpy()
+            df_annulus_downstream["DIAM"] = df_branch_downstream["OUTER_DIAMETER"].to_numpy()
+            df_annulus_downstream["ROUGHNESS"] = df_branch_downstream["ROUGHNESS"].to_numpy()
+
+            # no WSEGLINK in the downstream part because
+            # no annulus segment have connection to
+            # the device segment. in case you wonder why :)
+
+            # upstream part
+            # update the start segment and start branch
+            start_segment = max(df_annulus_downstream["SEG"]) + 1
+            start_branch = max(df_annulus_downstream["BRANCH"]) + 1
+            # create dataframe for upstream part
+            df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
+                df_branch_upstream, df_active, df_device, start_branch, annulus_length, start_segment, well_name
+            )
+            # combine the two dataframe upstream and downstream
+            df_annulus_upstream = pd.concat([df_annulus_downstream, df_annulus_upstream])
+
+        # combine annulus and wseglink dataframe
+        if izone == 0:
+            df_annulus = df_annulus_upstream.copy(deep=True)
+            df_wseglink = df_wseglink_upstream.copy(deep=True)
+        else:
+            df_annulus = pd.concat([df_annulus, df_annulus_upstream])
+            df_wseglink = pd.concat([df_wseglink, df_wseglink_upstream])
+
+    if df_wseglink.shape[0] > 0:
+        df_wseglink = df_wseglink[["WELL", "ANNULUS", "DEVICE"]]
+        df_wseglink["ANNULUS"] = df_wseglink["ANNULUS"].astype(np.int64)
+        df_wseglink["DEVICE"] = df_wseglink["DEVICE"].astype(np.int64)
+        df_wseglink[""] = "/"
+
+    if df_annulus.shape[0] > 0:
+        df_annulus[""] = "/"
+    return df_annulus, df_wseglink
+
+
+def calculate_upstream(
+    df_branch: pd.DataFrame,
+    df_active: pd.DataFrame,
+    df_device: pd.DataFrame,
+    start_branch: int,
+    annulus_length: float,
+    start_segment: int,
+    well_name: str,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Calculate upstream for annulus and wseglink.
+
+    Args:
+        df_branch: The well for current annulus zone
+        df_active: Active segments (NDEVICES > 0 or DEVICETYPE is PERF)
+        df_device: Device layer
+        start_branch: Start branch number
+        annulus_length: Annulus segment length increment (default 0.1)
+        start_segment: Start segment number of annulus
+        well_name: Well name
+
+    Returns:
+        Annulus upstream and wseglink upstream
+    """
+
+    df_annulus_upstream = pd.DataFrame()
+    df_annulus_upstream["SEG"] = start_segment + np.arange(df_branch.shape[0])
+    df_annulus_upstream["SEG2"] = df_annulus_upstream["SEG"]
+    df_annulus_upstream["BRANCH"] = start_branch
+    out_segment = df_annulus_upstream["SEG"].to_numpy() - 1
+    # determining the outlet segment of the annulus segment
+    # if the annulus segment is not the most downstream which has connection
+    # then the outlet is its adjacent annulus segment
+    device_segment = get_outlet_segment(
+        df_branch["TUB_MD"].to_numpy(), df_device["MD"].to_numpy(), df_device["SEG"].to_numpy()
+    )
+    # but for the most downstream annulus segment
+    # its outlet is the device segment
+    out_segment[0] = device_segment[0]
+    # determining segment position
+    md_ = df_branch["TUB_MD"].to_numpy() + annulus_length
+    md_[0] = md_[0] + annulus_length
+    df_annulus_upstream["OUT"] = out_segment
+    df_annulus_upstream["MD"] = md_
+    df_annulus_upstream["TVD"] = df_branch["TUB_TVD"].to_numpy()
+    df_annulus_upstream["DIAM"] = df_branch["OUTER_DIAMETER"].to_numpy()
+    df_annulus_upstream["ROUGHNESS"] = df_branch["ROUGHNESS"].to_numpy()
+    device_segment = get_outlet_segment(
+        df_active["TUB_MD"].to_numpy(), df_device["MD"].to_numpy(), df_device["SEG"].to_numpy()
+    )
+    annulus_segment = get_outlet_segment(
+        df_active["TUB_MD"].to_numpy(), df_annulus_upstream["MD"].to_numpy(), df_annulus_upstream["SEG"].to_numpy()
+    )
+    outlet_segment = get_outlet_segment(
+        df_active["TUB_MD"].to_numpy(), df_annulus_upstream["MD"].to_numpy(), df_annulus_upstream["OUT"].to_numpy()
+    )
+    df_wseglink_upstream = as_data_frame(
+        WELL=[well_name] * device_segment.shape[0],
+        ANNULUS=annulus_segment,
+        DEVICE=device_segment,
+        OUTLET=outlet_segment,
+    )
+    # basically WSEGLINK is only for those segments
+    # whose its outlet segment is not a device segment
+    df_wseglink_upstream = df_wseglink_upstream[df_wseglink_upstream["DEVICE"] != df_wseglink_upstream["OUTLET"]]
+    return df_annulus_upstream, df_wseglink_upstream
+
+
+def connect_compseg_icv(
+    df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion_table: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Connect COMPSEGS with the correct depth due to ICV segmenting combination.
+
+    Args:
+        df_reservoir: The df_reservoir from class object CreateWells
+        df_device: DataFrame from function prepare_device_layer
+                    for this well and lateral
+        df_annulus: DataFrame from function prepare_annulus_layer
+                    for this well and lateral
+        df_completion_table: DataFrame
+
+    Returns:
+        df_compseg_device, df_compseg_annulus
+    """
+
+    df_temp = df_completion_table[
+        (df_completion_table["NVALVEPERJOINT"] > 0.0) | (df_completion_table["DEVICETYPE"] == "PERF")
+    ]
+    df_completion_table_clean = df_temp[(df_temp["ANNULUS"] != "PA") & (df_temp["DEVICETYPE"] == "ICV")]
+    df_res = df_reservoir.copy(deep=True)
+
+    df_res["MD_MARKER"] = df_res["MD"]
+    starts = df_completion_table_clean["STARTMD"].apply(lambda x: max(x, df_res["STARTMD"].iloc[0]))
+    ends = df_completion_table_clean["ENDMD"].apply(lambda x: min(x, df_res["ENDMD"].iloc[-1]))
+    for start, end in zip(starts, ends):
+        condition = f"@df_res.MD >= {start} and @df_res.MD <= {end} and @df_res.DEVICETYPE == 'ICV'"
+        func = float(start + end) / 2
+        column_to_modify = "MD_MARKER"
+        column_index = df_res.query(condition).index
+        df_res.loc[column_index, column_to_modify] = func
+
+    df_compseg_device = pd.merge_asof(
+        left=df_res, right=df_device, left_on="MD_MARKER", right_on="MD", direction="nearest"
+    )
+    df_compseg_annulus = pd.DataFrame()
+    if (df_completion_table["ANNULUS"] == "OA").any():
+        df_compseg_annulus = pd.merge_asof(
+            left=df_res, right=df_annulus, left_on="MD_MARKER", right_on="MD", direction="nearest"
+        )
+    return df_compseg_device, df_compseg_annulus
+
+
+def prepare_compsegs(
+    well_name: str,
+    lateral: int,
+    df_reservoir: pd.DataFrame,
+    df_device: pd.DataFrame,
+    df_annulus: pd.DataFrame,
+    df_completion_table: pd.DataFrame,
+    segment_length: float | str,
+) -> pd.DataFrame:
+    """
+    Prepare output for COMPSEGS.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_reservoir: The df_reservoir from class object CreateWells
+        df_device: DataFrame from function prepare_device_layer
+                   for this well and this lateral
+        df_annulus: DataFrame from function prepare_annulus_layer
+                    for this well and this lateral
+        df_completion_table: DataFrame
+        segment_length: Segment length
+
+    Returns:
+        COMPSEGS DataFrame
+
+    Raises:
+        SystemExit: If dataframes are unable to merge correctly.
+    """
+    # filter for this lateral
+
+    df_reservoir = df_reservoir[df_reservoir["WELL"] == well_name]
+    df_reservoir = df_reservoir[df_reservoir["LATERAL"] == lateral]
+    # compsegs is only for those who are either:
+    # 1. open perforation in the device segment
+    # 2. has number of device > 0
+    # 3. it is connected in the annular zone
+    df_reservoir = df_reservoir[
+        (df_reservoir["ANNULUS_ZONE"] > 0) | (df_reservoir["NDEVICES"] > 0) | (df_reservoir["DEVICETYPE"] == "PERF")
+    ]
+    # sort device dataframe by MD to be used for pd.merge_asof
+    if df_reservoir.shape[0] == 0:
+        return pd.DataFrame()
+    df_device = df_device.sort_values(by=["MD"])
+    if isinstance(segment_length, str):
+        if segment_length.upper() == "USER":
+            segment_length = -1.0
+    icv_segmenting = (
+        df_reservoir["DEVICETYPE"].nunique() > 1
+        and (df_reservoir["DEVICETYPE"] == "ICV").any()
+        and not df_reservoir["NDEVICES"].empty
+    )
+    if df_annulus.empty:
+        # meaning there are no annular zones then
+        # all cells in this lateral and this well
+        # are connected to the device segment
+        if isinstance(segment_length, float):
+            if segment_length >= 0:
+                df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=["MD"], direction="nearest")
+            else:
+                # Ensure that tubing segment boundaries as described in the case
+                # file are honored.
+                # Associate reservoir cells with tubing segment midpoints using
+                # markers
