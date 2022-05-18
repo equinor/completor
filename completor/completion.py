@@ -685,3 +685,70 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     columns = ["DEVICETYPE", "DEVICENUMBER"]
     try:
         df_well = pd.merge(df_well, df_device, how="left", on=columns)
+    except KeyError as err:
+        if "'DEVICETYPE'" in str(err):
+            raise ValueError(f"Missing keyword 'DEVICETYPE {device_type}' in input files.") from err
+        raise err
+    if device_type == "VALVE":
+        # rescale the Cv
+        # because no scaling factor in WSEGVALV eclipse
+        df_well["CV"] = -df_well["CV"] / df_well["SCALINGFACTOR"]
+    elif device_type == "DAR":
+        # rescale the Cv
+        # because no scaling factor in WSEGVALV eclipse
+        df_well["CV_DAR"] = -df_well["CV_DAR"] / df_well["SCALINGFACTOR"]
+    return df_well
+
+
+def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
+    """
+    Correct the annulus zone.
+
+    If there are no connections to the tubing in the annulus zone then there is no
+    annulus zone.
+
+    Args:
+        df_well: Must contain ANNULUS_ZONE, NDEVICES, and DEVICETYPE
+
+    Returns:
+        Updated DataFrame with corrected annulus zone
+
+    The DataFrame df_well has the format shown in the following function:
+    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
+    """
+    zones = df_well["ANNULUS_ZONE"].unique()
+    for zone in zones:
+        if zone == 0:
+            continue
+        df_zone = df_well[df_well["ANNULUS_ZONE"] == zone]
+        df_zone_device = df_zone[(df_zone["NDEVICES"].to_numpy() > 0) | (df_zone["DEVICETYPE"].to_numpy() == "PERF")]
+        if df_zone_device.shape[0] == 0:
+            df_well["ANNULUS_ZONE"].replace(zone, 0, inplace=True)
+    return df_well
+
+
+def connect_cells_to_segments(
+    df_well: pd.DataFrame, df_reservoir: pd.DataFrame, df_tubing_segments: pd.DataFrame, method: MethodType
+) -> pd.DataFrame:
+    """
+    Connect cells to segments.
+
+    Args:
+        df_well: Segment table. Must contain column ``TUB_MD``
+        df_reservoir: COMPSEGS table. Must contain columns ``STARTMD`` and ``ENDMD``
+        df_tubing_segments: Tubing segment dataframe. Must contain columns
+                            ``STARTMD`` and ``ENDMD``
+        method: Segmentation method indicator. Must contain
+                'user', 'fix', 'welsegs', or 'cells'.
+
+
+    Returns:
+        Merged DataFrame
+
+    | The DataFrame formats in this function are shown in
+    | df_well (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
+    | df_reservoir (:ref:`create_wells.CreateWells.select_well <df_reservoir>`)
+    """
+    # Calculate mid cell MD
+    df_reservoir["MD"] = (df_reservoir["STARTMD"] + df_reservoir["ENDMD"]) * 0.5
+    if method == SegmentCreationMethod.USER:
