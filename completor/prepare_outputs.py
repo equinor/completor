@@ -133,3 +133,29 @@ def dataframe_tostring(
             pass
     if output_string is None:
         return ""
+    return output_string
+
+
+def get_outlet_segment(
+    target_md: npt.NDArray[np.float64] | list[float],
+    reference_md: npt.NDArray[np.float64] | list[float],
+    reference_segment_number: npt.NDArray[np.float64] | list[int],
+) -> npt.NDArray[np.float64]:
+    """
+    Find the outlet segment in the other layers.
+
+    For example: Find the corresponding tubing segment of the device segment,
+    or the corresponding device segment of the annulus segment.
+
+    Args:
+        target_md: Target measured depth
+        reference_md: Reference measured depth
+        reference_segment_number: Reference segment number
+
+    Returns:
+        The outlet segments
+    """
+    df_target_md = pd.DataFrame(target_md, columns=["MD"])
+    df_reference = pd.DataFrame(np.column_stack((reference_md, reference_segment_number)), columns=["MD", "SEG"])
+    df_reference["SEG"] = df_reference["SEG"].astype(np.int64)
+    df_reference.sort_values(by=["MD"], inplace=True)
