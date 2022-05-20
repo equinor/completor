@@ -890,3 +890,68 @@ def test_lumping_segment_1():
 
 
 def test_lumping_segment_2():
+    """
+    Test lumping_segment lumps the additional segment only with
+    original segment containing an annulus zone.
+    """
+    df_well = pd.DataFrame(
+        [
+            [1.0, 0, "OriginalSegment"],
+            [2.0, 1, "OriginalSegment"],
+            [3.0, 1, "AdditionalSegment"],
+            [4.0, 1, "OriginalSegment"],
+        ],
+        columns=["NDEVICES", "ANNULUS_ZONE", "SEGMENT_DESC"],
+    )
+    df_true = pd.DataFrame(
+        [
+            [1.0, 0, "OriginalSegment"],
+            [5.0, 1, "OriginalSegment"],
+            [4.0, 1, "OriginalSegment"],
+        ],
+        columns=["NDEVICES", "ANNULUS_ZONE", "SEGMENT_DESC"],
+    )
+
+    df_test = completion.lumping_segments(df_well)
+    pd.testing.assert_frame_equal(df_test, df_true)
+
+
+def test_skin():
+    """Test handle_compdat with a mix of values in COMPDAT, SKIN column."""
+    compdat = [
+        #                                                       SKIN
+        ["A1", "3", "6", "1", "1", "OPEN", "1*", "1", "2", "2", "0.0", "1*", "X", "1"],
+        ["A1", "2", "6", "1", "1", "OPEN", "1*", "8", "2", "1", "1*", "1*", "X", "1"],
+        ["A1", "2", "6", "2", "2", "OPEN", "1*", "2", "2", "4", "5.5", "1*", "X", "1"],
+        ["A1", "2", "6", "3", "3", "OPEN", "1*", "1", "2", "2", "1*", "1*", "X", "1"],
+        ["A1", "1", "6", "3", "3", "OPEN", "1*", "9", "2", "1", "2", "1*", "X", "1"],
+    ]
+
+    df_true = pd.DataFrame(
+        [
+            #                                               SKIN
+            ["A1", 3, 6, 1, 1, "OPEN", "1*", 1.0, 2.0, 2.0, 0.0, "1*", "X", 1.0],
+            ["A1", 2, 6, 1, 1, "OPEN", "1*", 8.0, 2.0, 1.0, 0.0, "1*", "X", 1.0],
+            ["A1", 2, 6, 2, 2, "OPEN", "1*", 2.0, 2.0, 4.0, 5.5, "1*", "X", 1.0],
+            ["A1", 2, 6, 3, 3, "OPEN", "1*", 1.0, 2.0, 2.0, 0.0, "1*", "X", 1.0],
+            ["A1", 1, 6, 3, 3, "OPEN", "1*", 9.0, 2.0, 1.0, 2.0, "1*", "X", 1.0],
+        ],
+        columns=[
+            "WELL",
+            "I",
+            "J",
+            "K",
+            "K2",
+            "STATUS",
+            "SATNUM",
+            "CF",
+            "DIAM",
+            "KH",
+            "SKIN",
+            "DFACT",
+            "COMPDAT_DIRECTION",
+            "RO",
+        ],
+    )
+    well_schedule = completion.WellSchedule(["A1"])
+    well_schedule.handle_compdat(compdat)
