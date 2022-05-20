@@ -101,3 +101,4 @@ def test_mix_multibranch(tmpdir):
     /
     """
     with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as f:
+        schedule_file = f.read()
