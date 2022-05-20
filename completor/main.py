@@ -448,3 +448,6 @@ def create(
             return chunks, case, schedule, wells
         else:
             raise ValueError(
+                "Inconsistent case and input schedule files. "
+                "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
+            )
