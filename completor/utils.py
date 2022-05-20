@@ -155,3 +155,6 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
 
     Returns:
         A list with the cleaned lines
+    """
+    clean_lines = []
+    for line in lines:
