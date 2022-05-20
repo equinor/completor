@@ -224,3 +224,7 @@ def test_fix_welsegs():
         ],
         columns=["TUBINGSEGMENT", "TUBINGOUTLET", "TUBINGTVD", "TUBINGMD"],
     )
+
+    df_header, df_content = fix_welsegs(df_header, df_content)
+    pd.testing.assert_frame_equal(df_header_true, df_header)
+    pd.testing.assert_frame_equal(df_content_true, df_content)
