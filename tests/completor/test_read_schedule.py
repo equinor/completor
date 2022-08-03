@@ -128,3 +128,16 @@ ITEM11,ITEM12
     true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_welsegs1 = pd.read_csv(true_welsegs1, sep=",", dtype=object)
     true_welsegs1 = fr.remove_string_characters(true_welsegs1)
+    true_welsegs1 = true_welsegs1.astype({"SEGMENTTVD": np.float64, "SEGMENTMD": np.float64})
+    true_well4 = str(_TESTDIR / "welsegs_well4.true")
+    true_well4 = pd.read_csv(true_well4, sep=",", dtype=object)
+    true_well4 = fr.remove_string_characters(true_well4)
+    true_well4 = true_well4.astype(
+        {
+            "TUBINGSEGMENT": np.int64,
+            "TUBINGSEGMENT2": np.int64,
+            "TUBINGBRANCH": np.int64,
+            "TUBINGOUTLET": np.int64,
+            "TUBINGMD": np.float64,
+            "TUBINGTVD": np.float64,
+            "TUBINGROUGHNESS": np.float64,
