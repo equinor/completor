@@ -20,3 +20,8 @@ REQUIREMENTS = [
     "ert",
     "Pillow>=10.0.1",  # not directly required, pinned to avoid a vulnerability
     "pydantic>=2.4.2",
+]
+
+TEST_REQUIREMENTS = [
+    "autoapi",
+    "black",
