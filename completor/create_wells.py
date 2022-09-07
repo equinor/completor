@@ -370,3 +370,135 @@ class CreateWells:
         # as Eclipse does.
         self.df_reservoir.drop_duplicates(subset="STARTMD", keep="last", inplace=True)
         self.df_reservoir.reset_index(inplace=True)
+
+    def well_trajectory(self) -> None:
+        """
+        Create trajectory DataFrame relations between MD and TVD.
+
+        The function uses the class property DataFrames df_welsegs_header
+        and df_welsegs_content with the following formats:
+
+        .. list-table:: df_welsegs_header (WELSEGS header)
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMN
+             - TYPE
+           * - WELL
+             - str
+           * - SEGMENTTVD
+             - float
+           * - SEGMENTMD
+             - float
+           * - WBVOLUME
+             - float
+           * - INFOTYPES
+             - str
+           * - PDROPCOMP
+             - str
+           * - MPMODEL
+             - str
+           * - ITEM8
+             - float
+           * - ITEM9
+             - float
+           * - ITEM10
+             - float
+           * - ITEM11
+             - float
+           * - ITEM12
+             - float
+
+        .. list-table:: df_welsegs_content (WELSEGS record)
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - TUBINGSEGMENT
+             - int
+           * - TUBINGSEGMENT2
+             - int
+           * - TUBINGBRANCH
+             - int
+           * - TUBINGOUTLET
+             - int
+           * - TUBINGMD
+             - float
+           * - TUBINGTVD
+             - float
+           * - TUBINGID
+             - float
+           * - TUBINGROUGHNESS
+             - float
+           * - CROSS
+             - float
+           * - VSEG
+             - float
+           * - ITEM11
+             - float
+           * - ITEM12
+             - float
+           * - ITEM13
+             - float
+           * - ITEM14
+             - float
+           * - ITEM15
+             - float
+
+        The function sets the class property df_mdtvd with the following format
+
+        .. _df_mdtvd:
+        .. list-table:: df_mdtvd
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - MD
+             - float
+           * - TVD
+             - float
+
+        See the Eclipse Reference Manual for further details on column and row
+        definitions.
+        """
+        self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
+
+    def define_annulus_zone(self) -> None:
+        """
+        Define an annulus zone if specified.
+
+        The function adjusts the class property DataFrames df_completion,
+        with the following format:
+
+        .. list-table:: df_completion
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - WELL
+             - str
+           * - BRANCH
+             - int
+           * - STARTMD
+             - float
+           * - ENDMD
+             - float
+           * - INNER_ID
+             - float
+           * - OUTER_ID
+             - float
+           * - ROUGHNESS
+             - float
+           * - ANNULUS
+             - str
+           * - NVALVEPERJOINT
+             - float
+           * - DEVICETYPE
+             - str
+           * - ANNULUS_ZONE
+             - int
+        """
+        self.df_completion = completion.define_annulus_zone(self.df_completion)
