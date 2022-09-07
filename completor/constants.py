@@ -64,3 +64,5 @@ class SegmentCreationMethod(Enum):
         Returns:
             bool: Whether enums are equal
 
+        Example:
+            >>>SegmentCreationMethod.CELLS == "CELLS"
