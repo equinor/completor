@@ -766,3 +766,110 @@ def connect_cells_to_segments(
             df_res.loc[df_res["MD"].between(start_md, end_md), "MARKER"] = marker
             marker += 1
         # Merge
+        tmp = df_res.merge(df_wel, on=["MARKER"])
+        return tmp.drop(["MARKER"], axis=1, inplace=False)
+
+    return pd.merge_asof(left=df_reservoir, right=df_well, left_on=["MD"], right_on=["TUB_MD"], direction="nearest")
+
+
+class WellSchedule:
+    """
+    A collection of all the active multi-segment wells.
+
+    Attributes:
+        msws: Multisegmentet well segments.
+        active_wells: The active wells for completor to work on.
+
+    Args:
+        active_wells: Active multi-segment wells defined in a case file
+
+    """
+
+    def __init__(self, active_wells: npt.NDArray[np.unicode_] | list[str]):
+        """Initialize WellSchedule."""
+        self.msws: dict[str, dict] = {}
+        self.active_wells = np.array(active_wells)
+
+    def set_welspecs(self, records: list[list[str]]) -> None:
+        """
+        Convert a WELSPECS record set to a Pandas DataFrame.
+
+        * Sets DataFrame column titles
+        * Formats column values
+        * Pads missing columns at end of the DataFrame with default values (1*)
+
+        Args:
+            recs: A WELSPECS record set
+
+        Returns:
+            Record of inactive wells (in ``self.msws``)
+
+        The function creates the class property DataFrame
+        ``msws[well_name]['welspecs']`` with the following format:
+
+        .. _welspecs_format:
+        .. list-table:: ``msws[well_name]['welspecs']``
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - WELL
+             - str
+           * - GROUP
+             - str
+           * - I
+             - int
+           * - J
+             - int
+           * - BHP_DEPTH
+             - float
+           * - PHASE
+             - str
+           * - DR
+             - object
+           * - FLAG
+             - object
+           * - SHUT
+             - object
+           * - CROSS
+             - object
+           * - PRESSURETABLE
+             - object
+           * - DENSCAL
+             - object
+           * - REGION
+             - object
+           * - ITEM14
+             - object
+           * - ITEM15
+             - object
+           * - ITEM16
+             - object
+           * - ITEM17
+             - object
+
+        """
+        # make df
+        columns = [
+            "WELL",
+            "GROUP",
+            "I",
+            "J",
+            "BHP_DEPTH",
+            "PHASE",
+            "DR",
+            "FLAG",
+            "SHUT",
+            "CROSS",
+            "PRESSURETABLE",
+            "DENSCAL",
+            "REGION",
+            "ITEM14",
+            "ITEM15",
+            "ITEM16",
+            "ITEM17",
+        ]
+        ncols = len(columns)
+        _records = records[0] + ["1*"] * (ncols - len(records[0]))  # pad with default values (1*)
+        df = pd.DataFrame(np.array(_records).reshape((1, ncols)), columns=columns)
