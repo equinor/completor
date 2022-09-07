@@ -36,3 +36,32 @@ def open_files_run_create(
         main.create(case, schedule, output, show_figure)
     else:
         main.create(case, schedule, output)
+
+
+def assert_results(true_file: str | Path, test_file: str | Path, check_exact=False, relative_tolerance=0.0001) -> None:
+    """
+    Assert the final Completor output.
+
+    Arguments:
+        true_file: True solution file
+        test_file: Completor output file
+        check_exact: Whether to compare number exactly
+        relative_tolerance: Relative tolerance, only used when check_exact is False
+
+    Note1: The df's are sorted so that the order of input is *not* important.
+        Also, the index is set to well so that the original order is not used as index.
+    Note2: We do the comparison numerically, so we dont care about 4th decimal place.
+        Use global variables CHECK_EXACT and N_DIGITS for this purpose.
+    Note3: WELSPECS is not included in the comparison since this keyword is left
+        untouched by completor.
+    """
+
+    if isinstance(true_file, Path):
+        with open(true_file, encoding="utf-8") as file:
+            true_output = ReadSchedule(file.read())
+    else:
+        true_output = ReadSchedule(true_file)
+
+    # test COMPDAT, COMPSEGS and WELSEGS
+    with open(test_file, encoding="utf-8") as file:
+        test_output = ReadSchedule(file.read())
