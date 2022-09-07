@@ -549,3 +549,7 @@ def main() -> None:
             clean_file_lines(schedule_file_content.splitlines()), ["WELSPECS", "WELSEGS", "COMPDAT", "COMPSEGS"]
         )
 
+    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, "OUTFILE")
+
+    if inputs.outputfile is None:
+        if inputs.schedulefile is None:
