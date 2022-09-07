@@ -76,3 +76,28 @@ def as_data_frame(args: dict[str, Any] | None = None, **kwargs) -> pd.DataFrame:
         data[key] = value
 
     return data
+
+
+@overload
+def log_and_raise_exception(message: str, kind: type = ..., throw: Literal[True] = ...) -> NoReturn: ...
+
+
+@overload
+def log_and_raise_exception(message: str, kind: type = ..., throw: Literal[False] = ...) -> BaseException: ...
+
+
+def log_and_raise_exception(message: str, kind: type = ValueError, throw: bool = False) -> BaseException | None:
+    """
+    Log and throw an exception.
+
+    Arguments:
+        message: The message to be logged, and given to the exception
+        kind: The type of exception to be thrown
+        throw: Flag to toggle whether this function actually raises the exception or not
+
+    Raises:
+        Exception: In general it can be any exception
+        ValueError: This is the default exception
+    """
+    logger.error(message)
+    if not isinstance(kind, (Exception, BaseException)):
