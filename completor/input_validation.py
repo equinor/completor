@@ -288,3 +288,11 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
 
     The format of the WSEGAICV table DataFrame is shown in
     ``read_casefile.ReadCasefile.read_wsegaicv``.
+    """
+    # Fix table format
+    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    # left out devicenumber because it has been formatted as integer
+    columns = df_temp.columns.to_numpy()[1:]
+    df_temp[columns] = df_temp[columns].astype(np.float64)
+    # Create ID device column
+    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "AICV"))
