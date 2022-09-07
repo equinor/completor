@@ -146,3 +146,6 @@ ITEM11,ITEM12
     true_welsegs1_well4 = true_welsegs1[true_welsegs1["WELL"] == "WELL4"]
     true_welsegs1_well4.reset_index(drop=True, inplace=True)
 
+    # get the program reading
+    well4_first, well4_second = _SCHEDULE.get_welsegs("WELL4", 1)
+
