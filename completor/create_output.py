@@ -204,3 +204,217 @@ class CreateOutput:
        * - L
          - str
        * - AC_MAX
+         - float
+
+    .. _df_wsegsicd:
+    .. list-table:: df_wsegsicd
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - SEG
+         - int
+       * - SEG2
+         - int
+       * - ALPHA
+         - float
+       * - SF
+         - float
+       * - RHO
+         - float
+       * - VIS
+         - float
+       * - WCT
+         - float
+
+    .. _df_wsegaicd:
+    .. list-table:: df_wsegaicd
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - SEG
+         - int
+       * - SEG2
+         - int
+       * - ALPHA
+         - float
+       * - SF
+         - float
+       * - RHO
+         - float
+       * - VIS
+         - float
+       * - DEF
+         - object
+       * - X
+         - float
+       * - Y
+         - float
+       * - FLAG
+         - object
+       * - A
+         - float
+       * - B
+         - float
+       * - C
+         - float
+       * - D
+         - float
+       * - E
+         - float
+       * - F
+         - float
+
+    .. _df_wsegdar:
+    .. list-table:: df_wsegdar
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - SEG
+         - int
+       * - CV_DAR
+         - float
+       * - AC_OIL
+         - float
+       * - AC_GAS
+         - float
+       * - AC_WATER
+         - float
+       * - AC_MAX
+         - float
+       * - WVF_LCF_DAR
+         - float
+       * - WVF_HCF_DAR
+         - float
+       * - GVF_LCF_DAR
+         - float
+       * - GVF_HCF_DAR
+         - float
+
+    .. _df_wsegaicv:
+    .. list-table:: df_wsegaicv
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - SEG
+         - int
+       * - SEG2
+         - int
+       * - ALPHA_MAIN
+         - float
+       * - SF
+         - float
+       * - RHO
+         - float
+       * - VIS
+         - float
+       * - DEF
+         - object
+       * - X_MAIN
+         - float
+       * - Y_MAIN
+         - float
+       * - FLAG
+         - object
+       * - A_MAIN
+         - float
+       * - B_MAIN
+         - float
+       * - C_MAIN
+         - float
+       * - D_MAIN
+         - float
+       * - E_MAIN
+         - float
+       * - F_MAIN
+         - float
+       * - ALPHA_PILOT
+         - float
+       * - X_PILOT
+         - float
+       * - Y_PILOT
+         - float
+       * - A_PILOT
+         - float
+       * - B_PILOT
+         - float
+       * - C_PILOT
+         - float
+       * - D_PILOT
+         - float
+       * - E_PILOT
+         - float
+       * - F_PILOT
+         - float
+       * - WCT_AICV
+         - float
+       * - GVF_AICV
+         - float
+
+    .. _df_wsegicv:
+    .. list-table:: df_wsegicv
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - SEG
+         - int
+       * - CV
+         - float
+       * - AC
+         - float
+       * - DEFAULTS
+         - str
+       * - AC_MAX
+         - float
+    """
+
+    def __init__(
+        self,
+        case: ReadCasefile,
+        schedule: WellSchedule,
+        wells: CreateWells,
+        well_name: str,
+        iwell: int,
+        completor_version: str,
+        show_figure: bool = False,
+        figure_name: matplotlib.backends.backend_pdf.PdfPages | None = None,  # type: ignore
+        write_welsegs: bool = True,
+        paths: tuple[str, str] | None = None,
+    ):
+        """
+        Initialize CreateOutput class.
+
+        Args:
+            case: ReadCasefile object
+            schedule: ReadSchedule object
+            wells: CreateWells object
+            completor_version: Completor version information
+            figure_no: Must be set if show_figure
+            show_figure: True if the user wants to create well diagram file
+        """
+        self.case = case
+        self.schedule = schedule
+        self.case_path: str | None
+        self.schedule_path: str | None
+        if paths:
+            self.case_path, self.schedule_path = paths
+        else:
