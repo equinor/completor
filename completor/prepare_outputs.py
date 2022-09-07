@@ -100,3 +100,36 @@ def dataframe_tostring(
     if "WELL" in df_temp.columns:
         df_temp["WELL"] = "'" + df_temp["WELL"].astype(str) + "'"
     output_string = df_temp.to_string(index=False, justify="justify", header=header)
+    if format_column:
+        if formatters is None:
+            formatters = {
+                "ALPHA": "{:.10g}".format,
+                "SF": "{:.10g}".format,
+                "ROUGHNESS": "{:.10g}".format,
+                "CF": "{:.10g}".format,
+                "KH": "{:.10g}".format,
+                "MD": "{:.3f}".format,
+                "TVD": "{:.3f}".format,
+                "STARTMD": "{:.3f}".format,
+                "ENDMD": "{:.3f}".format,
+                "CV_DAR": "{:.10g}".format,
+                "CV": "{:.10g}".format,
+                "AC": "{:.3e}".format,
+                "AC_OIL": "{:.3e}".format,
+                "AC_GAS": "{:.3e}".format,
+                "AC_WATER": "{:.3e}".format,
+                "AC_MAX": "{:.3e}".format,
+                "DEFAULTS": "{:.10s}".format,
+                "WHF_LCF_DAR": "{:.10g}".format,
+                "WHF_HCF_DAR": "{:.10g}".format,
+                "GHF_LCF_DAR": "{:.10g}".format,
+                "GHF_HCF_DAR": "{:.10g}".format,
+                "ALPHA_MAIN": "{:.10g}".format,
+                "ALPHA_PILOT": "{:.10g}".format,
+            }
+        try:
+            output_string = df_temp.to_string(index=False, justify="justify", formatters=formatters, header=header)
+        except ValueError:
+            pass
+    if output_string is None:
+        return ""
