@@ -177,3 +177,34 @@ def visualize_annotation(axs: Axes, ax_twinx: Axes, max_md: float, min_md: float
 
 def visualize_well(
     well_name: str, df_well: pd.DataFrame, df_reservoir: pd.DataFrame, segment_length: float | str
+) -> Figure:
+    """
+    Visualizing well completion schematic.
+
+    Args:
+        well_name: Well name
+        df_well: Well DataFrame
+        df_reservoir: Reservoir DataFrame for the well
+        segment_length: Segment length
+
+    Returns:
+        Matplotlib figure
+
+    | Uses DataFrames with formats as shown in
+    | :ref:`df_reservoir`
+    | :ref:`df_well`
+    """
+    figure = visualization.create_figure()
+    laterals = df_well["LATERAL"].unique()
+    if isinstance(segment_length, float):
+        if segment_length >= 0.0:
+            max_md = max(df_well["TUB_MD"].to_numpy())
+            min_md = min(df_well["TUB_MD"].to_numpy())
+        else:
+            max_md = max(df_reservoir["MD"].to_numpy())
+            min_md = min(df_reservoir["MD"].to_numpy())
+    elif isinstance(segment_length, str):
+        max_md = max(df_well["TUB_MD"].to_numpy())
+        min_md = min(df_well["TUB_MD"].to_numpy())
+    else:
+        raise TypeError(f"segment_length has invalid type ({type(segment_length)})")
