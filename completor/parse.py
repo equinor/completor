@@ -692,3 +692,9 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
     elif isinstance(df, pd.DataFrame):
         if len(columns) == 0:
             iterator: range | list[str] = range(df.shape[1])
+        else:
+            if columns is None:
+                iterator = []  # Makes MyPy happy
+            else:
+                iterator = columns
+        for column in iterator:
