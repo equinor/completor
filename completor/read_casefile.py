@@ -110,3 +110,13 @@ class ReadCasefile:
         self.gp_perf_devicelayer = False
         self.schedule_file = schedule_file
         self.output_file = output_file
+        self.completion_table = pd.DataFrame()
+        self.completion_icv_tubing = pd.DataFrame()
+        self.pvt_table = pd.DataFrame()
+        self.wsegaicd_table = pd.DataFrame()
+        self.wsegsicd_table = pd.DataFrame()
+        self.wsegvalv_table = pd.DataFrame()
+        self.wsegdar_table = pd.DataFrame()
+        self.wsegaicv_table = pd.DataFrame()
+        self.wsegicv_table = pd.DataFrame()
+        self.lat2device = pd.DataFrame()
