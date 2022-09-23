@@ -441,3 +441,43 @@ class CreateOutput:
         self.udq_correlation = ""
         self.udq_parameter: dict[str, str] = {}
         if self.case.completion_table["DEVICETYPE"].isin(["AICV"]).any():
+            self.print_udq = True
+            self.udq_correlation = CORRELATION_UDQ
+
+        # Start printing all wells
+        self.finalprint = self.header
+        # print udq equation if relevant
+        if self.print_udq:
+            self.finalprint += self.udq_correlation
+
+        self.df_reservoir = wells.df_reservoir_all[wells.df_reservoir_all["WELL"] == self.well_name]
+        self.df_well = wells.df_well_all[wells.df_well_all["WELL"] == self.well_name]
+        self.laterals = self.df_well[self.df_well["WELL"] == self.well_name]["LATERAL"].unique()
+
+        """Start printing per well."""
+        self.welsegs_header, _ = self.schedule.get_welsegs(self.well_name, branch=1)
+        self.check_welsegs1()
+        self.print_welsegs = "WELSEGS\n" + po.dataframe_tostring(self.welsegs_header, True) + "\n"
+        self.print_welsegsinit = self.print_welsegs
+        self.print_wseglink = "WSEGLINK\n"
+        self.print_wseglinkinit = self.print_wseglink
+        self.print_compsegs = "COMPSEGS\n" + "'" + self.well_name + "' /\n"
+        self.print_compsegsinit = self.print_compsegs
+        self.print_compdat = "COMPDAT\n"
+        self.print_compdatinit = self.print_compdat
+        self.print_wsegvalv = "WSEGVALV\n"
+        self.print_wsegvalvinit = self.print_wsegvalv
+        self.print_wsegicv = "WSEGVALV\n"
+        self.print_wsegicvinit = self.print_wsegicv
+        self.print_wsegaicd = "WSEGAICD\n"
+        self.print_wsegaicdinit = self.print_wsegaicd
+        self.print_wsegsicd = "WSEGSICD\n"
+        self.print_wsegsicdinit = self.print_wsegsicd
+        self.print_wsegdar = f"""\
+{'-' * 100}
+-- This is how we model DAR technology using sets of ACTIONX keywords.
+-- The segment dP curves changes according to the segment water-
+-- and gas volume fractions at downhole condition.
+-- The value of Cv is adjusted according to the segment length and the number of
+-- devices per joint. The constriction area varies according to values of
+-- volume fractions.
