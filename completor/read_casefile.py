@@ -387,3 +387,239 @@ class ReadCasefile:
             self.minimum_segment_length = val.validate_minimum_segment_length(min_seg_len)
         logger.info("minimum_segment_length is set to %s", self.minimum_segment_length)
 
+    def read_mapfile(self) -> None:
+        """Read the MAPFILE keyword in the case file (if any) into a mapper."""
+        start_index, end_index = self.locate_keyword("MAPFILE")
+        if end_index == start_index + 2:
+            # the content is in between the keyword and the /
+            self.mapfile = parse.remove_string_characters(self.content[start_index + 1])
+            self.mapper = _mapper(self.mapfile)
+        else:
+            self.mapfile = None
+            self.mapper = None
+
+    def read_wsegvalv(self) -> None:
+        """
+        Read the WSEGVALV keyword in the case file.
+
+        Raises:
+            SystemExit: If WESEGVALV is not defined and VALVE is used in COMPLETION. \
+                If the device number is not found. \
+
+        The function uses the class property DataFrame completion_table defined
+        in ``read_completion``.  The function sets the class property DataFrame
+        vsegvalv_table with the following format:
+
+        .. _wsegvalv_table:
+        .. list-table:: wsegvalv_table
+            :widths: 10 10
+            :header-rows: 1
+
+            * - COLUMN
+              - TYPE
+            * - DEVICETYPE
+              - str
+            * - DEVICENUMBER
+              - int
+            * - CV
+              - float
+            * - AC
+              - float
+            * - L
+              - float
+            * - Ac_Max (optional)
+              - float
+
+        """
+        start_index, end_index = self.locate_keyword("WSEGVALV")
+        if start_index == end_index:
+            if "VALVE" in self.completion_table["DEVICETYPE"]:
+                raise abort("WSEGVALV keyword must be defined, " "if VALVE is used in the completion")
+        else:
+            # Table headers
+            header = ["DEVICENUMBER", "CV", "AC", "L"]
+            try:
+                df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
+                df_temp["AC_MAX"] = np.nan
+            except CaseReaderFormatError:
+                header += ["AC_MAX"]
+                df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
+
+            self.wsegvalv_table = val.set_format_wsegvalv(df_temp)
+            device_checks = self.completion_table[self.completion_table["DEVICETYPE"] == "VALVE"][
+                "DEVICENUMBER"
+            ].to_numpy()
+            if not check_contents(device_checks, self.wsegvalv_table["DEVICENUMBER"].to_numpy()):
+                raise abort("Not all device in COMPLETION is specified in WSEGVALV")
+
+    def read_wsegsicd(self) -> None:
+        """
+        Read the WSEGSICD keyword in the case file.
+
+        Raises:
+            SystemExit: If WSEGSICD is not defined and ICD is used in COMPLETION, \
+                Or if the device number is not found. \
+                If not all device in COMPLETION is specified in WSEGSICD.
+
+        The function uses the class property DataFrame completion_table defined
+        in ``read_completion``. The function generates a class property
+        DataFrame wsegsicd_table with the following format:
+
+        .. _wsegsicd_table:
+        .. list-table:: wsegsicd_table
+            :widths: 10 10
+            :header-rows: 1
+
+            * - COLUMN
+              - TYPE
+            * - DEVICETYPE
+              - str
+            * - DEVICENUMBER
+              - int
+            * - STRENGTH
+              - float
+            * - RHOCAL_ICD
+              - float
+            * - VISCAL_ICD
+              - float
+            * - WCUT
+              - float
+
+        """
+        start_index, end_index = self.locate_keyword("WSEGSICD")
+        if start_index == end_index:
+            if "ICD" in self.completion_table["DEVICETYPE"]:
+                raise abort("WSEGSICD keyword must be defined, " "if ICD is used in the completion")
+        else:
+            # Table headers
+            header = ["DEVICENUMBER", "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", "WCUT"]
+            self.wsegsicd_table = val.set_format_wsegsicd(
+                self._create_dataframe_with_columns(header, start_index, end_index)
+            )
+            # Check if the device in COMPLETION is exist in WSEGSICD
+            device_checks = self.completion_table[self.completion_table["DEVICETYPE"] == "ICD"][
+                "DEVICENUMBER"
+            ].to_numpy()
+            if not check_contents(device_checks, self.wsegsicd_table["DEVICENUMBER"].to_numpy()):
+                raise abort("Not all device in COMPLETION is specified in WSEGSICD")
+
+    def read_wsegaicd(self) -> None:
+        """
+        Read the WSEGAICD keyword in the case file.
+
+        Raises:
+            ValueError: If invalid entries in WSEGAICD.
+            SystemExit: If WSEGAICD is not defined and AICD is used in COMPLETION, \
+                or if the device number is not found. \
+                If not all device in COMPLETION is specified in WSEGAICD.
+
+        The function uses the class property DataFrame completion_table defined
+        in ``read_completion``. It generates a class property DataFrame
+        wsegaicd_table with the following format:
+
+        .. _wsegaicd_table:
+        .. list-table:: wsegaicd_table
+            :widths: 10 10
+            :header-rows: 1
+
+            * - COLUMN
+              - TYPE
+            * - DEVICETYPE
+              - str
+            * - DEVICENUMBER
+              - int
+            * - ALPHA
+              - float
+            * - X
+              - float
+            * - Y
+              - float
+            * - A
+              - float
+            * - B
+              - float
+            * - C
+              - float
+            * - D
+              - float
+            * - E
+              - float
+            * - F
+              - float
+            * - RHOCAL_AICD
+              - float
+            * - VISCAL_AICD
+              - float
+
+        """
+        start_index, end_index = self.locate_keyword("WSEGAICD")
+        if start_index == end_index:
+            if "AICD" in self.completion_table["DEVICETYPE"]:
+                raise abort("WSEGAICD keyword must be defined, " "if AICD is used in the completion")
+        else:
+            # Table headers
+            header = ["DEVICENUMBER", "ALPHA", "X", "Y", "A", "B", "C", "D", "E", "F", "RHOCAL_AICD", "VISCAL_AICD"]
+            # Fix table format
+            self.wsegaicd_table = val.set_format_wsegaicd(
+                self._create_dataframe_with_columns(header, start_index, end_index)
+            )
+            device_checks = self.completion_table[self.completion_table["DEVICETYPE"] == "AICD"][
+                "DEVICENUMBER"
+            ].to_numpy()
+            if not check_contents(device_checks, self.wsegaicd_table["DEVICENUMBER"].to_numpy()):
+                raise abort("Not all device in COMPLETION is specified in WSEGAICD")
+
+    def read_wsegdar(self) -> None:
+        """
+        Read the WSEGDAR keyword in the case file.
+
+        Raises:
+            ValueError: If there are invalid entries in WSEGDAR
+            SystemExit: If not all device in COMPLETION is specified in WSEGDAR. \
+                If WSEGDAR keyword not defined, when DAR is used in the completion.
+
+        The function uses the class property DataFrame completion_table defined
+        in ``read_completion``. It generates a class property
+        DataFrame wsegdar_table with the following format:
+
+        .. _wsegdar_table:
+        .. list-table:: wsegdar_table
+            :widths: 10 10
+            :header-rows: 1
+
+            * - COLUMN
+              - TYPE
+            * - DEVICETYPE
+              - str
+            * - DEVICENUMBER
+              - int
+            * - CV_DAR
+              - float
+            * - AC_OIL
+              - float
+            * - AC_GAS
+              - float
+            * - AC_WATER
+              - float
+            * - WHF_LCF_DAR
+              - float
+            * - WHF_HCF_DAR
+              - float
+            * - GHF_LCF_DAR
+              - float
+            * - GHF_HCF_DAR
+              - float
+
+        """
+        start_index, end_index = self.locate_keyword("WSEGDAR")
+        if start_index == end_index:
+            if "DAR" in self.completion_table["DEVICETYPE"]:
+                raise abort("WSEGDAR keyword must be defined, if DAR is used in the completion")
+        else:
+            # Table headers
+            header = [
+                "DEVICENUMBER",
+                "CV_DAR",
+                "AC_OIL",
+                "AC_GAS",
+                "AC_WATER",
