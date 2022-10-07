@@ -327,3 +327,33 @@ def create(
     chunks = []  # for debug..
     figno = 0
     written = set()  # Keep track of which MSW's has been written
+    line_number = 0
+    progress_status = ProgressStatus(len(lines), percent)
+
+    get_well_name = create_get_well_name(clean_lines_map)
+
+    pdf_file = None
+    if show_fig:
+        figure_no = 1
+        fnm = f"Well_schematic_{figure_no:03d}.pdf"
+        while os.path.isfile(fnm):
+            figure_no += 1
+            fnm = f"Well_schematic_{figure_no:03d}.pdf"
+        pdf_file = create_pdfpages(fnm)
+    # loop lines
+    while line_number < len(lines):
+        progress_status.update(line_number)
+        line = lines[line_number]
+        eclipse_keyword = line[:8].rstrip()  # look for eclipse keywords
+
+        # most lines will just be duplicated
+        if eclipse_keyword not in Keywords:
+            outfile.write(None, f"{line}\n")
+        else:
+            # ok - this is a (potential) MSW keyword. we have a job to do
+            logger.debug(eclipse_keyword)
+
+            well_name = get_well_name(line_number)
+            if eclipse_keyword in Keywords.segments:  # check if it is an active well
+                logger.debug(well_name)
+                if well_name not in list(schedule.active_wells):
