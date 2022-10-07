@@ -873,3 +873,75 @@ class WellSchedule:
         ncols = len(columns)
         _records = records[0] + ["1*"] * (ncols - len(records[0]))  # pad with default values (1*)
         df = pd.DataFrame(np.array(_records).reshape((1, ncols)), columns=columns)
+        #  datatypes
+        df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
+        try:
+            df[columns[4]] = df[columns[4]].astype(np.float64)
+        except ValueError:
+            pass
+        # welspecs could be for multiple wells - split it
+        for well_name in df["WELL"].unique():
+            if well_name not in self.msws:
+                self.msws[well_name] = {}
+            self.msws[well_name]["welspecs"] = df[df["WELL"] == well_name]
+            logger.debug("set_welspecs for %s", well_name)
+
+    def handle_compdat(self, recs: list[list[str]]) -> list[list[str]]:
+        """
+        Convert a COMPDAT record set to a Pandas DataFrame.
+
+        * Sets DataFrame column titles
+        * Pads missing values with default values (1*)
+        * Sets column data types
+
+        Args:
+            recs: Record set of COMPDAT data
+
+        Returns:
+            list: Records for inactive wells
+
+        The function creates the class property DataFrame
+        msws[well_name]['compdat'] with the following format:
+
+        .. _compdat_format:
+        .. list-table:: msws[well_name]['compdat']
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - WELL
+             - str
+           * - I
+             - int
+           * - J
+             - int
+           * - K
+             - int
+           * - K2
+             - int
+           * - STATUS
+             - object
+           * - SATNUM
+             - object
+           * - CF
+             - float
+           * - DIAM
+             - float
+           * - KH
+             - float
+           * - SKIN
+             - float
+           * - DFACT
+             - object
+           * - COMPDAT_DIRECTION
+             - object
+           * - RO
+             - float
+
+        """
+        well_names = set()  # the active well-names found in this chunk
+        remains = []  # the other wells
+        for rec in recs:
+            well_name = rec[0]
+            if well_name in list(self.active_wells):
