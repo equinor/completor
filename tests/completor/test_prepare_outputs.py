@@ -546,3 +546,22 @@ ENDACTIO
 ACTIONX
 D0010034 1000000 /
 SWHF 'WELL' 3 < 0.7 AND /
+SUVTRIG 'WELL' 3 = 2 /
+/
+
+WSEGVALV
+--  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+  'WELL' 3 1 7.852e-06  5* 7.852e-06 /
+/
+UDQ
+  ASSIGN SUVTRIG WELL 3 0 /
+/
+
+ENDACTIO
+
+"""
+    wsegdar_printout = wsegdar_printout.strip()
+    true_wsegdar_printout = true_wsegdar_printout.strip()
+    wsegdar_printout = re.sub(r"[^\S\r\n]+", " ", wsegdar_printout)
+    true_wsegdar_printout = re.sub(r"[^\S\r\n]+", " ", true_wsegdar_printout)
+    assert wsegdar_printout == true_wsegdar_printout
