@@ -296,3 +296,56 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
     df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "AICV"))
+    return df_temp
+
+
+def set_format_wsegicv(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """
+    Format the WSEGICV table.
+
+    Args:
+        df_temp: WSEGICV table
+
+    Returns:
+        Updated WSEGICV
+
+    The format of the WSEGICV table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_wsegicv``.
+    """
+    # set data type
+    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    df_temp[["CV", "AC", "AC_MAX"]] = df_temp[["CV", "AC", "AC_MAX"]].astype(np.float64)
+    # allows column DEFAULTS to have default value 5*
+    # thus it is not set to float
+    # Create ID device column
+    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], fill_value="ICV"))
+    return df_temp
+
+
+def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
+    """
+    Assess the latera2device inputs.
+
+    Abort if a lateral is
+    connected to a device layer in a well with open annuli.
+
+    Args:
+        df_lat2dev: Lateral to device contents
+        df_comp: COMPLETION table
+
+    Raises:
+        SystemExit:
+            If the LATERAL_TO_DEVICE keyword is set for a multisegment
+            well with open annulus.
+
+    The format of the COMPLETION table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_completion``.
+    """
+    nrow = df_lat2dev.shape[0]
+    for idx in range(0, nrow):
+        l2d_well = df_lat2dev["WELL"].iloc[idx]
+        if (df_comp[df_comp["WELL"] == l2d_well]["ANNULUS"] == "OA").any():
+            raise abort(
+                f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
+                "This may trigger an Eclipse error."
+            )
