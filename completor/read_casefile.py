@@ -272,3 +272,8 @@ class ReadCasefile:
 
         if start_index == end_index:
             # set default behaviour (if keyword not in case file)
+            self.lat2device = pd.DataFrame([], columns=header)  # empty df
+            return
+        self.lat2device = self._create_dataframe_with_columns(header, start_index, end_index)
+        self.lat2device["BRANCH"] = self.lat2device["BRANCH"].astype(np.int64)
+        val.validate_lateral2device(self.lat2device, self.completion_table)
