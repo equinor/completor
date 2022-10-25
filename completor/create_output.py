@@ -851,3 +851,18 @@ class CreateOutput:
             + self.print_wsegicv
         )
         self.finalprint = finalprint
+
+    def branch_revision(self, lateral: int) -> None:
+        """Revises the order of branch numbers to be in
+        agreement with common practice. This means that tubing layers will get
+        branch numbers from 1 to number of laterals. Device and lateral branch numbers
+        are changed accordingly if they exists.
+
+        Args:
+            lateral: The lateral number being worked on."""
+        correction = max(self.laterals) - lateral
+        self.df_tubing["BRANCH"] = lateral
+        if self.df_device.shape[0] > 0:
+            self.df_device["BRANCH"] += correction
+        if self.df_annulus.shape[0] > 0:
+            self.df_annulus["BRANCH"] += correction
