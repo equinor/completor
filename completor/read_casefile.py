@@ -857,3 +857,18 @@ class ReadCasefile:
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:
                 raise abort("USE_STRICT True: Define all branches in case file.")
+            else:
+                for branch_no in branch_nos:
+                    logger.warning("Adding branch %s for Well %s", branch_no, well_name)
+                    # copy first entry
+                    lateral = pd.DataFrame(
+                        [self.completion_table.loc[self.completion_table.WELL == well_name].iloc[0]],
+                        columns=self.completion_table.columns,
+                    )
+                    lateral.STARTMD = 0
+                    lateral.ENDMD = 999999
+                    lateral.DEVICETYPE = "PERF"
+                    lateral.ANNULUS = "GP"
+                    lateral.BRANCH = branch_no
+                    # add new entry
+                    self.completion_table = pd.concat([self.completion_table, lateral])
