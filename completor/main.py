@@ -216,3 +216,47 @@ class ProgressStatus:
         """
         self.percent = percent
         self.nlines = num_lines
+        self.prev_n = 0
+
+    def update(self, line_number: int) -> None:
+        """
+        Update logger information.
+
+        Args:
+            line_number: Input schedule file line number
+
+        Returns:
+            Logger info message
+        """
+        # If the divisor, or numerator is a  float, the integer division gives a float
+        n = int((line_number / self.nlines * 100) // self.percent)
+        if n > self.prev_n:
+            logger.info("=" * 80)
+            logger.info("Done processing %i %% of schedule/data file", n * self.percent)
+            logger.info("=" * 80)
+            self.prev_n = n
+
+
+def get_content_and_path(case_content: str, file_path: str | None, keyword: str) -> tuple[str | None, str | None]:
+    """
+    Get the contents of file from path defined by user or case file.
+
+    The method prioritize paths given as input argument over the paths
+    found in the case file.
+
+    Args:
+        case_content: The case file content
+        file_path: Path to file if given
+
+    Returns:
+        File content, file path
+
+    Raises:
+        SystemExit: If the keyword cannot be found.
+        SystemExit: If the file cannot be found.
+
+    """
+
+    if file_path is None:
+        # Find the path/name of file from case file
+        case_file_lines = clean_file_lines(case_content.splitlines())
