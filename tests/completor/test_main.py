@@ -497,3 +497,10 @@ def test_read_schedule_from_casefile(schfilestring, tmpdir):
     accepted as a schedule-file string.
     """
     tmpdir.chdir()
+    Path(tmpdir / "testdir").mkdir()
+    # Create a temporary "schedulefile" containing something
+    with open("testdir/testfile", "w", encoding="utf-8") as sch_file:
+        sch_file.write("Some schedule data\n")
+
+    # Create case_content with the non-clean path to the schedule file
+    case_content = f"SCHFILE\n'{schfilestring}'\n/"
