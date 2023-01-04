@@ -299,3 +299,9 @@ COMPLETION
 
 def test_read_case_output_file_with_OUTFILE(tmpdir):
     """Test the function which reads OUTFILE keyword when not command line"""
+    shutil.copy(_TESTDIR / "case.testfile", tmpdir)
+    tmpdir.chdir()
+    with open("case.testfile", encoding="utf-8") as file:
+        case_content = file.read()
+    output_file = get_content_and_path(case_content, None, "OUTFILE")
+    assert output_file[1] == "output.file", "Failed reading PVTFILE keyword"
