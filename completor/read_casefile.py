@@ -109,3 +109,4 @@ class ReadCasefile:
         self.strict = True
         self.gp_perf_devicelayer = False
         self.schedule_file = schedule_file
+        self.output_file = output_file
