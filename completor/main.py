@@ -439,3 +439,5 @@ def create(
     outfile.close()
     close_figure()
     if pdf_file is not None:
+        pdf_file.close()
+
