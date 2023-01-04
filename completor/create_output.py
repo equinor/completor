@@ -532,3 +532,37 @@ class CreateOutput:
                 self.df_annulus,
                 completion_table_lateral,
                 self.case.segment_length,
+            )
+            self.df_compdat = po.prepare_compdat(self.well_name, lateral, self.df_reservoir, completion_table_lateral)
+            self.df_wsegvalv = po.prepare_wsegvalv(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegsicd = po.prepare_wsegsicd(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegaicd = po.prepare_wsegaicd(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegdar = po.prepare_wsegdar(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegaicv = po.prepare_wsegaicv(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegicv = po.prepare_wsegicv(
+                self.well_name,
+                lateral,
+                self.df_well,
+                self.df_device,
+                self.df_tubing,
+                self.case.completion_icv_tubing,
+                self.case.wsegicv_table,
+            )
+            self.make_compdat(lateral)
+            self.make_welsegs(lateral)
+            self.make_wseglink(lateral)
+            self.make_compsegs(lateral)
+            self.make_wsegvalv(lateral)
+            self.make_wsegsicd(lateral)
+            self.make_wsegaicd(lateral)
+            self.make_wsegicv(lateral)
+            self.make_wsegdar()
+            self.make_wsegaicv()
+
+            if show_figure and figure_name is not None:
+                logger.info(f"Creating figure for lateral {lateral}.")
+                figure_name.savefig(
+                    visualize_well(self.well_name, self.df_well, self.df_reservoir, self.case.segment_length),
+                    orientation="landscape",
+                )
+                logger.info("creating schematics: %s.pdf", figure_name)
