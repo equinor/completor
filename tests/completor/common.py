@@ -34,3 +34,5 @@ def open_files_run_create(
             output = file.read()
 
         main.create(case, schedule, output, show_figure)
+    else:
+        main.create(case, schedule, output)
