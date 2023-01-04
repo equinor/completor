@@ -260,3 +260,24 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
     if file_path is None:
         # Find the path/name of file from case file
         case_file_lines = clean_file_lines(case_content.splitlines())
+        start_idx, end_idx = parse.locate_keyword(case_file_lines, keyword)
+        # If the keyword is defined correctly
+        if end_idx == start_idx + 2:
+            # preprocess the text, remove leaning/trailing whitespace and quotes
+            file_path = " ".join(case_file_lines[start_idx + 1].strip("'").strip(" ").split())
+            file_path = re.sub("[\"']+", "", file_path)
+
+        else:
+            # OUTFILE is optional, if it's needed but not supplied the error is
+            # caught in `ReadCasefile:check_pvt_file()`
+            if keyword == "OUTFILE":
+                return None, None
+            raise abort(f"The keyword {keyword} is not defined correctly in the casefile")
+    if keyword != "OUTFILE":
+        try:
+            with open(file_path, encoding="utf-8") as file:
+                file_content = file.read()
+        except FileNotFoundError as exc:
+            raise abort(f"Could not find the file: '{file_path}'!") from exc
+        return file_content, file_path
+    return None, file_path
