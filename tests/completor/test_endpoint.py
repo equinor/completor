@@ -48,3 +48,7 @@ def test_figure(tmpdir):
     subprocess.run(
         ["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch", "-o", "perf_gp.out", "--figure"], check=True
     )
+    assert Path("perf_gp.out").is_file()
+    assert os.path.getsize("perf_gp.out") > 0
+    assert Path("Well_schematic_001.pdf").is_file()
+    assert os.path.getsize("Well_schematic_001.pdf") > 0
