@@ -422,3 +422,20 @@ def create(
                     wells,
                     well_name,
                     schedule.get_well_number(well_name),
+                    COMPLETOR_VERSION,
+                    show_fig,
+                    pdf_file,
+                    write_welsegs,
+                    paths,
+                )
+                outfile.write(None, output.finalprint)
+            else:
+                raise ValueError(
+                    f"The keyword '{eclipse_keyword}' has not been implemented in Completor, but should have been"
+                )
+
+        line_number += 1  # ready for next line
+        logger.debug(line_number)
+    outfile.close()
+    close_figure()
+    if pdf_file is not None:
