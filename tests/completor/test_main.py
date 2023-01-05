@@ -625,3 +625,8 @@ def test_error_missing_keywords(tmpdir, capfd):
     with pytest.raises(subprocess.CalledProcessError) as exc:
         subprocess.run(
             ["completor", "-i", case_file, "-s", modified_schedule_path, "-o", "output.sch"], cwd=tmpdir, check=True
+        )
+
+    _, err = capfd.readouterr()
+    assert exc.value.returncode == 1
+    assert "Keyword WELSPECS is not found" in err
