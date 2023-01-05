@@ -99,3 +99,4 @@ def dataframe_tostring(
     # Add single quotes around well names in output file
     if "WELL" in df_temp.columns:
         df_temp["WELL"] = "'" + df_temp["WELL"].astype(str) + "'"
+    output_string = df_temp.to_string(index=False, justify="justify", header=header)
