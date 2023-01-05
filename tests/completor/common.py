@@ -268,3 +268,22 @@ class ReadSchedule:
         return df_header, df_content
 
     def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
+        """
+        Return COMPSEGS table for the selected well.
+
+        Args:
+            well_name: Name of the well
+            branch: Branch/lateral number
+
+        Returns:
+            COMPSEGS table
+        """
+        df_temp = self.compsegs[self.compsegs["WELL"] == well_name].copy()
+        if branch is not None:
+            df_temp = df_temp[df_temp["BRANCH"] == branch]
+        # remove the well column because it does not exist
+        # in the original input
+        df_temp.drop(["WELL"], inplace=True, axis=1)
+        # reset index after filtering
+        df_temp.reset_index(drop=True, inplace=True)
+        return fix_compsegs(df_temp, well_name)
