@@ -566,3 +566,5 @@ class CreateOutput:
                     orientation="landscape",
                 )
                 logger.info("creating schematics: %s.pdf", figure_name)
+            elif show_figure and figure_name is None:
+                raise ValueError("Cannot show figure without filename supplied.")
