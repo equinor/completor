@@ -527,3 +527,25 @@ def main() -> None:
         SystemExit: If input schedule file is not defined as input or in case file.
     """
     parser = get_parser()
+    inputs = parser.parse_args()
+
+    if inputs.loglevel:
+        loglevel = inputs.loglevel
+    else:
+        loglevel = logging.WARNING
+    logger.setLevel(loglevel)
+
+    # Open the case file
+    if inputs.inputfile is not None:
+        with open(inputs.inputfile, encoding="utf-8") as file:
+            case_file_content = file.read()
+    else:
+        raise abort("Need input case file to run Completor")
+
+    schedule_file_content, inputs.schedulefile = get_content_and_path(case_file_content, inputs.schedulefile, "SCHFILE")
+
+    if isinstance(schedule_file_content, str):
+        parse.read_schedule_keywords(
+            clean_file_lines(schedule_file_content.splitlines()), ["WELSPECS", "WELSEGS", "COMPDAT", "COMPSEGS"]
+        )
+
