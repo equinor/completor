@@ -169,3 +169,42 @@ def unpack_records(record: list[str]) -> list[str]:
                     record.insert(idx, "1*")
                     idef = idef + 1
             record_length = len(record)
+    return record
+
+
+def complete_records(record: list[str], keyword: str) -> list[str]:
+    """
+    Complete the record.
+
+    Args:
+        record: List of strings
+        keyword: Keyword name
+
+    Returns:
+        List of updated string
+    """
+    dict_ncolumns = {"WELSPECS": 17, "COMPDAT": 14, "WELSEGS_H": 12, "WELSEGS": 15, "COMPSEGS": 11}
+    max_column = dict_ncolumns[keyword]
+    ncolumn = len(record)
+    if ncolumn < max_column:
+        extension = ["1*"] * (max_column - ncolumn)
+        record.extend(extension)
+    return record
+
+
+def read_schedule_keywords(
+    content: list[str], keywords: list[str]
+) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
+    """
+    Read schedule keywords or all keywords in table format.
+
+    E.g. WELSPECS, COMPDAT, WELSEGS, COMPSEGS.
+
+    Args:
+        content: List of strings
+        keywords: List of keywords to be found
+
+    Returns:
+        df_collection - Object collection (pd.DataFrame)
+        remaining_content - List of strings of un-listed keywords
+
