@@ -176,3 +176,104 @@ def test_inconsistent_files(tmpdir):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     outputmessage = (
         "Inconsistent case and input schedule files. " "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
+    )
+    set_case("PERF", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)
+    with pytest.raises(ValueError, match=outputmessage):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_missing_completion(tmpdir):
+    """Test output to screen from Completor missing COMPLETION."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    outputmessage = "No completion is defined in the case file."
+    set_case("PERF", ["wsegaicd"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=outputmessage):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_missing_wsegaicd(tmpdir):
+    """Test output to screen from Completor missing WSEGAICD."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    expected_error_message = "Missing keyword 'DEVICETYPE AICD' in input files."
+    set_case("AICD", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=expected_error_message):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_missing_wsegsicd(tmpdir):
+    """Test output to screen from Completor missing WSEGSICD."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    expected_error_message = "Missing keyword 'DEVICETYPE ICD' in input files."
+    set_case("ICD", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=expected_error_message):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_missing_wsegvalv(tmpdir):
+    """Test output to screen from Completor missing WSEGVALV."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    expected_error_message = "Missing keyword 'DEVICETYPE VALVE' in input files."
+    set_case("VALVE", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=expected_error_message):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_full_wsegdar(tmpdir, capsys):
+    """
+    Test output to screen from Completor with full DAR input.
+
+    Make a separate test for this keyword as it requires more input
+    that need to be correct.
+    """
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    set_case("DAR", ["completion", "wsegdar"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    common.open_files_run_create(case_file, schedule_file, _outfile)
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == ""
+
+
+def test_missing_wsegdar(tmpdir):
+    """Test output to screen from Completor with missing WSEGDAR keyword."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    expected_error_message = "Missing keyword 'DEVICETYPE DAR' in input files."
+    set_case("DAR", ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=expected_error_message):
+        common.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_full_wsegaicv(tmpdir, capsys):
+    """
+    Test output to screen from Completor with full AICV input.
+
+    Make a separate test for this keyword as it requires more input
+    that need to be correct.
+    """
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    set_case("AICV", ["completion", "wsegaicv"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    common.open_files_run_create(case_file, schedule_file, _outfile)
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == ""
+
+
+def test_missing_wsegaicv(tmpdir):
+    """Test output to screen from Completor with missing WSEGAICV keyword."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    expected_error_message = "Missing keyword 'DEVICETYPE AICV' in input files."
