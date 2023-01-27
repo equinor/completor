@@ -710,3 +710,14 @@ class CreateWells:
         self.df_well["ROUGHNESS"] = self.df_well["ROUGHNESS"].apply(lambda x: f"{x:.3E}")
 
     def get_devices(self) -> None:
+        """
+        Complete the well with the device information.
+
+        Uses the following class property DataFrames:
+
+        * :ref:`df_completion <df_completion>`
+        * :ref:`wsegvalv_table <wsegvalv_table>`
+        * :ref:`wsegsicd_table <wsegsicd_table>`
+        * :ref:`wsegaicd_table <wsegaicd_table>`
+        * :ref:`wsegdar_table <wsegdar_table>`
+        * :ref:`wsegaicv_table <wsegaicv_table>`
