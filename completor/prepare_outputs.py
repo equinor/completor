@@ -159,3 +159,65 @@ def get_outlet_segment(
     df_reference = pd.DataFrame(np.column_stack((reference_md, reference_segment_number)), columns=["MD", "SEG"])
     df_reference["SEG"] = df_reference["SEG"].astype(np.int64)
     df_reference.sort_values(by=["MD"], inplace=True)
+    return (
+        pd.merge_asof(left=df_target_md, right=df_reference, on=["MD"], direction="nearest")["SEG"].to_numpy().flatten()
+    )
+
+
+def get_number_of_characters(df: pd.DataFrame) -> int:
+    """
+    Calculate the number of characters.
+
+    Args:
+        df: DataFrame
+
+    Returns:
+        Number of characters
+    """
+    df_temp = df.iloc[:1, :].copy()
+    df_temp = dataframe_tostring(df_temp, True)
+    df_temp = df_temp.split("\n")
+    return len(df_temp[0])
+
+
+def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 100) -> str:
+    """
+    Print the header.
+
+    Args:
+        well_name: Well name
+        keyword: Table keyword e.g. WELSEGS, COMPSEGS, COMPDAT, etc.
+        lat: Lateral number
+        layer: Layer description e.g. tubing, device and annulus
+        nchar: Number of characters for the line boundary. Default 100
+
+    Returns:
+        String header
+    """
+    if keyword == "WELSEGS":
+        header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
+    else:
+        header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
+    return header + "-" * nchar + "\n"
+
+
+def prepare_tubing_layer(
+    schedule: WellSchedule,
+    well_name: str,
+    lateral: int,
+    df_well: pd.DataFrame,
+    start_segment: int,
+    branch_no: int,
+    completion_table: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Prepare tubing layer data frame.
+
+    Args:
+        schedule: Schedule object
+        well_name: Well name
+        lateral: Lateral number
+        df_well: Must contain column LATERAL, TUB_MD, TUB_TVD, INNER_DIAMETER, ROUGHNESS
+        start_segment: Start number of the first tubing segment
+        branch_no: Branch number for this tubing layer
+        completion_table: DataFrame with completion data.
