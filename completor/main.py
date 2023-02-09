@@ -555,3 +555,5 @@ def main() -> None:
         if inputs.schedulefile is None:
             raise ValueError("No schedule provided, or none where found " "in the case file (keyword 'SCHFILE')")
         inputs.outputfile = inputs.schedulefile.split(".")[0] + "_advanced.wells"
+
+    paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
