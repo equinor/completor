@@ -72,3 +72,65 @@ def test_lat2device(tmpdir):
 
 
 def test_lat2device_non_existing(tmpdir):
+    """
+    Test completor with a two-branch well.
+
+    The lateral of the well, A1, is connected to the main branch via the device layer.
+
+    Attempt to connect a branch that does not exist (i.e. branch 3 in a 2 branch well).
+    As expected, the default route to the tubing layer is chosen for branches not set in
+    LATERAL_TO_DEVICE. The non-existing branch included in LATERAL_TO_DEVICE is ignored.
+
+    1. One active well
+    2. Multi-lateral well with two branches
+    """
+    tmpdir.chdir()
+    case_file = f"""
+-- Case file for testing the LATERAL_TO_DEVICE keyword.
+SCHFILE
+ml_well.sch
+/
+
+{COMPLETION_TWO_ROWS}
+{USE_STRICT_JOINT_LENGTH}
+{WSEGAICD}
+
+-- Lateral 2 in well A1 is routed to the device layer in lateral 1.
+LATERAL_TO_DEVICE
+--WELL  LATERAL
+    A1        3
+/
+    """
+    schedule_file = Path(_TESTDIR / "ml_well.sch")
+    true_file = Path(_TESTDIR / "lat2device_nonexisting.true")
+
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_lat2device_no_device(tmpdir, caplog):
+    """
+    Test completor with a two-branch well.
+
+    The lateral of the well, A1, is connected to the main branch via the device layer.
+
+    Attempt to connect to a device layer that does not exist.
+    Completor halts with an error message.
+
+    1. One active well
+    2. Multi-lateral well with two branches
+    """
+    tmpdir.chdir()
+    case_file = f"""
+-- Case file for testing the LATERAL_TO_DEVICE keyword.
+SCHFILE
+ml_well_l2d_nodevicetest.sch
+/
+
+COMPLETION
+-- Well  Branch Start End Screen   Well/   Roughness Annulus Nvalve Valve Device
+--       Number MD    MD  Tubing   Casing            Content /Joint Type  Number
+--                        Diameter Diameter
+A1     1        0  2190.166  0.15  0.2159  0.00065   GP      0      AICD  1
+A1     1 2190.166     99999  0.15  0.2159  0.00065   GP      1      AICD  1
+A1     2        0     99999  0.15  0.2159  0.00065   GP      1      AICD  1
