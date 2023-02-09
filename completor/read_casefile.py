@@ -639,3 +639,86 @@ class ReadCasefile:
                 ].to_numpy()
                 if not check_contents(device_checks, self.wsegdar_table["DEVICENUMBER"].to_numpy()):
                     raise abort("Not all device in COMPLETION is specified in WSEGDAR")
+
+    def read_wsegaicv(self) -> None:
+        """
+        Read the WSEGAICV keyword in the case file.
+
+        Raises:
+            ValueError: If invalid entries in WSEGAICV.
+            SystemExit: WSEGAICV keyword not defined when AICV is used in completion.\
+                If not all devices in COMPLETION are specified in WSEGAICV.
+
+
+        The function uses the class property DataFrame completion_table defined
+        in ``read_completion``. It generates a class property
+        DataFrame wsegaicv_table with the following format:
+
+        .. _wsegaicv_table:
+        .. list-table:: wsegaicv_table
+            :widths: 10 10
+            :header-rows: 1
+
+            * - COLUMN
+              - TYPE
+            * - DEVICETYPE
+              - str
+            * - DEVICENUMBER
+              - int
+            * - WCT_AICV
+              - float
+            * - GHF_AICV
+              - float
+            * - RHOCAL_AICV
+              - float
+            * - VISCAL_AICV
+              - float
+            * - ALPHA_MAIN
+              - float
+            * - X_MAIN
+              - float
+            * - Y_MAIN
+              - float
+            * - A_MAIN
+              - float
+            * - B_MAIN
+              - float
+            * - C_MAIN
+              - float
+            * - D_MAIN
+              - float
+            * - E_MAIN
+              - float
+            * - F_MAIN
+              - float
+            * - ALPHA_PILOT
+              - float
+            * - X_PILOT
+              - float
+            * - Y_PILOT
+              - float
+            * - A_PILOT
+              - float
+            * - B_PILOT
+              - float
+            * - C_PILOT
+              - float
+            * - D_PILOT
+              - float
+            * - E_PILOT
+              - float
+            * - F_PILOT
+              - float
+
+
+        """
+        start_index, end_index = self.locate_keyword("WSEGAICV")
+        if start_index == end_index:
+            if "AICV" in self.completion_table["DEVICETYPE"]:
+                raise abort("WSEGAICV keyword must be defined, " "if AICV is used in the completion")
+        else:
+            # Table headers
+            header = [
+                "DEVICENUMBER",
+                "WCT_AICV",
+                "GHF_AICV",
