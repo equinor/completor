@@ -1443,3 +1443,8 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             act_name = f"V{well_number:03d}{segment_number:03d}{act_number:1d}"
             if len(act_name) > 8:
                 raise abort("Too many wells and/or too many segments with AICV")
+            action += (
+                f"ACTIONX\n{act_name} 1000000 /\n"
+                f"SUWCT '{well_name}' {segment_number} {sign_water[iaction]} "
+                f"{wct} {operator[iaction]} /\n"
+                f"SGHF '{well_name}' {segment_number} {sign_gas[iaction]} {ghf} /\n/\n"
