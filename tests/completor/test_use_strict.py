@@ -198,3 +198,22 @@ COMPLETION
 
 
 def test_use_strict_false_missing_branch(tmpdir):
+    """
+    Test case with USE_STRICT set to False, with a missing branch.
+
+    Uses a two-branch well, A1, where only one branch is defined in the case file
+    COMPLETION keyword.
+
+    1. One active well
+    2. Multi-lateral well with two branches
+    """
+    tmpdir.chdir()
+    case_file = f"""
+SCHFILE
+ml_well.sch
+/
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve Valve Device
+--     Number  MD   MD  Tubing   Casing            Content /Joint Type  Number
+--                      Diameter Diameter
+   A1    1     0  99999  0.15     0.2159  0.00065     GP      1   AICD     1
