@@ -787,3 +787,33 @@ def test_create_tubing_segment_welsegs():
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "WELSEGS")
+    pd.testing.assert_frame_equal(df_test, df_true)
+
+
+def test_complete_the_well():
+    """Test the complete_the_well function."""
+    csv_completion = StringIO(
+        """
+STARTMD;ENDMD;NVALVEPERJOINT;INNER_ID;OUTER_ID;ROUGHNESS;DEVICETYPE;\
+DEVICENUMBER;ANNULUS_ZONE
+0;20;1;1.2;2.1;1.10E+00;AICD;1;1
+20;30;2;1;5;2.00E+00;ICD;2;0
+30;40;3;2;3;3.00E+00;VALVE;3;2
+40;50;3.5;3;4;4.00E+00;DAR;4;3
+"""
+    )
+
+    csv_tubing = StringIO(
+        """
+STARTMD;ENDMD;TUB_MD;TUB_TVD;SEGMENT_DESC
+0;26;13;19.5;OriginalSegment
+26;35;30.5;32.75;AdditionalSegment
+35;50;42.5;46.25;OriginalSegment
+"""
+    )
+    csv_true = StringIO(
+        """
+TUB_MD;TUB_TVD;LENGTH;SEGMENT_DESC;NDEVICES;DEVICENUMBER;DEVICETYPE;INNER_DIAMETER;\
+OUTER_DIAMETER;ROUGHNESS;ANNULUS_ZONE;SCALINGFACTOR
+13;19.5;26;OriginalSegment;3.2;1;AICD;1.2;1.723368794;1.1;1;-0.3125
+42.5;46.25;15;OriginalSegment;5;4;DAR;3;2.645751311;4;3;-0.2
