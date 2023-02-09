@@ -430,3 +430,119 @@ GP_PERF_DEVICELAYER
     prepare_outputs.connect_lateral("A1", 2, data, case)
     assert len(caplog.text) > 0
     assert "WARNING" in caplog.text
+
+
+def test_user_segment_lumping_oa(tmpdir):
+    """
+    Test completor case with user defined segment lumping.
+    The keyword SEGMENTLENGTH is set to -1 in the case file.
+    The completion has an open annulus interspersed with packers.
+    """
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "well_4_lumping_tests_oa.case")
+    schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
+    true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_user_segment_lumping_gp(tmpdir):
+    """
+    Test completor case with user defined segment lumping.
+    The keyword SEGMENTLENGTH is set to -1 in the case file.
+    The completion has a gravel packed annulus interspersed with packers.
+    """
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "well_4_lumping_tests_gp.case")
+    schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
+    true_file = Path(_TESTDIR / "user_created_lumping_gp.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_print_wsegdar(tmpdir):
+    tmpdir.chdir()
+    df_wsegdar = pd.DataFrame(
+        [["WELL", 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
+        columns=[
+            "WELL",
+            "SEG",
+            "CV_DAR",
+            "AC_OIL",
+            "AC_GAS",
+            "AC_WATER",
+            "WHF_LCF_DAR",
+            "WHF_HCF_DAR",
+            "GHF_LCF_DAR",
+            "GHF_HCF_DAR",
+            "DEFAULTS",
+            "AC_MAX",
+        ],
+    )
+    well_number = 1
+    wsegdar_printout = prepare_outputs.print_wsegdar(df_wsegdar, well_number)
+    true_wsegdar_printout = """UDQ
+  ASSIGN SUVTRIG WELL 3 0 /
+/
+
+WSEGVALV
+--  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+  'WELL' 3 1 7.852e-06  5* 7.852e-06 /
+/
+
+ACTIONX
+D0010031 1000000 /
+SWHF 'WELL' 3 <= 0.8 AND /
+SGHF 'WELL' 3 > 0.99 AND /
+SUVTRIG 'WELL' 3 = 0 /
+/
+
+WSEGVALV
+--  WELL  SEG  CV_DAR  AC_GAS  DEFAULTS  AC_MAX
+  'WELL' 3 1 2.590e-06  5* 7.852e-06 /
+/
+
+UDQ
+  ASSIGN SUVTRIG 'WELL' 3 1 /
+/
+
+ENDACTIO
+
+ACTIONX
+D0010032 1000000 /
+SWHF 'WELL' 3 > 0.8 AND /
+SGHF 'WELL' 3 <= 0.99 AND /
+SUVTRIG 'WELL' 3 = 0 /
+/
+
+WSEGVALV
+--  WELL  SEG  CV_DAR  AC_WATER  DEFAULTS  AC_MAX
+  'WELL' 3 1 1.590e-06  5* 7.852e-06 /
+/
+
+UDQ
+  ASSIGN SUVTRIG 'WELL' 3 2 /
+/
+
+ENDACTIO
+
+ACTIONX
+D0010033 1000000 /
+SGHF 'WELL' 3 < 0.9 AND /
+SUVTRIG 'WELL' 3 = 1 /
+/
+
+WSEGVALV
+--  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+  'WELL' 3 1 7.852e-06  5* 7.852e-06 /
+/
+
+UDQ
+  ASSIGN SUVTRIG WELL 3 0 /
+/
+
+ENDACTIO
+
+ACTIONX
+D0010034 1000000 /
+SWHF 'WELL' 3 < 0.7 AND /
