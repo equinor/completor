@@ -24,3 +24,7 @@ def test_drogons(drogon_case, tmpdir):
     tmpdir.chdir()
     case_path = Path(_TESTDIR_DROGON / drogon_case)
     with open(case_path, encoding="utf-8") as case_file:
+        lines = [line.strip("\n") for line in case_file.readlines()]
+    schedule_name = lines[lines.index("SCHFILE") + 1]
+    schedule_path = Path(_TESTDIR_DROGON / schedule_name)
+    true_file = Path(_TESTDIR_DROGON / drogon_case.replace(".case", ".true"))
