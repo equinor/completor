@@ -279,3 +279,23 @@ def test_error_extra_column_completion():
     completion_string = """
 COMPLETION
 --Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber
+--        Number                      Tubing     Casing              Roughness       Content
+--                                    Diameter   Diameter
+  'A1'       1        0         1000     0.1        0.2                 1E-4            OA          3                AICD          1
+  'A1'       2        500       1000     0.1        0.2                 1E-4            GP          0                VALVE         1                extra_value
+/
+"""  # noqa: more human readable at this witdth.
+
+    with pytest.raises(CaseReaderFormatError) as err:
+        ReadCasefile(case_file=completion_string, schedule_file="none")
+
+    expected_err = [
+        "Error at line 7 in case file:\n",
+        "Too many entries in data for keyword 'COMPLETION', expected 11 entries:",
+    ]
+    for expected in expected_err:
+        assert expected in str(err.value)
+
+
+def test_read_case_output_file_with_OUTFILE(tmpdir):
+    """Test the function which reads OUTFILE keyword when not command line"""
