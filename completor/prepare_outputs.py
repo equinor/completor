@@ -372,3 +372,142 @@ def connect_lateral(
                     md_junct = df_segm0.MD.iloc[0]
                     idx = np.where(df_segm0.MD <= md_junct)[0][-1]
                 else:
+                    idx = np.where(df_segm0.MD <= md_junct)[0][-1]
+            else:
+                # Add 0.1 to md_junct since md_junct refers to the tubing layer
+                # junction md and the device layer md is shifted 0.1 m to the
+                # tubing layer.
+                idx = np.where(df_segm0.MD <= md_junct + 0.1)[0][-1]
+        except IndexError as err:
+            raise abort("Cannot find a device layer at " f"junction of lateral {lateral} in {well_name}") from err
+        outsegm = df_segm0.at[idx, "SEG"]
+    else:
+        outsegm = 1  # default
+    df_tubing.at[0, "OUT"] = outsegm
+
+
+def prepare_device_layer(
+    well_name: str, lateral: int, df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_length: float = 0.1
+) -> pd.DataFrame:
+    """
+    Prepare device layer dataframe.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: Must contain LATERAL, TUB_MD, TUB_TVD,
+                 INNER_DIAMETER, ROUGHNESS, DEVICETYPE and NDEVICES
+        df_tubing: Data frame from function prepare_tubing_layer
+                   for this well and this lateral
+        device_length: Segment length (default: 0.1)
+
+    Returns:
+        DataFrame for device layer
+    """
+    start_segment = max(df_tubing["SEG"].to_numpy()) + 1
+    start_branch = max(df_tubing["BRANCH"].to_numpy()) + 1
+    df_well = df_well[df_well["WELL"] == well_name]
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    # device segments are only created if:
+    # 1. the device type is PERF
+    # 2. if it is not PERF then it must have number of device > 0
+    df_well = df_well[(df_well["DEVICETYPE"] == "PERF") | (df_well["NDEVICES"] > 0)]
+    if df_well.empty:
+        # return blank dataframe
+        return pd.DataFrame()
+    # now create dataframe for device layer
+    df_device = pd.DataFrame()
+    df_device["SEG"] = start_segment + np.arange(df_well.shape[0])
+    df_device["SEG2"] = df_device["SEG"].to_numpy()
+    df_device["BRANCH"] = start_branch + np.arange(df_well.shape[0])
+    df_device["OUT"] = get_outlet_segment(
+        df_well["TUB_MD"].to_numpy(), df_tubing["MD"].to_numpy(), df_tubing["SEG"].to_numpy()
+    )
+    df_device["MD"] = df_well["TUB_MD"].to_numpy() + device_length
+    df_device["TVD"] = df_well["TUB_TVD"].to_numpy()
+    df_device["DIAM"] = df_well["INNER_DIAMETER"].to_numpy()
+    df_device["ROUGHNESS"] = df_well["ROUGHNESS"].to_numpy()
+    device_comment = np.where(
+        df_well["DEVICETYPE"] == "PERF",
+        "/ -- Open Perforation",
+        np.where(
+            df_well["DEVICETYPE"] == "AICD",
+            "/ -- AICD types",
+            np.where(
+                df_well["DEVICETYPE"] == "ICD",
+                "/ -- ICD types",
+                np.where(
+                    df_well["DEVICETYPE"] == "VALVE",
+                    "/ -- Valve types",
+                    np.where(
+                        df_well["DEVICETYPE"] == "DAR",
+                        "/ -- DAR types",
+                        np.where(
+                            df_well["DEVICETYPE"] == "AICV",
+                            "/ -- AICV types",
+                            np.where(df_well["DEVICETYPE"] == "ICV", "/ -- ICV types", ""),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+    df_device[""] = device_comment
+    return df_device
+
+
+def prepare_annulus_layer(
+    well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame, annulus_length: float = 0.1
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Prepare annulus layer and wseglink dataframe.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: Must contain LATERAL, ANNULUS_ZONE,
+            TUB_MD, TUB_TVD, OUTER_DIAMETER, ROUGHNESS, DEVICETYPE and NDEVICES
+        df_device: DataFrame from function prepare_device_layer
+            for this well and this lateral
+        annulus_length: Annulus segment length increment (default: 0.1)
+
+    Returns:
+        Annulus DataFrame, wseglink DataFrame
+    """
+    # filter for this lateral
+    df_well = df_well[df_well["WELL"] == well_name]
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    # filter segments which have annular zones
+    df_well = df_well[df_well["ANNULUS_ZONE"] > 0]
+    # loop through all annular zones
+    # initiate annulus and wseglink dataframe
+    df_annulus = pd.DataFrame()
+    df_wseglink = pd.DataFrame()
+    for izone, zone in enumerate(df_well["ANNULUS_ZONE"].unique()):
+        # filter only that annular zone
+        df_branch = df_well[df_well["ANNULUS_ZONE"] == zone]
+        df_active = df_branch[(df_branch["NDEVICES"].to_numpy() > 0) | (df_branch["DEVICETYPE"].to_numpy() == "PERF")]
+        # setting the start segment number and start branch number
+        if izone == 0:
+            start_segment = max(df_device["SEG"]) + 1
+            start_branch = max(df_device["BRANCH"]) + 1
+        else:
+            start_segment = max(df_annulus["SEG"]) + 1
+            start_branch = max(df_annulus["BRANCH"]) + 1
+        # now find the most downstream connection of the annulus zone
+        idx_connection = np.argwhere(
+            (df_branch["NDEVICES"].to_numpy() > 0) | (df_branch["DEVICETYPE"].to_numpy() == "PERF")
+        )
+        if idx_connection[0] == 0:
+            # If the first connection then everything is easy
+            df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
+                df_branch, df_active, df_device, start_branch, annulus_length, start_segment, well_name
+            )
+        else:
+            # meaning the main connection is not the most downstream segment
+            # therefore we have to split the annulus segment into two
+            # the splitting point is the most downstream segment
+            # which have device segment open or PERF
+            try:
+                df_branch_downstream = df_branch.iloc[0 : idx_connection[0], :]
+                df_branch_upstream = df_branch.iloc[idx_connection[0] :,]
