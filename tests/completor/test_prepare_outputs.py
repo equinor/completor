@@ -172,3 +172,247 @@ def test_prepare_tubing_layer():
 def test_prepare_compsegs():
     """Tests the function prepare_outputs.py::prepare_compsegs()."""
     well_name = "A1"
+    lateral = 1
+    df_reservoir = pd.DataFrame(
+        [
+            [1, 1, 1, 1000.0, 1500.0, "1*", 1, 100, 0.15, 1300.0, 1300.0, 0, "PERF", 0, "A1", 1],
+            [1, 1, 2, 1500.0, 2000.0, "1*", 1, 200, 0.20, 1750.0, 1750.0, 0, "PERF", 0, "A1", 1],
+            [1, 1, 3, 2000.0, 2500.0, "1*", 1, 100, 0.15, 2300.0, 2300.0, 0, "PERF", 0, "A1", 1],
+            [1, 1, 4, 2500.0, 3000.0, "1*", 1, 200, 0.20, 2750.0, 2750.0, 0, "PERF", 0, "A1", 1],
+        ],
+        columns=[
+            "I",
+            "J",
+            "K",
+            "STARTMD",
+            "ENDMD",
+            "COMPSEGS_DIRECTION",
+            "K2",
+            "CF",
+            "DIAM",
+            "MD",
+            "TUB_MD",
+            "NDEVICES",
+            "DEVICETYPE",
+            "ANNULUS_ZONE",
+            "WELL",
+            "LATERAL",
+        ],
+    )
+    df_device = pd.DataFrame(
+        [
+            [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
+            [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_annulus = pd.DataFrame([], columns=[])
+    df_tubing_segments = pd.DataFrame(
+        [
+            [1000.0, 2000.0, 1500.0, 1500.0, "OriginalSegment", 1, "PERF", "GP"],
+            [2000.0, 3000.0, 2500.0, 2500.0, "OriginalSegment", 1, "PERF", "GP"],
+        ],
+        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD", "SEGMENT_DESC", "NVALVEPERJOINT", "DEVICETYPE", "ANNULUS"],
+    )
+
+    # Test1: Positive segment length and no annulus zone
+    segment_length = 1.0
+    true_compsegs = pd.DataFrame(
+        [
+            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
+            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+        ],
+        columns=["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "DIR", "DEF", "SEG", ""],
+    )
+    test_compsegs = prepare_outputs.prepare_compsegs(
+        well_name, lateral, df_reservoir, df_device, df_annulus, df_tubing_segments, segment_length
+    )
+    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
+
+    # Test2: Negative segment length and no annulus zone
+    segment_length = -1.0
+    df_device = pd.DataFrame(
+        [
+            [4, 4, 1, 2, 1250.0, 1250.0, 0.15, 0.00065],
+            [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_completion_table = pd.DataFrame(
+        [
+            [1000.0, 1500.0, 1250.0, 1250.0, "OriginalSegment", "GP", 1, "PERF"],
+            [1500.0, 3000.0, 2250.0, 2250.0, "OriginalSegment", "GP", 1, "PERF"],
+        ],
+        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD", "SEGMENT_DESC", "ANNULUS", "NVALVEPERJOINT", "DEVICETYPE"],
+    )
+    true_compsegs = pd.DataFrame(
+        [
+            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 5, "/"],
+            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+        ],
+        columns=["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "DIR", "DEF", "SEG", ""],
+    )
+    test_compsegs = prepare_outputs.prepare_compsegs(
+        well_name, lateral, df_reservoir, df_device, df_annulus, df_completion_table, segment_length
+    )
+    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
+
+    # Test3: Positive segment length and annulus zone
+    segment_length = 1.0
+    df_device = pd.DataFrame(
+        [
+            [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
+            [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_annulus = pd.DataFrame(
+        [
+            [6, 6, 1, 2, 1500.0, 1500.0, 0.15, 0.0001, "/"],
+            [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS", ""],
+    )
+    df_tubing_segments = pd.DataFrame(
+        [
+            [1000.0, 2000.0, 1500.0, 1500.0, "OriginalSegment", 1, "GP", "ICD"],
+            [2000.0, 3000.0, 2500.0, 2500.0, "OriginalSegment", 1, "GP", "ICD"],
+        ],
+        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD", "SEGMENT_DESC", "NVALVEPERJOINT", "ANNULUS", "DEVICETYPE"],
+    )
+    true_compsegs = pd.DataFrame(
+        [
+            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
+            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+        ],
+        columns=["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "DIR", "DEF", "SEG", ""],
+    )
+    test_compsegs = prepare_outputs.prepare_compsegs(
+        well_name, lateral, df_reservoir, df_device, df_annulus, df_tubing_segments, segment_length
+    )
+    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
+
+    # Test4: Negative segment length and annulus zone
+    segment_length = -1.0
+    df_device = pd.DataFrame(
+        [
+            [4, 4, 1, 2, 1250.0, 1250.0, 0.15, 0.00065],
+            [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_annulus = pd.DataFrame(
+        [
+            [6, 6, 1, 2, 1250.0, 1250.0, 0.15, 0.0001, "/"],
+            [7, 7, 1, 3, 2250.0, 2250.0, 0.15, 0.0001, "/"],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS", ""],
+    )
+    df_completion_table = pd.DataFrame(
+        [
+            [1000.0, 1500.0, 1300.0, 1300.0, "OriginalSegment", "OA", 1, "PERF"],
+            [1500.0, 3000.0, 2250.0, 2250.0, "OriginalSegment", "OA", 1, "PERF"],
+        ],
+        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD", "SEGMENT_DESC", "ANNULUS", "NVALVEPERJOINT", "DEVICETYPE"],
+    )
+    true_compsegs = pd.DataFrame(
+        [
+            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 5, "/"],
+            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+        ],
+        columns=["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "DIR", "DEF", "SEG", ""],
+    )
+    test_compsegs = prepare_outputs.prepare_compsegs(
+        well_name, lateral, df_reservoir, df_device, df_annulus, df_completion_table, segment_length
+    )
+    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
+
+    # Test5: WELSEGS segment length with annulus
+    segment_length = "WELSEGS"
+    df_device = pd.DataFrame(
+        [
+            [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
+            [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_annulus = pd.DataFrame(
+        [
+            [6, 6, 1, 2, 1500.0, 1500.0, 0.15, 0.0001, "/"],
+            [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS", ""],
+    )
+    df_tubing_segments = pd.DataFrame(
+        [
+            [1000.0, 2000.0, 1500.0, 1500.0, "OriginalSegment", "GP", 1, "ICD"],
+            [2000.0, 3000.0, 2500.0, 2500.0, "OriginalSegment", "GP", 1, "ICD"],
+        ],
+        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD", "SEGMENT_DESC", "ANNULUS", "NVALVEPERJOINT", "DEVICETYPE"],
+    )
+    true_compsegs = pd.DataFrame(
+        [
+            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
+            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+        ],
+        columns=["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "DIR", "DEF", "SEG", ""],
+    )
+    test_compsegs = prepare_outputs.prepare_compsegs(
+        well_name, lateral, df_reservoir, df_device, df_annulus, df_tubing_segments, segment_length
+    )
+    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
+
+
+def test_connect_lateral_logs_warning(caplog):
+    """
+    Test the warning occurs in connect_lateral when given segments with negative length.
+
+    Segments with negative lengths can occur when trying to connect a lateral to it's
+    main bore/mother branch. They are caused by an error in the input,
+    so the user must be warned about this.
+    """
+
+    df_tubing_lat_1 = pd.DataFrame(
+        [
+            [2, 2, 1, 1, 2219.76749],
+            [3, 3, 1, 2, 2200.73413],
+            [4, 4, 1, 3, 2202.75139],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD"],
+    )
+    df_tubing_lat_2 = pd.DataFrame(
+        [
+            [16, 16, 5, 15, 2179.9725],
+            [17, 17, 5, 16, 2195.5],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD"],
+    )
+    df_top = pd.DataFrame(
+        [[1, 2188.76261]],
+        columns=["TUBINGBRANCH", "TUBINGMD"],
+    )
+    empty_df = pd.DataFrame()
+
+    data = {
+        1: (df_tubing_lat_1, empty_df, empty_df, empty_df, empty_df),
+        2: (df_tubing_lat_2, empty_df, empty_df, empty_df, df_top),
+    }
+    case = read_casefile.ReadCasefile(
+        (
+            """
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+  A1     1   0.0  2451.78 0.15   0.19    0.00035     GP      1     PERF    1
+  A1     2   0.0  2450.0  0.15   0.19    0.00035     GP      1     PERF    1
