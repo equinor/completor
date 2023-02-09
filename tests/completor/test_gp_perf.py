@@ -66,3 +66,31 @@ def test_gp_perf_true(tmpdir):
 
 
 def test_mix_in_branch(tmpdir):
+    """Test completor case with gp_perf and aicd in same branch.
+    GP_PERF_DEVICELAYER not set.
+    """
+    tmpdir.chdir()
+    case_file = """
+    COMPLETION
+    A1 1 0    2024 0.2 0.25 1.00E-4 GP 0 PERF 0
+    A1 1 2024 3000 0.2 0.25 1.00E-4 GP 1 AICD 1
+    /
+
+    WSEGAICD
+    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+    /
+    """
+    true_file = Path(_TESTDIR / "wb_perf_mix_inbranch.true")
+    common.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_mix_multibranch(tmpdir):
+    """Test completor case with gp_perf and aicd in two different branches.
+    GP_PERF_DEVICELAYER not set.
+    """
+    tmpdir.chdir()
+    case_file = """
+    COMPLETION
+    A1 1 0 3000 0.2 0.25 1.00E-4 GP 0 PERF 0
+    A1 2 0 3000 0.2 0.25 1.00E-4 GP 1 AICD 1
