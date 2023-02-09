@@ -418,3 +418,26 @@ class CreateOutput:
         if paths:
             self.case_path, self.schedule_path = paths
         else:
+            self.case_path = None
+            self.schedule_path = None
+        self.wells = wells
+        self.well_name = well_name
+        self.iwell = iwell
+        self.version = completor_version
+        self.write_welsegs = write_welsegs
+        self.show_figure = show_figure
+
+        # different line connection
+        self.newline1 = "\n\n\n"
+        self.newline2 = "\n/" + self.newline1
+        self.newline3 = "/" + self.newline1
+
+        # create final print
+        self.header = self.make_completor_header()
+
+        # Prints the UDQ statement if a PVT file and
+        # PVT table are specified in the case file.
+        self.print_udq = False
+        self.udq_correlation = ""
+        self.udq_parameter: dict[str, str] = {}
+        if self.case.completion_table["DEVICETYPE"].isin(["AICV"]).any():
