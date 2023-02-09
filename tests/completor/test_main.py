@@ -578,3 +578,9 @@ def test_well_name_in_single_quotes(tmpdir):
 def test_well_name_with_slash(tmpdir):
     """Test completor with a slash in the wellname."""
     tmpdir.chdir()
+    case_file = """
+    COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+  'A/1'  1     0   3000   0.2     0.25    1.00E-4    GP      1      PERF    0
