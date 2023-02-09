@@ -28,3 +28,44 @@ def getLogger(module_name="completor"):
 
 
 logger = getLogger(__name__)
+
+
+def handle_error_messages(func):
+    """
+    Decorator to catch any exceptions it might throw
+    (with some exceptions, such as KeyboardInterrupt)
+    If there are any error messages from the exception, they are logged.
+    If completor fails, the decorator will write a zip file to disk;
+    Completor-<year><month><day>-<hour><minute><second>-<letter><5 numbers>.zip
+    The last letter and numbers are chosen at random.
+    The format is similar to Roxar's RMS' error files.
+
+    The zip file contains
+
+    * traceback.txt - a trace back
+    * machine.txt - which machine it happened on
+    * arguments.json - all input arguments
+    * The content of any files passed
+      For the main method of Completor, these are (if provided)
+      * input_file.txt - The case file
+      * schedule_file.txt  - The schedule file
+      * new_file.txt - The output file
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except (Exception, SystemExit) as ex:
+            # SystemExit does not inherit from Exception
+            if isinstance(ex, SystemExit):
+                exit_code = ex.code
+            else:
+                exit_code = 1
+                logger.error(ex)
+            if len(args) > 0:
+                _kwargs = {}
+                _kwargs["input_file"] = kwargs["paths"][0]
+                _kwargs["schedule_file"] = kwargs["paths"][1]
+                _kwargs["new_file"] = args[2]
+                _kwargs["show_fig"] = args[3]
