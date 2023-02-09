@@ -24,3 +24,21 @@ def test_duplicates(tmpdir):
     true_file = Path(_TESTDIR / "duplicate.true")
     common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
     common.assert_results(true_file, _TEST_FILE)
+
+
+def test_segment_creation_method():
+    """Test _method maps string and number input to correct SegmentCreationMethod."""
+
+    def replace_segment_length_value(text: str, value_to_insert: str) -> CreateWells:
+        """Helper replacing segment length keyword's value and create well."""
+        lines = text.splitlines()
+        lines[-2] = value_to_insert
+        # Reintroduce linebreaks
+        text = "\n".join(lines)
+        case = ReadCasefile(text, "dummy_value.sch")
+        return CreateWells(case)
+
+    base_case = """
+COMPLETION
+A1  1     0   2000  0.150  0.216  0.123  GP  0  ICD  1
+A1  1  2000  99999  0.150  0.216  0.123  GP  0  ICD  1
