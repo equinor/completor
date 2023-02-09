@@ -8,3 +8,4 @@ _TESTDIR = Path(__file__).absolute().parent / "data"
 
 
 def test_correlation_udq():
+    """Test the function which gives the AICV UDQ expression of SUWCT."""
