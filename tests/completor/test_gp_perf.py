@@ -104,3 +104,4 @@ def test_mix_multibranch(tmpdir):
         schedule_file = f.read()
     true_file = Path(_TESTDIR / "wb_perf_mix_multibranch.true")
     common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
