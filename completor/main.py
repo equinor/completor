@@ -451,3 +451,6 @@ def create(
                 "Inconsistent case and input schedule files. "
                 "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
             )
+
+
+COMPLETOR_DESCRIPTION = """Completor models advanced well completions for Eclipse.
