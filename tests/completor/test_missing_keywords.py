@@ -277,3 +277,4 @@ def test_missing_wsegaicv(tmpdir):
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICV' in input files."
+    set_case("AICV", ["completion"], case_file)
