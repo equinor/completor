@@ -721,3 +721,57 @@ class CreateWells:
         * :ref:`wsegaicd_table <wsegaicd_table>`
         * :ref:`wsegdar_table <wsegdar_table>`
         * :ref:`wsegaicv_table <wsegaicv_table>`
+        * :ref:`wsegicv_table <wsegicv_table>`
+
+        Updates the class property DataFrame df_well described in ``complete_the_well``.
+        """
+        if not self.case.completion_icv_tubing.empty:
+            active_devices = pd.concat(
+                [self.df_completion["DEVICETYPE"], self.case.completion_icv_tubing["DEVICETYPE"]]
+            ).unique()
+        else:
+            active_devices = self.df_completion["DEVICETYPE"].unique()
+        if "VALVE" in active_devices:
+            self.df_well = completion.get_device(self.df_well, self.case.wsegvalv_table, "VALVE")
+        if "ICD" in active_devices:
+            self.df_well = completion.get_device(self.df_well, self.case.wsegsicd_table, "ICD")
+        if "AICD" in active_devices:
+            self.df_well = completion.get_device(self.df_well, self.case.wsegaicd_table, "AICD")
+        if "DAR" in active_devices:
+            self.df_well = completion.get_device(self.df_well, self.case.wsegdar_table, "DAR")
+        if "AICV" in active_devices:
+            self.df_well = completion.get_device(self.df_well, self.case.wsegaicv_table, "AICV")
+        if "ICV" in active_devices:
+            self.df_well = completion.get_device(self.df_well, self.case.wsegicv_table, "ICV")
+
+    def correct_annulus_zone(self) -> None:
+        """
+        Remove annulus zone if there is no connection to the tubing.
+
+        Uses and updates the class property DataFrame df_well described in
+        ``complete_the_well``.
+        """
+        self.df_well = completion.correct_annulus_zone(self.df_well)
+
+    def connect_cells_to_segments(self) -> None:
+        """
+        Connect cells to the well.
+
+        We only need the following columns from the well DataFrame:
+        MD, NDEVICES, DEVICETYPE, and ANNULUS_ZONE
+
+        ICV placement forces different method in segment creation as USER defined
+
+        Updates the class property DataFrame :ref:`df_reservoir` and uses the
+        class property DataFrame :ref:`df_well`.
+        """
+        # drop BRANCH column, not needed
+        self.df_reservoir.drop(["BRANCH"], axis=1, inplace=True)
+        icv_device = (
+            self.df_well["DEVICETYPE"].nunique() > 1
+            and (self.df_well["DEVICETYPE"] == "ICV").any()
+            and not self.df_well["NDEVICES"].empty
+        )
+        method = SegmentCreationMethod.USER if icv_device else self.method
+        self.df_reservoir = completion.connect_cells_to_segments(
+            self.df_well[["TUB_MD", "NDEVICES", "DEVICETYPE", "ANNULUS_ZONE"]],
