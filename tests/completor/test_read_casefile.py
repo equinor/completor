@@ -164,3 +164,118 @@ def test_new_dar_old_parameters():
 
 def test_read_case_wsegaicv():
     """Test the function which reads WSEGAICV keyword."""
+    df_true = pd.DataFrame(
+        [
+            [
+                "AICV",
+                1,
+                0.95,
+                0.95,
+                1000,
+                0.45,
+                0.001,
+                0.9,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.1,
+                1.2,
+                1.3,
+                0.002,
+                0.9,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.1,
+                1.2,
+                1.3,
+            ],
+            [
+                "AICV",
+                2,
+                0.80,
+                0.85,
+                1001,
+                0.55,
+                0.005,
+                0.1,
+                1.1,
+                1.0,
+                1.0,
+                1.0,
+                1.4,
+                1.5,
+                1.6,
+                0.022,
+                0.1,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                2.1,
+                2.2,
+                2.3,
+            ],
+        ],
+        columns=[
+            "DEVICETYPE",
+            "DEVICENUMBER",
+            "WCT_AICV",
+            "GHF_AICV",
+            "RHOCAL_AICV",
+            "VISCAL_AICV",
+            "ALPHA_MAIN",
+            "X_MAIN",
+            "Y_MAIN",
+            "A_MAIN",
+            "B_MAIN",
+            "C_MAIN",
+            "D_MAIN",
+            "E_MAIN",
+            "F_MAIN",
+            "ALPHA_PILOT",
+            "X_PILOT",
+            "Y_PILOT",
+            "A_PILOT",
+            "B_PILOT",
+            "C_PILOT",
+            "D_PILOT",
+            "E_PILOT",
+            "F_PILOT",
+        ],
+    )
+    df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
+    df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
+    pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicv_table)
+
+
+def test_error_missing_column_completion():
+    """Check that a missing column in COMPLETION causes error."""
+    completion_string = """
+COMPLETION
+--Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter Roughness       Annulus     Nvalve/Joint     ValveType
+--        Number                      Tubing     Casing              Roughness       Content
+--                                    Diameter   Diameter
+'A1'       1        0         1000     0.1        0.2                 1E-4            OA          3                AICD
+'A1'       2        500       1000     0.1        0.2                 1E-4            GP          0                VALVE
+/
+"""  # noqa: more human readable at this witdth.
+
+    with pytest.raises(CaseReaderFormatError) as err:
+        ReadCasefile(case_file=completion_string, schedule_file="none")
+
+    expected_err = [
+        "Error at line 6 in case file:\n",
+        "Too few entries in data for keyword 'COMPLETION', expected 11 entries:",
+    ]
+    for expected in expected_err:
+        assert expected in str(err.value)
+
+
+def test_error_extra_column_completion():
+    """Check that an extra column in COMPLETION causes error."""
+    completion_string = """
+COMPLETION
+--Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber
