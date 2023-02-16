@@ -227,3 +227,18 @@ def read_schedule_keywords(
             if keyword in ["WELSEGS", "COMPSEGS"]:
                 # remove string characters
                 collection.well = remove_string_characters(keyword_content[0][0])
+            collections.append(collection)
+    # get anything that is not listed in the keywords
+    # ignore the first record -1
+    used_index = used_index[1:]
+    mask = np.full(len(content), True, dtype=bool)
+    mask[used_index] = False
+    return collections, np.asarray(content)[mask]
+
+
+def _create_record(content: list[str], keyword: str, irec: int, start: int) -> list[str]:
+    _record = content[irec]
+    # remove / sign at the end
+    _record = list(filter(None, _record.rsplit("/", 1)))[0]
+    # split each column
+    record = list(filter(None, _record.split(" ")))
