@@ -374,3 +374,16 @@ class ReadCasefile:
             self.gp_perf_devicelayer = gp_perf_devicelayer.upper() == "TRUE"
         logger.info("gp_perf_devicelayer is set to %s", self.gp_perf_devicelayer)
 
+    def read_minimum_segment_length(self) -> None:
+        """
+        Read the MINIMUM_SEGMENT_LENGTH keyword in the case file.
+        The default value is 0.0, meaning that no segments are lumped by this
+        keyword. The program will continue to coalesce segments until all
+        segments are longer than the given minimum.
+        """
+        start_index, end_index = self.locate_keyword("MINIMUM_SEGMENT_LENGTH")
+        if end_index == start_index + 2:
+            min_seg_len = self.content[start_index + 1]
+            self.minimum_segment_length = val.validate_minimum_segment_length(min_seg_len)
+        logger.info("minimum_segment_length is set to %s", self.minimum_segment_length)
+
