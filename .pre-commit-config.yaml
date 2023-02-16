@@ -4,3 +4,29 @@ repos:
     hooks:
     - id: no-commit-to-branch
       args: ['--branch', 'main']
+    - id: check-json
+    - id: check-yaml
+    - id: debug-statements
+    - id: fix-encoding-pragma
+      args: [--remove]
+    - id: end-of-file-fixer
+      exclude: "tests/completor/data/"
+    - id: mixed-line-ending
+      exclude: "tests/completor/data/"
+    - id: trailing-whitespace
+      exclude: "tests/completor/data/"
+    - id: detect-private-key  # Checks for private keys
+    - id: check-docstring-first  # Look for code above docstring
+    - id: check-merge-conflict  # Check for merge conflict strings
+    - id: check-added-large-files  # Prevent giant files from being committed
+      args: ['--maxkb=200']
+
+# Quick content checks based on grepping for python specific patterns:
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: python-check-blanket-noqa   # Prohibit overly broad QA exclusions.
+    -   id: python-no-eval              # Never use eval() it's dangerous.
+    -   id: python-no-log-warn          # logger.warning(), not old .warn()
+    -   id: python-use-type-annotations # Enforce that python3.6+ type annotations are used instead of type comments
+
