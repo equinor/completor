@@ -179,3 +179,22 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int):
             "Valid types are PERF, AICD, ICD, VALVE, DAR, AICV, and ICV."
         )
     if df_comp["ANNULUS"].iloc[idx] not in ["GP", "OA", "PA"]:
+        raise abort(f"{df_comp['ANNULUS'].iloc[idx]} not a valid annulus type. Valid types are GP, OA, and PA")
+
+
+def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """
+    Format the WSEGVALV table.
+
+    Args:
+        df_temp: WSEGVALV table
+
+    Returns:
+        updated WSEGVALV
+
+    The format of the WSEGVALV table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_wsegvalv``.
+    """
+    # set data type
+    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    df_temp[["CV", "AC", "AC_MAX"]] = df_temp[["CV", "AC", "AC_MAX"]].astype(np.float64)
