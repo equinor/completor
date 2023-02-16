@@ -605,3 +605,60 @@ def test_prepare_wsegvalv():
         columns=["WELL", "SEG", "CV", "AC", "L", "AC_MAX", ""],
     )
     # TODO: This test is a bit weird.
+    wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", 1, df_well, df_device)
+    pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
+
+
+def test_prepare_compdat(tmpdir):
+    """Test function for prepare_compdat including change of well/casing ID from
+    input schedule values to completion table values."""
+    tmpdir.chdir()
+    well_name = "WELL"
+    lateral = 1
+    df_reservoir = pd.DataFrame(
+        [["WELL", 1, 5, 10, 15, 15, "OPEN", "1*", 100.0, 0.216, 50.0, 2.5, "1*", "Y", 12.25, 1000.0, 1, 1, "ICD"]],
+        columns=[
+            "WELL",
+            "LATERAL",
+            "I",
+            "J",
+            "K",
+            "K2",
+            "STATUS",
+            "SATNUM",
+            "CF",
+            "DIAM",
+            "KH",
+            "SKIN",
+            "DFACT",
+            "COMPDAT_DIRECTION",
+            "RO",
+            "MD",
+            "ANNULUS_ZONE",
+            "NDEVICES",
+            "DEVICETYPE",
+        ],
+    )
+
+    df_completion_table = pd.DataFrame(
+        [[500.0, 1500.0, 500.0, 1500.0, "OriginalSegment", "OA", 1, "ICD", 0.15, 0.311]],
+        columns=[
+            "STARTMD",
+            "ENDMD",
+            "TUB_MD",
+            "TUB_TVD",
+            "SEGMENT_DESC",
+            "ANNULUS",
+            "NVALVEPERJOINT",
+            "DEVICETYPE",
+            "INNER_ID",
+            "OUTER_ID",
+        ],
+    )
+
+    prepare_compdat_out = prepare_outputs.prepare_compdat(well_name, lateral, df_reservoir, df_completion_table)
+    prepare_compdat_true = pd.DataFrame(
+        [["WELL", 5, 10, 15, 15, "OPEN", "1*", 100.0, 0.311, 50.0, 2.5, "1*", "Y", 12.25, "/"]],
+        columns=["WELL", "I", "J", "K", "K2", "FLAG", "SAT", "CF", "DIAM", "KH", "SKIN", "DFACT", "DIR", "RO", ""],
+    )
+    pd.testing.assert_frame_equal(prepare_compdat_out, prepare_compdat_true)
