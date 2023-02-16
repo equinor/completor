@@ -248,3 +248,21 @@ def create_tubing_segments(
                 end_measure_depth = np.array(create_end_md)
         # if users want a minumum segment length, we do the following
         minimum_segment_length = float(minimum_segment_length)
+        if minimum_segment_length > 0.0:
+            new_start_md = []
+            new_end_md = []
+            diff_md = end_measure_depth - start_measure_depth  # get the segment lengths
+            current_diff_md = 0.0
+            start_idx = 0
+            end_idx = 0
+            for idx in range(0, len(diff_md) - 1):
+                current_diff_md += diff_md[idx]
+                if current_diff_md >= minimum_segment_length:
+                    new_start_md.append(start_measure_depth[start_idx])
+                    new_end_md.append(end_measure_depth[end_idx])
+                    current_diff_md = 0.0
+                    start_idx = idx + 1
+                    end_idx = idx + 1
+                else:
+                    end_idx = idx + 1
+            if current_diff_md < minimum_segment_length:
