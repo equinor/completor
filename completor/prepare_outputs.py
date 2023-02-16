@@ -957,3 +957,119 @@ def prepare_compdat(
     compdat["SAT"] = df_reservoir["SATNUM"].to_numpy()
     compdat["CF"] = df_reservoir["CF"].to_numpy()
     compdat["DIAM"] = fix_well_id(df_reservoir, df_completion_table)["DIAM"].to_numpy()
+    compdat["KH"] = df_reservoir["KH"].to_numpy()
+    compdat["SKIN"] = df_reservoir["SKIN"].to_numpy()
+    compdat["DFACT"] = df_reservoir["DFACT"].to_numpy()
+    compdat["DIR"] = df_reservoir["COMPDAT_DIRECTION"].to_numpy()
+    compdat["RO"] = df_reservoir["RO"].to_numpy()
+    # remove default columns
+    compdat = trim_pandas(compdat)
+    compdat[""] = "/"
+    return compdat
+
+
+def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepare WSEGAICD data frame.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: df_well from class CreateWells
+        df_device: From function prepare_device_layer for this well and this lateral
+
+    Returns:
+        WSEGAICD
+    """
+    df_well = df_well[df_well["WELL"] == well_name]
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[(df_well["DEVICETYPE"] == "PERF") | (df_well["NDEVICES"] > 0)]
+    if df_well.shape[0] == 0:
+        return pd.DataFrame()
+    df_merge = pd.merge_asof(left=df_device, right=df_well, left_on=["MD"], right_on=["TUB_MD"], direction="nearest")
+    df_merge = df_merge[df_merge["DEVICETYPE"] == "AICD"]
+    wsegaicd = pd.DataFrame()
+    if df_merge.shape[0] > 0:
+        wsegaicd["WELL"] = [well_name] * df_merge.shape[0]
+        wsegaicd["SEG"] = df_merge["SEG"].to_numpy()
+        wsegaicd["SEG2"] = df_merge["SEG"].to_numpy()
+        wsegaicd["ALPHA"] = df_merge["ALPHA"].to_numpy()
+        wsegaicd["SF"] = df_merge["SCALINGFACTOR"].to_numpy()
+        wsegaicd["RHO"] = df_merge["RHOCAL_AICD"].to_numpy()
+        wsegaicd["VIS"] = df_merge["VISCAL_AICD"].to_numpy()
+        wsegaicd["DEF"] = ["5*"] * df_merge.shape[0]
+        wsegaicd["X"] = df_merge["X"].to_numpy()
+        wsegaicd["Y"] = df_merge["Y"].to_numpy()
+        wsegaicd["FLAG"] = ["OPEN"] * df_merge.shape[0]
+        wsegaicd["A"] = df_merge["A"].to_numpy()
+        wsegaicd["B"] = df_merge["B"].to_numpy()
+        wsegaicd["C"] = df_merge["C"].to_numpy()
+        wsegaicd["D"] = df_merge["D"].to_numpy()
+        wsegaicd["E"] = df_merge["E"].to_numpy()
+        wsegaicd["F"] = df_merge["F"].to_numpy()
+        wsegaicd[""] = "/"
+    return wsegaicd
+
+
+def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepare WSEGSICD data frame.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: df_well from class CreateWells
+        df_device: From function prepare_device_layer for this well and this lateral
+
+    Returns:
+        WSEGSICD
+    """
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[(df_well["DEVICETYPE"] == "PERF") | (df_well["NDEVICES"] > 0)]
+    if df_well.shape[0] == 0:
+        return pd.DataFrame()
+    df_merge = pd.merge_asof(left=df_device, right=df_well, left_on=["MD"], right_on=["TUB_MD"], direction="nearest")
+    df_merge = df_merge[df_merge["DEVICETYPE"] == "ICD"]
+    wsegsicd = pd.DataFrame()
+    if df_merge.shape[0] > 0:
+        wsegsicd["WELL"] = [well_name] * df_merge.shape[0]
+        wsegsicd["SEG"] = df_merge["SEG"].to_numpy()
+        wsegsicd["SEG2"] = df_merge["SEG"].to_numpy()
+        wsegsicd["ALPHA"] = df_merge["STRENGTH"].to_numpy()
+        wsegsicd["SF"] = df_merge["SCALINGFACTOR"].to_numpy()
+        wsegsicd["RHO"] = df_merge["RHOCAL_ICD"].to_numpy()
+        wsegsicd["VIS"] = df_merge["VISCAL_ICD"].to_numpy()
+        wsegsicd["WCT"] = df_merge["WCUT"].to_numpy()
+        wsegsicd[""] = "/"
+    return wsegsicd
+
+
+def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepare WSEGVALV data frame.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_well: df_well from class CreateWells
+        df_device: From function prepare_device_layer for this well and this lateral
+
+    Returns:
+        WSEGVALV
+    """
+    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[(df_well["DEVICETYPE"] == "PERF") | (df_well["NDEVICES"] > 0)]
+    if df_well.shape[0] == 0:
+        return pd.DataFrame()
+    df_merge = pd.merge_asof(left=df_device, right=df_well, left_on=["MD"], right_on=["TUB_MD"], direction="nearest")
+    df_merge = df_merge[df_merge["DEVICETYPE"] == "VALVE"].reset_index(drop=True)
+    wsegvalv = pd.DataFrame()
+    if df_merge.shape[0] > 0:
+        wsegvalv["WELL"] = [well_name] * df_merge.shape[0]
+        wsegvalv["SEG"] = df_merge["SEG"].to_numpy()
+        # the Cv is already corrected by the scaling factor
+        wsegvalv["CV"] = df_merge["CV"].to_numpy()
+        wsegvalv["AC"] = df_merge["AC"].to_numpy()
+        wsegvalv["L"] = "5*"
+        wsegvalv["AC_MAX"] = df_merge["AC_MAX"].to_numpy()
+        wsegvalv["AC_MAX"].fillna(df_merge["AC"], inplace=True)
