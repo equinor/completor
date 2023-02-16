@@ -244,3 +244,7 @@ def create_tubing_segments(
                         create_start_md.append(df_reservoir["STARTMD"].iloc[idx])
                         current_segment = df_reservoir["SEGMENT"].iloc[idx]
                 create_end_md.append(df_reservoir["ENDMD"].iloc[-1])
+                start_measure_depth = np.array(create_start_md)
+                end_measure_depth = np.array(create_end_md)
+        # if users want a minumum segment length, we do the following
+        minimum_segment_length = float(minimum_segment_length)
