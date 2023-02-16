@@ -520,3 +520,90 @@ class CreateWells:
 
         The format of df_completion is shown in ``define_annuluszone`` and the
         format of df_mdtvd is given in ``well_trajectory``. The formats of
+        df_reservoir and df_tubing_segments are as follows:
+
+        .. list-table:: df_reservoir
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - I
+             - int
+           * - J
+             - int
+           * - K
+             - int
+           * - STARTMD
+             - float
+           * - ENDMD
+             - float
+           * - COMPSEGS_DIRECTION
+             - str
+           * - ENDGRID
+             -
+           * - PERFDEPTH
+             - float
+           * - THERM
+             -
+           * - SEGMENT
+             - int
+           * - K2
+             - int
+           * - STATUS
+             - str
+           * - SATNUM
+             - int
+           * - CF
+             - float
+           * - DIAM
+             - float
+           * - KH
+             - float
+           * - SKIN
+             - float
+           * - DFACT
+             - float
+           * - COMPDAT_DIRECTION
+             - str
+           * - RO
+             - float
+           * - MD
+             - float
+           * - TUB_MD
+             - float
+           * - NDEVICES
+             - float
+           * - ANNULUS_ZONE
+             - int
+           * - WELL
+             - str
+           * - LATERAL
+             - int
+
+        .. _df_tubing_segments:
+        .. list-table:: df_tubing_segments
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - STARTMD
+             - float
+           * - ENDMD
+             - float
+           * - TUB_MD
+             - float
+           * - TUB_TVD
+             - float
+           * - SEGMENT_DESC
+             - str
+        """
+
+        df_tubing_cells = completion.create_tubing_segments(
+            self.df_reservoir,
+            self.df_completion,
+            self.df_mdtvd,
+            self.method,
+            self.case.segment_length,  # TODO(#322): What if this is a string?
+            self.case.minimum_segment_length,
