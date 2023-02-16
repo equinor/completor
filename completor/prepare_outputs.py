@@ -777,3 +777,183 @@ def prepare_compsegs(
                 # Restore original sorting of DataFrames
                 df_compseg_annulus.sort_values(by=["STARTMD"], inplace=True)
                 df_compseg_device.sort_values(by=["STARTMD"], inplace=True)
+                df_compseg_device.drop(["MARKER"], axis=1, inplace=True)
+                df_compseg_annulus.drop(["MARKER"], axis=1, inplace=True)
+        else:
+            df_compseg_annulus = pd.merge_asof(left=df_reservoir, right=df_annulus, on=["MD"], direction="nearest")
+            df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=["MD"], direction="nearest")
+        if icv_segmenting:
+            df_compseg_device, df_compseg_annulus = connect_compseg_icv(
+                df_reservoir, df_device, df_annulus, df_completion_table
+            )
+
+        def _choose(parameter: str) -> np.ndarray:
+            return choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, parameter)
+
+        compseg = as_data_frame(
+            I=_choose("I"),
+            J=_choose("J"),
+            K=_choose("K"),
+            BRANCH=_choose("BRANCH"),
+            STARTMD=_choose("STARTMD"),
+            ENDMD=_choose("ENDMD"),
+            DIR=_choose("COMPSEGS_DIRECTION"),
+            DEF="3*",
+            SEG=_choose("SEG"),
+        )
+    compseg[""] = "/"
+    return compseg
+
+
+def connect_compseg_usersegment(
+    df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion_table: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Connect COMPSEGS with user segmentation. This method will connect
+    df_reservoir with df_device and df_annulus in accordance of its
+    depth in the df_completion_table due to user segmentation method.
+
+    Args:
+        df_reservoir: The df_reservoir from class object CreateWells
+        df_device: DataFrame from function prepare_device_layer
+                    for this well and lateral
+        df_annulus: DataFrame from function prepare_annulus_layer
+                    for this well and lateral
+        df_completion_table: DataFrame
+
+    Returns:
+        df_compseg_device, df_compseg_annulus
+    """
+    # check on top of df_res if the completion table is feasible
+    df_temp = df_completion_table[
+        (df_completion_table["NVALVEPERJOINT"] > 0.0) | (df_completion_table["DEVICETYPE"] == "PERF")
+    ]
+    df_completion_table_clean = df_temp[(df_temp["ANNULUS"] != "PA")]
+    if not df_annulus.empty:
+        df_completion_table_clean = df_completion_table[df_completion_table["ANNULUS"] == "OA"]
+    df_completion_table_clean = df_completion_table_clean[
+        (df_completion_table_clean["ENDMD"] > df_reservoir["STARTMD"].iloc[0])
+    ]
+    df_annulus.reset_index(drop=True, inplace=True)
+    df_res = df_reservoir.assign(MARKER=[0 for _ in range(df_reservoir.shape[0])])
+    df_dev = df_device.assign(MARKER=[x + 1 for x in range(df_device.shape[0])])
+    df_ann = df_annulus.assign(MARKER=[x + 1 for x in range(df_annulus.shape[0])])
+    starts = df_completion_table_clean["STARTMD"].apply(lambda x: max(x, df_res["STARTMD"].iloc[0]))
+    ends = df_completion_table_clean["ENDMD"].apply(lambda x: min(x, df_res["ENDMD"].iloc[-1]))
+    func = 1
+    for start, end in zip(starts, ends):
+        condition = f"@df_res.MD >= {start} and @df_res.MD <= {end}"
+        column_to_modify = "MARKER"
+        column_index = df_res.query(condition).index
+        df_res.loc[column_index, column_to_modify] = func
+        func += 1
+    df_res.reset_index(drop=True, inplace=True)
+    df_compseg_annulus = pd.DataFrame()
+    if not df_annulus.empty:
+        try:
+            df_compseg_annulus = pd.merge_asof(
+                left=df_res.sort_values("MARKER"), right=df_ann, on=["MARKER"], direction="nearest"
+            )
+        except ValueError as err:
+            raise abort(
+                "Unexpected error when merging data frames. Please contact the "
+                "dev-team with the stack trace above and the files that caused "
+                "this error"
+            ) from err
+    try:
+        df_compseg_device = pd.merge_asof(
+            left=df_res.sort_values("MARKER"), right=df_dev, on=["MARKER"], direction="nearest"
+        )
+    except ValueError as err:
+        raise abort(
+            "Unexpected error when merging data frames. Please contact the "
+            "dev-team with the stack trace above and the files that caused "
+            "this error"
+        ) from err
+
+    return df_compseg_device, df_compseg_annulus
+
+
+def choose_layer(
+    df_reservoir: pd.DataFrame, df_compseg_annulus: pd.DataFrame, df_compseg_device: pd.DataFrame, parameter: str
+) -> np.ndarray:
+    """
+    Choose relevant parameters from either df_compseg_annulus or df_compseg_device.
+
+    Args:
+        df_reservoir:
+        df_compseg_annulus:
+        df_compseg_device:
+        parameter:
+
+    Returns:
+        Relevant parameters
+    """
+    branch_num = df_reservoir["ANNULUS_ZONE"].to_numpy()
+    ndevice = df_reservoir["NDEVICES"].to_numpy()
+    dev_type = df_reservoir["DEVICETYPE"].to_numpy()
+    return np.where(
+        branch_num > 0,
+        df_compseg_annulus[parameter].to_numpy(),
+        np.where((ndevice > 0) | (dev_type == "PERF"), df_compseg_device[parameter].to_numpy(), -1),
+    )
+
+
+def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensure that well/casing inner diameter in the COMPDAT section is in agreement with
+    case/config file and not the input schedule file.
+
+    Args:
+        df_reservoir: Reservoir dataframe
+        df_completion_table: ReadCasefile object for current well/lateral
+
+    Returns:
+        Corrected df_reservoir DataFrame for current well/lateral
+        with inner diameter taken from the ReadCasefile object.
+    """
+    df_reservoir = df_reservoir.copy(deep=True)
+    completion_diameters = []
+    for md_reservoir in df_reservoir["MD"]:
+        for start_completion, outer_inner_diameter_completion, end_completion in zip(
+            df_completion["STARTMD"], df_completion["OUTER_ID"], df_completion["ENDMD"]
+        ):
+            if start_completion <= md_reservoir <= end_completion:
+                completion_diameters.append(outer_inner_diameter_completion)
+                break
+    df_reservoir["DIAM"] = completion_diameters
+    return df_reservoir
+
+
+def prepare_compdat(
+    well_name: str, lateral: int, df_reservoir: pd.DataFrame, df_completion_table: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Prepare COMPDAT data frame.
+
+    Args:
+        well_name: Well name
+        lateral: Lateral number
+        df_reservoir: df_reservoir from class CreateWells
+        df_completion_table: From class ReadCasefile
+
+    Returns:
+        COMPDAT
+    """
+    df_reservoir = df_reservoir[df_reservoir["WELL"] == well_name]
+    df_reservoir = df_reservoir[df_reservoir["LATERAL"] == lateral]
+    df_reservoir = df_reservoir[
+        (df_reservoir["ANNULUS_ZONE"] > 0) | ((df_reservoir["NDEVICES"] > 0) | (df_reservoir["DEVICETYPE"] == "PERF"))
+    ]
+    if df_reservoir.shape[0] == 0:
+        return pd.DataFrame()
+    compdat = pd.DataFrame()
+    compdat["WELL"] = [well_name] * df_reservoir.shape[0]
+    compdat["I"] = df_reservoir["I"].to_numpy()
+    compdat["J"] = df_reservoir["J"].to_numpy()
+    compdat["K"] = df_reservoir["K"].to_numpy()
+    compdat["K2"] = df_reservoir["K2"].to_numpy()
+    compdat["FLAG"] = df_reservoir["STATUS"].to_numpy()
+    compdat["SAT"] = df_reservoir["SATNUM"].to_numpy()
+    compdat["CF"] = df_reservoir["CF"].to_numpy()
+    compdat["DIAM"] = fix_well_id(df_reservoir, df_completion_table)["DIAM"].to_numpy()
