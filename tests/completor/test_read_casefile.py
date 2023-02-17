@@ -305,3 +305,96 @@ def test_read_case_output_file_with_OUTFILE(tmpdir):
         case_content = file.read()
     output_file = get_content_and_path(case_content, None, "OUTFILE")
     assert output_file[1] == "output.file", "Failed reading PVTFILE keyword"
+
+
+def test_create_dataframe_with_columns():
+    """Test both formats keywords in case-file can appear as."""
+    case_content = """COMPLETION
+--Well Branch StartMD EndmD Screen   Well/Casing Roughness Annulus Nvalve/Joint ValveType DeviceNumber
+--     Number               Tubing   Casing      Roughness Content
+--                          Diameter Diameter
+'A1'    1      0       1000  0.1      0.2         1E-4      OA      3            AICD      1 /
+'A1'    2      500     1000  0.1      0.2         1E-4      GP      0            VALVE     1 /
+/
+
+WSEGSICD
+  1 0.001 1000 1.0 0.1 /
+  2 0.002 1000 0.9 0.2 /
+/
+
+WSEGAICD
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
+1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+2           0.00042   0.1   1.1 1.0 1.0 1.0 1.0 1.0 1.0 1001.25    1.55
+/
+
+"""  # noqa: more human readable at this width.
+    case = ReadCasefile(case_content)
+
+    df_true = pd.DataFrame(
+        [
+            ["ICD", 1, 0.001, 1000.0, 1.0, 0.1],
+            ["ICD", 2, 0.002, 1000.0, 0.9, 0.2],
+        ],
+        columns=["DEVICETYPE", "DEVICENUMBER", "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", "WCUT"],
+    )
+
+    pd.testing.assert_frame_equal(df_true, case.wsegsicd_table)
+
+
+def test_read_minimum_segment_length():
+    """Tests the function which reads MINIMUM_SEGMENTLENGTH keyword."""
+    assert _THECASE.minimum_segment_length == 0.0, "Failed reading" " MINIMUM_SEGMENTLENGTH keyword"
+
+
+def test_error_wrong_format_keyword(caplog):
+    """Test keywords in wrong format fails."""
+    case_content = """COMPLETION
+--Well Branch StartMD EndmD Screen   Well/Casing Roughness Annulus Nvalve/Joint ValveType DeviceNumber BlankPortion
+--     Number               Tubing   Casing      Roughness Content
+--                          Diameter Diameter
+'A1'    1      0       1000  0.1      0.2         1E-4      OA      3            AICD      1 /
+'A1'    2      500     1000  0.1      0.2         1E-4      GP      0            VALVE     1 /
+/
+
+WSEGSICD
+  1 0.001 1000 1.0 0.1 /
+
+
+"""  # noqa: more human readable at this width.
+
+    with pytest.raises(SystemExit):
+        ReadCasefile(case_content)
+    assert "Keyword WSEGSICD has no end record" in caplog.text
+
+    case_content += """
+WSEGVALV
+-- Device no    Cv     Ac           L
+          1    1.0    9.62e-6      5*
+/
+
+"""
+    # Check it still fails if more keywords after wrong formatted keyword
+    with pytest.raises(CaseReaderFormatError) as exc:
+        ReadCasefile(case_content)
+    assert "Cannot determine correct end of record " in str(exc.value)
+
+    case_wrong_no_columns = """COMPLETION
+--Well Branch StartMD EndmD Screen   Well/Casing Roughness Annulus Nvalve/Joint ValveType DeviceNumber
+--     Number               Tubing   Casing      Roughness Content
+--                          Diameter Diameter
+'A1'    1      0       1000  0.1      0.2         1E-4      OA      3            AICD      1 /
+'A1'    2      500     1000  0.1      0.2         1E-4      GP      0            VALVE     1 /
+/
+
+
+WSEGAICD
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
+1    0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1.1 0.5 1000.25    1.45
+2    0.00042   0.1   1.1 1.0 1.0 1.0 1.0 1.0 1.0 1.5 0.8 1001.25    1.55
+/
+"""  # noqa: more human readable at this width.
+
+    with pytest.raises(CaseReaderFormatError) as exc:
+        ReadCasefile(case_wrong_no_columns)
+    assert "Too many entries in data for keyword 'WSEGAICD'" in str(exc.value)
