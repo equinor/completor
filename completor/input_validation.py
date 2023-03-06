@@ -349,3 +349,21 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
                 f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
                 "This may trigger an Eclipse error."
             )
+
+
+def validate_minimum_segment_length(minimum_segment_length: str | float) -> float:
+    """
+    Assess the minimum_segment_length input.
+
+    Abort if the minimum segment length is not a number >= 0.0.
+
+    Args:
+        minimum_segment_length: Possible user input
+
+    Raises:
+        SystemExit:
+            If the minimum_segment_length is not a number >= 0.0.
+
+    Returns:
+        Minimum segment length if no errors occured.
+
