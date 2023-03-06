@@ -281,3 +281,49 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
             raise abort(f"Could not find the file: '{file_path}'!") from exc
         return file_content, file_path
     return None, file_path
+
+
+# noinspection TimingAttack
+# caused by `if token == '...'` and token is interpreted as a security token / JWT
+# or otherwise sensitive, but in this context, `token` refers to a token of parsed
+# text / semantic token
+def create(
+    input_file: str,
+    schedule_file: str,
+    new_file: str,
+    show_fig: bool = False,
+    percent: float = 5.0,
+    paths: tuple[str, str] | None = None,
+) -> (
+    tuple[list[tuple[str, list[list[str]]]], ReadCasefile, WellSchedule, CreateWells, CreateOutput]
+    | tuple[list[tuple[str, list[list[str]]]], ReadCasefile, WellSchedule, CreateWells]
+):
+    """
+    Create a new Completor schedule file from input case- and schedule files.
+
+    Args:
+        input_file: Input case file
+        schedule_file: Input schedule file
+        new_file: Output schedule file
+        show_fig: Flag indicating if a figure is to be shown
+        percent: ProgressStatus percentage steps to be shown (in per cent, %)
+
+    Returns:
+        Completor schedule file
+    """
+    case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
+    wells = CreateWells(case)
+    schedule = WellSchedule(wells.active_wells)  # container for MSW-data
+
+    lines = schedule_file.splitlines()
+
+    clean_lines_map = {}
+    for line_number, line in enumerate(lines):
+        line = clean_file_line(line, remove_quotation_marks=True)
+        if line:
+            clean_lines_map[line_number] = line
+
+    outfile = FileWriter(new_file, case.mapper)
+    chunks = []  # for debug..
+    figno = 0
+    written = set()  # Keep track of which MSW's has been written
