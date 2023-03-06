@@ -887,3 +887,65 @@ class ReadCasefile:
 
         The function uses the class property DataFrame lat2device defined in
         ``read_lat2device``.
+
+        """
+        laterals = self.lat2device[self.lat2device.WELL == well_name].BRANCH
+        if lateral in laterals.to_numpy():
+            return False
+        return True
+
+    def locate_keyword(self, keyword: str) -> tuple[int, int]:
+        return parse.locate_keyword(self.content, keyword)
+
+    def _create_dataframe_with_columns(
+        self, header: list[str], start_index: int, end_index: int, keyword: str | None = None
+    ) -> pd.DataFrame:
+        """
+        Helper method to create a dataframe with given columns' header and content.
+
+        Args:
+            header: List of column names
+            start_index: From (but not including) where in ``self.content``
+            end_index: to where to include in the body of the table
+
+        Returns:
+            Combined DataFrame.
+
+        Raises:
+            CaseReaderFormatError: If keyword is malformed,
+                or has different amount of data than the header.
+
+        """
+        if keyword is None:
+            keyword = self.content[start_index]
+        table_header = " ".join(header)
+        table_content = ""
+        # Handle weirdly formed keywords.
+        if start_index + 1 == end_index or self.content[start_index + 1].endswith("/"):
+            content_str = "\n".join(self.content[start_index + 1 :]) + "\n"
+            # (?<=\/) - positive look-behind for slash newline
+            # \/{1}   - match exactly one slash
+            #  (?=\n) - positive look-ahead for newline
+            match = re.search(r"(?<=\/\n{1})\/{1}(?=\n)", content_str)
+            if match is None:
+                raise CaseReaderFormatError(
+                    "Cannot determine correct end of record '/' for keyword.",
+                    self.case_file,
+                    header,
+                    keyword,
+                )
+            end_record = match.span()[0]
+            # From keyword to the end (without the last slash)
+            content_ = content_str[:end_record].split("/\n")[:-1]
+            content_ = [line.strip() for line in content_]
+            table_content = "\n".join(content_) + "\n"
+        else:
+            table_content = "\n".join(self.content[start_index + 1 : end_index])
+
+        header_len = len(table_header.split())
+        content_list_len = [len(line.split()) for line in table_content.splitlines()]
+        if not all(header_len == x for x in content_list_len):
+            message = (
+                "Problem with case file. Note that the COMPLETION keyword takes "
+                "exactly 11 (eleven) columns. Blank portion is now removed.\n"
+            )
