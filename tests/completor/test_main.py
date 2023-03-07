@@ -504,3 +504,34 @@ def test_read_schedule_from_casefile(schfilestring, tmpdir):
 
     # Create case_content with the non-clean path to the schedule file
     case_content = f"SCHFILE\n'{schfilestring}'\n/"
+    schedule_content, path_from_case = main.get_content_and_path(case_content, None, "SCHFILE")
+    assert path_from_case == "testdir/testfile"
+    assert "Some schedule data" in schedule_content
+
+
+@pytest.mark.parametrize(
+    "outfilestring",
+    [
+        ("  testdir/testfile"),
+        (" testdir/testfile"),
+        ("testdir/testfile"),
+        ("'testdir/testfile'"),
+        ('"testdir/testfile"'),
+    ],
+)
+def test_read_outputfile_from_casefile(outfilestring, tmpdir):
+    """
+    Test reading the output file from the OUTFILE keyword in the casefile.
+
+    Checks that any string pre- and proceeded by whitespaces and in quotes are
+    accepted as a output-file string.
+    """
+    tmpdir.chdir()
+    Path(tmpdir / "testdir").mkdir()
+    # Create a temporary "schedulefile" containing something
+    with open("testdir/testfile", "w", encoding="utf-8") as case_file:
+        case_file.write("Some case data\n")
+
+    # Create case_content with the non-clean path to the schedule file
+    case_content = f"OUTFILE\n'{outfilestring}'\n/"
+    _, path_from_case = main.get_content_and_path(case_content, None, "OUTFILE")
