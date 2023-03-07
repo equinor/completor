@@ -565,3 +565,41 @@ ENDACTIO
     wsegdar_printout = re.sub(r"[^\S\r\n]+", " ", wsegdar_printout)
     true_wsegdar_printout = re.sub(r"[^\S\r\n]+", " ", true_wsegdar_printout)
     assert wsegdar_printout == true_wsegdar_printout
+
+
+def test_prepare_wsegvalv():
+    df_well = pd.DataFrame(
+        [
+            ["'WELL'", 1250.0, 1250.0, 0.1, 0.1, 1, 1, 1.0, 1.2, "5*", 2.1, "VALVE", 1, 1],
+            ["'WELL'", 1260.0, 1260.0, 0.1, 0.1, 1, 1, 1.0, 1.2, "5*", np.nan, "VALVE", 1, 1],
+        ],
+        columns=[
+            "WELL",
+            "TUB_MD",
+            "TUB_TVD",
+            "INNER_DIAMETER",
+            "ROUGHNESS",
+            "LATERAL",
+            "ANNULUS",
+            "CV",
+            "AC",
+            "L",
+            "AC_MAX",
+            "DEVICETYPE",
+            "NDEVICES",
+            "DEVICENUMBER",
+        ],
+    )
+    df_device = pd.DataFrame(
+        [
+            [3, 3, 1, 2, 1250.0, 1250.0, 0.1, 0.1],
+            [4, 4, 1, 3, 1260.0, 1260.0, 0.1, 0.1],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    true_wsegvalv_output = pd.DataFrame(
+        [
+            ["'WELL'", 3, 1.0, 1.2, "5*", 2.1, "/"],
+            ["'WELL'", 4, 1.0, 1.2, "5*", 1.2, "/"],
+        ],
+        columns=["WELL", "SEG", "CV", "AC", "L", "AC_MAX", ""],
