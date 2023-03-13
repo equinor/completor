@@ -170,3 +170,197 @@ class CreateWells:
                 f"Unrecognized type of '{self.case.segment_length}' in "
                 "SEGMENTLENGTH keyword. The keyword must either be float or string."
             )
+
+    def _active_laterals(self) -> None:
+        """
+        Get a list of lateral numbers for the well.
+
+        ``get_active_laterals`` uses the case class DataFrame property
+        ``completion_table`` with a format as shown in the function
+        ``read_casefile.ReadCasefile.read_completion``.
+        """
+        self.laterals = list(
+            self.case.completion_table[self.case.completion_table["WELL"] == self.well_name]["BRANCH"].unique()
+        )
+
+    def select_well(self, schedule: completion.WellSchedule, lateral: int) -> None:
+        """
+        .. _select_well:
+
+        Filter all of the required DataFrames for this well and its laterals.
+
+        The function sets the class property DataFrames df_completion, df_welsegs_header
+        and df_welsegs_content, and df_reservoir, with the following formats:
+
+        .. _df_completion:
+        .. list-table:: df_completion
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - WELL
+             - str
+           * - BRANCH
+             - int
+           * - STARTMD
+             - float
+           * - ENDMD
+             - float
+           * - INNER_ID
+             - float
+           * - OUTER_ID
+             - float
+           * - ROUGHNESS
+             - float
+           * - ANNULUS
+             - str
+           * - NVALVEPERJOINT
+             - float
+           * - DEVICETYPE
+             - str
+           * - ANNULUS_ZONE
+             - int
+
+        .. _df_welsegs_header:
+        .. list-table:: df_welsegs_header (WELSEGS header)
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMN
+             - TYPE
+           * - WELL
+             - str
+           * - SEGMENTTVD
+             - float
+           * - SEGMENTMD
+             - float
+           * - WBVOLUME
+             - float
+           * - INFOTYPES
+             - str
+           * - PDROPCOMP
+             - str
+           * - MPMODEL
+             - str
+           * - ITEM8
+             - float
+           * - ITEM9
+             - float
+           * - ITEM10
+             - float
+           * - ITEM11
+             - float
+           * - ITEM12
+             - float
+
+        .. _df_welsegs_content:
+        .. list-table:: df_welsegs_content (WELSEGS record)
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - TUBINGSEGMENT
+             - int
+           * - TUBINGSEGMENT2
+             - int
+           * - TUBINGBRANCH
+             - int
+           * - TUBINGOUTLET
+             - int
+           * - TUBINGMD
+             - float
+           * - TUBINGTVD
+             - float
+           * - TUBINGID
+             - float
+           * - TUBINGROUGHNESS
+             - float
+           * - CROSS
+             - float
+           * - VSEG
+             - float
+           * - ITEM11
+             - float
+           * - ITEM12
+             - float
+           * - ITEM13
+             - float
+           * - ITEM14
+             - float
+           * - ITEM15
+             - float
+
+        .. _df_reservoir:
+        .. list-table:: df_reservoir
+           :widths: 10 10
+           :header-rows: 1
+
+           * - COLUMNS
+             - TYPE
+           * - I
+             - int
+           * - J
+             - int
+           * - K
+             - int
+           * - STARTMD
+             - float
+           * - ENDMD
+             - float
+           * - COMPSEGS_DIRECTION
+             - str
+           * - ENDGRID
+             -
+           * - PERFDEPTH
+             - float
+           * - THERM
+             -
+           * - SEGMENT
+             - int
+           * - K2
+             - int
+           * - STATUS
+             - str
+           * - SATNUM
+             - int
+           * - CF
+             - float
+           * - DIAM
+             - float
+           * - KH
+             - float
+           * - SKIN
+             - float
+           * - DFACT
+             - float
+           * - COMPDAT_DIRECTION
+             - str
+           * - RO
+             - float
+           * - MD
+             - float
+           * - TUB_MD
+             - float
+           * - NDEVICES
+             - float
+           * - ANNULUS_ZONE
+             - int
+           * - WELL
+             - str
+           * - LATERAL
+             - int
+
+        See the Eclipse Reference Manual for further details on column and row
+        definitions.
+        """
+        if self.well_name is None:
+            raise ValueError("No well name given")
+
+        self.df_completion = self.case.get_completion(self.well_name, lateral)
+        self.df_welsegs_header, self.df_welsegs_content = schedule.get_welsegs(self.well_name, lateral)
+        df_compsegs = schedule.get_compsegs(self.well_name, lateral)
+        df_compdat = schedule.get_compdat(self.well_name)
+        self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=["I", "J", "K"])
+
