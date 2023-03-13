@@ -623,3 +623,19 @@ class ReadCasefile:
                 "AC_OIL",
                 "AC_GAS",
                 "AC_WATER",
+                "WHF_LCF_DAR",
+                "WHF_HCF_DAR",
+                "GHF_LCF_DAR",
+                "GHF_HCF_DAR",
+            ]
+
+            # Fix table format
+            if self.completion_table["DEVICETYPE"].str.contains("DAR").any():
+                self.wsegdar_table = val.set_format_wsegdar(
+                    self._create_dataframe_with_columns(header, start_index, end_index)
+                )
+                device_checks = self.completion_table[self.completion_table["DEVICETYPE"] == "DAR"][
+                    "DEVICENUMBER"
+                ].to_numpy()
+                if not check_contents(device_checks, self.wsegdar_table["DEVICENUMBER"].to_numpy()):
+                    raise abort("Not all device in COMPLETION is specified in WSEGDAR")
