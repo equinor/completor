@@ -832,3 +832,5 @@ def test_prepare_icv_compseg(tmpdir):
     )
     compseg_icv_output_tubing = compseg_icv_output_tubing[["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "SEG"]]
     compseg_icv_output_annulus = compseg_icv_output_annulus[["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "SEG"]]
+    pd.testing.assert_frame_equal(compseg_icv_output_tubing, compseg_tubing_true)
+    pd.testing.assert_frame_equal(compseg_icv_output_annulus, compseg_annulus_true)
