@@ -86,3 +86,14 @@ SEGMENTLENGTH
     with pytest.raises(ValueError):
         well = replace_segment_length_value(base_case, "NON-VALID-INPUT")
         assert well.method is None
+
+
+def test_tubing_segment_icv(tmpdir):
+    """Test completor case with ICV to create a special tubing segmentation.
+    Completor will produce mixes of tubing segmentation between lumped and default."""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "icv_tubing.case")
+    schedule_file = Path(_TESTDIR / "icv_sch.sch")
+    true_file = Path(_TESTDIR / "icv_tubing.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
