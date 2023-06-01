@@ -187,3 +187,13 @@ def fix_compsegs_by_priority(
     # Concatenate the fixed df_compsegs dataframe and the df_custom_compsegs
     # dataframe and sort it by the STARTMD column.
     df = pd.concat([df_compsegs, df_custom_compsegs]).sort_values(by=["STARTMD"]).reset_index(drop=True)
+    # Filter the dataframe to get only rows where the "priority" column has a value of 2
+    for idx in df[df["priority"] == 2].index:
+        # Set previous row's ENDMD to correct value.
+        df.loc[idx - 1, "ENDMD"] = df.loc[idx, "STARTMD"]
+        # Set next row's STARTMD to correct value.
+        df.loc[idx + 1, "STARTMD"] = df.loc[idx, "ENDMD"]
+    df = fix_compsegs(df, "Fix compseg after prioriry")
+    df = df.dropna()
+
+    return df.drop("priority", axis=1)
