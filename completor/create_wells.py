@@ -775,3 +775,6 @@ class CreateWells:
         method = SegmentCreationMethod.USER if icv_device else self.method
         self.df_reservoir = completion.connect_cells_to_segments(
             self.df_well[["TUB_MD", "NDEVICES", "DEVICETYPE", "ANNULUS_ZONE"]],
+            self.df_reservoir,
+            self.df_tubing_segments,
+            method,
