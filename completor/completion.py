@@ -633,3 +633,51 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
         # because it is lumped to others
         # and it is 0 if it has no annulus zone
         ndevices[idx] = 0.0
+    df_well["NDEVICES"] = ndevices
+    # from now on it is only original segment
+    df_well = df_well[df_well["SEGMENT_DESC"] == "OriginalSegment"].copy()
+    # reset index after filter
+    return df_well.reset_index(drop=True, inplace=False)
+
+
+def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: DeviceType) -> pd.DataFrame:
+    """
+    Get device characteristics.
+
+    Args:
+        df_well: Must contain columns ``DEVICETYPE``, ``DEVICENUMBER``, and
+                ``SCALINGFACTOR``
+        df_device: Device table
+        device_type: Device type. ``AICD``, ``ICD``, ``DAR``, ``VALVE``,
+                ``AICV``, ``ICV``
+
+    Returns:
+        Updated well information with device characteristics
+
+    Raises:
+        ValueError: If DEVICETYPE keyword is missing in input files
+
+    The df_well DataFrame format is shown in
+    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
+
+    | The return DataFrame ``df_device`` has one of the formats shown in the following
+      functions, depending on which device type was given:
+
+      .. list-table:: definitions
+            :widths: 10 10
+            :header-rows: 1
+
+            * - KIND
+              - DEFINITION
+            * - ``wsegvalv_table``
+              - :ref:`read_casefile.ReadCasefile.read_wsegvalv <wsegvalv_table>`
+            * - ``wsegsicd_table``
+              - :ref:`read_casefile.ReadCasefile.read_wsegsicd <wsegsicd_table>`
+            * - ``wsegaicd_table``
+              - :ref:`read_casefile.ReadCasefile.read_wsegaicd <wsegaicd_table>`
+            * - ``wsegdar_table``
+              - :ref:`read_casefile.ReadCasefile.read_wsegdar <wsegdar_table>`
+            * - ``wsegaicv_table``
+              - :ref:`read_casefile.ReadCasefile.read_wsegaicv <wsegaicv_table>`
+            * - ``wsegicv_table``
+              - :ref:`read_casefile.ReadCasefile.read_wsegicv <wsegicv_table>`
