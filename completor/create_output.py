@@ -841,3 +841,11 @@ class CreateOutput:
         # print udq parameter if relevant
         if self.well_name in self.udq_parameter and self.print_udq:
             finalprint += self.udq_parameter[self.well_name]
+
+        finalprint += (
+            self.print_wsegvalv
+            + self.print_wsegsicd
+            + self.print_wsegaicd
+            + self.print_wsegdar
+            + self.print_wsegaicv
+            + self.print_wsegicv
