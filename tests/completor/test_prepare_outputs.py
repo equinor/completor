@@ -834,3 +834,17 @@ def test_prepare_icv_compseg(tmpdir):
     compseg_icv_output_annulus = compseg_icv_output_annulus[["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "SEG"]]
     pd.testing.assert_frame_equal(compseg_icv_output_tubing, compseg_tubing_true)
     pd.testing.assert_frame_equal(compseg_icv_output_annulus, compseg_annulus_true)
+
+
+def test_user_segment_lumping_oa_overlap(tmpdir):
+    """
+    Test completor case with user defined segment lumping and overlapping case.
+    The keyword SEGMENTLENGTH is set to -1 in the case file.
+    The completion has an open annulus interspersed with packers.
+    """
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "well_4_lumping_overlap_tests_oa.case")
+    schedule_file = Path(_TESTDIR / "improved_input_4_lumping_tests.sch")
+    true_file = Path(_TESTDIR / "user_created_lumping_oa_overlap.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
