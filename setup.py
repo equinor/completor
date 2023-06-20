@@ -35,3 +35,6 @@ TEST_REQUIREMENTS = [
     "promise",
 ]
 
+DOCS_REQUIREMENTS = [
+    "autoapi",
+    "sphinx==6.2.1",
