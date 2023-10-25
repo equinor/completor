@@ -389,3 +389,94 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
             "Schedule file is missing data for one or more branches defined in the "
             f"case file. Please check the data for Well {well_name}."
         )
+    # sort the data frame based on STARTMD
+    df_tubing_segments.sort_values(by=["STARTMD"], inplace=True)
+    # add column to indicate original segment
+    df_tubing_segments["SEGMENT_DESC"] = ["OriginalSegment"] * df_tubing_segments.shape[0]
+    # get end_md
+    end_md = df_tubing_segments["ENDMD"].to_numpy()
+    # get start_md and start from segment 2 and add last item to be the last end_md
+    start_md = np.append(df_tubing_segments["STARTMD"].to_numpy()[1:], end_md[-1])
+    # find rows which has start_md > end_md
+    missing_index = np.argwhere(start_md > end_md).flatten()
+    # proceed only if there are missing index
+    if missing_index.size == 0:
+        return df_tubing_segments
+    # shift one row down because we move it up one row
+    missing_index = missing_index + 1
+    df_copy = df_tubing_segments.iloc[missing_index, :].copy(deep=True)
+    # new start md is the previous segment end md
+    df_copy["STARTMD"] = df_tubing_segments["ENDMD"].to_numpy()[missing_index - 1]
+    df_copy["ENDMD"] = df_tubing_segments["STARTMD"].to_numpy()[missing_index]
+    df_copy["SEGMENT_DESC"] = ["AdditionalSegment"] * df_copy.shape[0]
+    # combine the two data frame
+    df_tubing_segments = pd.concat([df_tubing_segments, df_copy])
+    df_tubing_segments.sort_values(by=["STARTMD"], inplace=True)
+    df_tubing_segments.reset_index(drop=True, inplace=True)
+    return df_tubing_segments
+
+
+def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> tuple[int, int]:
+    """
+    Find the indices in the completion DataFrame of start MD and end MD.
+
+    Args:
+        df_completion: Must contain ``STARTMD`` and ``ENDMD``
+        start: Start measured depth
+        end: End measured depth
+
+    Returns:
+        Indices - Tuple of int.
+
+    The format of the DataFrame df_completion is shown in
+    :ref:`create_wells.CreateWells.select_well <df_completion>`.
+    """
+    start_md = df_completion[Completion.START_MD].to_numpy()
+    end_md = df_completion[Completion.END_MD].to_numpy()
+    _start = np.argwhere((start_md <= start) & (end_md > start)).flatten()
+    _end = np.argwhere((start_md < end) & (end_md >= end)).flatten()
+    if _start.size == 0 or _end.size == 0:
+        # completion index not found then give negative value for both
+        return -1, -1
+    return _start[0], _end[0]
+
+
+def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_length: float) -> Information:
+    """
+    Get information from the COMPLETION.
+
+    Args:
+        start: Start MD of the segment
+        end: End MD of the segment
+        df_completion: COMPLETION table that must contain columns:\
+        ``STARTMD``, ``ENDMD``, ``NVALVEPERJOINT``, ``INNER_ID``, ``OUTER_ID``,\
+        ``ROUGHNESS``, ``DEVICETYPE``, ``DEVICENUMBER``, and ``ANNULUS_ZONE``
+        joint_length: Length of a joint
+
+    Returns:
+        Instance of Information with the following attributes
+
+        1. num_device: Number of device
+        2. device_type: The type of valve in device
+        3. device_number: Reference to parameters of valve
+        4. inner_diameter: Inner diameter
+        5. outer_diameter: Equivalent outer diameter
+        6. roughness: The roughness inside of tubing
+        7. annulus_zone: The content of annulus zone
+
+    Raises:
+        ValueError:
+            If the completion is not definded from start to end
+            If outer diameter is smaller than inner diameter
+            If the completion data contains illegal / invalid rows
+            If information class is None
+
+    The format of the DataFrame df_completion is shown in\
+    :ref:`create_wells.CreateWells.select_well <df_completion>`.
+    """
+    start_completion = df_completion[Completion.START_MD].to_numpy()
+    end_completion = df_completion[Completion.END_MD].to_numpy()
+    idx0, idx1 = completion_index(df_completion, start, end)
+
+    if idx0 == -1 or idx1 == -1:
+        well_name = df_completion["WELL"].iloc[0]
