@@ -15,3 +15,4 @@ LEGACYSCRIPTS: list[str] = []
 REQUIREMENTS = [
     "matplotlib",
     "numpy<2",
+    "pandas",
