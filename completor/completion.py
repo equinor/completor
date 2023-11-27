@@ -266,3 +266,93 @@ def create_tubing_segments(
                 else:
                     end_idx = idx + 1
             if current_diff_md < minimum_segment_length:
+                new_start_md.append(start_measure_depth[start_idx])
+                new_end_md.append(end_measure_depth[end_idx])
+            start_measure_depth = np.array(new_start_md)
+            end_measure_depth = np.array(new_end_md)
+    elif method == SegmentCreationMethod.USER:
+        # in this method we create tubing layer
+        # based on the definition of COMPLETION keyword
+        # in the case file
+        # read all segments except PA which has no segment length
+        df_temp = df_completion.copy(deep=True)
+        start_measure_depth = df_temp["STARTMD"].to_numpy()
+        end_measure_depth = df_temp["ENDMD"].to_numpy()
+        # fix the start and end
+        start_measure_depth[0] = max(df_reservoir["STARTMD"].iloc[0], start_measure_depth[0])
+        end_measure_depth[-1] = min(df_reservoir["ENDMD"].iloc[-1], end_measure_depth[-1])
+        if start_measure_depth[0] >= end_measure_depth[0]:
+            start_measure_depth = np.delete(start_measure_depth, 0)
+            end_measure_depth = np.delete(end_measure_depth, 0)
+        if start_measure_depth[-1] >= end_measure_depth[-1]:
+            start_measure_depth = np.delete(start_measure_depth, -1)
+            end_measure_depth = np.delete(end_measure_depth, -1)
+    elif method == SegmentCreationMethod.FIX:
+        # in this method we create tubing layer
+        # with fix interval according to the user input
+        # in the case file keyword SEGMENTLENGTH
+        min_measure_depth = df_reservoir["STARTMD"].min()
+        max_measure_depth = df_reservoir["ENDMD"].max()
+        if not isinstance(segment_length, (float, int)):
+            raise ValueError(f"Segment length must be a number, " f"when using {method} (was {segment_length})")
+        start_measure_depth = np.arange(min_measure_depth, max_measure_depth, segment_length)
+        end_measure_depth = start_measure_depth + segment_length
+        # update the end point of the last segment
+        end_measure_depth[-1] = min(end_measure_depth[-1], max_measure_depth)
+    elif method == SegmentCreationMethod.WELSEGS:
+        # In this method we create the tubing layer
+        # from segment measured depths in the WELSEGS keyword that are missing
+        # from COMPSEGS.
+        # WELSEGS segment depths are collected in the df_mdtvd dataframe, which
+        # is available here. Completor interprets WELSEGS depths as segment
+        # midpoint depths.
+        #
+        # Obtain the welsegs segment midpoint depth
+        welsegs = df_mdtvd["MD"].to_numpy()
+        end_welsegs_depth = 0.5 * (welsegs[:-1] + welsegs[1:])
+        # The start of the very first segment in any branch is the actual start
+        # MD of the first segment.
+        start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, welsegs[0], axis=None)
+        start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir["STARTMD"].to_numpy()
+        end_compsegs_depth = df_reservoir["ENDMD"].to_numpy()
+        # If there are gaps in compsegs and there are welsegs segments that fit
+        # in the gaps, we will insert welsegs segments into the compsegs gaps
+        gaps_compsegs = start_compsegs_depth[1:] - end_compsegs_depth[:-1]
+        # Indices of gaps in compsegs
+        indices_gaps = np.nonzero(gaps_compsegs)
+        # Start of the gaps
+        start_gaps_depth = end_compsegs_depth[indices_gaps[0]]
+        # End of the gaps
+        end_gaps_depth = start_compsegs_depth[indices_gaps[0] + 1]
+        # First we need to check the gaps between compsegs
+        # and fill it out with welsegs
+        start = np.abs(start_welsegs_depth[:, np.newaxis] - start_gaps_depth).argmin(axis=0)
+        end = np.abs(end_welsegs_depth[:, np.newaxis] - end_gaps_depth).argmin(axis=0)
+        welsegs_to_add = np.setxor1d(start_welsegs_depth[start], end_welsegs_depth[end])
+        start_welsegs_outside = start_welsegs_depth[np.argwhere(start_welsegs_depth < start_compsegs_depth[0])]
+        end_welsegs_outside = end_welsegs_depth[np.argwhere(end_welsegs_depth > end_compsegs_depth[-1])]
+        welsegs_to_add = np.append(welsegs_to_add, start_welsegs_outside)
+        welsegs_to_add = np.append(welsegs_to_add, end_welsegs_outside)
+        # Find welsegs start and end in gaps
+        start_compsegs_depth = np.append(start_compsegs_depth, welsegs_to_add)
+        end_compsegs_depth = np.append(end_compsegs_depth, welsegs_to_add)
+        # Use completor syntax and sort
+        start_measure_depth = np.sort(start_compsegs_depth)
+        end_measure_depth = np.sort(end_compsegs_depth)
+        # check for missing segment
+        shift_start_md = np.append(start_measure_depth[1:], end_measure_depth[-1])
+        missing_index = np.argwhere(shift_start_md > end_measure_depth).flatten()
+        missing_index = missing_index + 1
+        new_missing_startmd = end_measure_depth[missing_index - 1]
+        new_missing_endmd = start_measure_depth[missing_index]
+        start_measure_depth = np.sort(np.append(start_measure_depth, new_missing_startmd))
+        end_measure_depth = np.sort(np.append(end_measure_depth, new_missing_endmd))
+        # drop duplicate
+        duplicate_idx = np.argwhere(start_measure_depth == end_measure_depth)
+        start_measure_depth = np.delete(start_measure_depth, duplicate_idx)
+        end_measure_depth = np.delete(end_measure_depth, duplicate_idx)
+    else:
+        raise ValueError(f"Unknown method '{method}'")
+
+    # md for tubing segments
+    md_ = 0.5 * (start_measure_depth + end_measure_depth)
