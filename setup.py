@@ -17,3 +17,6 @@ REQUIREMENTS = [
     "numpy<2",
     "pandas",
     "scipy",
+    "ert",
+    "Pillow>=10.0.1",  # not directly required, pinned to avoid a vulnerability
+    "pydantic>=2.4.2",
