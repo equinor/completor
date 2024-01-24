@@ -296,3 +296,335 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
          - object
 
     The second DataFrame has the following format:
+
+    .. list-table:: Second DataFrame (WELSEGS record)
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - TUBINGSEGMENT
+         - int
+       * - TUBINGSEGMENT2
+         - int
+       * - TUBINGBRANCH
+         - int
+       * - TUBINGOUTLET
+         - int
+       * - TUBINGMD
+         - float
+       * - TUBINGTVD
+         - float
+       * - TUBINGID
+         - float
+       * - TUBINGROUGHNESS
+         - float
+       * - CROSS
+         - float
+       * - VSEG
+         - float
+       * - ITEM11
+         - object
+       * - ITEM12
+         - object
+       * - ITEM13
+         - object
+       * - ITEM14
+         - object
+       * - ITEM15
+         - object
+    """
+    header_columns = [
+        "WELL",
+        "SEGMENTTVD",
+        "SEGMENTMD",
+        "WBVOLUME",
+        "INFOTYPE",
+        "PDROPCOMP",
+        "MPMODEL",
+        "ITEM8",
+        "ITEM9",
+        "ITEM10",
+        "ITEM11",
+        "ITEM12",
+    ]
+    content_columns = [
+        "WELL",
+        "TUBINGSEGMENT",
+        "TUBINGSEGMENT2",
+        "TUBINGBRANCH",
+        "TUBINGOUTLET",
+        "TUBINGMD",
+        "TUBINGTVD",
+        "TUBINGID",
+        "TUBINGROUGHNESS",
+        "CROSS",
+        "VSEG",
+        "ITEM11",
+        "ITEM12",
+        "ITEM13",
+        "ITEM14",
+        "ITEM15",
+    ]
+    for collection in collections:
+        if collection.name == "WELSEGS":
+            header_collection = np.asarray(collection[:1])
+            record_collection = np.asarray(collection[1:])
+            # add additional well column on the second collection
+            well_column = np.full(record_collection.shape[0], collection.well)
+            record_collection = np.column_stack((well_column, record_collection))
+            try:
+                header_table: npt.NDArray[np.unicode_] | pd.DataFrame
+                record_table: npt.NDArray[np.unicode_] | pd.DataFrame
+                header_table = np.row_stack((header_table, header_collection))
+                record_table = np.row_stack((record_table, record_collection))
+            except NameError:
+                # First iteration
+                header_table = np.asarray(header_collection)
+                record_table = np.asarray(record_collection)
+    try:
+        header_table = pd.DataFrame(header_table, columns=header_columns)
+        record_table = pd.DataFrame(record_table, columns=content_columns)
+    except NameError as err:
+        raise ValueError("Collection does not contain the 'WELSEGS' keyword") from err
+
+    # replace string component " or ' in the columns
+    header_table = remove_string_characters(header_table)
+    record_table = remove_string_characters(record_table)
+    return header_table, record_table
+
+
+def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
+    """
+    Return dataframe table of WELSPECS.
+
+    Args:
+        collections: ContentCollection class
+
+    Returns:
+        WELSPECS table
+
+    Raises:
+        ValueError: If collection does not contain the 'WELSPECS' keyword
+
+    The return DataFrame welspecs_table has the following format:
+
+    TODO: Which one is correct; this or the one in ``completion.set_welspecs``?
+
+    .. list-table:: welspecs_table
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - GROUP
+         - str
+       * - I
+         - int
+       * - J
+         - int
+       * - BHP_DEPTH
+         - float
+       * - PHASE
+         - str
+       * - DR
+         - float
+       * - FLAG
+         - str
+       * - SHUT
+         - object
+       * - CROSS
+         - object
+       * - PRESSURETABLE
+         - int
+       * - DENSCAL
+         - float
+       * - REGION
+         - object
+       * - ITEM14
+         - object
+       * - ITEM15
+         - object
+       * - ITEM16
+         - object
+       * - ITEM17
+         - object
+    """
+    columns = [
+        "WELL",
+        "GROUP",
+        "I",
+        "J",
+        "BHP_DEPTH",
+        "PHASE",
+        "DR",
+        "FLAG",
+        "SHUT",
+        "CROSS",
+        "PRESSURETABLE",
+        "DENSCAL",
+        "REGION",
+        "ITEM14",
+        "ITEM15",
+        "ITEM16",
+        "ITEM17",
+    ]
+    welspecs_table = None
+    for collection in collections:
+        if collection.name == "WELSPECS":
+            the_collection = np.asarray(collection)
+            if welspecs_table is None:
+                welspecs_table = np.copy(the_collection)
+            else:
+                welspecs_table = np.row_stack((welspecs_table, the_collection))
+
+    if welspecs_table is None:
+        raise ValueError("Collection does not contain the 'WELSPECS' keyword")
+
+    welspecs_table = pd.DataFrame(welspecs_table, columns=columns)
+    # replace string component " or ' in the columns
+    welspecs_table = remove_string_characters(welspecs_table)
+    return welspecs_table
+
+
+def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
+    """
+    Return dataframe table of COMPDAT.
+
+    Args:
+        collections: ContentCollection class
+
+    Returns:
+        COMPDAT table
+
+    Raises:
+        ValueError: If collection does not contain the 'COMPDAT' keyword
+
+    The return DataFrame has the following format:
+
+    .. _compdat_table:
+    .. list-table:: compdat_table
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - I
+         - int
+       * - J
+         - int
+       * - K
+         - int
+       * - K2
+         - int
+       * - STATUS
+         - str
+       * - SATNUM
+         - int
+       * - CF
+         - float
+       * - DIAM
+         - float
+       * - KH
+         - float
+       * - SKIN
+         - float
+       * - DFACT
+         - object
+       * - COMPDAT_DIRECTION
+         - object
+       * - RO
+         - float
+    """
+    compdat_table = None
+    for collection in collections:
+        if collection.name == "COMPDAT":
+            the_collection = np.asarray(collection)
+            if compdat_table is None:
+                compdat_table = np.copy(the_collection)
+            else:
+                compdat_table = np.row_stack((compdat_table, the_collection))
+    if compdat_table is None:
+        raise ValueError("Collection does not contain the 'COMPDAT' keyword")
+    compdat_table = pd.DataFrame(
+        compdat_table,
+        columns=[
+            "WELL",
+            "I",
+            "J",
+            "K",
+            "K2",
+            "STATUS",
+            "SATNUM",
+            "CF",
+            "DIAM",
+            "KH",
+            "SKIN",
+            "DFACT",
+            "COMPDAT_DIRECTION",
+            "RO",
+        ],
+    )
+    # replace string component " or ' in the columns
+    compdat_table = remove_string_characters(compdat_table)
+    return compdat_table
+
+
+def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
+    """
+    Return data frame table of COMPSEGS.
+
+    Args:
+        collections: ContentCollection class
+
+    Returns:
+        COMPSEGS table
+
+    Raises:
+        ValueError: If collection does not contain the 'COMPSEGS' keyword
+
+    The return DataFrame compsegs_table has the following format:
+
+    .. list-table:: compsegs_table
+       :widths: 10 10
+       :header-rows: 1
+
+       * - COLUMNS
+         - TYPE
+       * - WELL
+         - str
+       * - I
+         - int
+       * - J
+         - int
+       * - K
+         - int
+       * - BRANCH
+         - int
+       * - STARTMD
+         - float
+       * - ENDMD
+         - float
+       * - COMPSEGS_DIRECTION
+         - object
+       * - ENDGRID
+         - object
+       * - PERFDEPTH
+         - float
+       * - THERM
+         - object
+       * - SEGMENT
+         - int
+    """
+    compsegs_table = None
+    for collection in collections:
+        if collection.name == "COMPSEGS":
+            the_collection = np.asarray(collection[1:])
+            # add additional well column
+            well_column = np.full(the_collection.shape[0], collection.well)
