@@ -8,3 +8,5 @@ from functools import wraps
 from pathlib import Path
 
 
+def getLogger(module_name="completor"):
+    logger = logging.getLogger(module_name)
