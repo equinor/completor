@@ -163,3 +163,13 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
         if cleaned_line:
             clean_lines.append(cleaned_line)
     return clean_lines
+
+
+def get_completor_version() -> str:
+    """
+    Get completor version from latest git tag.
+
+    Returns:
+        The version string in format 'v1.1.1'
+    """
+    # TODO: Add exception handling here!
