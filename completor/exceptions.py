@@ -124,3 +124,7 @@ class CaseReaderFormatError(_BaseCaseException):
 
         """
         stripped_content = [x.strip() for x in lines]
+        start, end = parse.locate_keyword(stripped_content, keyword)
+
+        line_content = {
+            i + start + 1: line for i, line in enumerate(lines[start + 1 : end]) if line and not line.startswith("--")
