@@ -171,3 +171,8 @@ def test_missing_welsegs(tmpdir):
 
 
 def test_inconsistent_files(tmpdir):
+    """Test output to screen from Completor missing COMPSEGS."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    outputmessage = (
+        "Inconsistent case and input schedule files. " "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
