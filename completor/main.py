@@ -557,3 +557,10 @@ def main() -> None:
         inputs.outputfile = inputs.schedulefile.split(".")[0] + "_advanced.wells"
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
+
+    logger.debug("Running Completor %s. An advanced well modelling tool.", COMPLETOR_VERSION)
+    logger.debug("-" * 60)
+    start_a = time.time()
+
+    handle_error_messages(create)(
+        case_file_content, schedule_file_content, inputs.outputfile, inputs.figure, paths=paths_input_schedule
