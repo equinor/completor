@@ -584,3 +584,44 @@ def test_well_name_with_slash(tmpdir):
 --     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
   'A/1'  1     0   3000   0.2     0.25    1.00E-4    GP      1      PERF    0
+/
+
+GP_PERF_DEVICELAYER
+ TRUE
+/
+    """
+    schedule_file = Path(_TESTDIR / "welldefinition_slash.testfile")
+    true_file = Path(_TESTDIR / "welldefinition_slash.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_leading_whitespace_terminating_slash(tmpdir):
+    """Verify leading whitespace does not affect reading of sch file keywords."""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "well_4_lumping_tests_oa.case")
+    schedule_file = Path(_TESTDIR / "leading_whitespace_terminating_slash.sch")
+    true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
+
+
+def test_error_missing_keywords(tmpdir, capfd):
+    """Check error is reported if any of
+    WELSPECS, WELSEGS, COMPDAT or COMSEGS are missing."""
+    tmpdir.chdir()
+    case_file = str(_TESTDIR / "well_4_lumping_tests_oa.case")
+    schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
+
+    # Modify schedule file to remove WELSPECS
+    with open(schedule_file, encoding="utf-8") as f:
+        schedule_content = f.read()
+
+    modified_schedule_path = Path(tmpdir / schedule_file.name)
+    modified_content = "\n".join(schedule_content.splitlines()[5:])
+    with open(modified_schedule_path, "w", encoding="utf-8") as new_sch:
+        new_sch.write(modified_content)
+
+    with pytest.raises(subprocess.CalledProcessError) as exc:
+        subprocess.run(
+            ["completor", "-i", case_file, "-s", modified_schedule_path, "-o", "output.sch"], cwd=tmpdir, check=True
