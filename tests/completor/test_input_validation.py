@@ -9,3 +9,13 @@ from completor.read_casefile import ReadCasefile
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
+
+
+def test_lat2dev_with_annulus(tmpdir):
+    """
+    Test output to screen from Completor.
+
+    """
+    tmpdir.chdir()
+    with pytest.raises(SystemExit) as e:
+        with open(Path(_TESTDIR / "case_lat2dev.testfile"), encoding="utf-8") as case_file:
