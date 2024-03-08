@@ -367,3 +367,10 @@ def validate_minimum_segment_length(minimum_segment_length: str | float) -> floa
     Returns:
         Minimum segment length if no errors occured.
 
+    """
+    try:
+        minimum_segment_length = float(minimum_segment_length)
+    except ValueError:
+        raise abort(f"The MINIMUM_SEGMENT_LENGTH {minimum_segment_length} has to be a float.")
+    if minimum_segment_length < 0.0:
+        raise abort(f"The MINIMUM_SEGMENT_LENGTH {minimum_segment_length} cannot be less than 0.0.")
