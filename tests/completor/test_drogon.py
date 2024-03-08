@@ -22,3 +22,5 @@ def test_drogons(drogon_case, tmpdir):
 
     # Copy pvt file to tmpdir before creating schedule files
     tmpdir.chdir()
+    case_path = Path(_TESTDIR_DROGON / drogon_case)
+    with open(case_path, encoding="utf-8") as case_file:
