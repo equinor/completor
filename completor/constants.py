@@ -66,3 +66,63 @@ class SegmentCreationMethod(Enum):
 
         Example:
             >>>SegmentCreationMethod.CELLS == "CELLS"
+            >>>True
+
+        """
+        if isinstance(other, Enum):
+            return self.__class__ == other.__class__ and self.value == other.value and self.name == other.name
+        elif isinstance(other, str):
+            return self.name == other
+        return False
+
+
+class WellSegment:
+    """Columns for WellSegments."""
+
+    TUBING_MD = "TUBINGMD"
+    TUBING_TVD = "TUBINGTVD"
+    SEGMENT_MD = "SEGMENTMD"
+    SEGMENT_TVD = "SEGMENTTVD"
+    TUBING_OUTLET = "TUBINGOUTLET"
+    TUBING_SEGMENT = "TUBINGSEGMENT"
+    TUBING_SEGMENT2 = "TUBINGSEGMENT2"
+    TUBING_BRANCH = "TUBINGBRANCH"
+    TUBING_ID = "TUBINGID"
+    TUBING_ROUGHNESS = "TUBINGROUGHNESS"
+
+    @classmethod
+    def data_records(cls) -> list[str]:
+        """Return column names for a WellSegment."""
+        return [
+            cls.TUBING_SEGMENT,
+            cls.TUBING_SEGMENT2,
+            cls.TUBING_BRANCH,
+            cls.TUBING_OUTLET,
+            cls.TUBING_MD,
+            cls.TUBING_TVD,
+            cls.TUBING_ID,
+            cls.TUBING_ROUGHNESS,
+            "CROSS",
+            "VSEG",
+            "ITEM11",
+            "ITEM12",
+            "ITEM13",
+            "ITEM14",
+            "ITEM15",
+        ]
+
+
+class Completion:
+    """Columns for Completion."""
+
+    START_MD = "STARTMD"
+    END_MD = "ENDMD"
+    ANNULUS = "ANNULUS"
+    ANNULUS_ZONE = "ANNULUS_ZONE"
+    NUM_VALVES_PER_JOINT = "NVALVEPERJOINT"
+    INNER_ID = "INNER_ID"
+    OUTER_ID = "OUTER_ID"
+    ROUGHNESS = "ROUGHNESS"
+    DEVICE_TYPE = "DEVICETYPE"
+    DEVICE_NUMBER = "DEVICENUMBER"
+    WELL = "WELL"
