@@ -100,3 +100,34 @@ def dump_debug_information(**kwargs) -> None:
     name = (
         f"Completor-{when.tm_year}{when.tm_mon:02}{when.tm_mday:02}-"
         f"{when.tm_hour:02}{when.tm_min:02}{when.tm_sec:02}-{random_suffix}"
+    )
+    logger.error(
+        "Completor failed. Writing debugging information to %s.zip. "
+        "Please contact support (fg_InflowControlSoftware@equinor.com), "
+        "and include said file.\n"
+        "NOTE: the file includes all input you gave to "
+        "Completor including the content of the input files",
+        name,
+    )
+    with ZipFile(name + ".zip", mode="x", compression=ZIP_DEFLATED) as zipfile:
+
+        def dump(file_name: str, data: str | bytes, encoding: str = "UTF-8") -> None:
+            path = Path(name) / file_name
+            with zipfile.open(str(path), "w") as f:
+                if isinstance(data, str):
+                    data = data.encode(encoding)
+                f.write(data)
+
+        try:
+            from completor.version import version
+        except ImportError:
+            version = "UNKNOWN"
+
+        dump("traceback.txt", traceback.format_exc())
+        dump("machine.txt", socket.getfqdn())
+        dump("version.txt", version)
+        dump("arguments.json", json.dumps(_convert_paths_to_strings(kwargs), indent=4))
+        for key, value in kwargs.items():
+            if isinstance(value, (Path, str)):
+                try:
+                    with open(value, encoding="utf-8") as f:
