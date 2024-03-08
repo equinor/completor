@@ -1295,3 +1295,13 @@ class WellSchedule:
         Returns:
             | :ref:`WELSEGS header <welsegs_header_format>`
             | :ref:`WELSEGS records <welsegs_content_format>`
+
+        Raises:
+            ValueError: If WELSEGS keyword missing in input schedule file
+
+        """
+        try:
+            dfh, dfr = self.msws[well_name]["welsegs"]
+        except KeyError as err:
+            if "'welsegs'" in str(err):
+                raise ValueError("Input schedule file missing WELSEGS keyword.") from err
