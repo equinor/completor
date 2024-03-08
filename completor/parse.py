@@ -683,3 +683,12 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
     """
     if columns is None:
         columns = []
+
+    def remove_quotes(item: str):
+        return item.replace("'", "").replace('"', "")
+
+    if isinstance(df, str):
+        df = remove_quotes(df)
+    elif isinstance(df, pd.DataFrame):
+        if len(columns) == 0:
+            iterator: range | list[str] = range(df.shape[1])
