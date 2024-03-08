@@ -398,3 +398,61 @@ WSEGAICD
     with pytest.raises(CaseReaderFormatError) as exc:
         ReadCasefile(case_wrong_no_columns)
     assert "Too many entries in data for keyword 'WSEGAICD'" in str(exc.value)
+
+
+def test_read_case_completion_icv():
+    """Test the function to read ICV completion in case file."""
+    with open(Path(_TESTDIR / "icv_tubing.case"), encoding="utf-8") as fh:
+        case = ReadCasefile(fh.read())
+    df_true = pd.DataFrame(
+        [
+            ["A1", 1, 0.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
+            ["A1", 1, 2010.0, 2030.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
+            ["A1", 1, 2030.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 1],
+            ["A1", 2, 0.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
+            ["A1", 2, 2010.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICD", 1],
+            ["A1", 2, 3000.0, 4000.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
+            ["A2", 1, 0.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 2],
+        ],
+        columns=[
+            "WELL",
+            "BRANCH",
+            "STARTMD",
+            "ENDMD",
+            "INNER_ID",
+            "OUTER_ID",
+            "ROUGHNESS",
+            "ANNULUS",
+            "NVALVEPERJOINT",
+            "DEVICETYPE",
+            "DEVICENUMBER",
+        ],
+    )
+
+    pd.testing.assert_frame_equal(df_true, case.completion_table, check_exact=False)
+
+
+def test_read_case_completion_icv_tubing():
+    """Test the function to read ICV completion tubing in case file."""
+    with open(Path(_TESTDIR / "icv_tubing.case"), encoding="utf-8") as case_file:
+        case = ReadCasefile(case_file.read())
+    df_true = pd.DataFrame(
+        [
+            ["A1", 1, 2010.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 1],
+            ["A1", 1, 2030.0, 2030.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 1],
+        ],
+        columns=[
+            "WELL",
+            "BRANCH",
+            "STARTMD",
+            "ENDMD",
+            "INNER_ID",
+            "OUTER_ID",
+            "ROUGHNESS",
+            "ANNULUS",
+            "NVALVEPERJOINT",
+            "DEVICETYPE",
+            "DEVICENUMBER",
+        ],
+    )
+    pd.testing.assert_frame_equal(df_true, case.completion_icv_tubing, check_exact=False)
