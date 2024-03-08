@@ -195,3 +195,21 @@ def test_fix_welsegs():
     Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
 
     Completor works with ABS in the WELSEGS.
+    So if the users have WELSEGS defined in INC then it must be converted first.
+    """
+    df_header = pd.DataFrame(
+        [[1000.0, 1500.0, "INC"]],
+        columns=["SEGMENTTVD", "SEGMENTMD", "INFOTYPE"],
+    )
+    df_content = pd.DataFrame(
+        [
+            [2, 1, 10.0, 50.0],
+            [3, 2, 20.0, 20.0],
+            [4, 3, 30.0, 30.0],
+            [5, 4, 40.0, 40.0],
+        ],
+        columns=["TUBINGSEGMENT", "TUBINGOUTLET", "TUBINGTVD", "TUBINGMD"],
+    )
+
+    df_header_true = pd.DataFrame(
+        [[1000.0, 1500.0, "ABS"]],
