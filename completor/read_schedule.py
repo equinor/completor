@@ -152,3 +152,38 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
             else:
                 logger.error("Cannot construct COMPSEGS segments based on current input")
     return sort_by_midpoint(df_compsegs, end_md_new, start_md_new)
+
+
+def fix_compsegs_by_priority(
+    df_completion: pd.DataFrame, df_compsegs: pd.DataFrame, df_custom_compsegs: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Fixes a dataframe of composition segments, prioritizing the custom compseg.
+
+    Args:
+        df_completion: ..
+        df_compsegs: Containing composition segments data.
+        df_custom_compsegs: Containing custom composition segments data with priority.
+
+    Returns:
+        Fixed composition segments dataframe.
+
+    """
+    # slicing two dataframe for user and cells segment length
+    start_md_comp = df_completion[(df_completion["DEVICETYPE"] == "ICV") & (df_completion["NVALVEPERJOINT"] > 0)][
+        "STARTMD"
+    ].reset_index(drop=True)
+    df_custom_compsegs = df_custom_compsegs[df_custom_compsegs["STARTMD"].isin(start_md_comp)]
+    df_compsegs["priority"] = 1
+    df_custom_compsegs = df_custom_compsegs.copy(deep=True)
+    df_custom_compsegs["priority"] = 2
+    start_end = df_custom_compsegs[["STARTMD", "ENDMD"]]
+    # Remove the rows that are between the STARTMD and ENDMD
+    # values of the custom composition segments.
+    for start, end in start_end.values:
+        between_lower_upper = (df_compsegs["STARTMD"] >= start) & (df_compsegs["ENDMD"] <= end)
+        df_compsegs = df_compsegs[~between_lower_upper]
+
+    # Concatenate the fixed df_compsegs dataframe and the df_custom_compsegs
+    # dataframe and sort it by the STARTMD column.
+    df = pd.concat([df_compsegs, df_custom_compsegs]).sort_values(by=["STARTMD"]).reset_index(drop=True)
