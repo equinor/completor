@@ -68,3 +68,17 @@ repos:
     - "pandas-stubs==1.2.0.61"
     - "pytest-mypy-plugins==1.9.3"
     - "typing-extensions==4.2.0"  # May use future type annotations
+
+- repo: local
+  hooks:
+  - id: rstcheck
+    name: rstcehck
+    language: python
+    entry: bash -c 'rstcheck -r docs'
+
+- repo: local
+  hooks:
+  - id: sphinx-build
+    name: check-sphinx-build
+    language: python
+    entry: bash -c 'sphinx-build -b html -nv docs/ build/docs'
