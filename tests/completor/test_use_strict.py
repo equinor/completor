@@ -217,3 +217,14 @@ COMPLETION
 --     Number  MD   MD  Tubing   Casing            Content /Joint Type  Number
 --                      Diameter Diameter
    A1    1     0  99999  0.15     0.2159  0.00065     GP      1   AICD     1
+/
+USE_STRICT
+  FALSE
+/
+
+{JOINT_LENGTH_AND_WSEGAICD}
+    """
+    schedule_file = Path(_TESTDIR / "ml_well.sch")
+    true_file = Path(_TESTDIR / "usestrict_false_missingbranch.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
