@@ -662,3 +662,173 @@ def test_prepare_compdat(tmpdir):
         columns=["WELL", "I", "J", "K", "K2", "FLAG", "SAT", "CF", "DIAM", "KH", "SKIN", "DFACT", "DIR", "RO", ""],
     )
     pd.testing.assert_frame_equal(prepare_compdat_out, prepare_compdat_true)
+
+
+def test_prepare_wsegicv(tmpdir):
+    """Test function for prepare_wsegicv including use of tubing layer
+    as ICV placement in tubing, and ICV placement in device,
+    going as a fully lumped segment."""
+    tmpdir.chdir()
+    well_name = "'WELL'"
+    lateral = 1
+    df_well = pd.DataFrame(
+        [
+            ["'WELL'", 2030.0, 2000.0, 0.1, 0.1, 1, 1, 1.2, 4.1, "5*", 5.1, "ICV", 1, 1],
+            ["'WELL'", 2050.0, 2000.0, 0.1, 0.1, 1, 1, 3.5, 3.2, "5*", 6.1, "ICV", 1, 2],
+        ],
+        columns=[
+            "WELL",
+            "TUB_MD",
+            "TUB_TVD",
+            "INNER_DIAMETER",
+            "ROUGHNESS",
+            "LATERAL",
+            "ANNULUS",
+            "CV",
+            "AC",
+            "L",
+            "AC_MAX",
+            "DEVICETYPE",
+            "NDEVICES",
+            "DEVICENUMBER",
+        ],
+    )
+    df_device = pd.DataFrame(
+        [
+            [4, 4, 1, 3, 2030.0, 2000.0, 0.1, 0.1],
+            [5, 5, 1, 4, 2050.0, 2000.0, 0.1, 0.1],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_tubing = pd.DataFrame(
+        [
+            [2, 2, 1, 1, 2000, 2000, 0.1, 0.1],
+            [3, 3, 1, 2, 2010, 2000, 0.1, 0.1],
+            [4, 4, 1, 3, 2015, 2000, 0.1, 0.1],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_icv_tubing = pd.DataFrame(
+        [
+            ["'WELL'", 1, 2005, 2000, 1, 1, "ICV", 1],
+            ["'WELL'", 1, 2012, 2000, 1, 1, "ICV", 1],
+            ["'WELL'", 1, 2015, 2000, 1, 1, "ICV", 2],
+            ["WELL", 1, 2008, 2008, 1, 1, "ICV", 1],
+        ],
+        columns=["WELL", "BRANCH", "STARTMD", "ENDMD", "ANNULUS", "NVALVEPERJOINT", "DEVICETYPE", "DEVICENUMBER"],
+    )
+    df_icv = pd.DataFrame(
+        [["ICV", 1, 1.2, 4.1, "5*", 5.1], ["ICV", 2, 3.5, 3.2, "5*", 6.1]],
+        columns=["DEVICETYPE", "DEVICENUMBER", "CV", "AC", "DEFAULTS", "AC_MAX"],
+    )
+    wsegicv_output = prepare_outputs.prepare_wsegicv(
+        well_name, lateral, df_well, df_device, df_tubing, df_icv_tubing, df_icv
+    )
+    true_wsegicv_output = pd.DataFrame(
+        [
+            ["'WELL'", 4, 1.2, 4.1, "5*", 5.1, "/"],
+            ["'WELL'", 5, 3.5, 3.2, "5*", 6.1, "/"],
+            ["'WELL'", 2, 1.2, 4.1, "5*", 5.1, "/"],
+            ["'WELL'", 3, 1.2, 4.1, "5*", 5.1, "/"],
+            ["'WELL'", 4, 3.5, 3.2, "5*", 6.1, "/"],
+        ],
+        columns=["WELL", "SEG", "CV", "AC", "DEFAULTS", "AC_MAX", ""],
+    )
+    pd.testing.assert_frame_equal(wsegicv_output, true_wsegicv_output)
+
+
+def test_prepare_icv_compseg(tmpdir):
+    """Test function for compseg preparation
+    in accordance with ICV placement in well segmentation"""
+    df_reservoir = pd.DataFrame(
+        [
+            [33, 42, 29, 3778.0, 3932, "1*", 29, 100.0, 0.2159, 3855.0, 3855.0, 10, "AICD", 1, "OP5", 1],
+            [33, 41, 29, 3932.0, 4088, "1*", 29, 100.0, 0.2159, 4010.0, 4125.0, 10, "ICV", 0, "OP5", 1],
+            [33, 40, 29, 4088.0, 4108, "1*", 29, 100.0, 0.2159, 4098.0, 4125.0, 10, "ICV", 0, "OP5", 1],
+            [33, 40, 28, 4108.0, 4143, "1*", 28, 100.0, 0.2159, 4125.0, 4125.0, 10, "ICV", 0, "OP5", 1],
+            [32, 40, 28, 4143.0, 4246, "1*", 28, 100.0, 0.2159, 4194.0, 4125.0, 10, "ICV", 0, "OP5", 1],
+            [32, 39, 28, 4246.0, 4287, "1*", 28, 100.0, 0.2159, 4266.0, 4266.0, 10, "AICD", 1, "OP5", 1],
+        ],
+        columns=[
+            "I",
+            "J",
+            "K",
+            "STARTMD",
+            "ENDMD",
+            "COMPSEGS_DIRECTION",
+            "K2",
+            "CF",
+            "DIAM",
+            "MD",
+            "TUB_MD",
+            "NDEVICES",
+            "DEVICETYPE",
+            "ANNULUS_ZONE",
+            "WELL",
+            "LATERAL",
+        ],
+    )
+    df_device = pd.DataFrame(
+        [
+            [20, 20, 4, 6, 4010.0, 1609.0, 0.15, 0.00065],
+            [21, 21, 5, 7, 4125.0, 1611.0, 0.15, 0.00065],
+            [22, 22, 6, 8, 4266.0, 1613.0, 0.15, 0.00065],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_annulus = pd.DataFrame(
+        [
+            [33, 33, 17, 32, 3855.0, 1609.0, 0.2724, 0.00065],
+            [34, 34, 17, 33, 4010.0, 1609.0, 0.2724, 0.00065],
+            [35, 35, 18, 34, 4266.0, 1613.0, 0.2724, 0.00065],
+        ],
+        columns=["SEG", "SEG2", "BRANCH", "OUT", "MD", "TVD", "DIAM", "ROUGHNESS"],
+    )
+    df_completion_table = pd.DataFrame(
+        [
+            ["OP5", 1, 3778.0, 4000.0, 0.15, 0.311, 0.00065, "OA", 6.0, "AICD", 1],
+            ["OP5", 1, 4000.0, 4250.0, 0.15, 0.311, 0.00065, "GP", 6.0, "ICV", 1],
+            ["OP5", 1, 4250.0, 4900.0, 0.15, 0.311, 0.00065, "OA", 6.0, "AICD", 1],
+        ],
+        columns=[
+            "WELL",
+            "BRANCH",
+            "STARTMD",
+            "ENDMD",
+            "INNER_ID",
+            "OUTER_ID",
+            "ROUGHNESS",
+            "ANNULUS",
+            "NVALVEPERJOINT",
+            "DEVICETYPE",
+            "DEVICENUMBER",
+        ],
+    )
+    compseg_icv_output_tubing, compseg_icv_output_annulus = prepare_outputs.connect_compseg_icv(
+        df_reservoir, df_device, df_annulus, df_completion_table
+    )
+
+    compseg_tubing_true = pd.DataFrame(
+        [
+            [33, 42, 29, 4, 3778.0, 3932, 20],
+            [33, 41, 29, 5, 3932.0, 4088, 21],
+            [33, 40, 29, 5, 4088.0, 4108, 21],
+            [33, 40, 28, 5, 4108.0, 4143, 21],
+            [32, 40, 28, 5, 4143.0, 4246, 21],
+            [32, 39, 28, 6, 4246.0, 4287, 22],
+        ],
+        columns=["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "SEG"],
+    )
+    compseg_annulus_true = pd.DataFrame(
+        [
+            [33, 42, 29, 17, 3778.0, 3932, 33],
+            [33, 41, 29, 17, 3932.0, 4088, 34],
+            [33, 40, 29, 17, 4088.0, 4108, 34],
+            [33, 40, 28, 17, 4108.0, 4143, 34],
+            [32, 40, 28, 17, 4143.0, 4246, 34],
+            [32, 39, 28, 18, 4246.0, 4287, 35],
+        ],
+        columns=["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "SEG"],
+    )
+    compseg_icv_output_tubing = compseg_icv_output_tubing[["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "SEG"]]
+    compseg_icv_output_annulus = compseg_icv_output_annulus[["I", "J", "K", "BRANCH", "STARTMD", "ENDMD", "SEG"]]
