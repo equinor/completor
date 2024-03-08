@@ -79,3 +79,21 @@ def test_overburden_md_above_completion_table():
 
 
 def test_overburden_md_outside_completion_table():
+    """
+    Test case with an incomplete completion table.
+
+    The overburden segment md is below the last start and end md in the table.
+    """
+    well_name = "A1"
+    overburden = pd.DataFrame(
+        [["A1", 1, 5000.0, 0.15, 0.00065]],
+        columns=["WELL", "TUBINGBRANCH", "MD", "DIAM", "ROUGHNESS"],
+    )
+    completion_table = pd.DataFrame(
+        [
+            ["A1", 1, 0.0, 2000.0, 0.2, 0.00035],
+            ["A1", 1, 2000.0, 4000.0, 0.1, 0.00055],
+        ],
+        columns=["WELL", "BRANCH", "STARTMD", "ENDMD", "INNER_ID", "ROUGHNESS"],
+    )
+    with pytest.raises(ValueError, match="Cannot find A1 completion in overburden at 5000.0 mMD"):
