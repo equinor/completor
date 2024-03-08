@@ -75,3 +75,8 @@ if __name__ == "__main__":
         py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
         install_requires=REQUIREMENTS,
         setup_requires=["setuptools >= 28", "setuptools_scm", "pytest-runner"],
+        entry_points={
+            "console_scripts": SSCRIPTS,
+            "ert": ["run_completor = completor.hook_implementations.jobs"],
+        },
+        scripts=["src/completor/legacy/" + scriptname for scriptname in LEGACYSCRIPTS],
