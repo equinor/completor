@@ -949,3 +949,9 @@ class ReadCasefile:
                 "Problem with case file. Note that the COMPLETION keyword takes "
                 "exactly 11 (eleven) columns. Blank portion is now removed.\n"
             )
+            raise CaseReaderFormatError(message, lines=self.case_file, header=header, keyword=keyword)
+
+        table = table_header + "\n" + table_content
+
+        df_temp = pd.read_csv(StringIO(table), sep=" ", dtype="object", index_col=False)
+        return parse.remove_string_characters(df_temp)
