@@ -94,3 +94,10 @@ def test_mix_multibranch(tmpdir):
     COMPLETION
     A1 1 0 3000 0.2 0.25 1.00E-4 GP 0 PERF 0
     A1 2 0 3000 0.2 0.25 1.00E-4 GP 1 AICD 1
+    /
+
+    WSEGAICD
+    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+    /
+    """
+    with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as f:
