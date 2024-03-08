@@ -21,3 +21,7 @@ def test_unpack_record():
 
 
 def test_locate_keyword():
+    """Test locate_keyword find the correct start and end indexes of keywords."""
+    test1 = ["COMPDAT", "1 2 3 /", "/", "COMPDAT", "2 3 4 /", "/"]
+
+    start_compdat, end_compdat = parse.locate_keyword(test1, "COMPDAT", "/", take_first=False)
