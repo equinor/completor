@@ -782,3 +782,8 @@ def test_create_tubing_segment_welsegs():
             [2.0, 4.5, 3.25, 3.25],
             [4.5, 5.0, 4.75, 4.75],
             [5.0, 6.0, 5.50, 5.50],
+        ],
+        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+    )
+
+    df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "WELSEGS")
