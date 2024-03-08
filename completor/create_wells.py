@@ -804,3 +804,4 @@ class CreateWells:
             self.df_reservoir_all = self.df_reservoir.copy(deep=True)
         else:
             self.df_well_all = pd.concat([self.df_well_all, self.df_well], sort=False)
+            self.df_reservoir_all = pd.concat([self.df_reservoir_all, self.df_reservoir], sort=False)
