@@ -151,3 +151,29 @@ LATERAL_TO_DEVICE
     assert pytest_wrapped_exc.type == SystemExit
     assert pytest_wrapped_exc.value.code == 1
     assert "Cannot find a device layer at junction of lateral 2 in A1" in caplog.text
+
+
+def test_lat2tubing(tmpdir):
+    """
+    Test completor with a two-branch well.
+
+    The lateral of the well, A1, is connected to the main branch via the tubing layer.
+
+    1. One active well
+    2. Multi-lateral well with two branches
+    """
+    tmpdir.chdir()
+    case_file = f"""
+    -- Case file for testing the LATERAL_TO_DEVICE keyword.
+    SCHFILE
+    ml_well.sch
+    /
+
+    {COMPLETION_TWO_ROWS}
+    {WSEGAICD}
+    {USE_STRICT_JOINT_LENGTH}
+    """
+    schedule_file = Path(_TESTDIR / "ml_well.sch")
+    true_file = Path(_TESTDIR / "lat2tubing.true")
+    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    common.assert_results(true_file, _TEST_FILE)
