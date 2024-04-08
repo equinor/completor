@@ -38,7 +38,7 @@ jobs:
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
         git checkout -b $GITHUB_PAGES_BRANCH
-        git remote add $GITHUB_PAGES_BRANCH https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/equinor/awt
+        git remote add $GITHUB_PAGES_BRANCH https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/equinor/completor
         git add .
         git commit -m "Built from commit '$CREATED_FROM_REF'"
         git push -f --set-upstream gh-pages gh-pages

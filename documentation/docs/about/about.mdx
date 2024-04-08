@@ -2,7 +2,7 @@
 
 This is the **Completor® Handbook**; aka Runbook. Completor® is open-source software, thus **the Completor® Runbook must NOT contain any secrets or restricted information**. Please help us keeping this document up-to-date and relevant. Make it more readable if something is unclear and propose corrections if something is wrong. Thanks!
 
-# Product
+## Product
 | Product status      |                               |
 |---------------------|-------------------------------|
 | Life Cycle State    | NOW                           |
@@ -24,7 +24,7 @@ Requirements for the input schedule file, instruction on how to specify the comp
 and description on how to retrieve and define input parameters is found in [configuration.md](configuration.md). 
 Useful examples are found in [examples.md](examples.md).
 
-# Team
+## Team
 
 The Completor® team is a DevOps team, responsible for both development and operation (run & maintain) of Completor®.
 The team is also responsible for 1st and 2nd line issue handling and customer support.
@@ -32,9 +32,9 @@ Completor® is one of several software deliveries from the Inflow Control Softwa
 which is a part of the Inflow Control team, with personnel from TDI OG SUB RPE (mainly domain competency) 
 and TDI EDT DSD (mainly IT competency).
 
-# User Support
+## User Support
 
-## 1st line user support
+### 1st line user support
 
 A comprehensive user manual with technical details and useful examples on how to configure Completor is found in
 
@@ -55,7 +55,7 @@ Non-confidential questions and/or bug reports,
 feature requests and improvement proposals may be posted at the Inflow Control Technology community.
 Information about releases and release notes will also be notified to this community.
 
--   E-mail to the Completor® team at collective e-mail to [fg_InflowControlSoftware@equinor.com](fg_InflowControlSoftware@equinor.com).
+-   E-mail to the Completor® team at collective e-mail to [fg_InflowControlSoftware@equinor.com](mailto:fg_InflowControlSoftware@equinor.com).
 
 The functional mail group is established for handling inquiries and issues related to inflow control modeling and 
 simulation e.g. Completor® errors, improvement proposals and support, requests for inflow control modelling parameters,
@@ -64,7 +64,7 @@ products developed and/or operated by the Inflow Control Software team, i.e. VaM
 
 -   Posting non-confidential questions at Teams channel: [Completor -\> General](https://teams.microsoft.com/l/channel/19%3a1fc110ba3bbc428db700b8e71c7c1620%40thread.skype/General?groupId=a0499e5f-0576-4bae-981d-3b2438eb014b&tenantId=3aa4a235-b6e2-48d5-9195-7fcf05b459b0) (for Equinor users only).
 
-## 2nd line user support
+### 2nd line user support
 
 A more in-depth and hands-on follow-up over time is arranged through ServiceNow at the [production technology service-now self-service](https://equinor.service-now.com/selfservice?id=sc_cat_item&sys_id=3cbd84e46f2d1100f582a8ff8d3ee448).
 Select COMPLETOR from the list of applications, describe the scope,
@@ -73,15 +73,15 @@ The request will be discussed and coordinated internally in the Inflow Control t
 It will be assigned to a team member
 who will follow-up on behalf of and in close collaboration with the Inflow Control team until the task is solved.
 
-# Infrastructure
+## Infrastructure
 
-## Hosting
+### Hosting
 
 Completor® is hosted at GitHub for a collaborative and transparent approach to software development,
 facilitating code review and version control.
 A backlog of issues is managed in the [Completor project](https://github.com/equinor/completor/projects/1).
 
-## Distribution
+### Distribution
 
 Within Equinor Completor® is installed on all Linux machines and accessible to internal users from the code distribution system [equinor/komodo](https://github.com/equinor/komodo).
 To activate komodo and get the current stable version of Completor:
@@ -107,7 +107,7 @@ TODO(#21): Update this documentation. It Should be more fleshed out for external
 pip install git+https://github.com/equinor/completor
 ```
 
-# Links/references
+## Links/references
 
 The basic framework for developing software in Equinor is specified in Software Development Principles.
 Completor® is developed, run and maintained according to most of these principles.
@@ -117,9 +117,12 @@ Completor® is developed, run and maintained according to most of these principl
     for Completor in QLM (established by Roy Tingstad, based on C1 and C2 diagrams established by Øyvind Kvalnes in collaboration with Completor DevOps team).
 -   [Enterprise Architecture](https://ea.equinor.com/companyea/?oid=1cd67a86-59b3-40e0-81c0-fc9fe4bd108a) established by Roy Tingstad (in collaboration with Completor® DevOps team).
 
-# Operational Guidelines
 
-## Preparation/competency/requirements
+### Operational Guidelines
+
+...
+
+### Preparation/competency/requirements
 
 Some training is recommended or mandatory to establish a GitHub user and contribute to the Equinor software portfolio.
 Please refer to [Equinor University](http://learning.equinor.com/) and sign up for the following courses:
@@ -132,14 +135,14 @@ TODO(#23): Cant find the two following courses.
 -   \[TR_DIGI\] Cyber Security: Basic.
 -   \[TR_DIGI\] Cyber Security: Advanced.
 
-## Communication
+### Communication
 
 -   GitHub may be used for general comments related to issues/reviews.
 -   Slack has a (currently private) [\#completor](https://equinor.slack.com/archives/C02MVVAC9L4) channel for developers/contributors (ask for access).
 -   [Inflow Control Technology community](https://web.yammer.com/main/groups/eyJfdHlwZSI6Ikdyb3VwIiwiaWQiOiI4NjI2OTE3Mzc2MCJ9/all) at Yammer may be used for questions, bug reports, feature requests and improvement proposals.
--   E-mail group [fg_InflowControlSoftware@equinor.com](fg_InflowControlSoftware@equinor.com) is used for issue tracking and customer support.
+-   E-mail group [fg_InflowControlSoftware@equinor.com](mailto:fg_InflowControlSoftware@equinor.com) is used for issue tracking and customer support.
 
-## Contributions
+### Contributions
 
 Contributions in terms of code, bug reports and/or feature requests are welcome.
 Please refer to the developer manual for an overview of the code base.
@@ -149,7 +152,7 @@ For more information about prerequisites, code conventions,
 routines for release and deployment, testing, recovery, logging,
 and monitoring, the reader is referred to paragraph [Operational Guidelines](#operational-guidelines).
 
-### Legal terms and conditions for contributions
+#### Legal terms and conditions for contributions
 
 Any contributions will undergo review before they are (potentially) accepted.
 Completor® is deployed under copy-left license GPLv3,
@@ -160,7 +163,7 @@ Only contributions not transferring copyright may be accepted.
 Equinor will attempt to respond to bug reports and improvement proposals,
 but Equinor is not liable for maintenance on behalf of external users.
 
-### Practical instructions on how to contribute
+#### Practical instructions on how to contribute
 
 Issues may be reported directly on the Completor Issue Board.
 The issue board reflects the status of the issue handling.
@@ -172,10 +175,10 @@ Alternatively,
 issues may be reported to the DevOps team at Yammer([Inflow Control Technology community](https://web.yammer.com/main/groups/eyJfdHlwZSI6Ikdyb3VwIiwiaWQiOiI4NjI2OTE3Mzc2MCJ9/all)),
 via the [\#completor](https://equinor.slack.com/archives/C02MVVAC9L4) channel at Slack (non-public,
 apply for access) or by e-mail to the Inflow Control Software team (comprising the Completor® team)
-at [fg_InflowControlSoftware@equinor.com](fg_InflowControlSoftware@equinor.com).
+at [fg_InflowControlSoftware@equinor.com](mailto:fg_InflowControlSoftware@equinor.com).
 Issues reported to the DevOps team will be added to the backlog for follow-up.
 
-## Getting started as a developer
+### Getting started as a developer
 
 **Getting access to GitHub**
 
@@ -214,7 +217,7 @@ The following describes how to use it:
 
 Equinor Komodo Usage — Equinor Komodo Release 1.0 documentation
 
-### Installing Completor in the private environment
+#### Installing Completor in the private environment
 
 Make sure the private environment is activated with step 3 above.
 
@@ -332,7 +335,7 @@ decribed in the issue list. 4. Add a reviewer in the menu to the right.
 5. When review is approved: Squash and merge the branch into the main
 repo with a text describing what the change/amendment does.
 
-## Building developer documentation
+### Building developer documentation
 
 [//]: # (Run a build of the developer documentation locally before uploading to)
 
@@ -356,7 +359,7 @@ repo with a text describing what the change/amendment does.
 
 [//]: # (GitHub.)
 
-## Repository conventions
+### Repository conventions
 
 -   Use `setup.py` for installing endpoints that users should have in
     their `$PATH`.
@@ -366,7 +369,7 @@ repo with a text describing what the change/amendment does.
     and will be checked for compliance with sphinx on every pull
     request. Warnings from sphinx must be fixed.
 
-# Code style 
+## Code style
 
 TODO: Check if information is correct and relevant.
 
@@ -374,7 +377,7 @@ TODO: Check if information is correct and relevant.
     Exception to PEP8 is maximum width at 120 instead of PEP8's 79.
 -   Use `pre-commit` to enforce compliance before commit.
     Pre-commit is part of the test requirements,
-    see section [Installing Completor in the private environment](#Installing-Completor-in-the-private-environment). 
+    see section [Installing Completor in the private environment](#installing-completor-in-the-private-environment).
     Run `pre-commit install` in the repository root after you've gotten the test-requirements.
     This will save you from pushing code that will fail the code style tests required before merge.
     These rules include but are not limited to:
@@ -384,7 +387,7 @@ TODO: Check if information is correct and relevant.
     -   Isort - sorting of import statements.
 
 Pre-commit is triggered to run all these checks and more when running `git commit`.
-To manually trigger a check you can run it by calling `pre-commit run --all`.
+To manually trigger a check, you can run it by calling `pre-commit run --all`.
 To run certain hooks individually against certain files run `pre-commit run tool-name filepath`.
 
 [//]: # (- Use pylint to improve coding.)
@@ -393,13 +396,13 @@ To run certain hooks individually against certain files run `pre-commit run tool
 [//]: # (    -   Deviations from default &#40;strict&#41; pylint are stored in `.pylintrc` at root level, or as comments in the file e.g. `# pylint: disable=broad-except`.)
 [//]: # (    -   Only use deviations when e.g. black and pylint are in conflict, or if conformity with pylint would clearly make the code worse or not work at all. Do not use it to increase pylint score.)
 
-## Release & Deployment
+### Release & Deployment
 
 The PETEC Reservoir Toolbox is responsible for the release of Komodo.
 Refer to [\#komodo-maintainers](https://equinor.slack.com/archives/CKC3ST0UT) at Slack for feature freeze dates and procedures for release to komodo.
 Release notes are found at [https://github.com/equinor/completor/releases](https://github.com/equinor/completor/releases).
 
-## Testing
+### Testing
 
 **Automatic code tests** TODO: Check if information on "Automatic code
 tests" is correct and relevant.
@@ -408,7 +411,7 @@ Every change or addition to the code shall be followed by one or more tests veri
 Most modules have already a set of tests located in \~/subscript-internal/tests/completor/ The program pytest is used
 to verify the tests.
 All tests must be checked with pytest and pass before uploading to GitHub.
-The same tests are run at GitHub and the upload will fail if a test fails.
+The same tests are run at GitHub, and the upload will fail if a test fails.
 
 To run all tests:
 
@@ -424,14 +427,14 @@ pytest tests/completor/test_main.py::test_perf
 
 [https://docs.pytest.org/en/](https://docs.pytest.org/en/)
 
-### Automatic Test Gates
+#### Automatic Test Gates
 
 -   On commit, code is automatically formatted, with pre-commit git hooks.
 -   On every push to a branch/repository, the continuous integration (CI) pipeline ensures that the code is built,
     and automatic tests are run.
     The testing includes integration and unit tests and automatic checks for security vulnerabilities, and licensing.
 
-### Manual Test Gates
+#### Manual Test Gates
 
 -   Manual testing by the DevOps team. If we break it, we fix it ASAP.
 -   Quality Assurance: Manual testing by users. Patched until approved by user.
@@ -439,17 +442,17 @@ pytest tests/completor/test_main.py::test_perf
     When approved by CAB (user representatives, DevOps team, PO, Toolbox owner?), the release can be pushed to Komodo.
 -   Currently manual release tests. Ask Komodo team to include release tests for Completor® in Komodo workflow (#166).
 
-## (Disaster) Recovery
+### (Disaster) Recovery
 
 If Completor® breaks, the issue is handled in collaboration between user, DevOps team and PO.
 In case of urgency, the user can source an operative version of Completor® from Komodo until the issue is solved.
 In case of a Komodo disaster, the repository to which Completor® is deployed can be cloned from GitHub.
 Check out specific commit hash.
 
-## Logging and Monitoring
+### Logging and Monitoring
 
 Some incidents generate an error message including a zip-file
-to be sent as attachment to the DevOps team at [fg_InflowControlSoftware@equinor.com](fg_InflowControlSoftware@equinor.com) for follow-up.
+to be sent as attachment to the DevOps team at [fg_InflowControlSoftware@equinor.com](mailto:fg_InflowControlSoftware@equinor.com) for follow-up.
 (Not automatic, to avoid conflict with GDPR).
 The zip-file contains the Completor® include files and an error log.
 The code is also monitored by the CI process (could be configured for daily testing and reporting).

@@ -13,4 +13,4 @@ jobs:
 
   publish-docs:
     name: '️‍📚️ Publish Docs'
-    uses: ./.github/workflows/docs.yaml
+    uses: ./.github/workflows/docs.yml
