@@ -1,0 +1,36 @@
+# How to start contributing
+
+Welcome! We are glad that you want to contribute to our project! 💖
+
+This project accepts contributions via GitHub pull requests.
+
+This document outlines the process to help get your contribution accepted.
+
+There are many ways to contribute:
+
+* Suggest [Features](TODO(#17): Add these)
+* Suggest [Changes](TODO(#17): Add these)
+* Report [Bugs](TODO(#17): Add these)
+
+You can start by looking through the current [Issues](https://github.com/equinor/completor/issues)
+
+## Code Style
+
+* PEP8 is the rule for naming of files, functions, classes, etc.
+* Exception to PEP8 is the maximum width at 120 instead of PEP8's 79.
+* Use the pre-commit configuration to ensure compliance with `black` and `flake8`.
+* `pre-commit install` on setup and ensure it runs on `git commit`.
+
+## Workflow
+
+1. Create a new branch.
+2. Do work.
+3. Create a Pull Request.
+4. Ask for review of Pull Request.
+5. Merge to main.
+
+## Code review process
+
+The core team looks at pull requests on a regular basis.
+After feedback has been given, we expect responses within three weeks.
+After three weeks, we may close the pull request if it isn't showing any activity.

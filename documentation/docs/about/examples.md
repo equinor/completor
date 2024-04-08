@@ -1,0 +1,254 @@
+# Example of Completion and Inflow Control Setup
+
+## Standard completion with no inflow control devices
+Example of Completor setup with no inflow control device, however, the device layer will be printed in the output.
+This example is also stating that the `schedule` file is defined in the case file as `tubing_msw_def.well`.
+
+```
+SCHFILE
+--This keyword is optional. To be included if the input schedule file is not called directly from the command line. 
+--Used for including schedule file containing the tubing ulti-segment well (MSW) definition in terms of WELSPECS, COMPDAT, WELSEGS and COMPSEGS
+tubing_msw_def.well
+/
+
+COMPLETION 
+--Well  Branch   StartMD   EndMD    Screen     Well/    Roughness      Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--      Number                      Tubing     asing                   Content 
+--                                  Diameter   Diameter
+OP1     1        0        10000     0.15364    0.1905    1.24E-005      GP          1                PERF              1
+OP1     2        0        10000     0.15364    0.1905    1.24E-005      GP          1                PERF              1
+/
+-- Set GP_PERF_DEVICELAYER to TRUE if a device layer for this type of completion is needed.
+GP_PERF_DEVICELAYER
+TRUE
+/
+```
+
+## Completion with AICDs
+Example of Completor setup with AICD with a mix of a blank section.
+In this example, instead of connecting the second lateral into tubing,
+this example will connect the second lateral to the device in the first lateral due to the keyword `LATERAL_TO_DEVICE`.
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/     Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber
+--      Number                      Tubing     Casing                    Content 
+--                                  Diameter   Diameter
+OP1     1        0         3500     0.15364    0.1905    1.524E-005      GP          0                AICD             1  -- BLANK completion
+OP1     1     3500         5000     0.15364    0.1905    1.524E-005      GP          1                AICD             1  -- AICD completion
+OP1     1     5000        99999     0.15364    0.1905    1.524E-005      GP          0                AICD             1  -- BLANK completion
+OP1     2        0         4000     0.15364    0.1905    1.524E-005      GP          0                AICD             1  -- BLANK completion
+OP1     2     4000         5500     0.15364    0.1905    1.524E-005      GP          1                AICD             1  -- AICD completion
+OP1     2     5500        99999     0.15364    0.1905    1.524E-005      GP          0                AICD             1  -- BLANK completion
+/
+
+LATERAL_TO_DEVICE
+-- Branch 2 of OP1 is routed to the device layer in branch 1 and not the tubing layer.
+OP1  2
+/
+
+WSEGAICD
+-- NB: Dummy parameters
+--Number   Alpha           x        y        a     b     c     d        e        f        rhocal   viscal
+1          0.000017253     3.05     0.67     1     1     1     2.43     1.18     10.0     1000       1
+2          0.000021059     2.94     0.69     1     1     1     1.96     1.22     4.64     1000       1
+3          0.000019331     2.98     0.65     1     1     1     2.13     1.27     5.60     1000       1
+/
+```
+
+## Completion with spiral ICDs
+
+Example with the use of sICD.
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/   Roughness       Annulus     Nvalve/Joint     ValveType   DeviceNumber
+--      Number                      Tubing     Casing                  Content 
+--                                  Diameter   Diameter
+OP1     1        0        10000     0.15364    0.1905    524E-005      GP          1                ICD        1
+OP1     2        0        10000     0.15364    0.1905    524E-005      GP          1                ICD        2
+/
+
+WSEGSICD
+-- NB: Dummy parameters. Contact the Equinor Inflow Control Team for actual values suitable for your case.
+-- DeviceNumber         Strength               RhoCal         VisCal            WatFract.
+1                       1e-4                   1000           1                  1*
+2                       2e-4                   1000           1                  1*
+/
+```
+
+## Completion with nozzle ICDs
+Example the use of Completor to set up a nozzle ICD. The use of nozzle ICD will produce a keyword of `WSEGVALV`.
+This keyword is widely used on other types of devices in Completor for example `ICV` and `DAR`.
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--      Number                      Tubing     Casing                   Content 
+--                                  Diameter   Diameter
+OP1     1        0        10000     0.15364    0.1905    1524E-005      GP          1                VALVE         1
+OP1     2        0        10000     0.15364    0.1905    1524E-005      GP          1                VALVE         2
+/
+
+WSEGVALV
+-- NB: Dummy parameters. 
+-- DeviceNumber  Cv        Ac          L
+1                1e-2      7.50e-4     1*
+2                1e-2      1.56e-4     1*
+3                1e-2      1.53e-4     1*                        
+/
+```
+
+## Completion with DAR
+An example with DAR (Density Activated Recovery).
+This keyword will generate sets of `WSEGVALV`,
+`ACTIONX`, and `UDQ` as it is accommodated by Eclipse simulator and later OPM Flow (under development).
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--      Number                      Tubing     Casing                   Content
+--                                  Diameter   Diameter
+OP1     1        0        10000     0.15364    0.1905    1524E-005      GP          1                DAR         1
+OP1     2        0        10000     0.15364    0.1905    1524E-005      GP          1                DAR         2
+/
+
+WSEGDAR
+-- NB: Dummy parameters. 
+-- Number    Cv      Oil_Ac      Gas_Ac       Water_Ac     wvf_low  wvf_high     gvf_low   gvf_high
+1            1.0     7.5e-4      1.56e-4      1.53e-4      0.75     0.80         0.70      0.90
+2            1.0     7.5e-4      1.56e-4      1.53e-4      0.50     0.75         0.50      0.80
+/
+```
+
+## Completion with AICV
+This keyword `WSEGAICV` will act like `WSEGAICD` keyword and acting dependent on the working criteria using `ACTIONX`.
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/     Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--      Number                      Tubing     Casing                    Content 
+--                                  Diameter   Diameter
+OP1     1        0        10000     0.15364    0.1905     1524E-005      GP          1                AICV         1
+OP1     2        0        10000     0.15364    0.1905     1524E-005      GP          1                AICV         1
+/
+
+WSEGAICV
+-- NB: Dummy parameters. 
+--NUMBER WCT  GVF   RhoCal  VisCal  Alp.Main  x.Main  y.Main  aMain  b.Main  c.Main  d.Main  e.Main  f.Main  Alp.Pilot  x.Pilot  yPilot  a.Pilot  b.Pilot  c.Pilot  d.Pilot  e.Pilot  f.Pilot
+1        0.95 0.95  1000    1       7.677e-5  2.99    1.543  1       1       1       0.39    0.64    1       4.98e-5    3.37    1.492    1        1        1        1.8      0.11     1.0
+/
+```
+
+## Completion with open annulus (no gravel pack and no packer)
+
+This is an example to set up a well completion with open annulus without a packer.
+It means that this well is completed with open annulus from top to bottom (unrealistic example).
+Completor will automatically set up a packer at the start and end of a reservoir section.
+
+```
+COMPLETION
+--Well    Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--        Number                      Tubing     Casing                   Content
+--                                    Diameter   Diameter
+OP1      1         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1      2         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1
+/
+
+WSEGAICD
+-- NB: Dummy parameters. 
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+/
+```
+
+## Completion with packers every 300 meters
+This is a more realistic example where the completion is set up with open annulus and packer for every 300 meters.
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber     
+--      Number                      Tubing    Casing                    Content 
+--                                  Diameter   Diameter
+OP1     1        0         1640     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        1640      1640     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        1640      1940     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        1940      1940     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        1940      2240     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        2240      2240     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        2240      2540     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        2540      2540     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        2540      2920     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     2        0         1660     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     2        1660      1660     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     2        1660      1960     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     2        1960      1960     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     2        1960      2110     0.15364    0.1905    1524E-005      OA          1                AICD         1
+/
+
+
+WSEGAICD
+-- NB: Dummy parameters. 
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+/
+```
+
+## Completion with packers every 300 meters and blank pipe until 1640 MD
+A more complex combination with including blank pipe in open annulus and packer combination completion.
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--      Number                      Tubing     Casing                   Content
+--                                  Diameter   Diameter
+OP1     1        1340      1640     0.15364    0.1905    1524E-005      GP          0                AICD         1
+OP1     1        1640      1640     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        1640      1940     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        1940      1940     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        1940      2240     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        2240      2240     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        2240      2540     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        2540      2540     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     1        2540      2920     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     2        1360      1660     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     2        1660      1660     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     2        1660      1960     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     2        1960      1960     0.15364    0.1905    1524E-005      PA          1                AICD         1
+OP1     2        1960      2110     0.15364    0.1905    1524E-005      OA          1                AICD         1
+/
+
+
+WSEGAICD
+-- NB: Dummy parameters. 
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+/
+```
+
+## Completion with AICDs every second screen joint
+
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--      Number                      Tubing    Casing                    Content
+--                                  Diameter   Diameter
+OP1     1        0        10000     0.15364    0.1905    1524E-005      GP          0.5                AICD         1
+OP1     2        0        10000     0.15364    0.1905    1524E-005      GP          0.5                AICD         1
+/
+
+
+
+WSEGAICD
+-- NB: Dummy parameters. 
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+/
+```
