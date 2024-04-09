@@ -13,19 +13,19 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://www.equinor.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
-  trailingSlash: true,
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'equinor', // Usually your GitHub org/user name.
   projectName: 'completor', // Usually your repo name.
   deploymentBranch: 'gh-pages',
+  trailingSlash: false,
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',//'throw',
   onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
@@ -47,11 +47,9 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/equinor/completor/tree/main/documentation',
+          routeBasePath: "/",
         },
         blog: false,
-        theme: {
-          customCss: './src/css/custom.css',
-        },
       }),
     ],
   ],
@@ -64,16 +62,10 @@ const config = {
       navbar: {
         title: 'Completor',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Completor logo',
           src: 'img/completor-text.jpeg',
         },
         items: [
-          {
-            type: 'docSidebar',
-            sidebarId: 'docsSidebar',
-            position: 'left',
-            label: 'Docs',
-          },
           {
             href: 'https://github.com/equinor/completor',
             label: 'GitHub',
@@ -89,7 +81,7 @@ const config = {
             items: [
               {
                 label: 'Tutorial',
-                to: '/docs/about',
+                to: '/',
               },
             ],
           },

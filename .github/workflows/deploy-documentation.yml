@@ -1,0 +1,73 @@
+name: "📚 Publish Docs"
+
+on:
+  # Workflow dispatch is used for manual triggers
+  workflow_dispatch:
+  # Workflow call is used for called from another workflow
+  workflow_call:
+
+defaults:
+  run:
+    working-directory: documentation
+
+jobs:
+  deploy:
+    name: Build Docusaurus to gh-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: documentation/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build website
+        run: yarn build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/build
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+#env:
+#  GITHUB_PAGES_BRANCH: gh-pages
+#
+#jobs:
+#  publish-docs:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - name: Checkout code
+#      uses: actions/checkout@v4
+#
+#    - name: Setup node
+#      uses: actions/setup-node@v4
+#      with:
+#        node-version: 20
+#        cache: yarn
+#        cache-dependency-path: documentation/yarn.lock
+#
+#    - name: Install dependencies and build website
+#      run: |
+#        cd documentation
+#        yarn install --frozen-lockfile
+#        yarn build
+#
+#    - name: Push static files to Github Pages branch
+#      run: |
+#        cd documentation/build
+#        CREATED_FROM_REF=$(git rev-parse --short HEAD)
+#        git init
+#        git config user.name "GitHub Actions Bot"
+#        git config user.email "<>"
+#        git checkout -b $GITHUB_PAGES_BRANCH
+#        git remote add $GITHUB_PAGES_BRANCH https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/equinor/completor
+#        git add .
+#        git commit -m "Built from commit '$CREATED_FROM_REF'"
+#        git push -f --set-upstream gh-pages gh-pages

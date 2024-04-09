@@ -1,0 +1,20 @@
+name: "📚 Check Docs"
+
+on:
+  # Workflow call is used for called from another workflow.
+  workflow_call:
+  
+    paths:
+      - "documentation/**"
+      - "!README.*"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: install
+        run: yarn install
+
+      - name: build
+        run: yarn build
+
