@@ -1,12 +1,37 @@
 # Calling Completor® for Ensemble Simulations
-There are two ways on calling Completor for ensemble simulations as part of the FMU workflow. You can choose to run it as part of ERT workflow or you can run it as part of the RMS workflow.
+There are two ways of calling Completor for ensemble simulations as part of the FMU workflow.
+You can choose to run it as part of ERT workflow, or you can run it as part of the RMS workflow.
+
 ## Running Completor® from ERT
-This is a recommended practice on running Completor through ERT workflow for ensemble simulations. ERT is a workflow manager where it will run all preparations of model generation, running reservoir simulation, up to post-processing. It is more practical to run from ERT for debugging where ERT will give detailed messages on which point that it failed.
+This is a recommended practice on running Completor through ERT workflow for ensemble simulations.
+ERT is a workflow manager where it will run all preparations of model generation,
+running reservoir simulation, up to post-processing.
+It is more practical to run from ERT to debug where ERT will give detailed messages on which point that it failed.
+
+```
+DEFINE <RMS_VERSION>        12.1.4
+-- DEFINE <RMS_WF_NAME>        PRED_COMPLETOR --used to run completor inside RMS
+DEFINE <RMS_WF_NAME>        WELL_PLANNING --used to reun completor in ERT
+```
+
+[//]: # (![ERT configuration workflow definition]&#40;../../static/img/fmu/ert_1.png&#41;)
+
+[//]: # (```)
+
+[//]: # (-- Run Completor with ERT)
+
+[//]: # (-- Completor)
+
+[//]: # (FORWARD_MODEL RUN_COMPLETOR&#40;<ARG1>=<RUNPATH>/ert/input/config/op5_gp_aicd.config, <ARG2>=eclipse/include_pred/schedule/drogon_pred.sch, <ARG3>=eclipse/include_pred/&#41;)
+
+[//]: # (```)
 
 ### Completor with `hook_workflow` with ERT
 
-Completor can be called from ERT config file. It runs using the
-`FORWARD_MODEL` functionality in ERT. As requirements, you need to have ERT installed in your machine within the same environment, then Completor will be connected into ERT with a forward model called `run_completor`.
+Completor can be called from ERT config file.
+It runs using the `FORWARD_MODEL` functionality in ERT.
+As requirements, you need to have ERT installed in your machine within the same environment.
+Completor will then be connected into ERT with a forward model called `run_completor`.
 
 The syntax to call this as part of ERT workflow is:
 ```shell
@@ -21,23 +46,23 @@ In case that ERT and Completor are failed to be connected within the `hook_workf
 
 The steps are as follows:
 1. Make a file in the ERT directory to be called `run_completor.sh` that contains this script
-```shell
-#!/bin/bash
-completor  -i $1 -s $2 -o $3
-```
+    ```shell
+    #!/bin/bash
+    completor  -i $1 -s $2 -o $3
+    ```
 2. Create another file to call this custom job as `run_completor` that contains this script and adjust the `EXECUTABLE` location accordingly.
-```shell
-#!/bin/bash
-STDERR    run_completor.stderr
-STDOUT    run_completor.stdout
+    ```shell
+    #!/bin/bash
+    STDERR    run_completor.stderr
+    STDOUT    run_completor.stdout
 
-EXECUTABLE  ../scripts/run_completor.sh
-ARGLIST       <CASE> <INPUT_SCH> <OUTPUT_SCH>
-```
+    EXECUTABLE  ../scripts/run_completor.sh
+    ARGLIST       <CASE> <INPUT_SCH> <OUTPUT_SCH>
+    ```
 3. Add line in the ERT workflow containing
-```shell
-INSTALL_JOB	run_completor			../../bin/jobs/run_completor
-```
+    ```shell
+    INSTALL_JOB	run_completor			../../bin/jobs/run_completor
+    ```
 
 This will create a manual `run_completor` script similar with previous step.
 
@@ -45,16 +70,14 @@ This will create a manual `run_completor` script similar with previous step.
 
 Running Completor with RMS requires modification of RMS workflow and connection with the RMS environment. This requires several modification towards the workflow, for example ensuring to turn off pre-installed inflow control device if you have done it through your original RMS workflow.
 
-You can easily run Completor through RMS by adding a `run_external` block in RMS and write:
+You can run Completor through RMS by adding a `run_external` block in RMS and write:
 ``` shell
 run_external completor -i <case_file_name> -s <input_schedule_name> -o <output_schedule_name>
 ```
 
-Note:
 1. Original RMS workflow outputs a schedule file that is saved to
     the relative path `../../eclipse/include/schedule/drogon_pred.sch`,
 2. `<case_file_name>`, `<input_schedule_name>`, and `<output_schedule_name>` must be relative to where the file of `rms.model` will be. This will be complicated compared to ERT.
-3. Note that the syntax for running Completor® is the same as in UNIX. The
-output schedule file is written to the same directory as the input
-schedule. Thus, make sure you give the output schedule a different name
-than the input schedule.
+3. Note that the syntax for running Completor® is the same as in UNIX.
+The output schedule file is written to the same directory as the input schedule.
+Thus, make sure you give the output schedule a different name than the input schedule.
