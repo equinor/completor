@@ -1,19 +1,36 @@
+---
+title: Inflow Control Modeling
+sidebar_position: 2
+description: Well Modeling with Inflow Control for Dynamic Simulations
+---
+
 # Well Modeling with Inflow Control for Dynamic Simulations
 
-Eclipse and OPM Flow have functionality to simulate advanced wells by multi-segment well (MSW) models.
-With the MSW concept, it is possible to model multilateral wells and wells with and without inflow control technology,
-annular flow and zonal isolation (packers).
-The challenge is to establish schedule files (to be included in Eclipse or OPM Flow) representing the complex well completion designs.
-Completor® provides a simple and efficient workflow for generating the necessary schedule files.
+Simulating the effects of Inflow Control Technology is now accommodated by advanced well model in reservoir simulation,
+by multi-segment well (MSW) model.
+Industry standard simulators ([Eclipse](https://www.software.slb.com/products/eclipse)) and new reservoir simulators
+([OPM-Flow](https://opm-project.org/?page_id=19), [Intersect](https://www.software.slb.com/products/intersect))
+are able to accommodate this modelling.
+With this MSW concept, it is possible to model advanced wells (such as multilateral wells),
+with Inflow Control Technology, annular flow and zonal isolation (packers).
+The challenge is to establish a consistent schedule files depicting the complex well completion designs,
+producing an appropriate pressure drop in the wells.
+Completor® provides a simple and efficient solution for generating the necessary schedule files.
 
 Completor® can model wells with:
 - Standard perforation/open-hole.
-- Wells with inflow control technology:
-ICD, various AICDs (Taqa, Baker Hughes, Weatherford),
-ResAdvance (SLB), EquiFlow (Halliburton), AICV (Inflow Control AS), and DAR (Innowell).
+- Wells with inflow control technology: ICD, various AICDs (Taqa, Baker Hughes, Weatherford), ResAdvance (SLB),
+EquiFlow (Halliburton), AICV ([Inflow Control AS](https://doi.org/10.2118/214342-PA)), DAR ([Innowell](https://doi.org/10.2118/205868-MS)).
 - Wells gravel pack in the annulus.
 - Wells with annular flow.
 - Wells with limited annular flow (packers).
 
 There is a limitation on implementation of Inflow Control devices in OPM Flow,
 it is still under development on modeling the annulus flow and DAR devices.
+
+## References
+- SLB, 2024. Eclipse industry-reference reservoir simulator. https://www.software.slb.com/products/eclipse.
+- The Open Porous Media (OPM) Initiative. Flow. https://opm-project.org/?page_id=19
+- SLB, 2024. Intersect high-resolution reservoir simulator. https://www.software.slb.com/products/intersect.
+- Killie, Rune, Paterson, Grant J., and Thorleif Lager. "Delivering Automated Reservoir Management with Birth of the First Ever Universal Inflow Control System UICS." Paper presented at the SPE Annual Technical Conference and Exhibition, Dubai, UAE, September 2021. doi: https://doi.org/10.2118/205868-MS
+- Langaas, K., Gisholt, E., Bjerke, A., and V. Mathiesen. "Autonomous Inflow Control Valve for Medium-Light Oil and Its Effective Performance." SPE Prod & Oper 38 (2023): 590–602. doi: https://doi.org/10.2118/214342-PA

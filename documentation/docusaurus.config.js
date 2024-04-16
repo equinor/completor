@@ -9,11 +9,11 @@ import {themes as prismThemes} from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Completor Documentation',
-  tagline: 'Advanced well modeling',
+  tagline: 'Inflow Control Modelling',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://www.equinor.com',
+  url: 'https://equinor.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -58,12 +58,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/completor.png',
       navbar: {
-        title: 'Completor',
+        title: '',
         logo: {
           alt: 'Completor logo',
-          src: 'img/completor-text.jpeg',
+          src: 'img/completor.png',
         },
         items: [
           {
