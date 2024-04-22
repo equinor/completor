@@ -1,0 +1,6 @@
+COMPLETION
+-- Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter  roughness  Annulus     Nvalve/Joint     ValveType     DeviceNumber     BlankPortion
+--         Number                      Tubing     Casing               roughness  Content 
+--                                     Diameter   Diameter
+A1        1        0         3000     0.2        0.25                 1.00E-4    GP          0                PERF          0                0
+/

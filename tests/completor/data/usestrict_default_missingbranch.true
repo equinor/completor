@@ -1,0 +1,8 @@
+-- Two-branch well schedule for testing the LATERAL_TO_DEVICE keyword
+
+WELSPECS
+ A1   MYGRP 35  113  0.0   OIL   1*   STD   SHUT   YES   1   AVG   1* /
+ /
+
+
+

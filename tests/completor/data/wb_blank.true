@@ -1,0 +1,41 @@
+WELSPECS
+-- WELL GROUP  I  J  BHP_DEPTH PHASE DR  FLAG  SHUT   
+    A1  MYGRP  1  1  2000      OIL   1*  SHUT  YES  /
+    A2  MYGRP  1  1  2000      OIL   1*  SHUT  YES  /
+/
+
+
+COMPDAT
+-- WELL  I  J  K  K2 FLAG  SAT CF DIAM KH SKIN   
+    A2  1  1  1  1   OPEN  0  10  0.2 2   0    /
+    A2  2  1  1  1   OPEN  0  10  0.2 2   0    /
+    A2  3  1  1  1   OPEN  0  10  0.2 2   0    /
+    A2  4  1  1  1   OPEN  0  10  0.2 2   0    /
+/
+
+
+WELSEGS
+-- WELL  TVD     MD     WBVOL INF    
+    A2  2000.0  2000.0  1*    ABS  /
+--  SEG  SEG2  BRANCH  OUT  MD      TVD    DIAM ROUGHNESS   
+    2    2     1       1    2012.0  2000.0  0.2  1.00E-04  /
+    3    3     1       2    2024.0  2000.0  0.2  1.00E-04  /
+    4    4     1       3    2036.0  2000.0  0.2  1.00E-04  /
+    5    5     1       4    2048.0  2000.0  0.2  1.00E-04  /
+/
+
+
+COMPSEGS
+A2 /
+--  I  J  K  BRANCH STARTMD  ENDMD      
+    1  1  1  1      2000.000 2012.000  /
+    2  1  1  1      2012.000 2024.000  /
+    3  1  1  1      2024.000 2036.000  /
+    4  1  1  1      2036.000 2048.000  /
+/
+
+
+WELOPEN
+A1 /
+A2 /
+/

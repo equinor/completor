@@ -1,0 +1,27 @@
+COMPLETION
+-- Well Branch  StartMD   EndmD    Screen     Well/CasingDiameter  roughness  Annulus     Nvalve/Joint     ValveType     DeviceNumber 
+--      Number                     Tubing     Casing               roughness  Content
+--                               Diameter   Diameter
+HOR       1           0  2015.00      0.151      0.216                5.0e-5       GP            0             AICD             1  
+HOR       1     2015.00  2015.00      0.151      0.216                5.0e-5       PA            1             AICD             1  
+HOR       1     2015.00  2300.00     0.151      0.216                5.0e-5        OA            1            AICD             1  
+HOR       1     2300.00  2300.00      0.151      0.216                5.0e-5       PA            1             AICD             1  
+HOR       1     2300.00  3780.00     0.151      0.216                5.0e-5        OA            2            AICD             1 
+HOR       1     3780.00  3780.00      0.151      0.216                5.0e-5       PA            1             AICD             1  
+HOR       1     3780.00  9999.00     0.151      0.216                5.0e-5        OA            0            AICD             1 
+HOR       1     9999.00  9999.00      0.151      0.216                5.0e-5       PA            1             AICD             1  
+/
+
+
+SEGMENTLENGTH
+WELSEGS
+/
+
+GP_PERF_DEVICE
+TRUE
+/
+
+WSEGAICD
+--Number   Alpha     x       y         a     b     c     d       e     f   rhocal   viscal
+1          1.454e-6  2.583   0.454     1     1     1     1.5     1       1       1000     1        -- 10 mm AICD tendeka
+/

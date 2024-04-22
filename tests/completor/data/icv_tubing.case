@@ -1,0 +1,26 @@
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1    1     0   2010    0.2    0.25    1.00E-4     GP      0    ICD       1
+   A1    1  2010   2010    0.2    0.25    1.00E-4     GP      1    ICV       1
+   A1    1  2010   2030    0.2    0.25    1.00E-4     GP      0    ICD       1
+   A1    1  2030   2030    0.2    0.25    1.00E-4     GP      1    ICV       1
+   A1    1  2030   3000    0.2    0.25    1.00E-4     GP      1    ICV       1
+------------------------------------- LATERAL 2 --------------------------------------
+   A1    2     0   2010    0.2    0.25    1.00E-4     GP      0    ICD       1
+   A1    2  2010   3000    0.2    0.25    1.00E-4     GP      1    ICD       1
+   A1    2  3000   4000    0.2    0.25    1.00E-4     GP      0    ICD       1 
+   A2    1     0   3000    0.2    0.25    1.00E-4     GP      1    ICV       2           
+/
+
+WSEGSICD
+-- Device no  Strength  Dens. cal.  Visc. cal.  Water fract.
+1              0.00123     1234.00        1.23           0.1
+/
+
+WSEGICV
+-- DEVICE   CV      AC    AC_MAX
+1           0.95    3      4
+2           2       4      4
+/

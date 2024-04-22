@@ -1,0 +1,22 @@
+-- Case file for testing the LATERAL_TO_DEVICE keyword.
+
+SCHFILE
+ml_well.sch
+/
+
+COMPLETION
+--WELL                 Branch  Start           End             Screen          Well/          Roughness       Annulus         Nvalve  Valve   Device
+--                     Number     mD            mD             Tubing         Casing          Roughness       Content         /Joint   Type   Number
+--                                                           Diameter       Diameter
+A1                      1          0         99999               0.15         0.2159            0.00065            GP              1   AICD        1
+/
+
+JOINT_LENGTH
+-- This is the length of each joint
+12
+/
+
+WSEGAICD
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
+1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+/

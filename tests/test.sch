@@ -1,0 +1,10 @@
+-- Date: 1 FEB 2003
+
+WELSPECS
+ --WELL   GROUP  IHEEL JHEEL       DREF PHASE       DRAD INFEQ SIINS XFLOW PRTAB  DENS
+  'A1' 'DUMMY'    28    37 1575.81971   OIL         1*    1*  SHUT    1*    1*    1* /
+ /
+
+COMPORD
+ 'A1'  INPUT /
+/

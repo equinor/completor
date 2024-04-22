@@ -1,0 +1,17 @@
+SCHFILE
+drogon_input.sch
+/
+
+COMPLETION
+--Well  Branch  Start   End     Screen    Well/     Roughness   Annulus  Nvalve  Valve  Device
+--      Number  mD      mD      Tubing    Casing    Roughness   Content  /Joint  Type   Number
+--                              Diameter  Diameter
+OP5     1          0  3778    0.15      0.311     0.00065     GP       0       PERF   1
+OP5     1       3778  3778    0.15      0.311     0.00065     PA       6       PERF   1
+OP5     1       3778  4300    0.15      0.311     0.00065     GP       6       PERF   1
+OP5     1       4300  5012    0.15      0.311     0.00065     OA       6       PERF   1
+OP5     2          0  3770    0.15      0.311     0.00065     GP       0       PERF   1
+OP5     2       3770  3770    0.15      0.311     0.00065     PA       0       PERF   1
+OP5     2       3770  4200    0.15      0.311     0.00065     GP       6       PERF   1
+OP5     2       4200  4900    0.15      0.311     0.00065     OA       6       PERF   1
+/
