@@ -4,9 +4,18 @@ from pathlib import Path
 
 import pytest
 import rstcheck_core.checker  # type: ignore
-from ert.shared.plugins.plugin_manager import ErtPluginManager  # type: ignore
 
-import completor.hook_implementations.jobs
+SKIP_TESTS = False
+try:
+    from ert.shared.plugins.plugin_manager import ErtPluginManager  # type: ignore
+
+    import completor.hook_implementations.jobs
+except ModuleNotFoundError:
+    import platform
+
+    if platform.system() == "Linux":
+        raise ImportError("Ert should be installed when on Linux OS. Try pip installing like `pip install '.[ert]'`!")
+    SKIP_TESTS = True
 
 # pylint: disable=redefined-outer-name
 
@@ -16,8 +25,7 @@ def expected_jobs():
     """dictionary of installed jobs with location to config"""
     expected_job_names = ["run_completor"]
     return {
-        name: path.join(path.dirname(completor.__file__), "completor/config_jobs", name)
-        for name in expected_job_names
+        name: path.join(path.dirname(completor.__file__), "completor/config_jobs", name) for name in expected_job_names
     }
 
 
@@ -25,6 +33,7 @@ def expected_jobs():
 ACCEPTED_JOB_CATEGORIES = ["modelling", "utility"]
 
 
+@pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_hook_implementations(expected_jobs):
     """Test that we have the correct set of jobs installed,
     nothing more, nothing less"""
@@ -47,6 +56,7 @@ def test_hook_implementations(expected_jobs):
     assert set(installable_workflow_jobs.keys()) == set(expected_workflow_jobs.keys())
 
 
+@pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_job_config_syntax(expected_jobs):
     """Check for syntax errors made in job configuration files"""
     for _, job_config in expected_jobs.items():
@@ -57,6 +67,7 @@ def test_job_config_syntax(expected_jobs):
 
 
 @pytest.mark.integration
+@pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_executables(expected_jobs):
     """Test executables listed in job configurations exist in $PATH"""
     for _, job_config_file in expected_jobs.items():
@@ -69,6 +80,7 @@ def test_executables(expected_jobs):
         assert shutil.which(job_configuration["EXECUTABLE"])
 
 
+@pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_hook_implementations_job_docs():
     """For each installed job, we require the associated
     description string to be nonempty, and valid RST markup"""

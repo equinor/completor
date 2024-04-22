@@ -3,8 +3,9 @@ name = "Completor"
 description = "Advanced well completion"
 authors = ["Equinor ASA"]
 readme = "README.md"
+version = ""
 packages = [
-    {include = "completor/completor"}
+    {include = "completor.completor:main"}
 ]
 
 

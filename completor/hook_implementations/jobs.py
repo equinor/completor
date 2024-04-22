@@ -1,7 +1,16 @@
 from pathlib import Path
+from completor.logger import logger
 
-from ert.shared.plugins.plugin_manager import hook_implementation  # type: ignore
-from ert.shared.plugins.plugin_response import plugin_response  # type: ignore
+SKIP_TESTS = False
+try:
+    from ert.shared.plugins.plugin_manager import hook_implementation  # type: ignore
+    from ert.shared.plugins.plugin_response import plugin_response  # type: ignore
+
+except ModuleNotFoundError:
+    logger.warning("Cannot import ERT, did you install Completor with ert option enabled?")
+    pass
+
+
 from pkg_resources import resource_filename
 
 

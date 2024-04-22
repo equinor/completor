@@ -173,4 +173,6 @@ def get_completor_version() -> str:
         The version string in format 'v1.1.1'
     """
     # TODO: Add exception handling here!
-    return "v" + ".".join(completor.__version__.split(".")[:3])
+    from pkg_resources import parse_version
+
+    return "v" + parse_version(completor.__version__).public

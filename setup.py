@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 """Setup for completor packages"""
-from __future__ import annotations
 
 from glob import glob
 from os.path import basename, splitext
@@ -10,14 +9,11 @@ from setuptools import find_packages
 
 SSCRIPTS = ["completor = completor.main:main"]
 
-LEGACYSCRIPTS: list[str] = []
-
 REQUIREMENTS = [
     "matplotlib",
     "numpy<2",
     "pandas",
     "scipy",
-    "ert",
     "Pillow>=10.0.1",  # not directly required, pinned to avoid a vulnerability
     "pydantic>=2.4.2",
 ]
@@ -43,19 +39,18 @@ DOCS_REQUIREMENTS = [
     "sphinx_rtd_theme",
 ]
 
-EXTRAS_REQUIRE = {"tests": TEST_REQUIREMENTS, "docs": DOCS_REQUIREMENTS}
+ERT_REQUIRMENTS = ["ert"]
+
+EXTRAS_REQUIRE = {"tests": TEST_REQUIREMENTS, "docs": DOCS_REQUIREMENTS, "ert": ERT_REQUIRMENTS}
 
 if __name__ == "__main__":
     setuptools.setup(
         name="completor",
         description="Completor",
         author="Equinor",
-        author_email="fg_InflowControlSoftware@equinor.com",
+        author_email="opensource@equinor.com",
         url="https://github.com/equinor/completor",
-        project_urls={
-            "Documentation": "https://fmu-docs.equinor.com/docs/completor",
-            "Issue Tracker": "https://github.com/equinor/completor/issues",
-        },
+        project_urls={"Issue Tracker": "https://github.com/equinor/completor/issues"},
         keywords="fmu, completor",
         license="Not open source (violating TR1621)",
         classifiers=[
@@ -69,18 +64,17 @@ if __name__ == "__main__":
         ],
         platforms="any",
         include_package_data=True,
-        packages=find_packages("src"),
-        package_dir={"": "src"},
+        packages=find_packages("completor"),
+        package_dir={"": ""},
         python_requires=">=3.8",
-        py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
+        py_modules=[splitext(basename(path))[0] for path in glob("completor/*.py")],
         install_requires=REQUIREMENTS,
         setup_requires=["setuptools >= 28", "setuptools_scm", "pytest-runner"],
         entry_points={
             "console_scripts": SSCRIPTS,
             "ert": ["run_completor = completor.hook_implementations.jobs"],
         },
-        scripts=["src/completor/legacy/" + scriptname for scriptname in LEGACYSCRIPTS],
-        use_scm_version={"write_to": "src/completor/version.py"},
+        use_scm_version={"write_to": "completor/version.py"},
         test_suite="tests",
         extras_require=EXTRAS_REQUIRE,
         zip_safe=False,
