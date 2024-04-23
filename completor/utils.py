@@ -8,6 +8,7 @@ from typing import Any, overload
 
 import numpy as np
 import pandas as pd
+from pkg_resources import parse_version
 
 import completor
 from completor.logger import logger
@@ -173,6 +174,4 @@ def get_completor_version() -> str:
         The version string in format 'v1.1.1'
     """
     # TODO(#9): Add exception handling here!
-    from pkg_resources import parse_version
-
     return "v" + parse_version(completor.__version__).public
