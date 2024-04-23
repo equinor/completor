@@ -17,7 +17,7 @@ jobs:
           if [[ -n $(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)') ]]; then
             echo $(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)')
             echo "Found TODOs without issue number or incorrect formatting."
-            echo "The correct format is: # TODO(#XXX): Todo message.
+            echo "The correct format is: # TODO(#XXX): Todo message."
             exit 1
           fi
           echo "All TODOs are tracked with issue numbers 🙌"
