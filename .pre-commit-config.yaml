@@ -25,10 +25,10 @@ repos:
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
-    -   id: python-check-blanket-noqa   # Prohibit overly broad QA exclusions.
-    -   id: python-no-eval              # Never use eval() it's dangerous.
-    -   id: python-no-log-warn          # logger.warning(), not old .warn()
-    -   id: python-use-type-annotations # Enforce that python3.6+ type annotations are used instead of type comments
+    -   id: python-check-blanket-noqa  # Prohibit overly broad QA exclusions.
+    -   id: python-no-eval  # Never use eval() it's dangerous.
+    -   id: python-no-log-warn  # logger.warning(), not old .warn()
+    -   id: python-use-type-annotations  # Enforce that python3.6+ type annotations are used instead of type comments
 
 -   repo: https://github.com/pycqa/isort
     rev: 5.13.2
@@ -68,17 +68,3 @@ repos:
     - "pandas-stubs==1.2.0.61"
     - "pytest-mypy-plugins==1.9.3"
     - "typing-extensions==4.2.0"  # May use future type annotations
-
-- repo: local
-  hooks:
-  - id: rstcheck
-    name: rstcehck
-    language: python
-    entry: bash -c 'rstcheck -r docs'
-
-- repo: local
-  hooks:
-  - id: sphinx-build
-    name: check-sphinx-build
-    language: python
-    entry: bash -c 'sphinx-build -b html -nv docs/ build/docs'

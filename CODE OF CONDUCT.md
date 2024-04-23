@@ -60,7 +60,7 @@ To underline this, we continuously encourage and remind our employees and any ex
 to raise concerns or report any suspected or potential breaches of law or company policies.
 
 For any questions or issues that one suspect falls outside the scope of behaviour regulated, and handled within the open
-source code of conduct, or you wish to place an anonymous, confidential report we encourage to use the
+source code of conduct, or you wish to place an anonymous confidential report, we encourage to use the
 [Equinor Ethics helpline](https://secure.ethicspoint.eu/domain/media/en/gui/102166/index.html).
 
 This helpline is hosted by a third party helpline provider.
