@@ -12,15 +12,22 @@ Completor® is a Python script and has a command line interface (CLI) to use wit
 
 ### Prerequisities
 * [Python](https://www.python.org/), version 3.8 or higher
-* [ERT](https://github.com/equinor/ert)
-* [Docker](https://www.docker.com/) (Optional), Linux or macOS
+* [ERT](https://github.com/equinor/ert) (optional)
 
 ### Installation
 To start using Completor®, you can follow these instructions:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e .[tests,docs] 
+pip install -e ".[tests,docs]"
+pre-commit install
+```
+If you intend to run completor as a plugin to ert:
+```shell
+git clone https://github.com/equinor/completor.git
+cd completor
+pip install -e ".[tests,docs,ert]"
+pre-commit install
 ```
 and to ensure it runs as intended, confirm it with:
 ```shell
