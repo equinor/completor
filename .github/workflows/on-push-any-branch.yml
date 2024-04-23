@@ -4,6 +4,10 @@ on:
   push:
 
 jobs:
+  lint:
+    name: 💄 Code Quality
+    uses: ./.github/workflows/lint.yml
+
 #  build:
 #    name: '🧪 Build & test Code'
 #    uses: ./.github/workflows/build.yaml
