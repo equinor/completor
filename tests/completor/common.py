@@ -120,7 +120,7 @@ class ReadSchedule:
     * :ref:`compdat <compdat_table>`
       (See :ref:`update_connection_factor <update_connection_factor>` for more details)
     * compsegs (``parser.get_compsegs_table``)
-      TODO: Use correct compsegs table reference
+      # TODO(#9): Use correct compsegs table reference
     * :ref:`welsegs_header <df_welsegs_header>`
     * :ref:`welsegs_content <df_welsegs_content>`
     """
