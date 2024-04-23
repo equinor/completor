@@ -1,0 +1,38 @@
+name: Lint code
+
+on:
+  workflow_call:
+
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8']
+    env:
+      PYTHONPATH: ${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/site-packages:${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/dist-packages
+
+    steps:
+      - name: Checkout commit locally
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Completor with dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ".[tests,docs,ert]"
+
+      - name: List all installed packages
+        run: pip freeze
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit
+        run: |
+          SKIP="no-commit-to-branch" pre-commit run --all-files
