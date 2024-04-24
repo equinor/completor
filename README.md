@@ -20,7 +20,7 @@ To start using Completor®, you can follow these instructions:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e .[tests,docs] 
+pip install -e .[tests,docs]
 ```
 and to ensure it runs as intended, confirm it with:
 ```shell
