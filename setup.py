@@ -66,7 +66,7 @@ if __name__ == "__main__":
         platforms="any",
         include_package_data=True,
         packages=find_packages("completor"),
-        package_dir={"": ""},
+        package_dir={"completor": "completor"},
         python_requires=">=3.8",
         py_modules=[splitext(basename(path))[0] for path in glob("completor/*.py")],
         install_requires=REQUIREMENTS,
