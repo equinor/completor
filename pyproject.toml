@@ -52,7 +52,7 @@ Issues = "https://github.com/equinor/completor/issues"
 #Documentation = ""
 
 [tool.setuptools]
-package-dir = {"completor" = "completor/completor"}
+package-dir = {"completor" = ""}
 
 [tool.setuptools_scm]
 [build-system]
