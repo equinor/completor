@@ -1,6 +1,7 @@
 import re
 
-from completor.utils import clean_file_line, clean_file_lines, get_completor_version
+import completor
+from completor.utils import clean_file_line, clean_file_lines
 
 
 def test_clean_file_line_with_file_path():
@@ -70,15 +71,19 @@ def test_clean_file_lines():
     assert clean_file_lines(test_lines) == true_lines
 
 
-def test_get_completor_version():
+# @pytest.mark.skip
+def test_version_is_canonical():
     """
     Test that the version format is correct.
 
     Version format should match 'vX.X.X' where X is a valid digit.
     A version digit should be either 0 or start with 1-9.
     """
-    version = get_completor_version()
+    version = completor.__version__
     # Regex for checking correct format
-    assert re.match(
-        r"^v(0|[1-9]\d*)\.(0|[1-9\d]*)\.(0|[1-9\d]*)$", version
-    ), "Version has incorrect format. Should be on the form v1.2.3"
+    # assert re.match(
+    #     r"^v(0|[1-9]\d*)\.(0|[1-9\d]*)\.(0|[1-9\d]*)$", version
+    # ), "Version has incorrect format. Should be on the form v1.2.3"
+
+    pattern = r"^([1-9][0-9]*!)?(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?(\.post(0|[1-9][0-9]*))?(\.dev(0|[1-9][0-9]*))?$"  # noqa: E501
+    assert re.match(pattern, version) is not None

@@ -9,7 +9,6 @@ from typing import Any, overload
 import numpy as np
 import pandas as pd
 
-import completor
 from completor.logger import logger
 
 try:
@@ -163,16 +162,3 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
         if cleaned_line:
             clean_lines.append(cleaned_line)
     return clean_lines
-
-
-def get_completor_version() -> str:
-    """
-    Get completor version from latest git tag.
-
-    Returns:
-        The version string in format 'v1.1.1'
-    """
-    # TODO: Add exception handling here!
-    from pkg_resources import parse_version
-
-    return "v" + parse_version(completor.__version__).public
