@@ -51,8 +51,8 @@ GitHub = "https://github.com/equinor/completor"
 Issues = "https://github.com/equinor/completor/issues"
 #Documentation = ""
 
-[tool.setuptools.package-dir]
-completor = "completor"
+[tool.setuptools]
+package-dir = {"" = "completor"}
 
 [tool.setuptools_scm]
 [build-system]
