@@ -8,6 +8,10 @@ jobs:
     name: 💄 Code Quality
     uses: ./.github/workflows/lint.yml
 
+  test:
+    name: Run tests
+    uses: ./.github/workflows/tests.yml
+
 #  build:
 #    name: '🧪 Build & test Code'
 #    uses: ./.github/workflows/build.yaml
