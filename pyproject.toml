@@ -38,9 +38,13 @@ tests = [
     "rstcheck",
 ]
 
+[project.scripts]
+run_completor = "completor.hook_implementations.entry_point:installable_jobs"
+#completor = "completor.main:main"
+
 [project.entry-points."console_scripts"]
 completor = "completor.main:main"
-run_completor = "completor.hook_implementations.entry_point:main"
+#run_completor = "completor.hook_implementations.entry_point:installable_jobs"
 
 [project.urls]
 GitHub = "https://github.com/equinor/completor"
