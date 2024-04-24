@@ -27,9 +27,6 @@ jobs:
           pip install --upgrade pip
           pip install ".[tests,docs,ert]"
 
-      - name: List all installed packages
-        run: pip freeze
-
       - name: Install pre-commit
         run: pip install pre-commit
 

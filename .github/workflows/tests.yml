@@ -31,9 +31,10 @@ jobs:
       - name: Install Completor with dependencies
         run: |
           pip install --upgrade pip
-          pip install ".[tests,docs,ert]"
+          pip install ".[tests,ert]"
+
+      - name: List all installed packages
+        run: pip freeze
 
       - name: Run tests
-        run: |
-          python -c "import completor"
-          pytest tests/
+        run: pytest tests/
