@@ -42,9 +42,8 @@ tests = [
 #run_completor = "completor.hook_implementations.jobs"
 completor = "completor.main:main"
 
-[project.entry-points."console_scripts"]
+[project.entry-points."ert"]
 run_completor = "completor.hook_implementations.jobs"
-completor = "completor.main:main"
 
 [project.urls]
 GitHub = "https://github.com/equinor/completor"
@@ -52,7 +51,7 @@ Issues = "https://github.com/equinor/completor/issues"
 #Documentation = ""
 
 [tool.setuptools]
-package-dir = {"completor" = ""}
+package-dir = {"completor" = "completor"}
 
 [tool.setuptools_scm]
 [build-system]
