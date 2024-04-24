@@ -16,6 +16,7 @@ REQUIREMENTS = [
     "scipy",
     "Pillow>=10.0.1",  # not directly required, pinned to avoid a vulnerability
     "pydantic>=2.4.2",
+    "wheel",
 ]
 
 TEST_REQUIREMENTS = [
@@ -74,7 +75,7 @@ if __name__ == "__main__":
             "console_scripts": SSCRIPTS,
             "ert": ["run_completor = completor.hook_implementations.jobs"],
         },
-        use_scm_version={"write_to": "completor/version.py"},
+        # use_scm_version={"write_to": "completor/version.py"},
         test_suite="tests",
         extras_require=EXTRAS_REQUIRE,
         zip_safe=False,

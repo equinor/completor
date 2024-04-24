@@ -4,13 +4,19 @@ description = "Advanced well completion"
 authors = ["Equinor ASA"]
 readme = "README.md"
 #version = "1.0.0"
+dynamic = ["version"]
 packages = [
     {include = "completor.completor:main"}
 ]
 
-
 [tool.poetry.group.main.dependencies]
 python = ">=3.8 <3.12"
+
+[tool.setuptools_scm]
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
 
 [tool.black]
 line-length = 120
