@@ -1,4 +1,7 @@
 from pathlib import Path
+
+from pkg_resources import resource_filename
+
 from completor.logger import logger
 
 SKIP_TESTS = False
@@ -9,9 +12,6 @@ try:
 except ModuleNotFoundError:
     logger.warning("Cannot import ERT, did you install Completor with ert option enabled?")
     pass
-
-
-from pkg_resources import resource_filename
 
 
 @hook_implementation
