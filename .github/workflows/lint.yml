@@ -7,20 +7,15 @@ on:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.8']
-    env:
-      PYTHONPATH: ${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/site-packages:${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/dist-packages
 
     steps:
       - name: Checkout commit locally
         uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.10
 
       - name: Install Completor with dependencies
         run: |
