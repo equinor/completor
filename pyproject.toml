@@ -40,8 +40,6 @@ tests = [
 
 [project.entry-points."console_scripts"]
 completor = "completor.main:main"
-
-[project.entry-points."ert"]
 run_completor = "completor.hook_implementations.jobs"
 
 [project.urls]
