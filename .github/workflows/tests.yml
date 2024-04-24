@@ -1,15 +1,7 @@
 name: Test
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  release:
-    types:
-      - published
+  workflow_call:
   schedule:
     # Run CI every night and check that tests are working with the latest dependencies.
     - cron:  '0 0 * * *'
