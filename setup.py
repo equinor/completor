@@ -74,7 +74,7 @@ if __name__ == "__main__":
             "console_scripts": SSCRIPTS,
             "ert": ["run_completor = completor.hook_implementations.jobs"],
         },
-        use_scm_version=False,  # {"write_to": "completor/version.py"},
+        use_scm_version={"write_to": "completor/version.py"},
         test_suite="tests",
         extras_require=EXTRAS_REQUIRE,
         zip_safe=False,
