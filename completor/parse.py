@@ -114,8 +114,7 @@ def locate_keyword(
         try:
             end_index = np.append(end_index, idx)
         except NameError as err:
-            # TODO: check which function it was called from, in order
-            #       to determine if case file or schedule file
+            # TODO(#9): Check which function it was called from, in order to determine if case file or schedule file.
             raise ValueError(f"Cannot find keyword {keyword} in file") from err
     # return all in a numpy array format
     end_index = np.asarray(end_index)
@@ -411,7 +410,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
     The return DataFrame welspecs_table has the following format:
 
-    TODO: Which one is correct; this or the one in ``completion.set_welspecs``?
+    # TODO(#9): Which one is correct; this or the one in ``completion.set_welspecs``?
 
     .. list-table:: welspecs_table
        :widths: 10 10
