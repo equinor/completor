@@ -39,7 +39,7 @@ tests = [
 ]
 
 [project.scripts]
-run_completor = "completor.hook_implementations.jobs"
+#run_completor = "completor.hook_implementations.jobs"
 completor = "completor.main:main"
 
 [project.entry-points."console_scripts"]
