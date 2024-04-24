@@ -7,7 +7,7 @@ on:
     - cron:  '0 0 * * *'
 
 jobs:
-  pre-commit:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:

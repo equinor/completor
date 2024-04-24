@@ -40,7 +40,7 @@ tests = [
 
 [project.entry-points."console_scripts"]
 completor = "completor.main:main"
-run_completor = "completor.hook_implementations.jobs"
+run_completor = "completor.hook_implementations.jobs:main"
 
 [project.urls]
 GitHub = "https://github.com/equinor/completor"
