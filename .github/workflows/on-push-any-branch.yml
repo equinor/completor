@@ -17,13 +17,6 @@ jobs:
 #    uses: ./.github/workflows/build.yaml
 #    secrets: inherit
 
-  echo:
-    name: echo
-    runs-on: ubuntu-latest
-    steps:
-      - name: echo test
-        run: echo "ey"
-
 #  check-docs:
 #    name: "Check documentation"
 #    uses: ./.github/workflows/check-documentation.yml
