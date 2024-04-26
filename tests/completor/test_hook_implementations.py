@@ -25,7 +25,7 @@ def expected_jobs():
     """dictionary of installed jobs with location to config"""
     expected_job_names = ["run_completor"]
     return {
-        name: path.join(path.dirname(completor.__file__), "completor/config_jobs", name) for name in expected_job_names
+        name: path.join(path.dirname(completor.__file__), "config_jobs", name) for name in expected_job_names
     }
 
 
@@ -41,15 +41,8 @@ def test_hook_implementations(expected_jobs):
 
     installable_jobs = plugin_m.get_installable_jobs()
     for wf_name, wf_location in expected_jobs.items():
-        print(f"wf name: {wf_name}, installable_jobs: {installable_jobs}")
         assert wf_name in installable_jobs
-        print(f"installable_jobs[{wf_name}] : {installable_jobs[wf_name]} ends with????  {wf_location}")
         assert str(installable_jobs[wf_name]).endswith(wf_location)
-        print("path: ", path.isfile(installable_jobs[wf_name]))
-        print("CWD: ", Path.cwd())
-        print("check with pathlib.resolve if isfile")
-        print(Path(installable_jobs[wf_name]).resolve().is_file())
-
         assert path.isfile(installable_jobs[wf_name])
 
     assert set(installable_jobs.keys()) == set(expected_jobs.keys())
