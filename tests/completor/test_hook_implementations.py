@@ -3,10 +3,10 @@ from os import path
 from pathlib import Path
 
 import pytest
-import rstcheck_core.checker  # type: ignore
 
 SKIP_TESTS = False
 try:
+    import rstcheck_core.checker  # type: ignore
     from ert.shared.plugins.plugin_manager import ErtPluginManager  # type: ignore
 
     import completor.hook_implementations.jobs
@@ -22,11 +22,9 @@ except ModuleNotFoundError:
 
 @pytest.fixture
 def expected_jobs():
-    """dictionary of installed jobs with location to config"""
+    """Dictionary of installed jobs with location to config."""
     expected_job_names = ["run_completor"]
-    return {
-        name: path.join(path.dirname(completor.__file__), "completor/config_jobs", name) for name in expected_job_names
-    }
+    return {name: path.join(path.dirname(completor.__file__), "config_jobs", name) for name in expected_job_names}
 
 
 # Avoid category inflation. Add to this list when it makes sense:
@@ -35,8 +33,7 @@ ACCEPTED_JOB_CATEGORIES = ["modelling", "utility"]
 
 @pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_hook_implementations(expected_jobs):
-    """Test that we have the correct set of jobs installed,
-    nothing more, nothing less"""
+    """Test that we have the correct set of jobs installed, nothing more, nothing less."""
     plugin_m = ErtPluginManager(plugins=[completor.hook_implementations.jobs])
 
     installable_jobs = plugin_m.get_installable_jobs()
@@ -58,7 +55,7 @@ def test_hook_implementations(expected_jobs):
 
 @pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_job_config_syntax(expected_jobs):
-    """Check for syntax errors made in job configuration files"""
+    """Check for syntax errors made in job configuration files."""
     for _, job_config in expected_jobs.items():
         # Check (loosely) that double-dashes are enclosed in quotes:
         for line in Path(job_config).read_text(encoding="utf8").splitlines():
@@ -69,7 +66,7 @@ def test_job_config_syntax(expected_jobs):
 @pytest.mark.integration
 @pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_executables(expected_jobs):
-    """Test executables listed in job configurations exist in $PATH"""
+    """Test executables listed in job configurations exist in $PATH."""
     for _, job_config_file in expected_jobs.items():
         job_configuration_lines = [
             line
@@ -82,8 +79,7 @@ def test_executables(expected_jobs):
 
 @pytest.mark.skipif(SKIP_TESTS, reason="Skip these tests while developing outside of Linux environment.")
 def test_hook_implementations_job_docs():
-    """For each installed job, we require the associated
-    description string to be nonempty, and valid RST markup"""
+    """For each installed job, we require the associated description string to be nonempty, and valid RST markup."""
 
     plugin_m = ErtPluginManager(plugins=[completor.hook_implementations.jobs])
 

@@ -20,7 +20,7 @@ from completor.create_output import CreateOutput
 from completor.create_wells import CreateWells
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
-from completor.utils import abort, clean_file_line, clean_file_lines, get_completor_version
+from completor.utils import abort, clean_file_line, clean_file_lines
 from completor.visualization import close_figure, create_pdfpages
 
 try:
@@ -485,7 +485,7 @@ Optional:
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 """
 
-COMPLETOR_VERSION = get_completor_version()
+COMPLETOR_VERSION = completor.__version__
 
 
 def get_parser() -> argparse.ArgumentParser:

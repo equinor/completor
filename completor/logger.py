@@ -7,6 +7,8 @@ import time
 from functools import wraps
 from pathlib import Path
 
+import completor
+
 
 def getLogger(module_name="completor"):
     logger = logging.getLogger(module_name)
@@ -118,14 +120,9 @@ def dump_debug_information(**kwargs) -> None:
                     data = data.encode(encoding)
                 f.write(data)
 
-        try:
-            from completor.version import version
-        except ImportError:
-            version = "UNKNOWN"
-
         dump("traceback.txt", traceback.format_exc())
         dump("machine.txt", socket.getfqdn())
-        dump("version.txt", version)
+        dump("version.txt", completor.__version__)
         dump("arguments.json", json.dumps(_convert_paths_to_strings(kwargs), indent=4))
         for key, value in kwargs.items():
             if isinstance(value, (Path, str)):
