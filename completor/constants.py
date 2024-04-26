@@ -46,7 +46,7 @@ class _Keywords:
 Keywords = _Keywords()
 
 
-class SegmentCreationMethod(Enum):
+class Method(Enum):
     """An enumeration of legal methods for ``create_wells.CreateWells``."""
 
     CELLS = auto()
@@ -65,7 +65,7 @@ class SegmentCreationMethod(Enum):
             bool: Whether enums are equal
 
         Example:
-            >>>SegmentCreationMethod.CELLS == "CELLS"
+            >>>Method.CELLS == "CELLS"
             >>>True
 
         """

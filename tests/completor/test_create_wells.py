@@ -7,7 +7,7 @@ from pathlib import Path
 import common
 import pytest
 
-from completor.constants import SegmentCreationMethod  # type: ignore
+from completor.constants import Method  # type: ignore
 from completor.create_wells import CreateWells  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
 
@@ -58,30 +58,30 @@ SEGMENTLENGTH
 """
     # Test default value
     well = replace_segment_length_value(base_case, "")
-    assert well.method == SegmentCreationMethod.CELLS
+    assert well.method == Method.CELLS
 
     # Test string values
     well = replace_segment_length_value(base_case, "User")
-    assert well.method == SegmentCreationMethod.USER
+    assert well.method == Method.USER
 
     well = replace_segment_length_value(base_case, "WELseGs")
-    assert well.method == SegmentCreationMethod.WELSEGS
+    assert well.method == Method.WELSEGS
 
     well = replace_segment_length_value(base_case, "infill")
-    assert well.method == SegmentCreationMethod.WELSEGS
+    assert well.method == Method.WELSEGS
 
     well = replace_segment_length_value(base_case, "Cell")
-    assert well.method == SegmentCreationMethod.CELLS
+    assert well.method == Method.CELLS
 
     # Test number values (i.e. it can be cast to float)
     well = replace_segment_length_value(base_case, "22")
-    assert well.method == SegmentCreationMethod.FIX
+    assert well.method == Method.FIX
 
     well = replace_segment_length_value(base_case, "-1")
-    assert well.method == SegmentCreationMethod.USER
+    assert well.method == Method.USER
 
     well = replace_segment_length_value(base_case, "0")
-    assert well.method == SegmentCreationMethod.CELLS
+    assert well.method == Method.CELLS
 
     with pytest.raises(ValueError):
         well = replace_segment_length_value(base_case, "NON-VALID-INPUT")

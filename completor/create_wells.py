@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from completor import completion
-from completor.constants import SegmentCreationMethod
+from completor.constants import Method
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
 from completor.read_schedule import fix_compsegs_by_priority
@@ -32,7 +32,7 @@ class CreateWells:
     Attributes:
         schedule: ReadSchedule class
         active_wells (List): Active wells defined in the case file
-        method (SegmentCreationMethod): Method for segment creation
+        method (Method): Method for segment creation
         well_name (str): Well name (in loop)
         laterals (np.ndarray[int]): List of lateral number of the well in loop
         df_completion (pd.DataFrame): Completion data frame in loop
@@ -127,7 +127,7 @@ class CreateWells:
                 return np.array([])
         return np.array(active_wells)
 
-    def _method(self) -> SegmentCreationMethod:
+    def _method(self) -> Method:
         """
         Define how the user wants to create segments.
 
@@ -139,11 +139,11 @@ class CreateWells:
         """
         if isinstance(self.case.segment_length, float):
             if float(self.case.segment_length) > 0.0:
-                return SegmentCreationMethod.FIX
+                return Method.FIX
             if float(self.case.segment_length) == 0.0:
-                return SegmentCreationMethod.CELLS
+                return Method.CELLS
             if self.case.segment_length < 0.0:
-                return SegmentCreationMethod.USER
+                return Method.USER
             else:
                 raise ValueError(
                     f"Unrecognized method '{self.case.segment_length}' in "
@@ -154,11 +154,11 @@ class CreateWells:
 
         elif isinstance(self.case.segment_length, str):
             if "welsegs" in self.case.segment_length.lower() or "infill" in self.case.segment_length.lower():
-                return SegmentCreationMethod.WELSEGS
+                return Method.WELSEGS
             if "cell" in self.case.segment_length.lower():
-                return SegmentCreationMethod.CELLS
+                return Method.CELLS
             if "user" in self.case.segment_length.lower():
-                return SegmentCreationMethod.USER
+                return Method.USER
             else:
                 raise ValueError(
                     f"Unrecognized method '{self.case.segment_length}' in SEGMENTLENGTH keyword. "
@@ -613,7 +613,7 @@ class CreateWells:
             self.df_reservoir,
             self.df_completion,
             self.df_mdtvd,
-            SegmentCreationMethod.USER,
+            Method.USER,
             self.case.segment_length,
             self.case.minimum_segment_length,
         )
@@ -772,7 +772,7 @@ class CreateWells:
             and (self.df_well["DEVICETYPE"] == "ICV").any()
             and not self.df_well["NDEVICES"].empty
         )
-        method = SegmentCreationMethod.USER if icv_device else self.method
+        method = Method.USER if icv_device else self.method
         self.df_reservoir = completion.connect_cells_to_segments(
             self.df_well[["TUB_MD", "NDEVICES", "DEVICETYPE", "ANNULUS_ZONE"]],
             self.df_reservoir,
