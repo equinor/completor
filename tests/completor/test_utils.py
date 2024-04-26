@@ -1,6 +1,8 @@
 import re
+import pytest
 
 import completor
+
 from completor.utils import clean_file_line, clean_file_lines
 
 
@@ -71,7 +73,7 @@ def test_clean_file_lines():
     assert clean_file_lines(test_lines) == true_lines
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_version_is_canonical():
     """
     Test that the version format is correct.

@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ert = ["ert"]
+ert = ["ert", "rstcheck_core"]
 tests = [
     "black",
     "flake8",
