@@ -1,16 +1,62 @@
-[tool.poetry]
-name = "Completor"
+[project]
+name = "completor"
+#version = "0.0.1"
+dynamic = ["version"]
 description = "Advanced well completion"
-authors = ["Equinor ASA"]
+authors = [{name = "Equinor ASA", email="opensource@equinor.com"}]
 readme = "README.md"
-version = ""
-packages = [
-    {include = "completor.completor:main"}
+requires-python = ">=3.8"
+keywords=["fmu", "ert", "completor", "eclipse", "opm"]
+classifiers=[
+    "License :: OSI Approved :: AGPL v3.0",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 
+dependencies = [
+    "matplotlib",
+    "numpy<2",
+    "pandas",
+    "scipy",
+    "Pillow>=10.0.1",  # not directly required, pinned to avoid a vulnerability
+    "pydantic>=2.4.2",
+]
 
-[tool.poetry.group.main.dependencies]
-python = ">=3.8 <3.12"
+[project.optional-dependencies]
+ert = ["ert", "rstcheck_core"]
+tests = [
+    "black",
+    "flake8",
+    "pre-commit",
+    "pytest",
+    "setuptools_scm",
+    "promise",
+    "rstcheck",
+]
+
+[project.scripts]
+#run_completor = "completor.hook_implementations.jobs"
+completor = "completor.main:main"
+
+[project.entry-points."ert"]
+run_completor = "completor.hook_implementations.jobs"
+
+[project.urls]
+GitHub = "https://github.com/equinor/completor"
+Issues = "https://github.com/equinor/completor/issues"
+#Documentation = ""
+
+[tool.setuptools]
+package-dir = {"completor" = "completor"}
+
+[tool.setuptools_scm]
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 120

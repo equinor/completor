@@ -4,17 +4,18 @@ on:
   push:
 
 jobs:
+  lint:
+    name: 💄 Code Quality
+    uses: ./.github/workflows/lint.yml
+
+  test:
+    name: Run tests
+    uses: ./.github/workflows/tests.yml
+
 #  build:
 #    name: '🧪 Build & test Code'
 #    uses: ./.github/workflows/build.yaml
 #    secrets: inherit
-
-  echo:
-    name: echo
-    runs-on: ubuntu-latest
-    steps:
-      - name: echo test
-        run: echo "ey"
 
 #  check-docs:
 #    name: "Check documentation"

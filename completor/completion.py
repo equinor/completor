@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Completion, SegmentCreationMethod
+from completor.constants import Completion, Method
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import abort, as_data_frame, log_and_raise_exception
@@ -19,7 +19,7 @@ except ImportError:
     pass
 
 # Use more precise type information, if possible
-MethodType: TypeAlias = Union['Literal["cells", "user", "fix", "welsegs"]', SegmentCreationMethod]
+MethodType: TypeAlias = Union['Literal["cells", "user", "fix", "welsegs"]', Method]
 DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
@@ -166,7 +166,7 @@ def create_tubing_segments(
     df_reservoir: pd.DataFrame,
     df_completion: pd.DataFrame,
     df_mdtvd: pd.DataFrame,
-    method: Literal[SegmentCreationMethod.FIX] = ...,
+    method: Literal[Method.FIX] = ...,
     segment_length: float = ...,
     minimum_segment_length: float = 0.0,
 ) -> pd.DataFrame: ...
@@ -188,7 +188,7 @@ def create_tubing_segments(
     # Technically, df_completion is only required for SegmentCreationMethod.USER
     df_completion: pd.DataFrame,
     df_mdtvd: pd.DataFrame,
-    method: MethodType = SegmentCreationMethod.CELLS,
+    method: MethodType = Method.CELLS,
     segment_length: float | str = 0.0,
     minimum_segment_length: float = 0.0,
 ) -> pd.DataFrame:
@@ -227,7 +227,7 @@ def create_tubing_segments(
     """
     start_measure_depth: npt.NDArray[np.float64]
     end_measure_depth: npt.NDArray[np.float64]
-    if method == SegmentCreationMethod.CELLS:
+    if method == Method.CELLS:
         # in this method we create the tubing layer
         # one cell one segment while honoring df_reservoir["SEGMENT"]
         start_measure_depth = df_reservoir["STARTMD"].to_numpy()
@@ -270,7 +270,7 @@ def create_tubing_segments(
                 new_end_md.append(end_measure_depth[end_idx])
             start_measure_depth = np.array(new_start_md)
             end_measure_depth = np.array(new_end_md)
-    elif method == SegmentCreationMethod.USER:
+    elif method == Method.USER:
         # in this method we create tubing layer
         # based on the definition of COMPLETION keyword
         # in the case file
@@ -287,7 +287,7 @@ def create_tubing_segments(
         if start_measure_depth[-1] >= end_measure_depth[-1]:
             start_measure_depth = np.delete(start_measure_depth, -1)
             end_measure_depth = np.delete(end_measure_depth, -1)
-    elif method == SegmentCreationMethod.FIX:
+    elif method == Method.FIX:
         # in this method we create tubing layer
         # with fix interval according to the user input
         # in the case file keyword SEGMENTLENGTH
@@ -299,7 +299,7 @@ def create_tubing_segments(
         end_measure_depth = start_measure_depth + segment_length
         # update the end point of the last segment
         end_measure_depth[-1] = min(end_measure_depth[-1], max_measure_depth)
-    elif method == SegmentCreationMethod.WELSEGS:
+    elif method == Method.WELSEGS:
         # In this method we create the tubing layer
         # from segment measured depths in the WELSEGS keyword that are missing
         # from COMPSEGS.
@@ -751,7 +751,7 @@ def connect_cells_to_segments(
     """
     # Calculate mid cell MD
     df_reservoir["MD"] = (df_reservoir["STARTMD"] + df_reservoir["ENDMD"]) * 0.5
-    if method == SegmentCreationMethod.USER:
+    if method == Method.USER:
         df_res = df_reservoir.copy(deep=True)
         df_wel = df_well.copy(deep=True)
         # Ensure that tubing segment boundaries as described in the case file
