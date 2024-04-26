@@ -1,6 +1,3 @@
-try:
-    import pkg_resources
+from importlib import metadata
 
-    __version__ = pkg_resources.get_distribution(__name__).version
-except ModuleNotFoundError:
-    pass
+__version__ = metadata.version("completor")

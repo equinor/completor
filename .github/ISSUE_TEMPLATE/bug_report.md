@@ -14,7 +14,7 @@ assignees: ''
 *Describe how to reproduce the bug.
 Are you able to trim down the problem to make it as simple as possible?
 Are you able to distinguish between when it is working, and when it is not?
-The smaller the problem and input data, the easier it is to debug and find the error.* 
+The smaller the problem and input data, the easier it is to debug and find the error.*
 
 ### **Expected behavior**
 *What do you expect to happen?*
