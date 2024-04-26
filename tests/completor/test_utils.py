@@ -1,8 +1,8 @@
 import re
+
 import pytest
 
 import completor
-
 from completor.utils import clean_file_line, clean_file_lines
 
 

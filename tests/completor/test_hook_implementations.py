@@ -6,9 +6,8 @@ import pytest
 
 SKIP_TESTS = False
 try:
-    from ert.shared.plugins.plugin_manager import ErtPluginManager  # type: ignore
-    
     import rstcheck_core.checker  # type: ignore
+    from ert.shared.plugins.plugin_manager import ErtPluginManager  # type: ignore
 
     import completor.hook_implementations.jobs
 except ModuleNotFoundError:
@@ -25,9 +24,7 @@ except ModuleNotFoundError:
 def expected_jobs():
     """Dictionary of installed jobs with location to config."""
     expected_job_names = ["run_completor"]
-    return {
-        name: path.join(path.dirname(completor.__file__), "config_jobs", name) for name in expected_job_names
-    }
+    return {name: path.join(path.dirname(completor.__file__), "config_jobs", name) for name in expected_job_names}
 
 
 # Avoid category inflation. Add to this list when it makes sense:

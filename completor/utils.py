@@ -8,7 +8,6 @@ from typing import Any, overload
 
 import numpy as np
 import pandas as pd
-from pkg_resources import parse_version
 
 from completor.logger import logger
 
