@@ -95,7 +95,7 @@ COMPLETION
 /
 
 WSEGVALV
--- NB: Dummy parameters. 
+-- NB: Dummy parameters.
 -- DeviceNumber  Cv     Ac       L
 1                1e-2   7.50e-4  1*
 2                1e-2   1.56e-4  1*
@@ -111,14 +111,14 @@ This keyword will generate sets of `WSEGVALV`,
 ```
 COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
---      Number                      Tubing    Casing                    Content 
+--      Number                      Tubing    Casing                    Content
 --                                  Diameter   Diameter
 OP1     1        0        10000     0.15364    0.1905    1524E-005      GP          1                DAR         1
 OP1     2        0        10000     0.15364    0.1905    1524E-005      GP          1                DAR         2
 /
 
 WSEGDAR
--- NB: Dummy parameters. 
+-- NB: Dummy parameters.
 -- Number    Cv      Oil_Ac      Gas_Ac       Water_Ac     wvf_low  wvf_high     gvf_low   gvf_high
 1            1.0     7.5e-4      1.56e-4      1.53e-4      0.75     0.80         0.70      0.90
 2            1.0     7.5e-4      1.56e-4      1.53e-4      0.50     0.75         0.50      0.80
@@ -138,9 +138,9 @@ OP1     2        0        10000     0.15364    0.1905     1524E-005      GP     
 /
 
 WSEGAICV
--- NB: Dummy parameters. 
+-- NB: Dummy parameters.
 --NUMBER WCT  GVF   RhoCal  VisCal  Alp.Main  x.Main  y.Main  aMain  b.Main  c.Main  d.Main  e.Main  f.Main  Alp.Pilot  x.Pilot  yPilot  a.Pilot  b.Pilot  c.Pilot  d.Pilot  e.Pilot  f.Pilot
-1        0.95 0.95  1000    1       7.677e-5  2.99    1.543  1       1       1       0.39    0.64    1       4.98e-5    3.37    1.492    1        1        1        1.8      0.11     1.0 
+1        0.95 0.95  1000    1       7.677e-5  2.99    1.543  1       1       1       0.39    0.64    1       4.98e-5    3.37    1.492    1        1        1        1.8      0.11     1.0
 /
 ```
 
@@ -152,15 +152,15 @@ Completor will automatically set up a packer at the start and end of a reservoir
 
 ```
 COMPLETION
---Well    Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber     
---        Number                      Tubing    Casing                    Content 
+--Well    Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
+--        Number                      Tubing    Casing                    Content
 --                                    Diameter   Diameter
-OP1      1         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1               
-OP1      2         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1              
+OP1      1         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1      2         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1
 /
 
 WSEGAICD
--- NB: Dummy parameters. 
+-- NB: Dummy parameters.
 --Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
 1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
 2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
@@ -174,7 +174,7 @@ This is a more realistic example where the completion is set up with open annulu
 ```
 COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
---      Number                      Tubing    Casing                    Content 
+--      Number                      Tubing    Casing                    Content
 --                                  Diameter   Diameter
 OP1     1        0         1640     0.15364    0.1905    1524E-005      OA          1                AICD         1
 OP1     1        1640      1640     0.15364    0.1905    1524E-005      PA          1                AICD         1
@@ -194,7 +194,7 @@ OP1     2        1960      2110     0.15364    0.1905    1524E-005      OA      
 
 
 WSEGAICD
--- NB: Dummy parameters. 
+-- NB: Dummy parameters.
 --Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
 1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
 2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
@@ -207,7 +207,7 @@ A more complex combination with including blank pipe in open annulus and packer 
 ```
 COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
---      Number                      Tubing    Casing                    Content 
+--      Number                      Tubing    Casing                    Content
 --                                  Diameter   Diameter
 OP1     1        1340      1640     0.15364    0.1905    1524E-005      GP          0                AICD         1
 OP1     1        1640      1640     0.15364    0.1905    1524E-005      PA          1                AICD         1
@@ -227,7 +227,7 @@ OP1     2        1960      2110     0.15364    0.1905    1524E-005      OA      
 
 
 WSEGAICD
--- NB: Dummy parameters. 
+-- NB: Dummy parameters.
 --Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
 1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
 2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
@@ -250,7 +250,7 @@ OP1     2        0        10000     0.15364    0.1905    1524E-005      GP      
 
 
 WSEGAICD
--- NB: Dummy parameters. 
+-- NB: Dummy parameters.
 --Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
 1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
 2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1

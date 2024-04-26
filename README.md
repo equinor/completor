@@ -19,14 +19,14 @@ To start using Completor®, you can follow these instructions:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests,docs]"
+pip install -e ".[tests]"
 pre-commit install
 ```
 If you intend to run completor as a plugin to ert:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests,docs,ert]"
+pip install -e ".[tests,ert]"
 pre-commit install
 ```
 and to ensure it runs as intended, confirm it with:

@@ -1,0 +1,90 @@
+name: 🧐 Inspect TODOs
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  todo-issues:
+    name: 🚨 Check TODOs have issue numbers in correct format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check TODOs
+        run: |
+          if [[ -n $(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)') ]]; then
+            echo $(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)')
+            echo "Found TODOs without issue number or incorrect formatting."
+            echo "The correct format is: # TODO(#XXX): Todo message."
+            exit 1
+          fi
+          echo "All TODOs are tracked with issue numbers 🙌"
+
+  closing-todos:
+    name: 🧐 Check TODOs' tracked issues are removed from code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get PR info
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }} >> $GITHUB_ENV
+          PR_DATA=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                     "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}") >> $GITHUB_ENV
+          D=$(echo "$PR_DATA" | jq -r '.body') >> $GITHUB_ENV
+
+          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO\(#(\d*)\):?' | grep -oE '\(#[0-9]+\)' | grep -oE '[0-9]+') >> $GITHUB_ENV
+          # Convert TODOS to an array
+          todos_array=($TODOS)
+          # Initialize an empty string to store the matches
+          matches=""
+          # Iterate over each todo number
+          for todo in "${todos_array[@]}"; do
+            # Regex pattern to match the todo number
+            pattern="Close #$todo"
+            # Check if the pattern matches
+            if [[ $D =~ $pattern ]]; then
+              # Match found, append it to the matches string
+              if [[ -z $matches ]]; then
+                matches="$todo"
+              else
+                matches+=" $todo"
+              fi
+            fi
+          done
+          # Set the matches as an environment variable
+          export MATCHES="$matches"
+          if [[ -n $matches ]]; then
+            echo "Found TODOs in code this PR is closing: $matches, remove TODOs in code."
+            exit 1
+          fi
+
+  closed-todos:
+    name: 🧐 Check TODOs' closed todos don't exist in code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get PR info
+        run: |
+
+          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO\(#(\d*)\):?' | grep -oE '\(#[0-9]+\)' | grep -oE '[0-9]+') >> $GITHUB_ENV
+          # Convert TODOS to an array
+          todos_array=($TODOS)
+          # Remove duplicates in array
+          todos_unique=($(echo "${todos_array[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+
+          for todo in "${todos_unique[@]}"; do
+            pattern="Close #$todo"
+            issue=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                     "https://api.github.com/repos/${{ github.repository }}/issues/$todo") >> $GITHUB_ENV
+            pattern="\"state\"\: \"closed\""
+            if [[ $issue =~ $pattern ]]; then
+              echo "Found TODOs in code with closed issue, fix issue: $todo."
+              exit 1
+            fi
+          done

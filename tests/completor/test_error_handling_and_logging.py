@@ -64,6 +64,5 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
         compare_file_content(case_file, "input_file.txt")
         compare_file_content(sch_file, "schedule_file.txt")
         # The output file should not be changed
-        # TODO: Decide the behaviour what should happen with the output file
-        #       if completor fails
+        # TODO(#9): Decide the behaviour what should happen with the output file if completor fails.
         # compare_file_content(case_file, "new_file.txt")

@@ -3,7 +3,7 @@ name: "📚 Check Docs"
 on:
   # Workflow call is used for called from another workflow.
   workflow_call:
-  
+
     paths:
       - "documentation/**"
       - "!README.*"
@@ -17,4 +17,3 @@ jobs:
 
       - name: build
         run: yarn build
-

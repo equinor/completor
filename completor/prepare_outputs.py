@@ -241,7 +241,7 @@ def prepare_tubing_layer(
     well_segments = schedule.get_welsegs(well_name, lateral)[1]
     md_input_welsegs = well_segments["TUBINGMD"]
     md_welsegs_in_reservoir = df_tubing_in_reservoir["MD"]
-    # TODO: check if ok. should it be ENDMD above (not available here)
+    # TODO(#9): Check if ok. should it be ENDMD above (not available here)
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
     if not overburden.empty:
         overburden = overburden.rename(index=str, columns=rnm)
