@@ -13,6 +13,7 @@ except ModuleNotFoundError:
     logger.warning("Cannot import ERT, did you install Completor with ert option enabled?")
     pass
 
+
 @hook_implementation
 @plugin_response(plugin_name="completor")  # type: ignore
 def installable_jobs():

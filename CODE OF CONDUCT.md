@@ -22,7 +22,7 @@ always applies to all employees and hired contractors.
 If at any point concerns are raised that a group or member is not acting according to our values, the behaviour in
 question should cease, be discussed, and tried to be resolved.
 
-We expect everyone to have a low threshold for raising issues, or in general discuss how we live up to our values. 
+We expect everyone to have a low threshold for raising issues, or in general discuss how we live up to our values.
 Equally, we encourage all community members to appreciate when concerns are raised and do their best to solve them.
 
 Project maintainers are responsible both for *what* is delivered, and *how* it is delivered.

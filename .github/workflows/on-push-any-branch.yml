@@ -20,3 +20,8 @@ jobs:
 #  check-docs:
 #    name: "Check documentation"
 #    uses: ./.github/workflows/check-documentation.yml
+
+
+  todo-check:
+    name: 🧐 Check TODOs
+    uses: ./.github/workflows/todo-check.yml
