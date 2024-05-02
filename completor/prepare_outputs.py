@@ -1072,7 +1072,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegvalv["AC"] = df_merge["AC"].to_numpy()
         wsegvalv["L"] = "5*"
         wsegvalv["AC_MAX"] = df_merge["AC_MAX"].to_numpy()
-        wsegvalv["AC_MAX"].fillna(df_merge["AC"], inplace=True)
+        wsegvalv["AC_MAX"] = wsegvalv["AC_MAX"].fillna(df_merge["AC"])
         wsegvalv[""] = "/"
     return wsegvalv
 
@@ -1113,7 +1113,7 @@ def prepare_wsegicv(
         wsegicv = wsegicv[["SEG", "CV", "AC", "AC_MAX"]]
         wsegicv["WELL"] = [well_name] * df_merge.shape[0]
         wsegicv["DEFAULTS"] = "5*"
-        wsegicv["AC_MAX"].fillna(df_merge["AC"], inplace=True)
+        wsegicv["AC_MAX"] = wsegicv["AC_MAX"].fillna(df_merge["AC"])
         wsegicv = wsegicv.reindex(columns=["WELL", "SEG", "CV", "AC", "DEFAULTS", "AC_MAX"])
         wsegicv[""] = "/"
         # create tubing icv table
@@ -1128,7 +1128,7 @@ def prepare_wsegicv(
         df_temp = df_temp[["SEG", "CV", "AC", "AC_MAX"]]
         df_temp["WELL"] = [well_name] * df_merge_tubing.shape[0]
         df_temp["DEFAULTS"] = "5*"
-        df_temp["AC_MAX"].fillna(math.pi * 0.5 * df_tubing["DIAM"] ** 2, inplace=True)
+        df_temp["AC_MAX"] = df_temp["AC_MAX"].fillna(math.pi * 0.5 * df_tubing["DIAM"] ** 2)
         df_temp = df_temp.reindex(columns=["WELL", "SEG", "CV", "AC", "DEFAULTS", "AC_MAX"])
         df_temp[""] = "/"
         wsegicv = pd.concat([wsegicv, df_temp], axis=0).reset_index(drop=True)

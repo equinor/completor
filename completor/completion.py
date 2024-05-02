@@ -94,10 +94,9 @@ def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.Data
     tvd = np.insert(tvd, 0, df_welsegs_header["SEGMENTTVD"].iloc[0])
     df_mdtvd = as_data_frame({"MD": md_, "TVD": tvd})
     # sort based on md
-    df_mdtvd.sort_values(by=["MD", "TVD"], inplace=True)
+    df_mdtvd = df_mdtvd.sort_values(by=["MD", "TVD"])
     # reset index after sorting
-    df_mdtvd.reset_index(drop=True, inplace=True)
-    return df_mdtvd
+    return df_mdtvd.reset_index(drop=True)
 
 
 def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:

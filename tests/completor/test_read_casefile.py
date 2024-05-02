@@ -115,13 +115,12 @@ def test_read_case_wsegsicd():
     """Test the function which reads WSEGSICD keyword."""
     df_true = pd.DataFrame(
         [
-            ["ICD", 1, 0.001, 1000, 1.0, 0.1],
-            ["ICD", 2, 0.002, 1000, 0.9, 0.2],
+            ["ICD", 1, 0.001, 1000.0, 1.0, 0.1],
+            ["ICD", 2, 0.002, 1000.0, 0.9, 0.2],
         ],
         columns=["DEVICETYPE", "DEVICENUMBER", "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", "WCUT"],
     )
     df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
-    df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegsicd_table)
 
 
@@ -171,7 +170,7 @@ def test_read_case_wsegaicv():
                 1,
                 0.95,
                 0.95,
-                1000,
+                1000.0,
                 0.45,
                 0.001,
                 0.9,
@@ -197,7 +196,7 @@ def test_read_case_wsegaicv():
                 2,
                 0.80,
                 0.85,
-                1001,
+                1001.0,
                 0.55,
                 0.005,
                 0.1,
@@ -247,7 +246,6 @@ def test_read_case_wsegaicv():
         ],
     )
     df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
-    df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicv_table)
 
 
