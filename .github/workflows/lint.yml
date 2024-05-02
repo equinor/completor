@@ -1,7 +1,7 @@
 name: Lint code
 
 on:
-  workflow_call:
+  workflow_call: # Enables workflow to be called from another workflow.
 
 
 jobs:

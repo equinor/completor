@@ -1,8 +1,8 @@
 name: 🧐 Inspect TODOs
 
 on:
-  workflow_dispatch:
-  workflow_call:
+  workflow_dispatch: #  Enable manual triggers.
+  workflow_call: # Enables workflow to be called from another workflow.
 
 jobs:
   todo-issues:
