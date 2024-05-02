@@ -7,15 +7,10 @@ on:
 
 
 jobs:
-#  build:
-#    name: '🧪 Build & test Code'
-#    uses: ./.github/workflows/build.yaml
-#    secrets: inherit
+  check-docs:
+    name: Check documentation
+    uses: ./.github/workflows/check-documentation.yml
 
-#  check-docs:
-#    name: "Check documentation"
-#    uses: ./.github/workflows/check-documentation.yml
-
-  publish-docs:
-    name: '️‍📚️ Publish documentation'
-    uses: ./.github/workflows/deploy-documentation.yml
+  release-please:
+    name: Run release please
+    uses: ./.github/workflows/release-please.yml

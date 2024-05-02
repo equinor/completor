@@ -1,0 +1,29 @@
+name: 🔖 Release please
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release_please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          release-type: python
+          target-branch: main
+
+      - name: Check documentation
+        # Ensure that a publication only occurs when a new release is created.
+        if: ${{ steps.release.outputs.release_created }}
+        uses: ./.github/workflows/check-documentation.yml
+
+      - name: Deploy documentation
+        # Ensure that a publication only occurs when a new release is created.
+        if: ${{ steps.release.outputs.release_created }}
+        uses: ./.github/workflows/deploy-documentation.yml
