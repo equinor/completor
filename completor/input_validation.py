@@ -75,7 +75,9 @@ def check_default_non_packer(df_comp: pd.DataFrame) -> pd.DataFrame:
     """
     df_comp = df_comp.copy(True)
     # set default value of roughness
-    df_comp["ROUGHNESS"] = df_comp["ROUGHNESS"].replace("1*", 1e-5)
+    df_comp["ROUGHNESS"] = (
+        df_comp["ROUGHNESS"].replace("1*", "1e-5").astype(np.float64)
+    )  # Ensures float after replacing!
     df_nonpa = df_comp[df_comp["ANNULUS"] != "PA"]
     df_columns = df_nonpa.columns.to_numpy()
     for column in df_columns:
@@ -219,7 +221,7 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
     """
     # if WCUT is defaulted then set to 0.5
     # the same default value as in Eclipse
-    df_temp["WCUT"] = df_temp["WCUT"].replace("1*", 0.5)
+    df_temp["WCUT"] = df_temp["WCUT"].replace("1*", "0.5").astype(np.float64)  # Ensures float after replacing!
     # set data type
     df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
     # left out devicenumber because it has been formatted as integer

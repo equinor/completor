@@ -38,7 +38,7 @@ ITEM15,ITEM16,ITEM17
     )
     df_true = pd.read_csv(true_welspecs, sep=",")
     df_true = fr.remove_string_characters(df_true)
-    df_true.iloc[:] = df_true.iloc[:].astype(str)
+    df_true = df_true.astype(str)
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.welspecs)
 
 
