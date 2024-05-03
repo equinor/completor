@@ -1,17 +1,32 @@
 name: "📚 Check Docs"
 
 on:
+  workflow_call: # Enables workflow to be called from another workflow.
   push:
     paths:
       - "documentation/**"
       - "!README.*"
+      -
+defaults:
+  run:
+    working-directory: documentation
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: install
-        run: yarn install
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: build
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: documentation/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build documentation
         run: yarn build
