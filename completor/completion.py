@@ -1,8 +1,10 @@
-"""Completion."""
+"""Everything related to the completion of the well.
+I.e., the area where the AICDs are located.
+"""
 
 from __future__ import annotations
 
-from typing import Union, overload
+from typing import Literal, TypeAlias, Union, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -13,18 +15,13 @@ from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import abort, as_data_frame, log_and_raise_exception
 
-try:
-    from typing import Literal, TypeAlias  # type: ignore
-except ImportError:
-    pass
-
 # Use more precise type information, if possible
 MethodType: TypeAlias = Union['Literal["cells", "user", "fix", "welsegs"]', Method]
 DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
 class Information:
-    """Holds information from ``get_completion``."""
+    """Holds information from `get_completion`."""
 
     def __init__(
         self,
@@ -71,22 +68,20 @@ class Information:
 
 
 def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.DataFrame) -> pd.DataFrame:
-    """
-    Create trajectory relation between MD and TVD.
+    """Create trajectory relation between MD and TVD.
 
     WELSEGS must be defined as ABS and not INC.
 
     Args:
-        df_welsegs_header: First record of WELSEGS
-        df_welsegs_content: Second record WELSEGS
+        df_welsegs_header: First record of WELSEGS.
+        df_welsegs_content: Second record WELSEGS.
 
     Return:
-        MD versus TVD
+        MD versus TVD.
 
-    The DataFrame format of df_mdtvd is shown in the class function
-    ``create_wells.CreateWells.well_trajectory``. The formats of ``df_welsegs_header``
-    and ``df_welsegs_content`` are shown in the function
-    :ref:`create_wells.CreateWells.select_well <select_well>`.
+    The format of `df_mdtvd` is shown in the class function `create_wells.CreateWells.well_trajectory`.
+    The formats of `df_welsegs_header` and `df_welsegs_content` are shown in the function
+    `create_wells.CreateWells.select_well`.
     """
     md_ = df_welsegs_content["TUBINGMD"].to_numpy()
     md_ = np.insert(md_, 0, df_welsegs_header["SEGMENTMD"].iloc[0])
@@ -103,16 +98,15 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     """Define the annulus zone from the COMPLETION.
 
     Args:
-        df_completion: Must contain the columns ``STARTMD``, ``ENDMD``, and ``ANNULUS``
+        df_completion: Must contain the columns `STARTMD`, `ENDMD`, and `ANNULUS`.
 
     Returns:
-        Updated COMPLETION with additional column ``ANNULUS_ZONE``
+        Updated COMPLETION with additional column `ANNULUS_ZONE`.
 
-    Raise:
-        ValueError: If the dimension is not correct
+    Raises:
+        ValueError: If the dimensions are not correct.
 
-    The DataFrame format of df_completion is shown in
-    :ref:`create_wells.CreateWells.select_well <df_completion>`.
+    The format of `df_completion` is shown in `create_wells.CreateWells.select_well`.
     """
     # define annular zone
     start_md = df_completion[Completion.START_MD].iloc[0]
@@ -191,37 +185,33 @@ def create_tubing_segments(
     segment_length: float | str = 0.0,
     minimum_segment_length: float = 0.0,
 ) -> pd.DataFrame:
-    """
-    Procedure to create segments in the tubing layer.
+    """Procedure to create segments in the tubing layer.
 
     Args:
-        df_reservoir: Must contain ``STARTMD`` and ``ENDMD``
-        df_completion: Must contain ``ANNULUS``, ``STARTMD``, ``ENDMD``,
-                    ``ANNULUS_ZONE`` and no packer content in the completion
-        df_mdtvd: Must contain ``MD`` and ``TVD``
-        method: Method for segmentation. Default: cells
+        df_reservoir: Must contain STARTMD and ENDMD.
+        df_completion: Must contain ANNULUS, STARTMD, ENDMD, ANNULUS_ZONE and no packer content in the completion.
+        df_mdtvd: Must contain MD and TVD.
+        method: Method for segmentation. Defaults to `Cells`.
         segment_length: Only if fix is selected in the method.
         minimum_segment_length: User input minimum segment length.
 
-    Segmentation methods
-
-    | cells: Create one segment per cell
-    | user: Create segment based on the completion definition
-    | fix: Create segment based on fix interval
-    | welsegs: Create segment based on ``WELSEGS`` keyword
+    Segmentation methods:
+    - cells: Create one segment per cell.
+    - user: Create segment based on the completion definition.
+    - fix: Create segment based on fix interval.
+    - welsegs: Create segment based on WELSEGS keyword.
 
     Returns:
-        A dataframe with columns ``STARTMD``, ``ENDMD``, ``TUB_MD``, ``TUB_TVD``
+        DataFrame with columns STARTMD, ENDMD, TUB_MD, TUB_TVD.
 
-    | The formats of DataFrames are shown in
-    | df_reservoir (:ref:`create_wells.CreateWells.select_well <df_reservoir>`)
-    | df_completion (:ref:`create_wells.CreateWells.select_well <df_completion>`)
-    | df_mdtvd (:ref:`create_wells.CreateWells.well_trajectory <df_mdtvd>`)
-    | df_tubing_segments
-        (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
+    The formats of DataFrames are shown in:
+    - df_reservoir: `create_wells.CreateWells.select_well`.
+    - df_completion: `create_wells.CreateWells.select_well`.
+    - df_mdtvd: `create_wells.CreateWells.well_trajectory`.
+    - df_tubing_segments: `create_wells.CreateWells.create_tubing_segments`.
 
     Raises:
-        ValueError: If the method is unknown
+        ValueError: If the method is unknown.
 
     """
     start_measure_depth: npt.NDArray[np.float64]
@@ -362,26 +352,23 @@ def create_tubing_segments(
 
 
 def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | None) -> pd.DataFrame:
-    """
-    Create segments for inactive cells.
+    """Create segments for inactive cells.
 
-    Sometimes inactive cells have no segments. It is required to create segments for
-    these cells to get the scaling factor correct. Inactive cells are indicated if
-    there are segments starting at MD deeper than the end MD of the previous cell.
+    Sometimes inactive cells have no segments.
+    It is required to create segments for these cells to get the scaling factor correct.
+    Inactive cells are indicated if there are segments starting at MD deeper than the end MD of the previous cell.
 
     Args:
-        df_tubing_segments: Must contain column ``STARTMD`` and ``ENDMD``
-        well_name: Name of well
+        df_tubing_segments: Must contain column STARTMD and ENDMD.
+        well_name: Name of well.
 
     Returns:
-        Updated dataframe if missing cells are found
+        Updated DataFrame if missing cells are found.
 
     Raises:
-        SystemExit: If the Schedule file is missing data for one or more branches
-                    in the case file
+        SystemExit: If the Schedule file is missing data for one or more branches in the case file.
 
-    The format of the DataFrame df_tubing_segments is shown in
-    :ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`.
+    The format of the DataFrame df_tubing_segments is shown in `create_wells.CreateWells.create_tubing_segments`.
     """
     if df_tubing_segments.empty:
         raise abort(
@@ -416,19 +403,17 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
 
 
 def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> tuple[int, int]:
-    """
-    Find the indices in the completion DataFrame of start MD and end MD.
+    """Find the indices in the completion DataFrame of start MD and end MD.
 
     Args:
-        df_completion: Must contain ``STARTMD`` and ``ENDMD``
-        start: Start measured depth
-        end: End measured depth
+        df_completion: Must contain STARTMD and ENDMD.
+        start: Start measured depth.
+        end: End measured depth.
 
     Returns:
         Indices - Tuple of int.
 
-    The format of the DataFrame df_completion is shown in
-    :ref:`create_wells.CreateWells.select_well <df_completion>`.
+    The format of the DataFrame df_completion is shown in `create_wells.CreateWells.select_well`.
     """
     start_md = df_completion[Completion.START_MD].to_numpy()
     end_md = df_completion[Completion.END_MD].to_numpy()
