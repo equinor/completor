@@ -6,7 +6,7 @@ Security is very important for Completor® and [Equinor](https://www.equinor.com
 ## Vulnerability scanning
 
 We scan our code in GitHub Actions using [Snyk](https://snyk.io/) and [Pre-commit](https://pre-commit.com/) to ensure
-code quality and third party vulnerabilities. 
+code quality and third party vulnerabilities.
 
 ## Reporting a Vulnerability
 
