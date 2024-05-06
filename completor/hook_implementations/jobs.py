@@ -1,3 +1,7 @@
+"""Configuration for running Completor as a plugin in ERT."""
+
+from __future__ import annotations
+
 from pathlib import Path
 
 from pkg_resources import resource_filename
@@ -15,15 +19,15 @@ except ModuleNotFoundError:
 
 
 @hook_implementation
-@plugin_response(plugin_name="completor")  # type: ignore
-def installable_jobs():
+@plugin_response(plugin_name="completor")
+def installable_jobs() -> dict[str, Path]:
     config_file = Path(resource_filename("completor", "config_jobs/run_completor"))
     return {config_file.name: config_file}
 
 
 @hook_implementation
 @plugin_response(plugin_name="completor")  # type: ignore  # pylint: disable=no-value-for-parameter
-def job_documentation(job_name):
+def job_documentation(job_name: str) -> dict[str, str] | None:
     if job_name != "run_completor":
         return None
 
