@@ -22,7 +22,6 @@ The following information will help us triage your report more quickly:
 * Impact of the issue, including how an attacker might exploit the issue
 * We prefer all communications to be in English.
 
-
 ---
 
 Thanks for your help!
