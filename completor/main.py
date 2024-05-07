@@ -101,9 +101,8 @@ class FileWriter:
         Initialize the FileWriter.
 
         Args:
-            file_name: Name of file to be written. Does not check if it already exists.
-            mapper: A dictionary for mapping strings. Typically used for mapping RMS
-                    well names to Eclipse well names
+            file: Name of file to be written. Does not check if it already exists.
+            mapper: A dictionary for mapping strings. Typically used for mapping RMS well names to Eclipse well names.
         """
         self.fh = open(file, "w", encoding="utf-8")  # create new output file
         self.mapper = mapper
