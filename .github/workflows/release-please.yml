@@ -1,0 +1,27 @@
+name: 🔖 Release please
+
+on:
+  workflow_dispatch: #  Enable manual triggers.
+  workflow_call: # Enables workflow to be called from another workflow.
+    outputs:
+      release_created:
+        description: "If true, a release PR has been merged"
+        value: ${{ jobs.release-please.outputs.release_created }}
+      tag_name:
+        description: "The release tag. Ex v1.4.0"
+        value: ${{ jobs.release-please.outputs.tag_name }}
+
+jobs:
+  release_please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          release-type: python
+          target-branch: main
+
+
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}

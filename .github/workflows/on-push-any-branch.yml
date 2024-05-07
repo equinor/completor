@@ -12,16 +12,6 @@ jobs:
     name: Run tests
     uses: ./.github/workflows/tests.yml
 
-#  build:
-#    name: '🧪 Build & test Code'
-#    uses: ./.github/workflows/build.yaml
-#    secrets: inherit
-
-#  check-docs:
-#    name: "Check documentation"
-#    uses: ./.github/workflows/check-documentation.yml
-
-
   todo-check:
     name: 🧐 Check TODOs
     uses: ./.github/workflows/todo-check.yml
