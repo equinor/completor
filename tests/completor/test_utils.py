@@ -6,19 +6,25 @@ import completor
 from completor.utils import clean_file_line, clean_file_lines
 
 
-def test_clean_file_line_with_file_path():
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("'some/file/path/test.case'", "'some/file/path/test.case'"),
+        ("\t'some/file/path/test.case'\t      ", "'some/file/path/test.case'"),
+        ("\t'some/file/path/test.case'\t     / A comment", "'some/file/path/test.case' /"),
+        ("  '../some/file/path/test.case'/comment", "'../some/file/path/test.case'/"),
+        ("'../some/file/path/test.case'", "'../some/file/path/test.case'"),
+        ("../some/file/path/test.case", "../"),
+    ],
+)
+def test_clean_file_line_with_file_path(test_input: str, expected: str) -> None:
     """
     Test that the file path is preserved.
 
     Leading and trailing white space should be removed.
     File path should remain untouched, but trailing comments removed.
     """
-    test = "'some/file/path/test.case'"
-    assert clean_file_line(test) == "'some/file/path/test.case'"
-    test_white_space = "\t'some/file/path/test.case'\t      "
-    assert clean_file_line(test_white_space) == "'some/file/path/test.case'"
-    test_with_comment = "\t'some/file/path/test.case'\t     / A comment"
-    assert clean_file_line(test_with_comment) == "'some/file/path/test.case' /"
+    assert clean_file_line(test_input) == expected
 
 
 def test_clean_file_line_comment():
