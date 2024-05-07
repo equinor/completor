@@ -101,9 +101,8 @@ class FileWriter:
         Initialize the FileWriter.
 
         Args:
-            file_name: Name of file to be written. Does not check if it already exists.
-            mapper: A dictionary for mapping strings. Typically used for mapping RMS
-                    well names to Eclipse well names
+            file: Name of file to be written. Does not check if it already exists.
+            mapper: A dictionary for mapping strings. Typically used for mapping RMS well names to Eclipse well names.
         """
         self.fh = open(file, "w", encoding="utf-8")  # create new output file
         self.mapper = mapper
@@ -277,8 +276,10 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
         try:
             with open(file_path, encoding="utf-8") as file:
                 file_content = file.read()
-        except FileNotFoundError as exc:
-            raise abort(f"Could not find the file: '{file_path}'!") from exc
+        except FileNotFoundError as e:
+            raise abort(f"Could not find the file: '{file_path}'!") from e
+        except (PermissionError, IsADirectoryError) as e:
+            raise abort("Could not read SCHFILE, this is likely because the path is missing quotes.") from e
         return file_content, file_path
     return None, file_path
 

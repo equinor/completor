@@ -10,7 +10,7 @@ and written to a new schedule file to be included in Eclipse or OPM Flow
 ## Getting Started
 Completor® is a Python script and has a command line interface (CLI) to use with the input case and schedule file.
 
-### Prerequisities
+### Prerequisites
 * [Python](https://www.python.org/), version 3.8 or higher
 * [ERT](https://github.com/equinor/ert) (optional)
 
