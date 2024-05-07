@@ -277,8 +277,10 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
         try:
             with open(file_path, encoding="utf-8") as file:
                 file_content = file.read()
-        except FileNotFoundError as exc:
-            raise abort(f"Could not find the file: '{file_path}'!") from exc
+        except FileNotFoundError as e:
+            raise abort(f"Could not find the file: '{file_path}'!") from e
+        except (PermissionError, IsADirectoryError) as e:
+            raise abort("Could not read SCHFILE, this is likely because the path is missing quotes.") from e
         return file_content, file_path
     return None, file_path
 

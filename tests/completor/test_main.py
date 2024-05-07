@@ -481,13 +481,7 @@ JOINTLENGTH
 
 @pytest.mark.parametrize(
     "schfilestring",
-    [
-        ("  testdir/testfile"),
-        (" testdir/testfile"),
-        ("testdir/testfile"),
-        ("'testdir/testfile'"),
-        ('"testdir/testfile"'),
-    ],
+    ["  testdir/testfile", " testdir/testfile", "testdir/testfile"],
 )
 def test_read_schedule_from_casefile(schfilestring, tmpdir):
     """
@@ -511,13 +505,7 @@ def test_read_schedule_from_casefile(schfilestring, tmpdir):
 
 @pytest.mark.parametrize(
     "outfilestring",
-    [
-        ("  testdir/testfile"),
-        (" testdir/testfile"),
-        ("testdir/testfile"),
-        ("'testdir/testfile'"),
-        ('"testdir/testfile"'),
-    ],
+    ["  testdir/testfile", " testdir/testfile", "testdir/testfile"],
 )
 def test_read_outputfile_from_casefile(outfilestring, tmpdir):
     """
