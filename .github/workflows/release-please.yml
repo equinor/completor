@@ -23,3 +23,7 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+
+  on-push-any-branch:
+    name: Run CI tasks
+    uses: ./.github/workflows/on-push-any-branch.yml
