@@ -2,8 +2,6 @@ name: "✨ On push to any branch"
 
 on:
   push:
-  workflow_call: # Enables workflow to be called from another workflow.
-
 
 jobs:
   lint:
