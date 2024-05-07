@@ -1,0 +1,48 @@
+name: 🚨 Lint PR title
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+
+jobs:
+  lint-pr:
+    name: Conventional commit compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint pull request title
+        uses: jef/conventional-commits-pr-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  pr-title-capitalization:
+    name: Is capitalised
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Is capitalised
+
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }} >> $GITHUB_ENV
+          PR_DATA=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                     "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}") >> $GITHUB_ENV
+          TITLE=$(echo "$PR_DATA" | jq -r '.title') >> $GITHUB_ENV
+
+          # Remove markdown emojis in format :+1:. Then replace code-snippets with text "CODESNIPPET".
+          # Lastly remove non-ascii characters (to remove utf-8 emojis).
+          PRUNED_TITLE=$(echo "$TITLE" | perl -pe 's/:[a-zA-Z0-9+_-]*:/ /g; s/`[a-zA-Z0-9+_-]+`/CODESNIPPET/g; s/[^[:ascii:]]/ /g')
+
+          echo $PRUNED_TITLE
+          PATTERN="\:[[:space:]]*[A-Z0-9]"
+
+
+          if [[ $PRUNED_TITLE =~ $PATTERN ]]; then
+              echo "Valid title"
+          else
+              echo "Invalid title: $TITLE"
+              exit 1
+          fi

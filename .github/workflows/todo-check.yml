@@ -1,8 +1,8 @@
 name: 🧐 Inspect TODOs
 
 on:
-  workflow_dispatch:
-  workflow_call:
+  workflow_dispatch: #  Enable manual triggers.
+  workflow_call: # Enables workflow to be called from another workflow.
 
 jobs:
   todo-issues:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check TODOs
         run: |
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get PR info
         run: |
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get PR info
         run: |
