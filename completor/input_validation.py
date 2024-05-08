@@ -343,6 +343,13 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
     The format of the COMPLETION table DataFrame is shown in
     ``read_casefile.ReadCasefile.read_completion``.
     """
+    try:
+        df_lat2dev["BRANCH"].astype(np.int64)
+    except ValueError:
+        raise abort(
+            f"Could not convert BRANCH {df_lat2dev['BRANCH'].values} to integer. Make sure that BRANCH is an integer."
+        )
+
     nrow = df_lat2dev.shape[0]
     for idx in range(0, nrow):
         l2d_well = df_lat2dev["WELL"].iloc[idx]
