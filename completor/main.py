@@ -530,10 +530,13 @@ def main() -> None:
     parser = get_parser()
     inputs = parser.parse_args()
 
-    if inputs.loglevel:
+    if inputs.loglevel is not None:
         loglevel = inputs.loglevel
     else:
         loglevel = logging.WARNING
+    # Loglevel NOTSET (0) gets overwritten by higher up loggers to WARNING, setting loglevel to 1 is a lazy workaround.
+    loglevel = 1 if loglevel == 0 else loglevel
+
     logger.setLevel(loglevel)
 
     # Open the case file
