@@ -107,6 +107,20 @@ def log_and_raise_exception(message: str, kind: type = ValueError, throw: bool =
         return kind(message)
 
 
+def find_quote(string: str) -> re.Match | None:
+    """Find single or double quotes in a string.
+
+    Args:
+        string: String to search through.
+
+    Returns:
+        Match of string if any.
+
+    """
+    quotes = "\"'"
+    return re.search(rf"([{quotes}])(?:(?=(\\?))\2.)*?\1", string)
+
+
 def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_marks: bool = False) -> str:
     """
     Remove comments, tabs, newlines and consecutive spaces from a string.
@@ -123,6 +137,14 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
         A cleaned line. Returns an empty string in the case of a comment or empty line.
     """
 
+    # Substitute string in quotes to avoid side effects when cleaning line e.g. `  '../some/path.file'`.
+    match = find_quote(line)
+    original_text = None
+    if match is not None:
+        i0, i1 = match.span()
+        original_text = line[i0:i1]
+        line = line[:i0] + "x" * (i1 - i0) + line[i1:]
+
     # Remove trailing comments
     line = line.split(comment_prefix)[0]
     # Skip cleaning process if the line was a comment
@@ -133,11 +155,19 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
     # Remove quotation marks if specified
     if remove_quotation_marks:
         line = line.replace("'", " ").replace('"', " ")
+
+    # Find comments and replace with single '/'.
+    temp = line.split("/")
+    line = temp[0] if len(temp) == 1 else temp[0] + "/"
+
+    if match is not None and original_text is not None:
+        i0, i1 = match.span()
+        line = line[:i0] + original_text + line[i1:]
+
     # Remove trailing whitespace
     line = line.strip(" ")
-    # Find comments and replace with single '/'.
-    # Checks that the / is not part of a file path.
-    line = re.sub(r"/[^/']*$", "/", line)
+    if remove_quotation_marks:
+        line = line.replace("'", " ").replace('"', " ")
     # Remove consecutive spaces
     line = " ".join(line.split())
 
