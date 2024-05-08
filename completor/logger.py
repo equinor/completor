@@ -111,6 +111,8 @@ def dump_debug_information(**kwargs) -> None:
         "Completor including the content of the input files",
         name,
     )
+    logger.debug(traceback.format_exc())
+
     with ZipFile(name + ".zip", mode="x", compression=ZIP_DEFLATED) as zipfile:
 
         def dump(file_name: str, data: str | bytes, encoding: str = "UTF-8") -> None:
