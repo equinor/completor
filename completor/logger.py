@@ -11,7 +11,7 @@ import completor
 
 
 def getLogger(module_name="completor"):
-    logger = logging.getLogger(module_name)
+    logger_ = logging.getLogger(module_name)
 
     formatter = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
 
@@ -23,10 +23,10 @@ def getLogger(module_name="completor"):
     stderr_handler.addFilter(lambda record: record.levelno >= logging.ERROR)
     stderr_handler.setFormatter(formatter)
 
-    logger.addHandler(stdout_handler)
-    logger.addHandler(stderr_handler)
+    logger_.addHandler(stdout_handler)
+    logger_.addHandler(stderr_handler)
 
-    return logger
+    return logger_
 
 
 logger = getLogger(__name__)
@@ -111,6 +111,8 @@ def dump_debug_information(**kwargs) -> None:
         "Completor including the content of the input files",
         name,
     )
+    logger.debug(traceback.format_exc())
+
     with ZipFile(name + ".zip", mode="x", compression=ZIP_DEFLATED) as zipfile:
 
         def dump(file_name: str, data: str | bytes, encoding: str = "UTF-8") -> None:
