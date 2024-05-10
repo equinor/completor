@@ -1,10 +1,6 @@
 -- This is an example of a completor case file
 -- This file is only for testing purposes
 
-SCHFILE
-basic_well.completion
-/
-
 COMPLETION
 --Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber
 --        Number                      Tubing     Casing              Roughness       Content 
