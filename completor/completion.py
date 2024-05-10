@@ -270,14 +270,12 @@ def create_tubing_segments(
             start_measure_depth = np.array(new_start_md)
             end_measure_depth = np.array(new_end_md)
     elif method == Method.USER:
-        # in this method we create tubing layer
-        # based on the definition of COMPLETION keyword
-        # in the case file
-        # read all segments except PA which has no segment length
+        # Create tubing layer based on the definition of COMPLETION keyword in the case file.
+        # Read all segments except PA (which has no segment length).
         df_temp = df_completion.copy(deep=True)
         start_measure_depth = df_temp["STARTMD"].to_numpy()
         end_measure_depth = df_temp["ENDMD"].to_numpy()
-        # fix the start and end
+        # Fix the start and end.
         start_measure_depth[0] = max(df_reservoir["STARTMD"].iloc[0], float(start_measure_depth[0]))
         end_measure_depth[-1] = min(df_reservoir["ENDMD"].iloc[-1], float(end_measure_depth[-1]))
         if start_measure_depth[0] >= end_measure_depth[0]:
@@ -287,16 +285,14 @@ def create_tubing_segments(
             start_measure_depth = np.delete(start_measure_depth, -1)
             end_measure_depth = np.delete(end_measure_depth, -1)
     elif method == Method.FIX:
-        # in this method we create tubing layer
-        # with fix interval according to the user input
-        # in the case file keyword SEGMENTLENGTH
+        # Create tubing layer with fix interval according to the user input in the case file keyword SEGMENTLENGTH.
         min_measure_depth = df_reservoir["STARTMD"].min()
         max_measure_depth = df_reservoir["ENDMD"].max()
         if not isinstance(segment_length, (float, int)):
             raise ValueError(f"Segment length must be a number, when using method fix (was {segment_length}).")
         start_measure_depth = np.arange(min_measure_depth, max_measure_depth, segment_length)
         end_measure_depth = start_measure_depth + segment_length
-        # update the end point of the last segment
+        # Update the end point of the last segment.
         end_measure_depth[-1] = min(float(end_measure_depth[-1]), max_measure_depth)
     elif method == Method.WELSEGS:
         # Create the tubing layer from segment measured depths in the WELSEGS keyword that are missing from COMPSEGS.
