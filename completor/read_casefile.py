@@ -83,12 +83,7 @@ class ReadCasefile:
 
     """
 
-    def __init__(
-        self,
-        case_file: str,
-        schedule_file: str | None = None,
-        output_file: str | None = None,
-    ):
+    def __init__(self, case_file: str, schedule_file: str | None = None, output_file: str | None = None):
         """
         Initialize ReadCasefile.
 
@@ -301,18 +296,19 @@ class ReadCasefile:
         if end_index == start_index + 2:
             try:
                 self.segment_length = float(self.content[start_index + 1])
-                # 'Fix' method, if value is positive
+                # 'Fix' method if value is positive.
                 if self.segment_length > 0.0:
                     logger.info("Segments are defined per %s meters.", self.segment_length)
-                # 'User' method if value is negative
+                # 'User' method if value is negative.
                 elif self.segment_length < 0.0:
                     logger.info(
                         "Segments are defined based on the COMPLETION keyword. "
                         "Attempting to pick segments' measured depth from .case file."
                     )
-                # 'Cells' method if value is zero
+                # 'Cells' method if value is zero.
                 elif self.segment_length == 0:
                     logger.info("Segments are defined based on the grid dimensions.")
+
             except ValueError:
                 try:
                     self.segment_length = str(self.content[start_index + 1])
@@ -332,7 +328,7 @@ class ReadCasefile:
                     elif "cell" in self.segment_length.lower():
                         logger.info("Segment lengths are created based on the grid dimensions.")
                 except ValueError as err:
-                    raise abort("SEGMENTLENGTH takes float or string") from err
+                    raise abort("SEGMENTLENGTH takes number or string") from err
         else:
             # 'Cells' method if value is 0.0 or undefined
             logger.info("No segment length is defined. " "Segments are created based on the grid dimension.")

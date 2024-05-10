@@ -262,7 +262,7 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
         start_idx, end_idx = parse.locate_keyword(case_file_lines, keyword)
         # If the keyword is defined correctly
         if end_idx == start_idx + 2:
-            # preprocess the text, remove leaning/trailing whitespace and quotes
+            # preprocess the text, remove leading/trailing whitespace and quotes
             file_path = " ".join(case_file_lines[start_idx + 1].strip("'").strip(" ").split())
             file_path = re.sub("[\"']+", "", file_path)
 

@@ -605,7 +605,7 @@ class CreateWells:
             self.df_completion,
             self.df_mdtvd,
             self.method,
-            self.case.segment_length,  # TODO(#9): What if this is a string?
+            self.case.segment_length,
             self.case.minimum_segment_length,
         )
 
