@@ -293,7 +293,7 @@ def create_tubing_segments(
         min_measure_depth = df_reservoir["STARTMD"].min()
         max_measure_depth = df_reservoir["ENDMD"].max()
         if not isinstance(segment_length, (float, int)):
-            raise ValueError(f"Segment length must be a number, when using {method} (was {segment_length})")
+            raise ValueError(f"Segment length must be a number, when using method fix (was {segment_length}).")
         start_measure_depth = np.arange(min_measure_depth, max_measure_depth, segment_length)
         end_measure_depth = start_measure_depth + segment_length
         # update the end point of the last segment
