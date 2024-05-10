@@ -326,7 +326,7 @@ def set_format_wsegicv(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
     """
-    Assess the latera2device inputs.
+    Assess the lateral 2 device inputs.
 
     Abort if a lateral is
     connected to a device layer in a well with open annuli.

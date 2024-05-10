@@ -278,8 +278,8 @@ def create_tubing_segments(
         start_measure_depth = df_temp["STARTMD"].to_numpy()
         end_measure_depth = df_temp["ENDMD"].to_numpy()
         # fix the start and end
-        start_measure_depth[0] = max(df_reservoir["STARTMD"].iloc[0], start_measure_depth[0])
-        end_measure_depth[-1] = min(df_reservoir["ENDMD"].iloc[-1], end_measure_depth[-1])
+        start_measure_depth[0] = max(df_reservoir["STARTMD"].iloc[0], float(start_measure_depth[0]))
+        end_measure_depth[-1] = min(df_reservoir["ENDMD"].iloc[-1], float(end_measure_depth[-1]))
         if start_measure_depth[0] >= end_measure_depth[0]:
             start_measure_depth = np.delete(start_measure_depth, 0)
             end_measure_depth = np.delete(end_measure_depth, 0)
@@ -293,38 +293,32 @@ def create_tubing_segments(
         min_measure_depth = df_reservoir["STARTMD"].min()
         max_measure_depth = df_reservoir["ENDMD"].max()
         if not isinstance(segment_length, (float, int)):
-            raise ValueError(f"Segment length must be a number, " f"when using {method} (was {segment_length})")
+            raise ValueError(f"Segment length must be a number, when using {method} (was {segment_length})")
         start_measure_depth = np.arange(min_measure_depth, max_measure_depth, segment_length)
         end_measure_depth = start_measure_depth + segment_length
         # update the end point of the last segment
-        end_measure_depth[-1] = min(end_measure_depth[-1], max_measure_depth)
+        end_measure_depth[-1] = min(float(end_measure_depth[-1]), max_measure_depth)
     elif method == Method.WELSEGS:
-        # In this method we create the tubing layer
-        # from segment measured depths in the WELSEGS keyword that are missing
-        # from COMPSEGS.
-        # WELSEGS segment depths are collected in the df_mdtvd dataframe, which
-        # is available here. Completor interprets WELSEGS depths as segment
-        # midpoint depths.
-        #
-        # Obtain the welsegs segment midpoint depth
+        # Create the tubing layer from segment measured depths in the WELSEGS keyword that are missing from COMPSEGS.
+        # WELSEGS segment depths are collected in the df_mdtvd dataframe, which is available here.
+        # Completor interprets WELSEGS depths as segment midpoint depths.
+        # Obtain the welsegs segment midpoint depth.
         welsegs = df_mdtvd["MD"].to_numpy()
         end_welsegs_depth = 0.5 * (welsegs[:-1] + welsegs[1:])
-        # The start of the very first segment in any branch is the actual start
-        # MD of the first segment.
+        # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, welsegs[0], axis=None)
         start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir["STARTMD"].to_numpy()
         end_compsegs_depth = df_reservoir["ENDMD"].to_numpy()
-        # If there are gaps in compsegs and there are welsegs segments that fit
-        # in the gaps, we will insert welsegs segments into the compsegs gaps
+        # If there are gaps in compsegs and there are welsegs segments that fit in the gaps,
+        # insert welsegs segments into the compsegs gaps.
         gaps_compsegs = start_compsegs_depth[1:] - end_compsegs_depth[:-1]
-        # Indices of gaps in compsegs
+        # Indices of gaps in compsegs.
         indices_gaps = np.nonzero(gaps_compsegs)
-        # Start of the gaps
+        # Start of the gaps.
         start_gaps_depth = end_compsegs_depth[indices_gaps[0]]
-        # End of the gaps
+        # End of the gaps.
         end_gaps_depth = start_compsegs_depth[indices_gaps[0] + 1]
-        # First we need to check the gaps between compsegs
-        # and fill it out with welsegs
+        # Check the gaps between COMPSEGS and fill it out with WELSEGS.
         start = np.abs(start_welsegs_depth[:, np.newaxis] - start_gaps_depth).argmin(axis=0)
         end = np.abs(end_welsegs_depth[:, np.newaxis] - end_gaps_depth).argmin(axis=0)
         welsegs_to_add = np.setxor1d(start_welsegs_depth[start], end_welsegs_depth[end])
@@ -332,16 +326,15 @@ def create_tubing_segments(
         end_welsegs_outside = end_welsegs_depth[np.argwhere(end_welsegs_depth > end_compsegs_depth[-1])]
         welsegs_to_add = np.append(welsegs_to_add, start_welsegs_outside)
         welsegs_to_add = np.append(welsegs_to_add, end_welsegs_outside)
-        # Find welsegs start and end in gaps
+        # Find welsegs start and end in gaps.
         start_compsegs_depth = np.append(start_compsegs_depth, welsegs_to_add)
         end_compsegs_depth = np.append(end_compsegs_depth, welsegs_to_add)
-        # Use completor syntax and sort
         start_measure_depth = np.sort(start_compsegs_depth)
         end_measure_depth = np.sort(end_compsegs_depth)
-        # check for missing segment
+        # Check for missing segment.
         shift_start_md = np.append(start_measure_depth[1:], end_measure_depth[-1])
         missing_index = np.argwhere(shift_start_md > end_measure_depth).flatten()
-        missing_index = missing_index + 1
+        missing_index += 1
         new_missing_startmd = end_measure_depth[missing_index - 1]
         new_missing_endmd = start_measure_depth[missing_index]
         start_measure_depth = np.sort(np.append(start_measure_depth, new_missing_startmd))
@@ -437,7 +430,7 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
     if _start.size == 0 or _end.size == 0:
         # completion index not found then give negative value for both
         return -1, -1
-    return _start[0], _end[0]
+    return int(_start[0]), int(_end[0])
 
 
 def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_length: float) -> Information:
@@ -470,9 +463,17 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             If the completion data contains illegal / invalid rows
             If information class is None
 
-    The format of the DataFrame df_completion is shown in\
+    The format of the DataFrame df_completion is shown in
     :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
+    information = None
+    device_type = None
+    device_number = None
+    inner_diameter = None
+    outer_diameter = None
+    roughness = None
+    annulus_zone = None
+
     start_completion = df_completion[Completion.START_MD].to_numpy()
     end_completion = df_completion[Completion.END_MD].to_numpy()
     idx0, idx1 = completion_index(df_completion, start, end)
@@ -484,7 +485,6 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
     # previous length start with 0
     prev_length = 0.0
     num_device = 0.0
-    information = None
 
     for completion_idx in range(idx0, idx1 + 1):
         comp_length = min(end_completion[completion_idx], end) - max(start_completion[completion_idx], start)
@@ -516,24 +516,24 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             # set prev_length to this segment
             prev_length = comp_length
 
-        try:
+        if all(
+            x is not None for x in [device_type, device_number, inner_diameter, outer_diameter, roughness, annulus_zone]
+        ):
             information = Information(
                 num_device, device_type, device_number, inner_diameter, outer_diameter, roughness, annulus_zone
             )
-        except NameError as err:
-            # I.e. `if comp_length > prev_length:` never happens
+        else:
+            # I.e. if comp_length > prev_length never happens
             raise ValueError(
-                f"The well {df_completion[Completion.WELL][completion_idx]}'s "
-                f"completion data contains illegal / invalid row(s). "
-                f"Please check their start mD / end mD columns, and ensure "
-                f"that they start before they end"
-            ) from err
+                f"The completion data for well '{df_completion[Completion.WELL][completion_idx]}' "
+                "contains illegal / invalid row(s). "
+                "Please check their start mD / end mD columns, and ensure that they start before they end."
+            )
     if information is None:
         raise ValueError(
             f"idx0 == idx1 + 1 (idx0={idx0}). "
             "For the time being, the reason is unknown. "
-            "Please reach out to the Equinor Inflow Control Team, "
-            "with the case/schedule file that causes it"
+            "Please reach out to the Equinor Inflow Control Team if you encounter this."
         )
     return information
 
@@ -558,14 +558,13 @@ def complete_the_well(
         (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
     | ``df_well`` (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
     """
-    nrow = df_tubing_segments.shape[0]
     start = df_tubing_segments[Completion.START_MD].to_numpy()
     end = df_tubing_segments[Completion.END_MD].to_numpy()
     # initiate completion
     information = Information()
     # loop through the cells
-    for idx in range(nrow):
-        information += get_completion(start[idx], end[idx], df_completion, joint_length)
+    for i in range(df_tubing_segments.shape[0]):
+        information += get_completion(start[i], end[i], df_completion, joint_length)
 
     # get the well geometry
     # e.g. inner and outer diameter
@@ -735,14 +734,12 @@ def connect_cells_to_segments(
     Args:
         df_well: Segment table. Must contain column ``TUB_MD``
         df_reservoir: COMPSEGS table. Must contain columns ``STARTMD`` and ``ENDMD``
-        df_tubing_segments: Tubing segment dataframe. Must contain columns
-                            ``STARTMD`` and ``ENDMD``
-        method: Segmentation method indicator. Must contain
-                'user', 'fix', 'welsegs', or 'cells'.
+        df_tubing_segments: Tubing segment dataframe. Must contain columns ``STARTMD`` and ``ENDMD``.
+        method: Segmentation method indicator. Must contain 'user', 'fix', 'welsegs', or 'cells'.
 
 
     Returns:
-        Merged DataFrame
+        Merged DataFrame.
 
     | The DataFrame formats in this function are shown in
     | df_well (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
