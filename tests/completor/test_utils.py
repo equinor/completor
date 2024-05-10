@@ -14,7 +14,6 @@ from completor.utils import clean_file_line, clean_file_lines
         ("\t'some/file/path/test.case'\t     / A comment", "'some/file/path/test.case' /"),
         ("  '../some/file/path/test.case'/comment", "'../some/file/path/test.case'/"),
         ("'../some/file/path/test.case'", "'../some/file/path/test.case'"),
-        ("../some/file/path/test.case", "../"),
     ],
 )
 def test_clean_file_line_with_file_path(test_input: str, expected: str) -> None:

@@ -157,8 +157,7 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
         line = line.replace("'", " ").replace('"', " ")
 
     # Find comments and replace with single '/'.
-    temp = line.split("/")
-    line = temp[0] if len(temp) == 1 else temp[0] + "/"
+    line = re.sub(r"/[^/']*$", "/", line)
 
     if match is not None and original_text is not None:
         i0, i1 = match.span()
