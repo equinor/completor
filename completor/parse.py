@@ -112,7 +112,6 @@ def locate_keyword(
         try:
             end_index = np.append(end_index, idx)
         except NameError as err:
-            # TODO(#9): Check which function it was called from, in order to determine if case file or schedule file.
             raise ValueError(f"Cannot find keyword {keyword} in file") from err
     # return all in a numpy array format
     end_index = np.asarray(end_index)
