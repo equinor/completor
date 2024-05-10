@@ -227,8 +227,7 @@ def create_tubing_segments(
     start_measure_depth: npt.NDArray[np.float64]
     end_measure_depth: npt.NDArray[np.float64]
     if method == Method.CELLS:
-        # in this method we create the tubing layer
-        # one cell one segment while honoring df_reservoir["SEGMENT"]
+        # Create the tubing layer one cell one segment while honoring df_reservoir["SEGMENT"]
         start_measure_depth = df_reservoir["STARTMD"].to_numpy()
         end_measure_depth = df_reservoir["ENDMD"].to_numpy()
         if "SEGMENT" in df_reservoir.columns:
@@ -245,12 +244,12 @@ def create_tubing_segments(
                 create_end_md.append(df_reservoir["ENDMD"].iloc[-1])
                 start_measure_depth = np.array(create_start_md)
                 end_measure_depth = np.array(create_end_md)
-        # if users want a minumum segment length, we do the following
+
         minimum_segment_length = float(minimum_segment_length)
         if minimum_segment_length > 0.0:
             new_start_md = []
             new_end_md = []
-            diff_md = end_measure_depth - start_measure_depth  # get the segment lengths
+            diff_md = end_measure_depth - start_measure_depth
             current_diff_md = 0.0
             start_idx = 0
             end_idx = 0
