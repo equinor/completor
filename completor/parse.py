@@ -7,8 +7,6 @@ from copy import deepcopy
 from typing import Literal, overload
 
 import numpy as np
-
-# Requires NumPy 1.20 or newer
 import numpy.typing as npt
 import pandas as pd
 
@@ -409,8 +407,6 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
         ValueError: If collection does not contain the 'WELSPECS' keyword
 
     The return DataFrame welspecs_table has the following format:
-
-    # TODO(#9): Which one is correct; this or the one in ``completion.set_welspecs``?
 
     .. list-table:: welspecs_table
        :widths: 10 10
