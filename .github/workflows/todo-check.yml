@@ -14,10 +14,15 @@ jobs:
 
       - name: Check TODOs
         run: |
-          if [[ -n $(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)') ]]; then
-            echo $(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)')
-            echo "Found TODOs without issue number or incorrect formatting."
-            echo "The correct format is: # TODO(#XXX): Todo message."
+          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)')
+          # If grep exited with code 1, then no matches, aka no TODOs!
+          if [ $? -eq 1 ]; then
+            echo "There are no TODOs in the code, great job ✅‼️"
+            exit 0
+          fi
+          if [[ -n $TODOS ]]; then
+            echo $TODOS
+            echo "::error title={Untracked TODO}::Found TODOs without issue number or incorrect formatting. The correct format is: `# TODO(#XXX): Todo message.`"
             exit 1
           fi
           echo "All TODOs are tracked with issue numbers 🙌"
@@ -37,6 +42,11 @@ jobs:
           D=$(echo "$PR_DATA" | jq -r '.body') >> $GITHUB_ENV
 
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO\(#(\d*)\):?' | grep -oE '\(#[0-9]+\)' | grep -oE '[0-9]+') >> $GITHUB_ENV
+          # If grep exited with code 1, then no matches, aka no TODOs!
+          if [ $? -eq 1 ]; then
+            echo "There are no TODOs in the code, great job ✅‼️"
+            exit 0
+          fi
           # Convert TODOS to an array
           todos_array=($TODOS)
           # Initialize an empty string to store the matches
@@ -58,7 +68,7 @@ jobs:
           # Set the matches as an environment variable
           export MATCHES="$matches"
           if [[ -n $matches ]]; then
-            echo "Found TODOs in code this PR is closing: $matches, remove TODOs in code."
+            echo "::error title={TODO left in code}::Found TODOs in code this PR is closing: $matches, remove TODOs in code."
             exit 1
           fi
 
@@ -71,8 +81,12 @@ jobs:
 
       - name: Get PR info
         run: |
-
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO\(#(\d*)\):?' | grep -oE '\(#[0-9]+\)' | grep -oE '[0-9]+') >> $GITHUB_ENV
+          # If grep exited with code 1, then no matches, aka no TODOs!
+          if [ $? -eq 1 ]; then
+            echo "There are no TODOs in the code, great job ✅‼️"
+            exit 0
+          fi
           # Convert TODOS to an array
           todos_array=($TODOS)
           # Remove duplicates in array
@@ -84,7 +98,7 @@ jobs:
                      "https://api.github.com/repos/${{ github.repository }}/issues/$todo") >> $GITHUB_ENV
             pattern="\"state\"\: \"closed\""
             if [[ $issue =~ $pattern ]]; then
-              echo "Found TODOs in code with closed issue, fix issue: $todo."
+              echo "::error title={Issue closed}::Found TODOs in code with closed issue, fix issue: $todo."
               exit 1
             fi
           done
