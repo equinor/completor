@@ -22,6 +22,10 @@ except ImportError:
 MethodType: TypeAlias = Union['Literal["cells", "user", "fix", "welsegs"]', Method]
 DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
+# TODO(#44): Existing closed issue (check todo-tracker)
+
+# TODO(#39): Existing open issue (check todo-tracker)
+
 
 class Information:
     """Holds information from ``get_completion``."""
