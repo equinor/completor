@@ -1,62 +1,45 @@
-[project]
+[tool.poetry]
 name = "completor"
-#version = "0.0.1"
-dynamic = ["version"]
-description = "Advanced well completion"
-authors = [{name = "Equinor ASA", email="opensource@equinor.com"}]
+version = "0.0.1"
+description = "Advanced mulit-segmented well completion tool."
+authors = ["Equinor ASA"]
+license = "LGPL-3.0"
 readme = "README.md"
-requires-python = ">=3.8"
-keywords=["fmu", "ert", "completor", "eclipse", "opm"]
-classifiers=[
-    "License :: OSI Approved :: AGPL v3.0",
-    "Operating System :: OS Independent",
-    "Natural Language :: English",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-]
 
-dependencies = [
-    "matplotlib",
-    "numpy<2",
-    "pandas",
-    "scipy",
-    "Pillow>=10.0.1",  # not directly required, pinned to avoid a vulnerability
-    "pydantic>=2.4.2",
-]
+[tool.poetry.dependencies]
+python = ">=3.9, <3.12"
+matplotlib = "^3.8.4"
+numpy = "^1.26.4"
+pandas = "^2.2.2"
+scipy = "^1.13.0"
+pydantic = "^2.7.1"
 
-[project.optional-dependencies]
-ert = ["ert", "rstcheck_core"]
-tests = [
-    "black",
-    "flake8",
-    "pre-commit",
-    "pytest",
-    "setuptools_scm",
-    "promise",
-    "rstcheck",
-]
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+flake8 = "^7.0.0"
+pre-commit = "^3.7.1"
+pytest = "^8.2.0"
+promise = "^2.3"
 
-[project.scripts]
-#run_completor = "completor.hook_implementations.jobs"
+[tool.poetry.group.ert.dependencies]
+rstcheck = "^6.2.1"
+rstcheck-core = "^1.2.1"
+ert = "^10.1.2"
+
+[tool.poetry.scripts]
 completor = "completor.main:main"
 
 [project.entry-points."ert"]
 run_completor = "completor.hook_implementations.jobs"
 
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [project.urls]
 GitHub = "https://github.com/equinor/completor"
 Issues = "https://github.com/equinor/completor/issues"
-#Documentation = ""
-
-[tool.setuptools]
-package-dir = {"completor" = "completor"}
-
-[tool.setuptools_scm]
-[build-system]
-requires = ["setuptools>=64", "setuptools_scm>=8"]
-build-backend = "setuptools.build_meta"
+Documentation = "https://curly-broccoli-j5we2jp.pages.github.io/"
 
 [tool.black]
 line-length = 120
@@ -82,6 +65,4 @@ max_line_length="132"
 ignore="E203, W503, E704"
 
 [tool.pytest.ini_options]
-markers = [
-    "integration: mark a test as an integration test."
-]
+markers = ["integration: mark a test as an integration test."]
