@@ -16,12 +16,14 @@ jobs:
         run: |
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
           # If TODOS is empty, then no matches, aka no TODOs!
-          if [ -z "$TODOS" ]; then
+          if [[ -z "$TODOS" ]]; then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
-          elif [[ -n $TODOS ]]; then
+          fi
+
+          if [[ -n $TODOS ]]; then
             echo $TODOS
-            echo "::error title={Untracked TODO}::Found TODOs without issue number or incorrect formatting. The correct format is: `# TODO(#XXX): Todo message.`"
+            echo "::error title={Untracked TODO}::Found TODOs without issue number or incorrect formatting. The correct format is: # TODO(#XXX): Todo message."
             exit 1
           fi
           echo "All TODOs are tracked with issue numbers 🙌"
@@ -42,7 +44,7 @@ jobs:
 
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
           # If TODOS is empty, then no matches, aka no TODOs!
-          if [ -z "$TODOS" ]; then
+          if [[ -z "$TODOS" ]]; then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
           fi
@@ -82,7 +84,7 @@ jobs:
         run: |
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
           # If TODOS is empty, then no matches, aka no TODOs!
-          if [ -z "$TODOS" ]; then
+          if [[ -z "$TODOS" ]]; then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
           fi
