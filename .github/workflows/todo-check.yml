@@ -6,7 +6,7 @@ on:
 
 jobs:
   todo-issues:
-    name: 🚨 Check TODO formatting
+    name: 🚨 Check TODOs have issue numbers in correct format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -75,7 +75,7 @@ jobs:
           exit 0
 
   closed-todos:
-    name: 🧐 Check closed todos are removed
+    name: 🧐 Check TODOs' closed todos don't exist in code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
