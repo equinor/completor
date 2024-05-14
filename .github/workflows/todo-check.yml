@@ -14,23 +14,16 @@ jobs:
 
       - name: Check TODOs
         run: |
-          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
+          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" --exclude="CHANGELOG.md" 'TODO(?!\(#\d+\)\:)' || true)
           # If TODOS is empty, then no matches, aka no TODOs!
           if [[ -z "$TODOS" ]];
           then
-            echo "There are no TODOs in the code, great job ✅‼️"
+            echo "There are no ill-formatted TODOs in the code, great job 🙌‼️"
             exit 0
-          else
-            echo "Found TODOs, continuing..."
           fi
-
-          if [[ -n $TODOS ]]; then
-            echo $TODOS
-            echo "::error title={Untracked TODO}::Found TODOs without issue number or incorrect formatting. The correct format is: # TODO(#XXX): Todo message."
-            exit 1
-          fi
-          echo "All TODOs are tracked with issue numbers 🙌"
-          exit 0
+          echo $TODOS
+          echo "::error title={Untracked TODO}::Found TODOs without issue number or incorrect formatting. The correct format is: # TODO(#XXX): Todo message."
+          exit 1
 
   closing-todos:
     name: 🧐 Check TODOs' tracked issues are removed from code
@@ -45,16 +38,15 @@ jobs:
           PR_DATA=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                      "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}") >> $GITHUB_ENV
           D=$(echo "$PR_DATA" | jq -r '.body') >> $GITHUB_ENV
-
-          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
+          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" --exclude="CHANGELOG.md" 'TODO\(#(\d*)\):?' | grep -oE '\(#[0-9]+\)' | grep -oE '[0-9]+' || true) >> $GITHUB_ENV
           # If TODOS is empty, then no matches, aka no TODOs!
           if [[ -z "$TODOS" ]]
           then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
-          else
-            echo "Found TODOs, continuing..."
           fi
+          echo "Found TODOs, continuing..."
+
           # Convert TODOS to an array
           todos_array=($TODOS)
           # Initialize an empty string to store the matches
@@ -91,15 +83,14 @@ jobs:
 
       - name: Get PR info
         run: |
-          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
+          TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" --exclude="CHANGELOG.md" 'TODO\(#(\d*)\):?' | grep -oE '\(#[0-9]+\)' | grep -oE '[0-9]+' || true) >> $GITHUB_ENV
           # If TODOS is empty, then no matches, aka no TODOs!
           if [[ -z "$TODOS" ]]
           then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
-          else
-            echo "Found TODOs, continuing..."
           fi
+          echo "Found TODOs, continuing..."
           # Convert TODOS to an array
           todos_array=($TODOS)
           # Remove duplicates in array
