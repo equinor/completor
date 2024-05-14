@@ -16,9 +16,12 @@ jobs:
         run: |
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
           # If TODOS is empty, then no matches, aka no TODOs!
-          if [[ -z "$TODOS" ]]; then
+          if [[ -z "$TODOS" ]];
+          then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
+          else
+            echo "Found TODOs, continuing..."
           fi
 
           if [[ -n $TODOS ]]; then
@@ -44,9 +47,12 @@ jobs:
 
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
           # If TODOS is empty, then no matches, aka no TODOs!
-          if [[ -z "$TODOS" ]]; then
+          if [[ -z "$TODOS" ]]
+          then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
+          else
+            echo "Found TODOs, continuing..."
           fi
           # Convert TODOS to an array
           todos_array=($TODOS)
@@ -84,9 +90,12 @@ jobs:
         run: |
           TODOS=$(grep -nPr --exclude-dir=venv --exclude-dir=.* --exclude-dir=__pycache__ --exclude="*.log" 'TODO(?!\(#\d+\)\:)' || true)
           # If TODOS is empty, then no matches, aka no TODOs!
-          if [[ -z "$TODOS" ]]; then
+          if [[ -z "$TODOS" ]]
+          then
             echo "There are no TODOs in the code, great job ✅‼️"
             exit 0
+          else
+            echo "Found TODOs, continuing..."
           fi
           # Convert TODOS to an array
           todos_array=($TODOS)
