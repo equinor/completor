@@ -6,7 +6,7 @@ on:
 
 jobs:
   todo-issues:
-    name: 🚨 Check TODOs have issue numbers in correct format
+    name: 🚨 Check TODO formatting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -30,6 +30,7 @@ jobs:
             exit 1
           fi
           echo "All TODOs are tracked with issue numbers 🙌"
+          exit 0
 
   closing-todos:
     name: 🧐 Check TODOs' tracked issues are removed from code
@@ -78,9 +79,11 @@ jobs:
             echo "::error title={TODO left in code}::Found TODOs in code this PR is closing: $matches, remove TODOs in code."
             exit 1
           fi
+          echo "The PR's TODOs' have all been removed! 🙌"
+          exit 0
 
   closed-todos:
-    name: 🧐 Check TODOs' closed todos don't exist in code
+    name: 🧐 Check closed todos are removed
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -112,3 +115,5 @@ jobs:
               exit 1
             fi
           done
+          echo "All closed TODOs are removed."
+          exit 0
