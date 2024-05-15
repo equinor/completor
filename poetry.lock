@@ -4088,4 +4088,4 @@ ert = ["ert", "rstcheck-core"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <3.12"
-content-hash = "b3fdbb4ebc7db5a6bf8f53aee5a00b91eb61f7b5d891eae3a5c2d675155234dc"
+content-hash = "51cf847fe040759d6587e1fdd169938f454571c7382a617cbd437971cd673c8a"

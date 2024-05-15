@@ -16,7 +16,6 @@ pandas = "^2.2.2"
 scipy = "^1.13.0"
 pydantic = "^2.7.1"
 
-#pyqt5-qt5 = {version="5.15.2", optional=true} # Pinned for non-osx users
 rstcheck-core = {version="^1.2.1", optional=true}
 ert = {version="^10.1.2", optional=true}
 
@@ -30,10 +29,7 @@ promise = "^2.3"
 rstcheck-core = "^1.2.1"
 
 [tool.poetry.extras]
-#pyqt5-qt5 = {version="5.15.2", optional=true} # Pinned for non-osx users
-#rstcheck-core = {version="^1.2.1", optional=true}
 ert = ["rstcheck-core", "ert"]
-#ert = "^10.1.2"
 
 [tool.poetry.scripts]
 completor = "completor.main:main"
