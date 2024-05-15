@@ -43,7 +43,7 @@ jobs:
         run: poetry check --no-interaction
 
       - name: Install dependencies
-        run: poetry install --without ert --no-interaction
+        run: poetry install --without ert --with dev --no-interaction
 
 #      - name: Install Completor with dependencies
 #        run: poetry install --without dev
@@ -51,8 +51,7 @@ jobs:
 #          pip install ".[tests,ert]"
 
       - name: List all installed packages
-#        run: pip freeze
         run: poetry show
 
       - name: Run tests
-        run: pytest tests/
+        run: poetry run pytest tests/
