@@ -19,11 +19,10 @@ jobs:
 
       - name: Install Completor with dependencies
         run: |
-          pip install --upgrade pip
-          pip install ".[tests,docs,ert]"
+          poetry install --without ert
 
-      - name: Install pre-commit
-        run: pip install pre-commit
+#      - name: Install pre-commit
+#        run: pip install pre-commit
 
       - name: Run pre-commit
         run: |
