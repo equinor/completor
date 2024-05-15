@@ -26,14 +26,10 @@ jobs:
       - name: Check pyproject.toml validity
         run: poetry check --no-interaction
 
-      - name: Install dependencies
-        run: poetry install --without ert --no-interaction
-
-#      - name: Install Completor with dependencies
-#        run: poetry install --without ert
-
-#      - name: Install pre-commit
-#        run: pip install pre-commit
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+          pre-commit install
 
       - name: Run pre-commit
         run: |
