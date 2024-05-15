@@ -33,12 +33,6 @@ jobs:
         with:
           virtualenvs-create: true
 
-      - name: Load cached venv
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python3-10.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
       - name: Check pyproject.toml validity
         run: poetry check --no-interaction
 
