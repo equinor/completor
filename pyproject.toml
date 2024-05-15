@@ -5,6 +5,8 @@ description = "Advanced mulit-segmented well completion tool."
 authors = ["Equinor ASA"]
 license = "LGPL-3.0"
 readme = "README.md"
+package-mode = true
+
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.12"
@@ -14,17 +16,23 @@ pandas = "^2.2.2"
 scipy = "^1.13.0"
 pydantic = "^2.7.1"
 
+#pyqt5-qt5 = {version="5.15.2", optional=true} # Pinned for non-osx users
+rstcheck-core = {version="^1.2.1", optional=true}
+ert = {version="^10.1.2", optional=true}
+
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 flake8 = "^7.0.0"
 pre-commit = "^3.7.1"
 pytest = "^8.2.0"
 promise = "^2.3"
-
-[tool.poetry.group.ert.dependencies]
-pyqt5-qt5 = "=5.15.2" # Pinned for non-osx users
 rstcheck-core = "^1.2.1"
-ert = "^10.1.2"
+
+[tool.poetry.extras]
+#pyqt5-qt5 = {version="5.15.2", optional=true} # Pinned for non-osx users
+#rstcheck-core = {version="^1.2.1", optional=true}
+ert = ["rstcheck-core", "ert"]
+#ert = "^10.1.2"
 
 [tool.poetry.scripts]
 completor = "completor.main:main"

@@ -37,9 +37,7 @@ jobs:
         run: poetry check --no-interaction
 
       - name: Install dependencies
-        run: |
-          # poetry run pip install pyqt5-qt5
-          poetry install --with dev --with ert --no-interaction
+        run: poetry install --with dev -E ert --no-interaction
 
 #      - name: Install Completor with dependencies
 #        run: poetry install --without dev
