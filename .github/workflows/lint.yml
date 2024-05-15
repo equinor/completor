@@ -17,10 +17,13 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+
       - name: Install Completor with dependencies
-        run: |
-          pip install poetry
-          poetry install --without ert
+        run: poetry install --without ert
 
 #      - name: Install pre-commit
 #        run: pip install pre-commit
