@@ -44,7 +44,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          poetry run pip install pyqt5-qt5
+          # poetry run pip install pyqt5-qt5
           poetry install --with dev --with ert --no-interaction
 
 #      - name: Install Completor with dependencies

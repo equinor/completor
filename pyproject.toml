@@ -22,6 +22,7 @@ pytest = "^8.2.0"
 promise = "^2.3"
 
 [tool.poetry.group.ert.dependencies]
+pyqt5-qt5 = "=5.15.2" # Pinned for non-osx users
 rstcheck-core = "^1.2.1"
 ert = "^10.1.2"
 
