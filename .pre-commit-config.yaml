@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
     - id: no-commit-to-branch
       args: ['--branch', 'main']
@@ -22,6 +22,12 @@ repos:
       args: ['--maxkb=200']
       exclude: "poetry.lock"
 
+# Check poetry validity
+-   repo: https://github.com/python-poetry/poetry
+    rev: "1.8.0"
+    hooks:
+      -   id: poetry-check
+
 # Quick content checks based on grepping for python specific patterns:
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -39,7 +45,7 @@ repos:
         args: ["--settings-path", "pyproject.toml"]
 
 -   repo: https://github.com/psf/black
-    rev: 24.2.0
+    rev: 24.4.2
     hooks:
     -   id: black
         args: ["--config", "pyproject.toml"]
@@ -52,13 +58,13 @@ repos:
         additional_dependencies: [Flake8-pyproject]
 
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.15.2
     hooks:
     -   id: pyupgrade
         args: ["--py310-plus"]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.8.0
+  rev: v1.10.0
   hooks:
   - id: mypy
     args:
