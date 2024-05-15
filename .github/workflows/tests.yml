@@ -43,10 +43,10 @@ jobs:
         run: poetry check --no-interaction
 
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: poetry install --without dev --no-interaction
 
-      - name: Install Completor with dependencies
-        run: poetry install --without dev
+#      - name: Install Completor with dependencies
+#        run: poetry install --without dev
 #          pip install --upgrade pip
 #          pip install ".[tests,ert]"
 
