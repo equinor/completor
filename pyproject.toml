@@ -25,6 +25,7 @@ black = "^24.4.2"
 flake8 = "^7.0.0"
 pre-commit = "^3.7.1"
 pytest = "^8.2.0"
+pytest-xdist = "^3.6.1"
 promise = "^2.3"
 rstcheck-core = "^1.2.1"
 
