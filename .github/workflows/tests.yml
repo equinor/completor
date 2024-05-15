@@ -43,7 +43,7 @@ jobs:
         run: poetry check --no-interaction
 
       - name: Install dependencies
-        run: poetry install --without dev --without ert --no-interaction
+        run: poetry install --without ert --no-interaction
 
 #      - name: Install Completor with dependencies
 #        run: poetry install --without dev
