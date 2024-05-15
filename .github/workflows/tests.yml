@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11']
     env:
       PYTHONPATH: ${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/site-packages:${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/dist-packages
 
@@ -33,6 +33,17 @@ jobs:
         with:
           virtualenvs-create: true
 
+      - name: Load cached venv
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python3-10.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Check pyproject.toml validity
+        run: poetry check --no-interaction
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
 
       - name: Install Completor with dependencies
         run: poetry install --without dev
