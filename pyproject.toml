@@ -22,7 +22,6 @@ pytest = "^8.2.0"
 promise = "^2.3"
 
 [tool.poetry.group.ert.dependencies]
-rstcheck = "^6.2.1"
 rstcheck-core = "^1.2.1"
 ert = "^10.1.2"
 
