@@ -19,10 +19,6 @@ jobs:
       - name: Checkout commit locally
         uses: actions/checkout@v4
 
-#      - name: Checkout tags
-#        # Necessary for setuptools_scm to be able to infer the correct version.
-#        run: git fetch --unshallow --tags
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -39,13 +35,8 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev -E ert --no-interaction
 
-#      - name: Install Completor with dependencies
-#        run: poetry install --without dev
-#          pip install --upgrade pip
-#          pip install ".[tests,ert]"
-
       - name: List all installed packages
         run: poetry show
 
-      - name: Run tests
+      - name: Run tests in multiprocess
         run: poetry run pytest tests/ -n auto

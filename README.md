@@ -11,7 +11,8 @@ and written to a new schedule file to be included in Eclipse or OPM Flow
 Completor® is a Python script and has a command line interface (CLI) to use with the input case and schedule file.
 
 ### Prerequisites
-* [Python](https://www.python.org/), version 3.8 or higher
+* [Python](https://www.python.org/), version 3.8 to 3.11
+* [Poetry](https://python-poetry.org/docs/), version 1.8 ()
 * [ERT](https://github.com/equinor/ert) (optional)
 
 ### Installation
@@ -19,21 +20,24 @@ To start using Completor®, you can follow these instructions:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests]"
+poetry install
 pre-commit install
 ```
+
 If you intend to run completor as a plugin to ert:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests,ert]"
+poetry install -E ert
 pre-commit install
 ```
-and to ensure it runs as intended, confirm it with:
+
+Activate the environment:
 ```shell
-completor --help
+poetry shell
 ```
-and
+
+Ensure it runs as intended, confirm it with:
 ```shell
 pytest
 ```

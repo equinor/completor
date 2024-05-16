@@ -14,7 +14,11 @@ except ModuleNotFoundError:
     import platform
 
     if platform.system() == "Linux":
-        raise ImportError("Ert should be installed when on Linux OS. Try pip installing like `pip install '.[ert]'`!")
+        raise ImportError(
+            "Ert should be installed when on Linux OS."
+            "Try installing with ERT `pip install completor[ert]`!"
+            "If you're developing try `poetry install -E ert` instead."
+        )
     SKIP_TESTS = True
 
 # pylint: disable=redefined-outer-name
