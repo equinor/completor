@@ -2,11 +2,24 @@
 name = "completor"
 version = "0.0.1"
 description = "Advanced mulit-segmented well completion tool."
-authors = ["Equinor ASA"]
-license = "LGPL-3.0"
+authors = ["Equinor ASA <opensource@equinor.com>"]
+repository = "https://github.com/equinor/completor"
+documentation = "https://equinor.github.io/completor"
+license = "LGPL-3.0-only"
 readme = "README.md"
 package-mode = true
+classifiers = [
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
 
+[project.urls]
+"Bug Tracker" = "https://github.com/equinor/completor/issues"
 
 [tool.poetry.dependencies]
 # TODO(#56): Re-add all of these dependencies with `poetry add` when support for python3.8 can be dropped.
@@ -41,10 +54,6 @@ run_completor = "completor.hook_implementations.jobs"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[project.urls]
-GitHub = "https://github.com/equinor/completor"
-Issues = "https://github.com/equinor/completor/issues"
-Documentation = "https://curly-broccoli-j5we2jp.pages.github.io/"
 
 [tool.black]
 line-length = 120

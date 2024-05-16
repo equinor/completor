@@ -16,7 +16,7 @@ except ModuleNotFoundError:
     if platform.system() == "Linux":
         raise ImportError(
             "Ert should be installed when on Linux OS."
-            "Try installing with ERT `pip install completor[ert]`!"
+            "Try installing with ERT `pip install 'completor[ert]'`!"
             "If you're developing try `poetry install -E ert` instead."
         )
     SKIP_TESTS = True

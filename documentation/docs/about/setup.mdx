@@ -12,14 +12,11 @@ In addition, you can install Completor® by cloning the repository manually:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests,docs]"
+python -m venv venv
+source venv/bin/activate
+pip install -e .
 ```
 and to ensure it runs as intended, confirm it with:
 ```shell
 completor --help
 ```
-and
-```shell
-pytest
-```
-This should run for some minutes without failures.
