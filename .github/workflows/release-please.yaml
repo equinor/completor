@@ -26,4 +26,4 @@ jobs:
 
   on-push-any-branch:
     name: Run CI tasks
-    uses: ./.github/workflows/on-push-any-branch.yml
+    uses: ./.github/workflows/on-push-any-branch.yaml
