@@ -9,8 +9,8 @@ on:
 jobs:
   check-docs:
     name: Check documentation
-    uses: ./.github/workflows/check-documentation.yml
+    uses: ./.github/workflows/check-documentation.yaml
 
   release-please:
     name: Run release please
-    uses: ./.github/workflows/release-please.yml
+    uses: ./.github/workflows/release-please.yaml
