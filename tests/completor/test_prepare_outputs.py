@@ -604,7 +604,6 @@ def test_prepare_wsegvalv():
         ],
         columns=["WELL", "SEG", "CV", "AC", "L", "AC_MAX", ""],
     )
-    # TODO(#9): This test is a bit weird.
     wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", 1, df_well, df_device)
     pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
 

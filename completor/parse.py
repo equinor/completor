@@ -7,8 +7,6 @@ from copy import deepcopy
 from typing import Literal, overload
 
 import numpy as np
-
-# Requires NumPy 1.20 or newer
 import numpy.typing as npt
 import pandas as pd
 
@@ -114,7 +112,6 @@ def locate_keyword(
         try:
             end_index = np.append(end_index, idx)
         except NameError as err:
-            # TODO(#9): Check which function it was called from, in order to determine if case file or schedule file.
             raise ValueError(f"Cannot find keyword {keyword} in file") from err
     # return all in a numpy array format
     end_index = np.asarray(end_index)
@@ -409,8 +406,6 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
         ValueError: If collection does not contain the 'WELSPECS' keyword
 
     The return DataFrame welspecs_table has the following format:
-
-    # TODO(#9): Which one is correct; this or the one in ``completion.set_welspecs``?
 
     .. list-table:: welspecs_table
        :widths: 10 10
