@@ -8,12 +8,12 @@ on:
 jobs:
   lint:
     name: 💄 Code Quality
-    uses: ./.github/workflows/lint.yml
+    uses: ./.github/workflows/lint.yaml
 
   test:
     name: Run tests
-    uses: ./.github/workflows/tests.yml
+    uses: ./.github/workflows/tests.yaml
 
   todo-check:
     name: 🧐 Check TODOs
-    uses: ./.github/workflows/todo-check.yml
+    uses: ./.github/workflows/todo-check.yaml
