@@ -15,7 +15,9 @@ def test_run_completor(tmpdir):
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
-    subprocess.run(["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch", "-o", "perf_gp.out"], check=True)
+    subprocess.run(
+        ["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch", "-o", "perf_gp.out"], check=True, shell=True
+    )
     assert Path("perf_gp.out").is_file()
     assert os.path.getsize("perf_gp.out") > 0
 
@@ -25,7 +27,7 @@ def test_run_completor_schedule_in_case(tmpdir):
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
-    subprocess.run(["completor", "-i", "perf_gp.case", "-o", "perf_gp.out"], check=True)
+    subprocess.run(["completor", "-i", "perf_gp.case", "-o", "perf_gp.out"], check=True, shell=True)
     assert Path("perf_gp.out").is_file()
     assert os.path.getsize("perf_gp.out") > 0
 
@@ -35,7 +37,7 @@ def test_run_completor_without_schedule(tmpdir):
     shutil.copy(_TESTDIR_DROGON / "perf_gp_nosched.case", tmpdir)
     tmpdir.chdir()
     with pytest.raises(subprocess.CalledProcessError) as err:
-        subprocess.run(["completor", "-i", "perf_gp_nosched.case", "-o", "perf_gp_nosched.out"], check=True)
+        subprocess.run(["completor", "-i", "perf_gp_nosched.case", "-o", "perf_gp_nosched.out"], check=True, shell=True)
     assert err.value.returncode == 1
     assert not Path("perf_gp_nosched.out").is_file()
 
@@ -46,7 +48,9 @@ def test_figure(tmpdir):
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
     subprocess.run(
-        ["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch", "-o", "perf_gp.out", "--figure"], check=True
+        ["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch", "-o", "perf_gp.out", "--figure"],
+        check=True,
+        shell=True,
     )
     assert Path("perf_gp.out").is_file()
     assert os.path.getsize("perf_gp.out") > 0
@@ -59,7 +63,7 @@ def test_run_completor_without_output(tmpdir):
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
-    subprocess.run(["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch"], check=True)
+    subprocess.run(["completor", "-i", "perf_gp.case", "-s", "drogon_input.sch"], check=True, shell=True)
     assert Path("drogon_input_advanced.wells").is_file()
     assert os.path.getsize("drogon_input_advanced.wells") > 0
 
@@ -69,6 +73,6 @@ def test_run_completor_without_schedule_output(tmpdir):
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
-    subprocess.run(["completor", "-i", "perf_gp.case"], check=True)
+    subprocess.run(["completor", "-i", "perf_gp.case"], check=True, shell=True)
     assert Path("drogon_input_advanced.wells").is_file()
     assert os.path.getsize("drogon_input_advanced.wells") > 0
