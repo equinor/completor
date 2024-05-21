@@ -21,8 +21,8 @@ COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness      Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing     asing                   Content
 --                                  Diameter   Diameter
-OP1     1        0        10000     0.15364    0.1905    1.24E-005      GP          1                PERF              1
-OP1     2        0        10000     0.15364    0.1905    1.24E-005      GP          1                PERF              1
+OP1     1        0        10000     0.15364    0.1905    1.524E-005      GP          1                PERF              1
+OP1     2        0        10000     0.15364    0.1905    1.524E-005      GP          1                PERF              1
 /
 -- Set GP_PERF_DEVICELAYER to TRUE if a device layer for this type of completion is needed.
 GP_PERF_DEVICELAYER
@@ -71,8 +71,8 @@ COMPLETION
 --Well  Branch  StartMD  EndMD   Screen    Well/    Roughness  Annulus  Nvalve  ValveType  DeviceNumber
 --      Number                   Tubing    Casing              Content  /Joint
 --                               Diameter  Diameter
-  OP1     1       0     10000    0.15364   0.1905    524E-005     GP       1       ICD         1
-  OP1     2       0     10000    0.15364   0.1905    524E-005     GP       1       ICD         2
+  OP1     1       0     10000    0.15364   0.1905    1.524E-005     GP       1       ICD         1
+  OP1     2       0     10000    0.15364   0.1905    1.524E-005     GP       1       ICD         2
 /
 WSEGSICD
 -- NB: Dummy parameters. Contact the Equinor Inflow Control Team for actual values suitable for your case.
@@ -90,8 +90,8 @@ COMPLETION
 --Well  Branch  StartMD  EndMD  Screen    Well/   Roughness  Annulus  Nvalve  ValveType  DeviceNumber
 --      Number                  Tubing    Casing             Content  /Joint
 --                              Diameter  Diameter
-  OP1     1       0      10000  0.15364   0.1905   1524E-005   GP       1        VALVE       1
-  OP1     2       0      10000  0.15364   0.1905   1524E-005   GP       1        VALVE       2
+  OP1     1       0      10000  0.15364   0.1905   1.524E-005   GP       1        VALVE       1
+  OP1     2       0      10000  0.15364   0.1905   1.524E-005   GP       1        VALVE       2
 /
 
 WSEGVALV
@@ -106,15 +106,15 @@ WSEGVALV
 ## Completion with DAR
 An example with DAR (Density Activated Recovery).
 This keyword will generate sets of `WSEGVALV`,
-`ACTIONX`, and `UDQ` as it is accommodated by Eclipse simulator and later OPM Flow (under development).
+`ACTIONX`, and `UDQ`.
 
 ```
 COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing    Casing                    Content
 --                                  Diameter   Diameter
-OP1     1        0        10000     0.15364    0.1905    1524E-005      GP          1                DAR         1
-OP1     2        0        10000     0.15364    0.1905    1524E-005      GP          1                DAR         2
+OP1     1        0        10000     0.15364    0.1905    1.524E-005      GP          1                DAR         1
+OP1     2        0        10000     0.15364    0.1905    1.524E-005      GP          1                DAR         2
 /
 
 WSEGDAR
@@ -133,8 +133,8 @@ COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/     Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing     Casing                    Content
 --                                  Diameter   Diameter
-OP1     1        0        10000     0.15364    0.1905     1524E-005      GP          1                AICV         1
-OP1     2        0        10000     0.15364    0.1905     1524E-005      GP          1                AICV         1
+OP1     1        0        10000     0.15364    0.1905     1.524E-005      GP          1                AICV         1
+OP1     2        0        10000     0.15364    0.1905     1.524E-005      GP          1                AICV         1
 /
 
 WSEGAICV
@@ -155,8 +155,8 @@ COMPLETION
 --Well    Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --        Number                      Tubing    Casing                    Content
 --                                    Diameter   Diameter
-OP1      1         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1      2         0        10000     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1      1         0        10000     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1      2         0        10000     0.15364    0.1905    1.524E-005      OA          1                AICD         1
 /
 
 WSEGAICD
@@ -176,20 +176,20 @@ COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing    Casing                    Content
 --                                  Diameter   Diameter
-OP1     1        0         1640     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     1        1640      1640     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        1640      1940     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     1        1940      1940     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        1940      2240     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     1        2240      2240     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        2240      2540     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     1        2540      2540     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        2540      2920     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     2        0         1660     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     2        1660      1660     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     2        1660      1960     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     2        1960      1960     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     2        1960      2110     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        0         1640     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     1        1640      1640     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        1640      1940     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     1        1940      1940     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        1940      2240     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     1        2240      2240     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        2240      2540     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     1        2540      2540     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        2540      2920     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     2        0         1660     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     2        1660      1660     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     2        1660      1960     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     2        1960      1960     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     2        1960      2110     0.15364    0.1905    1.524E-005      OA          1                AICD         1
 /
 
 
@@ -209,20 +209,20 @@ COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing    Casing                    Content
 --                                  Diameter   Diameter
-OP1     1        1340      1640     0.15364    0.1905    1524E-005      GP          0                AICD         1
-OP1     1        1640      1640     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        1640      1940     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     1        1940      1940     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        1940      2240     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     1        2240      2240     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        2240      2540     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     1        2540      2540     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     1        2540      2920     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     2        1360      1660     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     2        1660      1660     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     2        1660      1960     0.15364    0.1905    1524E-005      OA          1                AICD         1
-OP1     2        1960      1960     0.15364    0.1905    1524E-005      PA          1                AICD         1
-OP1     2        1960      2110     0.15364    0.1905    1524E-005      OA          1                AICD         1
+OP1     1        1340      1640     0.15364    0.1905    1.524E-005      GP          0                AICD         1
+OP1     1        1640      1640     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        1640      1940     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     1        1940      1940     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        1940      2240     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     1        2240      2240     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        2240      2540     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     1        2540      2540     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     1        2540      2920     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     2        1360      1660     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     2        1660      1660     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     2        1660      1960     0.15364    0.1905    1.524E-005      OA          1                AICD         1
+OP1     2        1960      1960     0.15364    0.1905    1.524E-005      PA          1                AICD         1
+OP1     2        1960      2110     0.15364    0.1905    1.524E-005      OA          1                AICD         1
 /
 
 
@@ -243,8 +243,8 @@ COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing     Casing                   Content
 --                                  Diameter   Diameter
-OP1     1        0        10000     0.15364    0.1905    1524E-005      GP          0.5                AICD         1
-OP1     2        0        10000     0.15364    0.1905    1524E-005      GP          0.5                AICD         1
+OP1     1        0        10000     0.15364    0.1905    1.524E-005      GP          0.5                AICD         1
+OP1     2        0        10000     0.15364    0.1905    1.524E-005      GP          0.5                AICD         1
 /
 
 
@@ -255,5 +255,29 @@ WSEGAICD
 1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
 2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
 3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+/
+```
+
+## Completion with ICVs that are controlling inflow from reservoir and flow inside the tubing
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/     Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber
+--      Number                      Tubing     Casing    Roughness       Content 
+--                                  Diameter   Diameter
+OP1     1        0        3000      0.15364    0.1905    1.524E-005      GP          1                ICV            1    -- ICV connected into reservoir flow
+OP1     1        3000     3000      0.15364    0.1905    1.524E-005      GP          1                ICV            3    -- ICV controlling flow inside tubing below ICV
+OP1     1        3000     10000     0.15364    0.1905    1.524E-005      GP          1                ICV            1    -- ICV connected into reservoir flow
+OP1     2        0        4000      0.15364    0.1905    1.524E-005      GP          1                ICV            2    -- ICV connected into reservoir flow
+OP1     2        4000     4000      0.15364    0.1905    1.524E-005      GP          1                ICV            3    -- ICV controlling flow inside tubing below ICV
+OP1     2        4000     10000     0.15364    0.1905    1.524E-005      GP          1                ICV            2    -- ICV connected into reservoir flow
+/
+
+WSEGICV
+-- NB: Dummy parameters.
+-- DeviceNumber  Cv        Ac        Ac_max
+1                0.95      4.32e-4   7.50e-4
+2                1.10      1.56e-4   7.50e-4
+3                1.00      0.05      0.05                        
 /
 ```

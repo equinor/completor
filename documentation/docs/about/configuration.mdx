@@ -15,7 +15,7 @@ ResInsight, Petrel, etc. to define multi-segment well initial configuration.
 2. A user defined text file, also called a case file,
 specifying the completion design, including inflow control devices and annulus content.
 The information in the input schedule file and the case file is combined
-and written to a new schedule file to be included in Eclipse or OPM Flow.
+and written to a new schedule file to be included in the reservoir simulation schedule section.
 
 Completor® is a Command-Line Interface (CLI), called by the following syntax:
 ```shell
@@ -69,8 +69,8 @@ Completor® will add these keywords.
 The content of this keyword describes the completion configuration. The
 COMPLETION keyword is mandatory and contains the following items:
 
-1. **Well**: Well name (must be identical to the well name specified in the Eclipse schedule file).
-2. **Branch number**: This is the same branch number as specified in the Eclipse schedule file.
+1. **Well**: Well name (must be identical to the well name specified in the schedule file).
+2. **Branch number**: This is the same branch number as specified in the schedule file.
    Multi branch wells are allowed.
 3. **Start MD**: Completion start measured depth in meter.
    Note:** Set the first start MD to be shallower than the shallowest MD of the first COMPSEGS segment,
@@ -251,17 +251,17 @@ End the record with /.
 The items are as follows:
 
 1.  Device number: From 1, 2, .., n etc.
-2.  Alpha: Item 4 in WSEGAICD Eclipse keyword.
-3.  x: Item 13 in WSEGAICD Eclipse keyword.
-4.  y: Item 14 in WSEGAICD Eclipse keyword.
-5.  a: Item 16 in WSEGAICD Eclipse keyword.
-6.  b: Item 17 in WSEGAICD Eclipse keyword.
-7.  c: Item 18 in WSEGAICD Eclipse keyword.
-8.  d: Item 19 in WSEGAICD Eclipse keyword.
-9.  e: Item 20 in WSEGAICD Eclipse keyword.
-10. f: Item 21 in WSEGAICD Eclipse keyword.
-11. Calibration density: Item 6 in WSEGAICD Eclipse keyword.
-12. Calibration viscosity: Item 7 in WSEGAICD Eclipse keyword.
+2.  Alpha: Item 4 in WSEGAICD keyword.
+3.  x: Item 13 in WSEGAICD keyword.
+4.  y: Item 14 in WSEGAICD keyword.
+5.  a: Item 16 in WSEGAICD keyword.
+6.  b: Item 17 in WSEGAICD keyword.
+7.  c: Item 18 in WSEGAICD keyword.
+8.  d: Item 19 in WSEGAICD keyword.
+9.  e: Item 20 in WSEGAICD keyword.
+10. f: Item 21 in WSEGAICD keyword.
+11. Calibration density: Item 6 in WSEGAICD  keyword.
+12. Calibration viscosity: Item 7 in WSEGAICD  keyword.
 
 ```
 WSEGAICD
@@ -281,10 +281,10 @@ Required only if ICD is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 1.  Device number: From 1, 2, .., n etc.
-2.  ICD strength: Item 4 in WSEGSICD Eclipse keyword.
-3.  Calibration density: Item 6 in WSEGSICD Eclipse keyword.
-4.  Calibration viscosity: Item 7 in WSEGSICD Eclipse keyword.
-5.  Water fraction: Item 8 in WSEGSICD Eclipse keyword.
+2.  ICD strength: Item 4 in WSEGSICD keyword.
+3.  Calibration density: Item 6 in WSEGSICD keyword.
+4.  Calibration viscosity: Item 7 in WSEGSICD keyword.
+5.  Water fraction: Item 8 in WSEGSICD  keyword.
 
 ```
 WSEGSICD
@@ -305,9 +305,9 @@ End the record with /.
 The items are as follows:
 
 1.  Device number: From 1, 2, .., n etc.
-2.  Cv: Item 3 in WSEGVALV Eclipse keyword.
-3.  Ac: Item 4 in WSEGVALV Eclipse keyword.
-4.  L: Item 5 in WSEGVALV Eclipse keyword.
+2.  Cv: Item 3 in WSEGVALV keyword.
+3.  Ac: Item 4 in WSEGVALV keyword.
+4.  L: Item 5 in WSEGVALV keyword.
 
 ```
 WSEGVALV
@@ -327,7 +327,7 @@ End the record with /.
 The items are as follows:
 
 1.  Device number: From 1, 2, .., n etc.
-2.  Cv: Item 3 in WSEGVALV Eclipse keyword. Always set to 1.0 with DAR.
+2.  Cv: Item 3 in WSEGVALV keyword. Always set to 1.0 with DAR.
 3.  Cross-sectional flow area of the oil nozzle: Ac_o.
 4.  Cross sectional flow area of the gas nozzle: Ac_g.
 5.  Cross-sectional flow area of the water nozzle: Ac_w.
@@ -349,7 +349,7 @@ WSEGDAR
 
 ### WSEGAICV
 
-Defines full parameter sets for the AICV type valve.
+This keyword utilizes two different `WSEGAICD` parameter.
 Required only if AICV is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
@@ -368,11 +368,36 @@ See WSEGAICD keyword.
 
 ```
 WSEGAICV
--- Defines full parameter sets for the AICV inflow control echnology.
+-- Defines full parameter sets for the AICV inflow control technology using two sets of AICD equation.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DB  WVF  GVF  rho_cal  mu_cal  alpha1  x1  y1  a1  b1  c1  1  e1  f1 alpha2  x2  y2  a2  b2  c2  d2  e2  f2
     1  0.5  0.5   1000.0     1.0    7e-5   1   2   1   1   1   2   1   1   1e-5   2   1   1   1   1   2   2   3
     2  0.7  0.4   1000.0     1.0    8e-5   1   1   1   1   1   2   4   1   2e-5   1   1   1   1   1   2   2   2
+/
+```
+
+### WSEGICV
+
+Defines ICV type of valve for both zonal and lateral control.
+Required only if ICV is used in the `COMPLETION` keyword.
+It will produce `WSEGVALV` keyword similar to nozzle ICD setup.
+End the record with /.
+The items are as follows:
+
+- Device number : from 1, 2, .., n etc.
+- Cv : item 3 in WSEGVALV keyword.
+- Ac : item 4 in WSEGVALV keyword.
+- Ac_max : item 10 in WSEGVALV keyword
+End the record with /.
+
+```
+WSEGICV
+-- Do not use the parameters below in planning/operations.
+-- Consult the inflow control team for valid parameters.
+-- DeviceNumber  Cv        Ac        Ac_max
+1                0.95      4.32e-4   7.50e-4
+2                1.10      1.56e-4   7.50e-4
+3                1.00      0.05      0.05                        
 /
 ```
