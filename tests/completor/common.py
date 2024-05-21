@@ -115,14 +115,11 @@ class ReadSchedule:
         compsegs (pd.DataFrame): Table of COMPSEGS keyword
 
     See the following functions for a description of DataFrame formats:
-
-    * :ref:`welspecs <welspecs_format>`
-    * :ref:`compdat <compdat_table>`
-      (See :ref:`update_connection_factor <update_connection_factor>` for more details)
-    * compsegs (``parser.get_compsegs_table``)
-      # TODO(#9): Use correct compsegs table reference
-    * :ref:`welsegs_header <df_welsegs_header>`
-    * :ref:`welsegs_content <df_welsegs_content>`
+        :ref:`welspecs <welspecs_format>`.
+        :ref:`compdat <compdat_table>` (See: ref:`update_connection_factor <update_connection_factor>` for more details).
+        :ref:`welsegs_header <df_welsegs_header>`.
+        :ref:`welsegs_content <df_welsegs_content>`.
+        compsegs `get_compsegs_table`.
     """
 
     def __init__(self, schedule_file: str):
