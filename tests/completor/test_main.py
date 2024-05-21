@@ -615,7 +615,7 @@ def test_error_missing_keywords(tmpdir, capfd):
             ["completor", "-i", case_file, "-s", modified_schedule_path, "-o", "output.sch"],
             cwd=tmpdir,
             check=True,
-            shell=True,
+            shell=False,
         )
 
     _, err = capfd.readouterr()

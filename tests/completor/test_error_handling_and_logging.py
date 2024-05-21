@@ -24,7 +24,7 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
 
     with pytest.raises(subprocess.CalledProcessError) as exc:
         subprocess.run(
-            ["completor", "-i", case_file, "-s", sch_file, "-o", _test_file], cwd=tmpdir, check=True, shell=True
+            ["completor", "-i", case_file, "-s", sch_file, "-o", _test_file], cwd=tmpdir, check=True, shell=False
         )
     out, err = capfd.readouterr()
     files = tmpdir.listdir()
