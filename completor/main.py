@@ -136,7 +136,7 @@ class FileWriter:
         Write the content of a keyword to the output file.
 
         Args:
-            keyword: Simulator keyword
+            keyword: Reservoir simulator keyword
             content: Text to be written. string, string-list or record-list
             chunk: Flag for indicating this is a list of records.
             end_of_record: Flag for adding end-of-record ('/')

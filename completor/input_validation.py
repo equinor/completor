@@ -356,7 +356,7 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
         if (df_comp[df_comp["WELL"] == l2d_well]["ANNULUS"] == "OA").any():
             raise abort(
                 f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
-                "This may trigger an error in Eclipse."
+                "This may trigger an error in reservoir simulator."
             )
 
 
