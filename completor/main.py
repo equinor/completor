@@ -63,7 +63,7 @@ def create_get_well_name(schedule_lines: dict[int, str]) -> Callable[[int], str]
 
 def format_chunk(chunk_str: str) -> list[list[str]]:
     """
-    Format the data-records and resolve the repeat-mechanism of Eclipse.
+    Format the data-records and resolve the repeat-mechanism.
 
     E.g. 3* == 1* 1* 1*, 3*250 == 250 250 250
 
@@ -71,7 +71,7 @@ def format_chunk(chunk_str: str) -> list[list[str]]:
         chunk_str: A chunk data-record
 
     Returns:
-        Expanded Eclipse values
+        Expanded values
     """
     chunk = re.split(r"\s+/", chunk_str)[:-1]
     expanded_data = []
@@ -136,7 +136,7 @@ class FileWriter:
         Write the content of a keyword to the output file.
 
         Args:
-            keyword: Eclipse keyword
+            keyword: Simulator keyword
             content: Text to be written. string, string-list or record-list
             chunk: Flag for indicating this is a list of records.
             end_of_record: Flag for adding end-of-record ('/')
@@ -345,20 +345,20 @@ def create(
     while line_number < len(lines):
         progress_status.update(line_number)
         line = lines[line_number]
-        eclipse_keyword = line[:8].rstrip()  # look for eclipse keywords
+        keyword = line[:8].rstrip()  # look for keywords
 
         # most lines will just be duplicated
-        if eclipse_keyword not in Keywords:
+        if keyword not in Keywords:
             outfile.write(None, f"{line}\n")
         else:
-            # ok - this is a (potential) MSW keyword. we have a job to do
-            logger.debug(eclipse_keyword)
+            # This is a (potential) MSW keyword.
+            logger.debug(keyword)
 
             well_name = get_well_name(line_number)
-            if eclipse_keyword in Keywords.segments:  # check if it is an active well
+            if keyword in Keywords.segments:  # check if it is an active well
                 logger.debug(well_name)
                 if well_name not in list(schedule.active_wells):
-                    outfile.write(eclipse_keyword, "")
+                    outfile.write(keyword, "")
                     line_number += 1
                     continue  # not an active well
 
@@ -372,29 +372,29 @@ def create(
                 if line_number in clean_lines_map:
                     chunk_str += clean_lines_map[line_number]
             chunk = format_chunk(chunk_str)
-            chunks.append((eclipse_keyword, chunk))  # for debug ...
+            chunks.append((keyword, chunk))  # for debug ...
 
             # use data to update our schedule
-            if eclipse_keyword == Keywords.WELSPECS:
+            if keyword == Keywords.WELSPECS:
                 schedule.set_welspecs(chunk)  # update with new data
-                outfile.write(eclipse_keyword, raw, chunk=False)  # but write it back 'untouched'
+                outfile.write(keyword, raw, chunk=False)  # but write it back 'untouched'
                 line_number += 1  # ready for next line
                 continue
 
-            elif eclipse_keyword == Keywords.COMPDAT:
+            elif keyword == Keywords.COMPDAT:
                 remains = schedule.handle_compdat(chunk)  # update with new data
                 if remains:
                     # Add single quotes to non-active well names
                     for remain in remains:
                         remain[0] = "'" + remain[0] + "'"
-                    outfile.write(eclipse_keyword, remains, end_of_record=True)  # write any 'none-active' wells here
+                    outfile.write(keyword, remains, end_of_record=True)  # write any 'none-active' wells here
                 line_number += 1  # ready for next line
                 continue
 
-            elif eclipse_keyword == Keywords.WELSEGS:
+            elif keyword == Keywords.WELSEGS:
                 schedule.set_welsegs(chunk)  # update with new data
 
-            elif eclipse_keyword == Keywords.COMPSEGS:
+            elif keyword == Keywords.COMPSEGS:
                 # this is COMPSEGS'. will now update and write out new data
                 schedule.set_compsegs(chunk)
 
@@ -405,7 +405,7 @@ def create(
                     # not include `Keywords.COMPSEGS`
                     raise SystemError(
                         "Well name not defined, even though it should be defined when "
-                        f"token ({eclipse_keyword} is one of "
+                        f"token ({keyword} is one of "
                         f"{', '.join(Keywords.segments)})"
                     ) from err
 
@@ -431,9 +431,7 @@ def create(
                 )
                 outfile.write(None, output.finalprint)
             else:
-                raise ValueError(
-                    f"The keyword '{eclipse_keyword}' has not been implemented in Completor, but should have been"
-                )
+                raise ValueError(f"The keyword '{keyword}' has not been implemented in Completor, but should have been")
 
         line_number += 1  # ready for next line
         logger.debug(line_number)
@@ -454,8 +452,8 @@ def create(
             )
 
 
-COMPLETOR_DESCRIPTION = """Completor models advanced well completions for Eclipse.
-It generates all necessary keywords for Eclipse simulation
+COMPLETOR_DESCRIPTION = """Completor models advanced well completions for reservoir simulators.
+It generates all necessary keywords for reservoir simulation
 according to a completion description. See the Completor Wiki
 for modeling details.
 """
