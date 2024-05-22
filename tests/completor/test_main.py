@@ -612,7 +612,10 @@ def test_error_missing_keywords(tmpdir, capfd):
 
     with pytest.raises(subprocess.CalledProcessError) as exc:
         subprocess.run(
-            ["completor", "-i", case_file, "-s", modified_schedule_path, "-o", "output.sch"], cwd=tmpdir, check=True
+            ["completor", "-i", case_file, "-s", modified_schedule_path, "-o", "output.sch"],
+            cwd=tmpdir,
+            check=True,
+            shell=False,
         )
 
     _, err = capfd.readouterr()
