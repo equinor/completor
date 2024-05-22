@@ -23,7 +23,9 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
     sch_file = str(_testdir / "ml_well.sch")
 
     with pytest.raises(subprocess.CalledProcessError) as exc:
-        subprocess.run(["completor", "-i", case_file, "-s", sch_file, "-o", _test_file], cwd=tmpdir, check=True)
+        subprocess.run(
+            ["completor", "-i", case_file, "-s", sch_file, "-o", _test_file], cwd=tmpdir, check=True, shell=False
+        )
     out, err = capfd.readouterr()
     files = tmpdir.listdir()
     assert exc.value.returncode == 1
@@ -64,5 +66,3 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
         compare_file_content(case_file, "input_file.txt")
         compare_file_content(sch_file, "schedule_file.txt")
         # The output file should not be changed
-        # TODO(#9): Decide the behaviour what should happen with the output file if completor fails.
-        # compare_file_content(case_file, "new_file.txt")

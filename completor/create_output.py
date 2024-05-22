@@ -21,8 +21,8 @@ class CreateOutput:
     Create output files from completor.
 
     There are two output files from completor:
-        1. Well schedule file (text file) for input to eclipse
-        2. Well diagram (pdf file), i.e. a well completion schematic
+        1. Well schedule file (text file) for input to reservoir simulator.
+        2. Well diagram (pdf file), i.e. a well completion schematic.
 
     Args:
         case: ReadCasefile object

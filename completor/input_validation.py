@@ -220,7 +220,7 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_wsegsicd``.
     """
     # if WCUT is defaulted then set to 0.5
-    # the same default value as in Eclipse
+    # the same default value as in simulator
     df_temp["WCUT"] = df_temp["WCUT"].replace("1*", "0.5").astype(np.float64)  # Ensures float after replacing!
     # set data type
     df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
@@ -356,7 +356,7 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
         if (df_comp[df_comp["WELL"] == l2d_well]["ANNULUS"] == "OA").any():
             raise abort(
                 f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
-                "This may trigger an Eclipse error."
+                "This may trigger an error in reservoir simulator."
             )
 
 

@@ -684,11 +684,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
         raise err
     if device_type == "VALVE":
         # rescale the Cv
-        # because no scaling factor in WSEGVALV eclipse
+        # because no scaling factor in WSEGVALV
         df_well["CV"] = -df_well["CV"] / df_well["SCALINGFACTOR"]
     elif device_type == "DAR":
         # rescale the Cv
-        # because no scaling factor in WSEGVALV eclipse
+        # because no scaling factor in WSEGVALV
         df_well["CV_DAR"] = -df_well["CV_DAR"] / df_well["SCALINGFACTOR"]
     return df_well
 
