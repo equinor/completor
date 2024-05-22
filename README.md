@@ -58,8 +58,8 @@ In order to run Completor® you need to have versions of [Python 3.8 to 3.11](ht
 #### Source code
 Clone the [Completor® repository](https://github.com/equinor/completor) to get the source code.
 ```bash
-git clone https://github.com/equinor/FluidMagic.git
-cd FluidMagic/
+git clone https://github.com/equinor/completor.git
+cd completor
 ```
 
 #### Pipx
