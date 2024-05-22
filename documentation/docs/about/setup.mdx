@@ -8,11 +8,20 @@ description: Completor Installation
 
 If you work in Equinor, Completor® is available internally through the Komodo distribution system.
 
-In addition, you can install Completor® by cloning the repository manually:
+To start using Completor®, you can follow these instructions:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests,docs]"
+pip install -e ".[tests]"
+pre-commit install
+```
+
+If you intend to run completor as a plugin to ert:
+```shell
+git clone https://github.com/equinor/completor.git
+cd completor
+pip install -e ".[tests,ert]"
+pre-commit install
 ```
 and to ensure it runs as intended, confirm it with:
 ```shell
