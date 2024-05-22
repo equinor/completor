@@ -12,23 +12,18 @@ To start using Completor®, you can follow these instructions:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests]"
-pre-commit install
+python -m venv venv
+source venv/bin/activate
+pip install -e "."
 ```
 
 If you intend to run completor as a plugin to ert:
 ```shell
 git clone https://github.com/equinor/completor.git
 cd completor
-pip install -e ".[tests,ert]"
-pre-commit install
+pip install -e ".[ert]"
 ```
 and to ensure it runs as intended, confirm it with:
 ```shell
 completor --help
 ```
-and
-```shell
-pytest
-```
-This should run for some minutes without failures.
