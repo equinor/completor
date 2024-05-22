@@ -24,7 +24,7 @@ WSEGDAR
 /
 
 PVTFILE
--- PVT inputs to the eclipse simulation
+-- PVT inputs to the simulation
 'pvt.testfile'
 /
 
