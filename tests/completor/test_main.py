@@ -1,10 +1,10 @@
 """Test Completor main functions."""
 
-import subprocess
 from pathlib import Path
 
 import common
 import pytest
+from utils import completor_runner
 
 from completor import main  # type: ignore
 
@@ -594,7 +594,7 @@ def test_leading_whitespace_terminating_slash(tmpdir):
     common.assert_results(true_file, _TEST_FILE)
 
 
-def test_error_missing_keywords(tmpdir, capfd):
+def test_error_missing_keywords(tmpdir, caplog):
     """Check error is reported if any of
     WELSPECS, WELSEGS, COMPDAT or COMSEGS are missing."""
     tmpdir.chdir()
@@ -610,17 +610,11 @@ def test_error_missing_keywords(tmpdir, capfd):
     with open(modified_schedule_path, "w", encoding="utf-8") as new_sch:
         new_sch.write(modified_content)
 
-    with pytest.raises(subprocess.CalledProcessError) as exc:
-        subprocess.run(
-            ["completor", "-i", case_file, "-s", modified_schedule_path, "-o", "output.sch"],
-            cwd=tmpdir,
-            check=True,
-            shell=False,
-        )
+    with pytest.raises(SystemExit) as e:
+        completor_runner(inputfile=case_file, schedulefile=modified_schedule_path, outputfile="output.sch")
 
-    _, err = capfd.readouterr()
-    assert exc.value.returncode == 1
-    assert "Keyword WELSPECS is not found" in err
+    assert e.value.code == 1
+    assert "Keyword WELSPECS is not found" in caplog.messages
 
 
 def test_wsegicv_bottom(tmpdir):

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 from pathlib import Path
 from zipfile import ZipFile
 
 import pytest
+from utils import completor_runner
 
 _testdir = Path(__file__).absolute().parent / "data"
 _test_file = "ml_well.sch"
@@ -14,7 +14,7 @@ _test_file = "ml_well.sch"
 _debug_information_file_name_pattern = re.compile(r"^Completor-\d{8}-\d{6}-\w\d{5}.zip$")
 
 
-def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
+def test_debug_information_is_written_to_disk_on_failure(tmpdir, caplog):
     """
     Check if completor writes debug information to disk in the event of a failure.
     """
@@ -22,16 +22,13 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
     case_file = str(_testdir / "usestrict_default_missingbranch.casefile")
     sch_file = str(_testdir / "ml_well.sch")
 
-    with pytest.raises(subprocess.CalledProcessError) as exc:
-        subprocess.run(
-            ["completor", "-i", case_file, "-s", sch_file, "-o", _test_file], cwd=tmpdir, check=True, shell=False
-        )
-    out, err = capfd.readouterr()
+    with pytest.raises(SystemExit) as e:
+        completor_runner(inputfile=case_file, schedulefile=sch_file, outputfile=_test_file)
     files = tmpdir.listdir()
-    assert exc.value.returncode == 1
+    assert e.value.code == 1
     assert len(files) == 2  # One schedule file, and one zip file
     assert any(_debug_information_file_name_pattern.match(file.basename) for file in files)
-    assert "USE_STRICT True: Define all branches in case file." in err
+    assert "USE_STRICT True: Define all branches in case file." in caplog.messages
 
     # Check the content of the debug information
     for file in files:
