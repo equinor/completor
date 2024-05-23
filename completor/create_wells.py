@@ -352,8 +352,6 @@ class CreateWells:
            * - LATERAL
              - int
 
-        See the Eclipse Reference Manual for further details on column and row
-        definitions.
         """
         if self.well_name is None:
             raise ValueError("No well name given")
@@ -364,10 +362,9 @@ class CreateWells:
         df_compdat = schedule.get_compdat(self.well_name)
         self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=["I", "J", "K"])
 
-        # remove WELL column in the df_reservoir
+        # Remove WELL column in the df_reservoir.
         self.df_reservoir.drop(["WELL"], inplace=True, axis=1)
-        # if multiple occurrences of same IJK in compdat/compsegs --> keep last
-        # as Eclipse does.
+        # If multiple occurrences of same IJK in compdat/compsegs --> keep the last one.
         self.df_reservoir.drop_duplicates(subset="STARTMD", keep="last", inplace=True)
         self.df_reservoir.reset_index(inplace=True)
 
@@ -460,8 +457,6 @@ class CreateWells:
            * - TVD
              - float
 
-        See the Eclipse Reference Manual for further details on column and row
-        definitions.
         """
         self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
 
