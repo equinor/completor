@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import common  # type: ignore
+import common
 import pytest
 from utils import completor_runner
 
