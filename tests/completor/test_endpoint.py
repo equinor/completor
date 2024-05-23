@@ -5,8 +5,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-
-from tests.utils import completor_runner
+from utils import completor_runner
 
 _TESTDIR_DROGON = Path(__file__).absolute().parent / "data" / "drogon"
 

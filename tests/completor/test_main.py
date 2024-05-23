@@ -4,9 +4,9 @@ from pathlib import Path
 
 import common  # type: ignore
 import pytest
+from utils import completor_runner
 
 from completor import main  # type: ignore
-from tests.utils import completor_runner
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
