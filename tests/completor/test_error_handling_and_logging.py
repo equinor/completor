@@ -15,7 +15,7 @@ _test_file = "ml_well.sch"
 _debug_information_file_name_pattern = re.compile(r"^Completor-\d{8}-\d{6}-\w\d{5}.zip$")
 
 
-def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
+def test_debug_information_is_written_to_disk_on_failure(tmpdir, caplog):
     """
     Check if completor writes debug information to disk in the event of a failure.
     """
@@ -25,12 +25,11 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, capfd):
 
     with pytest.raises(SystemExit) as exc:
         completor_runner(inputfile=case_file, schedulefile=sch_file, outputfile=_test_file)
-    out, err = capfd.readouterr()
     files = tmpdir.listdir()
     assert exc.value.code == 1
     assert len(files) == 2  # One schedule file, and one zip file
     assert any(_debug_information_file_name_pattern.match(file.basename) for file in files)
-    # assert "USE_STRICT True: Define all branches in case file." in err
+    assert "USE_STRICT True: Define all branches in case file." in caplog.messages
 
     # Check the content of the debug information
     for file in files:

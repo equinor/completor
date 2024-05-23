@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import common
+import common  # type: ignore
 import pytest
 
 from completor import main  # type: ignore
@@ -594,7 +594,7 @@ def test_leading_whitespace_terminating_slash(tmpdir):
     common.assert_results(true_file, _TEST_FILE)
 
 
-def test_error_missing_keywords(tmpdir, capfd):
+def test_error_missing_keywords(tmpdir, caplog):
     """Check error is reported if any of
     WELSPECS, WELSEGS, COMPDAT or COMSEGS are missing."""
     tmpdir.chdir()
@@ -613,9 +613,8 @@ def test_error_missing_keywords(tmpdir, capfd):
     with pytest.raises(SystemExit) as exc:
         completor_runner(inputfile=case_file, schedulefile=modified_schedule_path, outputfile="output.sch")
 
-    _, err = capfd.readouterr()
     assert exc.value.code == 1
-    # assert "Keyword WELSPECS is not found" in err
+    assert "Keyword WELSPECS is not found" in caplog.messages
 
 
 def test_wsegicv_bottom(tmpdir):
