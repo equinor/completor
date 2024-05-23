@@ -29,18 +29,17 @@ def job_documentation(job_name):
 
     description = """Completor is a script for modelling
 wells with advanced completion.
-It generates a well schedule to be included in Eclipse/OPM Flow,
-by combining the multi-segment tubing definition (from RMS, ResInsight, PetrelRE etc.)
+It generates a well schedule to be included in reservoir simulator,
+by combining the multi-segment tubing definition (from pre-processor reservoir modelling tools)
 with a user defined file specifying the completion design.
 The resulting well schedule comprises all keywords and parameters required by
-Eclipse/OPM Flow. See the Completor Wiki for details.
+reservoir simulator. See the Completor Documentation for details.
 
 Required:
 ---------
 -i   : followed by name of file specifying completion design (e.g. completion.case).
 -s   : followed by name of schedule file with multi-segment tubing definition,
        including COMPDAT, COMPSEGS and WELSEGS (required if not specified in case file).
--p   : followed by name of a pvt file (required for completions with DAR and AICV).
 
 Optional:
 ---------

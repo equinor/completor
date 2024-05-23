@@ -102,7 +102,8 @@ class FileWriter:
 
         Args:
             file: Name of file to be written. Does not check if it already exists.
-            mapper: A dictionary for mapping strings. Typically used for mapping RMS well names to Eclipse well names.
+            mapper: A dictionary for mapping strings. Typically used for mapping
+            pre-processor reservoir modelling tools to reservoir simulator well names.
         """
         self.fh = open(file, "w", encoding="utf-8")  # create new output file
         self.mapper = mapper
@@ -171,10 +172,10 @@ class FileWriter:
         Expand start and end marker pairs for well pattern recognition as needed.
 
         Args:
-            text: Text with RMS well names
+            text: Text with pre-processor reservoir modelling well names
 
         Returns:
-            Text with Eclipse well names
+            Text with reservoir simulator well names
         """
         if self.mapper is None:
             raise ValueError(
