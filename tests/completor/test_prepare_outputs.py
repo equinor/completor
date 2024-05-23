@@ -3,9 +3,9 @@
 import re
 from pathlib import Path
 
-import common
 import numpy as np
 import pandas as pd
+import utils
 
 from completor import completion, prepare_outputs, read_casefile  # type:ignore
 
@@ -65,20 +65,18 @@ def test_add_columns_first_last():
 
 def test_dataframe_to_string():
     """Test the function which converts data frame to string."""
-    df_test_common = pd.DataFrame(
-        [[1, 2, 3, "1*", 5, 6], [1, 2, "5*", 3, 4, 5]], columns=["A", "B", "C", "D", "E", "F"]
-    )
-    df_true_common = pd.DataFrame(
+    df_test_utils = pd.DataFrame([[1, 2, 3, "1*", 5, 6], [1, 2, "5*", 3, 4, 5]], columns=["A", "B", "C", "D", "E", "F"])
+    df_true_utils = pd.DataFrame(
         [[" ", 1, 2, 3, "1*", 5, 6, "/"], [" ", 1, 2, "5*", 3, 4, 5, "/"]],
         columns=["--", "A", "B", "C", "D", "E", "F", ""],
     )
 
-    df_test_default = prepare_outputs.dataframe_tostring(df_test_common)
-    df_true_default = df_true_common.to_string(index=False, justify="justify")
+    df_test_default = prepare_outputs.dataframe_tostring(df_test_utils)
+    df_true_default = df_true_utils.to_string(index=False, justify="justify")
     # with formatters
     formatters = {"A": "{:.3f}".format}
-    df_test_with_formatter = prepare_outputs.dataframe_tostring(df_test_common, True, True, True, formatters)
-    df_true_with_formatter = df_true_common.to_string(index=False, justify="justify", formatters=formatters)
+    df_test_with_formatter = prepare_outputs.dataframe_tostring(df_test_utils, True, True, True, formatters)
+    df_true_with_formatter = df_true_utils.to_string(index=False, justify="justify", formatters=formatters)
     assert df_test_default == df_true_default
     assert df_test_with_formatter == df_true_with_formatter
 
@@ -442,8 +440,8 @@ def test_user_segment_lumping_oa(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_user_segment_lumping_gp(tmpdir):
@@ -456,8 +454,8 @@ def test_user_segment_lumping_gp(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_tests_gp.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_gp.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_print_wsegdar(tmpdir):
@@ -845,5 +843,5 @@ def test_user_segment_lumping_oa_overlap(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_overlap_tests_oa.case")
     schedule_file = Path(_TESTDIR / "improved_input_4_lumping_tests.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa_overlap.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
