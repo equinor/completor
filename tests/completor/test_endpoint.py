@@ -34,9 +34,9 @@ def test_run_completor_without_schedule(tmpdir):
     """Test Completor without input schedule file."""
     shutil.copy(_TESTDIR_DROGON / "perf_gp_nosched.case", tmpdir)
     tmpdir.chdir()
-    with pytest.raises(SystemExit) as err:
+    with pytest.raises(SystemExit) as e:
         completor_runner(inputfile="perf_gp_nosched.case", outputfile="perf_gp_nosched.out")
-    assert err.value.code == 1
+    assert e.value.code == 1
     assert not Path("perf_gp_nosched.out").is_file()
 
 

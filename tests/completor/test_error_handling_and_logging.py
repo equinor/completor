@@ -22,10 +22,10 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, caplog):
     case_file = str(_testdir / "usestrict_default_missingbranch.casefile")
     sch_file = str(_testdir / "ml_well.sch")
 
-    with pytest.raises(SystemExit) as exc:
+    with pytest.raises(SystemExit) as e:
         completor_runner(inputfile=case_file, schedulefile=sch_file, outputfile=_test_file)
     files = tmpdir.listdir()
-    assert exc.value.code == 1
+    assert e.value.code == 1
     assert len(files) == 2  # One schedule file, and one zip file
     assert any(_debug_information_file_name_pattern.match(file.basename) for file in files)
     assert "USE_STRICT True: Define all branches in case file." in caplog.messages

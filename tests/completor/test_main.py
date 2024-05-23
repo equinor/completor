@@ -610,10 +610,10 @@ def test_error_missing_keywords(tmpdir, caplog):
     with open(modified_schedule_path, "w", encoding="utf-8") as new_sch:
         new_sch.write(modified_content)
 
-    with pytest.raises(SystemExit) as exc:
+    with pytest.raises(SystemExit) as e:
         completor_runner(inputfile=case_file, schedulefile=modified_schedule_path, outputfile="output.sch")
 
-    assert exc.value.code == 1
+    assert e.value.code == 1
     assert "Keyword WELSPECS is not found" in caplog.messages
 
 
