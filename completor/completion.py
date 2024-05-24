@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Union, overload
+from typing import Literal, TypeAlias, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -13,14 +13,9 @@ from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import abort, as_data_frame, log_and_raise_exception
 
-try:
-    from typing import Literal, TypeAlias  # type: ignore
-except ImportError:
-    pass
-
 # Use more precise type information, if possible
-MethodType: TypeAlias = Union['Literal["cells", "user", "fix", "welsegs"]', Method]
-DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
+MethodType: TypeAlias = Literal["cells", "user", "fix", "welsegs"] | Method
+DeviceType: TypeAlias = Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]
 
 
 class Information:
@@ -28,7 +23,7 @@ class Information:
 
     def __init__(
         self,
-        num_device: float | list[float] | None = None,
+        number_of_devices: float | list[float] | None = None,
         device_type: DeviceType | list[DeviceType] | None = None,
         device_number: int | list[int] | None = None,
         inner_diameter: float | list[float] | None = None,
@@ -37,7 +32,7 @@ class Information:
         annulus_zone: int | list[int] | None = None,
     ):
         """Initialize Information class."""
-        self.num_device = num_device
+        self.number_of_devices = number_of_devices
         self.device_type = device_type
         self.device_number = device_number
         self.inner_diameter = inner_diameter
@@ -443,7 +438,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
     Returns:
         Instance of Information with the following attributes
 
-        1. num_device: Number of device
+        1. number_of_devices: Number of device
         2. device_type: The type of valve in device
         3. device_number: Reference to parameters of valve
         4. inner_diameter: Inner diameter
@@ -569,7 +564,7 @@ def complete_the_well(
             "TUB_TVD": df_tubing_segments["TUB_TVD"].to_numpy(),
             "LENGTH": end - start,
             "SEGMENT_DESC": df_tubing_segments["SEGMENT_DESC"].to_numpy(),
-            "NDEVICES": information.num_device,
+            "NDEVICES": information.number_of_devices,
             "DEVICENUMBER": information.device_number,
             "DEVICETYPE": information.device_type,
             "INNER_DIAMETER": information.inner_diameter,
