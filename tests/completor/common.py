@@ -117,8 +117,8 @@ class ReadSchedule:
     See the following functions for a description of DataFrame formats:
         :ref:`welspecs <welspecs_format>`.
         :ref:`compdat <compdat_table>` (See: ref:`update_connection_factor <update_connection_factor>` for more details).
-        :ref:`welsegs_header <df_welsegs_header>`.
-        :ref:`welsegs_content <df_welsegs_content>`.
+        :ref:`welsegs_header <df_well_segments_header>`.
+        :ref:`welsegs_content <df_well_segments_content>`.
         compsegs `get_compsegs_table`.
     """
 

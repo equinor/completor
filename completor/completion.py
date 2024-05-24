@@ -65,28 +65,23 @@ class Information:
         return self
 
 
-def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.DataFrame) -> pd.DataFrame:
-    """
-    Create trajectory relation between MD and TVD.
+def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_content: pd.DataFrame) -> pd.DataFrame:
+    """Create trajectory relation between measured depth and true vertical depth.
 
-    WELSEGS must be defined as ABS and not INC.
+    Well segments must be defined with absolute values (ABS) and not incremental (INC).
 
     Args:
-        df_welsegs_header: First record of WELSEGS
-        df_welsegs_content: Second record WELSEGS
+        df_well_segments_header: First record of well segments.
+        df_well_segments_content: Second record of well segments.
 
     Return:
-        MD versus TVD
+        Measured depth versus true vertical depth.
 
-    The DataFrame format of df_mdtvd is shown in the class function
-    ``create_wells.CreateWells.well_trajectory``. The formats of ``df_welsegs_header``
-    and ``df_welsegs_content`` are shown in the function
-    :ref:`create_wells.CreateWells.select_well <select_well>`.
     """
-    md_ = df_welsegs_content["TUBINGMD"].to_numpy()
-    md_ = np.insert(md_, 0, df_welsegs_header["SEGMENTMD"].iloc[0])
-    tvd = df_welsegs_content["TUBINGTVD"].to_numpy()
-    tvd = np.insert(tvd, 0, df_welsegs_header["SEGMENTTVD"].iloc[0])
+    md_ = df_well_segments_content["TUBINGMD"].to_numpy()
+    md_ = np.insert(md_, 0, df_well_segments_header["SEGMENTMD"].iloc[0])
+    tvd = df_well_segments_content["TUBINGTVD"].to_numpy()
+    tvd = np.insert(tvd, 0, df_well_segments_header["SEGMENTTVD"].iloc[0])
     df_mdtvd = as_data_frame({"MD": md_, "TVD": tvd})
     # sort based on md
     df_mdtvd = df_mdtvd.sort_values(by=["MD", "TVD"])
