@@ -162,12 +162,12 @@ class FileWriter:
                         line = " ".join(line)
                     txt += line + "\n"
         if self.mapper:
-            txt = self._replace_rms_names(txt)
+            txt = self._replace_preprocessing_names(txt)
         if end_of_record:
             txt += "/\n"
         self.fh.write(txt)
 
-    def _replace_rms_names(self, text: str) -> str:
+    def _replace_preprocessing_names(self, text: str) -> str:
         """
         Expand start and end marker pairs for well pattern recognition as needed.
 
@@ -179,7 +179,7 @@ class FileWriter:
         """
         if self.mapper is None:
             raise ValueError(
-                f"{self._replace_rms_names.__name__} requires a file containing two "
+                f"{self._replace_preprocessing_names.__name__} requires a file containing two "
                 "columns with input and output names given by the MAPFILE keyword in "
                 f"case file to be set when creating {self.__class__.__name__}."
             )
