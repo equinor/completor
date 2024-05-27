@@ -628,20 +628,16 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
 
 
 def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
-    """
-    Correct the annulus zone.
+    """Correct the annulus zone.
 
-    If there are no connections to the tubing in the annulus zone then there is no
-    annulus zone.
+    If there are no connections to the tubing in the annulus zone then there is no annulus zone.
 
     Args:
-        df_well: Must contain ANNULUS_ZONE, NDEVICES, and DEVICETYPE
+        df_well: Must contain `ANNULUS_ZONE`, `NDEVICES`, and `DEVICETYPE`.
 
     Returns:
-        Updated DataFrame with corrected annulus zone
+        Updated DataFrame with corrected annulus zone.
 
-    The DataFrame df_well has the format shown in the following function:
-    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
     """
     zones = df_well["ANNULUS_ZONE"].unique()
     for zone in zones:
