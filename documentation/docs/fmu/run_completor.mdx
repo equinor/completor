@@ -5,7 +5,7 @@ description: Running Completor in FMU
 ---
 
 # Calling Completor® for Ensemble Simulations
-This is a step by step on calling running Completor® as part of ERT workflow.
+This is a step by step on how to run Completor® as part of a ERT workflow.
 
 ## Running Completor® from ERT
 This is a recommended practice on running Completor through ERT workflow for ensemble simulations.
@@ -25,7 +25,7 @@ The syntax to call this as part of ERT workflow is:
 FORWARD_MODEL run_completor(<CASE>=<case_file_name>, <INPUT_SCH>=<input_schedule_name>, <OUTPUT_SCH>=<output_schedule_name>)
 ```
 
-Pay attention to the output after pre-processor job on where is the output file since it will feed Completor as input file.
+Pay attention to the file location of the output from the pre-processor job. This file is needed as input to Completor.
 
 ### Completor with `install_custom_job` with ERT
 

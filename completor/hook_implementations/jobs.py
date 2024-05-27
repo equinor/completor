@@ -33,7 +33,7 @@ It generates a well schedule to be included in reservoir simulator,
 by combining the multi-segment tubing definition (from pre-processor reservoir modelling tools)
 with a user defined file specifying the completion design.
 The resulting well schedule comprises all keywords and parameters required by
-reservoir simulator. See the Completor Documentation for details.
+reservoir simulator. See the Completor documentation for details.
 
 Required:
 ---------
