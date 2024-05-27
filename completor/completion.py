@@ -78,22 +78,22 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
         Measured depth versus true vertical depth.
 
     """
-    md_ = df_well_segments_content["TUBINGMD"].to_numpy()
-    md_ = np.insert(md_, 0, df_well_segments_header["SEGMENTMD"].iloc[0])
-    tvd = df_well_segments_content["TUBINGTVD"].to_numpy()
-    tvd = np.insert(tvd, 0, df_well_segments_header["SEGMENTTVD"].iloc[0])
-    df_mdtvd = as_data_frame({"MD": md_, "TVD": tvd})
+    measured_depth = df_well_segments_content["TUBINGMD"].to_numpy()
+    measured_depth = np.insert(measured_depth, 0, df_well_segments_header["SEGMENTMD"].iloc[0])
+    true_vertical_depth = df_well_segments_content["TUBINGTVD"].to_numpy()
+    true_vertical_depth = np.insert(true_vertical_depth, 0, df_well_segments_header["SEGMENTTVD"].iloc[0])
+    df_measured_true_vertical_depth = as_data_frame({"MD": measured_depth, "TVD": true_vertical_depth})
     # sort based on md
-    df_mdtvd = df_mdtvd.sort_values(by=["MD", "TVD"])
+    df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(by=["MD", "TVD"])
     # reset index after sorting
-    return df_mdtvd.reset_index(drop=True)
+    return df_measured_true_vertical_depth.reset_index(drop=True)
 
 
 def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     """Define the annulus zone from the COMPLETION.
 
     Args:
-        df_completion: Must contain the columns ``STARTMD``, ``ENDMD``, and ``ANNULUS``
+        df_completion: Must contain the columns `STARTMD`, `ENDMD`, and `ANNULUS`.
 
     Returns:
         Updated COMPLETION with additional column ``ANNULUS_ZONE``
@@ -105,8 +105,8 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
     # define annular zone
-    start_md = df_completion[Completion.START_MD].iloc[0]
-    end_md = df_completion[Completion.END_MD].iloc[-1]
+    start_measured_depth = df_completion[Completion.START_MD].iloc[0]
+    end_measured_depth = df_completion[Completion.END_MD].iloc[-1]
     gravel_pack_location = df_completion[df_completion[Completion.ANNULUS] == "GP"][["STARTMD", "ENDMD"]].to_numpy()
     packer_location = df_completion[df_completion[Completion.ANNULUS] == "PA"][["STARTMD", "ENDMD"]].to_numpy()
     # update df_completion by removing PA rows
@@ -118,17 +118,18 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     if "OA" in annulus_content:
         # only if there is an open annulus
         boundary = np.concatenate((packer_location.flatten(), gravel_pack_location.flatten()))
-        boundary = np.sort(np.append(np.insert(boundary, 0, start_md), end_md))
+        boundary = np.sort(np.append(np.insert(boundary, 0, start_measured_depth), end_measured_depth))
         boundary = np.unique(boundary)
         start_bound = boundary[:-1]
         end_bound = boundary[1:]
         # get annulus zone
         # initiate with 0
         annulus_zone = np.full(len(start_bound), 0)
-        for idx, start_md in enumerate(start_bound):
-            end_md = end_bound[idx]
+        for idx, start_measured_depth in enumerate(start_bound):
+            end_measured_depth = end_bound[idx]
             is_gravel_pack_location = np.any(
-                (gravel_pack_location[:, 0] == start_md) & (gravel_pack_location[:, 1] == end_md)
+                (gravel_pack_location[:, 0] == start_measured_depth)
+                & (gravel_pack_location[:, 1] == end_measured_depth)
             )
             if not is_gravel_pack_location:
                 annulus_zone[idx] = max(annulus_zone) + 1
@@ -139,9 +140,9 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
 
         annulus_zone = np.full(df_completion.shape[0], 0)
         for idx in range(df_completion.shape[0]):
-            start_md = df_completion["STARTMD"].iloc[idx]
-            end_md = df_completion["ENDMD"].iloc[idx]
-            idx0, idx1 = completion_index(df_annulus, start_md, end_md)
+            start_measured_depth = df_completion["STARTMD"].iloc[idx]
+            end_measured_depth = df_completion["ENDMD"].iloc[idx]
+            idx0, idx1 = completion_index(df_annulus, start_measured_depth, end_measured_depth)
             if idx0 != idx1 or idx0 == -1:
                 raise ValueError("Check Define Annulus Zone")
             annulus_zone[idx] = df_annulus["ANNULUS_ZONE"].iloc[idx0]
@@ -154,7 +155,7 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
 def create_tubing_segments(
     df_reservoir: pd.DataFrame,
     df_completion: pd.DataFrame,
-    df_mdtvd: pd.DataFrame,
+    df_measured_depth_true_vertical_depth: pd.DataFrame,
     method: Literal[Method.FIX] = ...,
     segment_length: float = ...,
     minimum_segment_length: float = 0.0,
@@ -165,7 +166,7 @@ def create_tubing_segments(
 def create_tubing_segments(
     df_reservoir: pd.DataFrame,
     df_completion: pd.DataFrame,
-    df_mdtvd: pd.DataFrame,
+    df_measured_depth_true_vertical_depth: pd.DataFrame,
     method: MethodType = ...,
     segment_length: float | str = ...,
     minimum_segment_length: float = 0.0,
@@ -176,126 +177,115 @@ def create_tubing_segments(
     df_reservoir: pd.DataFrame,
     # Technically, df_completion is only required for SegmentCreationMethod.USER
     df_completion: pd.DataFrame,
-    df_mdtvd: pd.DataFrame,
+    df_measured_depth_true_vertical_depth: pd.DataFrame,
     method: MethodType = Method.CELLS,
     segment_length: float | str = 0.0,
     minimum_segment_length: float = 0.0,
 ) -> pd.DataFrame:
-    """
-    Procedure to create segments in the tubing layer.
+    """Create segments in the tubing layer.
 
     Args:
-        df_reservoir: Must contain ``STARTMD`` and ``ENDMD``
-        df_completion: Must contain ``ANNULUS``, ``STARTMD``, ``ENDMD``,
-                    ``ANNULUS_ZONE`` and no packer content in the completion
-        df_mdtvd: Must contain ``MD`` and ``TVD``
-        method: Method for segmentation. Default: cells
+        df_reservoir: Must contain `STARTMD` and `ENDMD`.
+        df_completion: Must contain `ANNULUS`, ``STARTMD`, `ENDMD`, `ANNULUS_ZONE`,
+            and no packer content in the completion.
+        df_measured_depth_true_vertical_depth: Must contain `MD` and `TVD`.
+        method: Method for segmentation. Defaults to cells.
         segment_length: Only if fix is selected in the method.
         minimum_segment_length: User input minimum segment length.
 
-    Segmentation methods
-
-    | cells: Create one segment per cell
-    | user: Create segment based on the completion definition
-    | fix: Create segment based on fix interval
-    | welsegs: Create segment based on ``WELSEGS`` keyword
+    Segmentation methods:
+        cells - Create one segment per cell.
+        user - Create segment based on the completion definition.
+        fix - Create segment based on a fixed interval.
+        well_segments - Create segment based on `WELSEGS` keyword.
 
     Returns:
-        A dataframe with columns ``STARTMD``, ``ENDMD``, ``TUB_MD``, ``TUB_TVD``
-
-    | The formats of DataFrames are shown in
-    | df_reservoir (:ref:`create_wells.CreateWells.select_well <df_reservoir>`)
-    | df_completion (:ref:`create_wells.CreateWells.select_well <df_completion>`)
-    | df_mdtvd (:ref:`create_wells.CreateWells.well_trajectory <df_mdtvd>`)
-    | df_tubing_segments
-        (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
+        A dataframe with columns `STARTMD`, `ENDMD`, `TUB_MD`, `TUB_TVD`.
 
     Raises:
-        ValueError: If the method is unknown
+        ValueError: If the method is unknown.
 
     """
-    start_measure_depth: npt.NDArray[np.float64]
-    end_measure_depth: npt.NDArray[np.float64]
+    start_measured_depth: npt.NDArray[np.float64]
+    end_measured_depth: npt.NDArray[np.float64]
     if method == Method.CELLS:
         # Create the tubing layer one cell one segment while honoring df_reservoir["SEGMENT"]
-        start_measure_depth = df_reservoir["STARTMD"].to_numpy()
-        end_measure_depth = df_reservoir["ENDMD"].to_numpy()
+        start_measured_depth = df_reservoir["STARTMD"].to_numpy()
+        end_measured_depth = df_reservoir["ENDMD"].to_numpy()
         if "SEGMENT" in df_reservoir.columns:
             if not df_reservoir["SEGMENT"].isin(["1*"]).any():
-                create_start_md = []
-                create_end_md = []
-                create_start_md.append(df_reservoir["STARTMD"].iloc[0])
+                create_start_measured_depths = []
+                create_end_measured_depths = []
+                create_start_measured_depths.append(df_reservoir["STARTMD"].iloc[0])
                 current_segment = df_reservoir["SEGMENT"].iloc[0]
-                for idx in range(1, len(df_reservoir["SEGMENT"])):
-                    if df_reservoir["SEGMENT"].iloc[idx] != current_segment:
-                        create_end_md.append(df_reservoir["ENDMD"].iloc[idx - 1])
-                        create_start_md.append(df_reservoir["STARTMD"].iloc[idx])
-                        current_segment = df_reservoir["SEGMENT"].iloc[idx]
-                create_end_md.append(df_reservoir["ENDMD"].iloc[-1])
-                start_measure_depth = np.array(create_start_md)
-                end_measure_depth = np.array(create_end_md)
+                for i in range(1, len(df_reservoir["SEGMENT"])):
+                    if df_reservoir["SEGMENT"].iloc[i] != current_segment:
+                        create_end_measured_depths.append(df_reservoir["ENDMD"].iloc[i - 1])
+                        create_start_measured_depths.append(df_reservoir["STARTMD"].iloc[i])
+                        current_segment = df_reservoir["SEGMENT"].iloc[i]
+                create_end_measured_depths.append(df_reservoir["ENDMD"].iloc[-1])
+                start_measured_depth = np.array(create_start_measured_depths)
+                end_measured_depth = np.array(create_end_measured_depths)
 
         minimum_segment_length = float(minimum_segment_length)
         if minimum_segment_length > 0.0:
-            new_start_md = []
-            new_end_md = []
-            diff_md = end_measure_depth - start_measure_depth
-            current_diff_md = 0.0
-            start_idx = 0
-            end_idx = 0
-            for idx in range(0, len(diff_md) - 1):
-                current_diff_md += diff_md[idx]
-                if current_diff_md >= minimum_segment_length:
-                    new_start_md.append(start_measure_depth[start_idx])
-                    new_end_md.append(end_measure_depth[end_idx])
-                    current_diff_md = 0.0
-                    start_idx = idx + 1
-                    end_idx = idx + 1
-                else:
-                    end_idx = idx + 1
-            if current_diff_md < minimum_segment_length:
-                new_start_md.append(start_measure_depth[start_idx])
-                new_end_md.append(end_measure_depth[end_idx])
-            start_measure_depth = np.array(new_start_md)
-            end_measure_depth = np.array(new_end_md)
+            new_start_measured_depth = []
+            new_end_measured_depth = []
+            diff_measured_depth = end_measured_depth - start_measured_depth
+            current_diff_measured_depth = 0.0
+            i_start = 0
+            i_end = 0
+            for i in range(0, len(diff_measured_depth) - 1):
+                current_diff_measured_depth += diff_measured_depth[i]
+                if current_diff_measured_depth >= minimum_segment_length:
+                    new_start_measured_depth.append(start_measured_depth[i_start])
+                    new_end_measured_depth.append(end_measured_depth[i_end])
+                    current_diff_measured_depth = 0.0
+                    i_start = i + 1
+                i_end = i + 1
+            if current_diff_measured_depth < minimum_segment_length:
+                new_start_measured_depth.append(start_measured_depth[i_start])
+                new_end_measured_depth.append(end_measured_depth[i_end])
+            start_measured_depth = np.array(new_start_measured_depth)
+            end_measured_depth = np.array(new_end_measured_depth)
     elif method == Method.USER:
         # Create tubing layer based on the definition of COMPLETION keyword in the case file.
         # Read all segments except PA (which has no segment length).
         df_temp = df_completion.copy(deep=True)
-        start_measure_depth = df_temp["STARTMD"].to_numpy()
-        end_measure_depth = df_temp["ENDMD"].to_numpy()
+        start_measured_depth = df_temp["STARTMD"].to_numpy()
+        end_measured_depth = df_temp["ENDMD"].to_numpy()
         # Fix the start and end.
-        start_measure_depth[0] = max(df_reservoir["STARTMD"].iloc[0], float(start_measure_depth[0]))
-        end_measure_depth[-1] = min(df_reservoir["ENDMD"].iloc[-1], float(end_measure_depth[-1]))
-        if start_measure_depth[0] >= end_measure_depth[0]:
-            start_measure_depth = np.delete(start_measure_depth, 0)
-            end_measure_depth = np.delete(end_measure_depth, 0)
-        if start_measure_depth[-1] >= end_measure_depth[-1]:
-            start_measure_depth = np.delete(start_measure_depth, -1)
-            end_measure_depth = np.delete(end_measure_depth, -1)
+        start_measured_depth[0] = max(df_reservoir["STARTMD"].iloc[0], float(start_measured_depth[0]))
+        end_measured_depth[-1] = min(df_reservoir["ENDMD"].iloc[-1], float(end_measured_depth[-1]))
+        if start_measured_depth[0] >= end_measured_depth[0]:
+            start_measured_depth = np.delete(start_measured_depth, 0)
+            end_measured_depth = np.delete(end_measured_depth, 0)
+        if start_measured_depth[-1] >= end_measured_depth[-1]:
+            start_measured_depth = np.delete(start_measured_depth, -1)
+            end_measured_depth = np.delete(end_measured_depth, -1)
     elif method == Method.FIX:
         # Create tubing layer with fix interval according to the user input in the case file keyword SEGMENTLENGTH.
-        min_measure_depth = df_reservoir["STARTMD"].min()
-        max_measure_depth = df_reservoir["ENDMD"].max()
+        min_measured_depth = df_reservoir["STARTMD"].min()
+        max_measured_depth = df_reservoir["ENDMD"].max()
         if not isinstance(segment_length, (float, int)):
             raise ValueError(f"Segment length must be a number, when using method fix (was {segment_length}).")
-        start_measure_depth = np.arange(min_measure_depth, max_measure_depth, segment_length)
-        end_measure_depth = start_measure_depth + segment_length
+        start_measured_depth = np.arange(min_measured_depth, max_measured_depth, segment_length)
+        end_measured_depth = start_measured_depth + segment_length
         # Update the end point of the last segment.
-        end_measure_depth[-1] = min(float(end_measure_depth[-1]), max_measure_depth)
+        end_measured_depth[-1] = min(float(end_measured_depth[-1]), max_measured_depth)
     elif method == Method.WELSEGS:
         # Create the tubing layer from segment measured depths in the WELSEGS keyword that are missing from COMPSEGS.
-        # WELSEGS segment depths are collected in the df_mdtvd dataframe, which is available here.
+        # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
         # Completor interprets WELSEGS depths as segment midpoint depths.
-        # Obtain the welsegs segment midpoint depth.
-        welsegs = df_mdtvd["MD"].to_numpy()
-        end_welsegs_depth = 0.5 * (welsegs[:-1] + welsegs[1:])
+        # Obtain the well_segments segment midpoint depth.
+        well_segments = df_measured_depth_true_vertical_depth["MD"].to_numpy()
+        end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
-        start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, welsegs[0], axis=None)
+        start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
         start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir["STARTMD"].to_numpy()
         end_compsegs_depth = df_reservoir["ENDMD"].to_numpy()
-        # If there are gaps in compsegs and there are welsegs segments that fit in the gaps,
-        # insert welsegs segments into the compsegs gaps.
+        # If there are gaps in compsegs and there are well_segments segments that fit in the gaps,
+        # insert well_segments segments into the compsegs gaps.
         gaps_compsegs = start_compsegs_depth[1:] - end_compsegs_depth[:-1]
         # Indices of gaps in compsegs.
         indices_gaps = np.nonzero(gaps_compsegs)
@@ -311,45 +301,56 @@ def create_tubing_segments(
         end_welsegs_outside = end_welsegs_depth[np.argwhere(end_welsegs_depth > end_compsegs_depth[-1])]
         welsegs_to_add = np.append(welsegs_to_add, start_welsegs_outside)
         welsegs_to_add = np.append(welsegs_to_add, end_welsegs_outside)
-        # Find welsegs start and end in gaps.
+        # Find well_segments start and end in gaps.
         start_compsegs_depth = np.append(start_compsegs_depth, welsegs_to_add)
         end_compsegs_depth = np.append(end_compsegs_depth, welsegs_to_add)
-        start_measure_depth = np.sort(start_compsegs_depth)
-        end_measure_depth = np.sort(end_compsegs_depth)
+        start_measured_depth = np.sort(start_compsegs_depth)
+        end_measured_depth = np.sort(end_compsegs_depth)
         # Check for missing segment.
-        shift_start_md = np.append(start_measure_depth[1:], end_measure_depth[-1])
-        missing_index = np.argwhere(shift_start_md > end_measure_depth).flatten()
+        shift_start_measured_depth = np.append(start_measured_depth[1:], end_measured_depth[-1])
+        missing_index = np.argwhere(shift_start_measured_depth > end_measured_depth).flatten()
         missing_index += 1
-        new_missing_startmd = end_measure_depth[missing_index - 1]
-        new_missing_endmd = start_measure_depth[missing_index]
-        start_measure_depth = np.sort(np.append(start_measure_depth, new_missing_startmd))
-        end_measure_depth = np.sort(np.append(end_measure_depth, new_missing_endmd))
+        new_missing_start_measured_depth = end_measured_depth[missing_index - 1]
+        new_missing_end_measured_depth = start_measured_depth[missing_index]
+        start_measured_depth = np.sort(np.append(start_measured_depth, new_missing_start_measured_depth))
+        end_measured_depth = np.sort(np.append(end_measured_depth, new_missing_end_measured_depth))
         # drop duplicate
-        duplicate_idx = np.argwhere(start_measure_depth == end_measure_depth)
-        start_measure_depth = np.delete(start_measure_depth, duplicate_idx)
-        end_measure_depth = np.delete(end_measure_depth, duplicate_idx)
+        duplicate_indexes = np.argwhere(start_measured_depth == end_measured_depth)
+        start_measured_depth = np.delete(start_measured_depth, duplicate_indexes)
+        end_measured_depth = np.delete(end_measured_depth, duplicate_indexes)
     else:
-        raise ValueError(f"Unknown method '{method}'")
+        raise ValueError(f"Unknown method '{method}'.")
 
     # md for tubing segments
-    md_ = 0.5 * (start_measure_depth + end_measure_depth)
+    measured_depth_ = 0.5 * (start_measured_depth + end_measured_depth)
     # estimate TVD
-    tvd = np.interp(md_, df_mdtvd["MD"].to_numpy(), df_mdtvd["TVD"].to_numpy())
+    true_vertical_depth = np.interp(
+        measured_depth_,
+        df_measured_depth_true_vertical_depth["MD"].to_numpy(),
+        df_measured_depth_true_vertical_depth["TVD"].to_numpy(),
+    )
     # create data frame
-    return as_data_frame({"STARTMD": start_measure_depth, "ENDMD": end_measure_depth, "TUB_MD": md_, "TUB_TVD": tvd})
+    return as_data_frame(
+        {
+            "STARTMD": start_measured_depth,
+            "ENDMD": end_measured_depth,
+            "TUB_MD": measured_depth_,
+            "TUB_TVD": true_vertical_depth,
+        }
+    )
 
 
 def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | None) -> pd.DataFrame:
-    """
-    Create segments for inactive cells.
+    """Create segments for inactive cells.
 
-    Sometimes inactive cells have no segments. It is required to create segments for
-    these cells to get the scaling factor correct. Inactive cells are indicated if
-    there are segments starting at MD deeper than the end MD of the previous cell.
+    Sometimes inactive cells have no segments.
+    It is required to create segments for these cells to get the scaling factor correct.
+    Inactive cells are indicated
+    if there are segments starting at measured depth deeper than the end measured depth of the previous cell.
 
     Args:
-        df_tubing_segments: Must contain column ``STARTMD`` and ``ENDMD``
-        well_name: Name of well
+        df_tubing_segments: Must contain column `STARTMD` and `ENDMD`.
+        well_name: Name of well.
 
     Returns:
         Updated dataframe if missing cells are found
