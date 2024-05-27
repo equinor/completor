@@ -353,14 +353,11 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
         well_name: Name of well.
 
     Returns:
-        Updated dataframe if missing cells are found
+        Updated dataframe if missing cells are found.
 
     Raises:
-        SystemExit: If the Schedule file is missing data for one or more branches
-                    in the case file
+        SystemExit: If the Schedule file is missing data for one or more branches in the case file.
 
-    The format of the DataFrame df_tubing_segments is shown in
-    :ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`.
     """
     if df_tubing_segments.empty:
         raise abort(
@@ -371,19 +368,18 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     df_tubing_segments.sort_values(by=["STARTMD"], inplace=True)
     # add column to indicate original segment
     df_tubing_segments["SEGMENT_DESC"] = ["OriginalSegment"] * df_tubing_segments.shape[0]
-    # get end_md
-    end_md = df_tubing_segments["ENDMD"].to_numpy()
-    # get start_md and start from segment 2 and add last item to be the last end_md
-    start_md = np.append(df_tubing_segments["STARTMD"].to_numpy()[1:], end_md[-1])
-    # find rows which has start_md > end_md
-    missing_index = np.argwhere(start_md > end_md).flatten()
+    end_measured_depth = df_tubing_segments["ENDMD"].to_numpy()
+    # get start_measured_depth and start from segment 2 and add the last item to be the last end_measured_depth
+    start_measured_depth = np.append(df_tubing_segments["STARTMD"].to_numpy()[1:], end_measured_depth[-1])
+    # find rows where start_measured_depth > end_measured_depth
+    missing_index = np.argwhere(start_measured_depth > end_measured_depth).flatten()
     # proceed only if there are missing index
     if missing_index.size == 0:
         return df_tubing_segments
     # shift one row down because we move it up one row
-    missing_index = missing_index + 1
+    missing_index += 1
     df_copy = df_tubing_segments.iloc[missing_index, :].copy(deep=True)
-    # new start md is the previous segment end md
+    # new start measured depth is the previous segment end measured depth
     df_copy["STARTMD"] = df_tubing_segments["ENDMD"].to_numpy()[missing_index - 1]
     df_copy["ENDMD"] = df_tubing_segments["STARTMD"].to_numpy()[missing_index]
     df_copy["SEGMENT_DESC"] = ["AdditionalSegment"] * df_copy.shape[0]
@@ -395,24 +391,21 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
 
 
 def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> tuple[int, int]:
-    """
-    Find the indices in the completion DataFrame of start MD and end MD.
+    """Find the indices in the completion DataFrame of start measured depth and end measured depth.
 
     Args:
-        df_completion: Must contain ``STARTMD`` and ``ENDMD``
-        start: Start measured depth
-        end: End measured depth
+        df_completion: Must contain `STARTMD` and `ENDMD`.
+        start: Start measured depth.
+        end: End measured depth.
 
     Returns:
-        Indices - Tuple of int.
+        Indices of the start and end depths.
 
-    The format of the DataFrame df_completion is shown in
-    :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
-    start_md = df_completion[Completion.START_MD].to_numpy()
-    end_md = df_completion[Completion.END_MD].to_numpy()
-    _start = np.argwhere((start_md <= start) & (end_md > start)).flatten()
-    _end = np.argwhere((start_md < end) & (end_md >= end)).flatten()
+    start_measured_depth = df_completion[Completion.START_MD].to_numpy()
+    end_measured_depth = df_completion[Completion.END_MD].to_numpy()
+    _start = np.argwhere((start_measured_depth <= start) & (end_measured_depth > start)).flatten()
+    _end = np.argwhere((start_measured_depth < end) & (end_measured_depth >= end)).flatten()
     if _start.size == 0 or _end.size == 0:
         # completion index not found then give negative value for both
         return -1, -1
@@ -420,37 +413,25 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
 
 
 def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_length: float) -> Information:
-    """
-    Get information from the COMPLETION.
+    """Get information from the completion.
 
     Args:
-        start: Start MD of the segment
-        end: End MD of the segment
-        df_completion: COMPLETION table that must contain columns:\
-        ``STARTMD``, ``ENDMD``, ``NVALVEPERJOINT``, ``INNER_ID``, ``OUTER_ID``,\
-        ``ROUGHNESS``, ``DEVICETYPE``, ``DEVICENUMBER``, and ``ANNULUS_ZONE``
-        joint_length: Length of a joint
+        start: Start measured depth of the segment.
+        end: End measured depth of the segment.
+        df_completion: COMPLETION table that must contain columns: `STARTMD`, `ENDMD`, `NVALVEPERJOINT`, `INNER_ID`,
+        `OUTER_ID`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
+        joint_length: Length of a joint.
 
     Returns:
-        Instance of Information with the following attributes
-
-        1. number_of_devices: Number of device
-        2. device_type: The type of valve in device
-        3. device_number: Reference to parameters of valve
-        4. inner_diameter: Inner diameter
-        5. outer_diameter: Equivalent outer diameter
-        6. roughness: The roughness inside of tubing
-        7. annulus_zone: The content of annulus zone
+        Instance of Information.
 
     Raises:
         ValueError:
-            If the completion is not definded from start to end
-            If outer diameter is smaller than inner diameter
-            If the completion data contains illegal / invalid rows
-            If information class is None
+            If the completion is not defined from start to end.
+            If outer diameter is smaller than inner diameter.
+            If the completion data contains illegal / invalid rows.
+            If information class is None.
 
-    The format of the DataFrame df_completion is shown in
-    :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
     information = None
     device_type = None
@@ -473,18 +454,19 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
     num_device = 0.0
 
     for completion_idx in range(idx0, idx1 + 1):
-        comp_length = min(end_completion[completion_idx], end) - max(start_completion[completion_idx], start)
-        if comp_length <= 0:
+        completion_length = min(end_completion[completion_idx], end) - max(start_completion[completion_idx], start)
+        if completion_length <= 0:
+            _ = "equals" if completion_length == 0 else "less than"
             logger.warning(
-                "Start depth %s stop depth, in row %s, for well %s",
-                ("equals" if comp_length == 0 else "less than"),
-                completion_idx,
-                df_completion[Completion.WELL][completion_idx],
+                f"Start depth {_} stop depth, in row {completion_idx}, "
+                f"for well {df_completion[Completion.WELL][completion_idx]}"
             )
         # calculate cumulative parameter
-        num_device += (comp_length / joint_length) * df_completion[Completion.NUM_VALVES_PER_JOINT].iloc[completion_idx]
+        num_device += (completion_length / joint_length) * df_completion[Completion.NUM_VALVES_PER_JOINT].iloc[
+            completion_idx
+        ]
 
-        if comp_length > prev_length:
+        if completion_length > prev_length:
             # get well geometry
             inner_diameter = df_completion[Completion.INNER_ID].iloc[completion_idx]
             outer_diameter = df_completion[Completion.OUTER_ID].iloc[completion_idx]
@@ -500,7 +482,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             # other information
             annulus_zone = df_completion[Completion.ANNULUS_ZONE].iloc[completion_idx]
             # set prev_length to this segment
-            prev_length = comp_length
+            prev_length = completion_length
 
         if all(
             x is not None for x in [device_type, device_number, inner_diameter, outer_diameter, roughness, annulus_zone]
@@ -509,7 +491,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
                 num_device, device_type, device_number, inner_diameter, outer_diameter, roughness, annulus_zone
             )
         else:
-            # I.e. if comp_length > prev_length never happens
+            # I.e. if completion_length > prev_length never happens
             raise ValueError(
                 f"The completion data for well '{df_completion[Completion.WELL][completion_idx]}' "
                 "contains illegal / invalid row(s). "
@@ -527,33 +509,24 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
 def complete_the_well(
     df_tubing_segments: pd.DataFrame, df_completion: pd.DataFrame, joint_length: float
 ) -> pd.DataFrame:
-    """
-    Complete the well with the user completion.
+    """Complete the well with the user completion.
 
     Args:
-        df_tubing_segments: Output from function create_tubing_segments
-        df_completion: Output from define_annulus_zone
-        joint_length: Length of a joint
+        df_tubing_segments: Output from function create_tubing_segments.
+        df_completion: Output from define_annulus_zone.
+        joint_length: Length of a joint.
 
     Returns:
         Well information.
 
-    | The formats of DataFrames are shown in
-    | ``df_completion`` (:ref:`create_wells.CreateWells.select_well <df_completion>`)
-    | ``df_tubing_segments``
-        (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
-    | ``df_well`` (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
     """
     start = df_tubing_segments[Completion.START_MD].to_numpy()
     end = df_tubing_segments[Completion.END_MD].to_numpy()
-    # initiate completion
     information = Information()
     # loop through the cells
     for i in range(df_tubing_segments.shape[0]):
         information += get_completion(start[i], end[i], df_completion, joint_length)
 
-    # get the well geometry
-    # e.g. inner and outer diameter
     df_well = as_data_frame(
         {
             "TUB_MD": df_tubing_segments["TUB_MD"].to_numpy(),
@@ -579,45 +552,42 @@ def complete_the_well(
 
 
 def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
-    """
-    Lump additional segments to the original segments.
+    """Lump additional segments to the original segments.
 
     This only applies if the additional segments have an annulus zone.
 
     Args:
-        df_well: Must contain ``ANNULUS_ZONE``, ``NDEVICES``, and ``SEGMENT_DESC``
+        df_well: Must contain `ANNULUS_ZONE`, `NDEVICES`, and `SEGMENT_DESC`
 
     Returns:
         Updated well information.
 
-    The DataFrame format for df_well is shown in
-    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
     """
-    ndevices = df_well["NDEVICES"].to_numpy()
+    number_of_devices = df_well["NDEVICES"].to_numpy()
     annulus_zone = df_well["ANNULUS_ZONE"].to_numpy()
-    seg_desc = df_well["SEGMENT_DESC"].to_numpy()
+    segments_descending = df_well["SEGMENT_DESC"].to_numpy()
     number_of_rows = df_well.shape[0]
-    for idx in range(number_of_rows):
-        if seg_desc[idx] != "AdditionalSegment":
+    for i in range(number_of_rows):
+        if segments_descending[i] != "AdditionalSegment":
             continue
 
         # only additional segments
-        if annulus_zone[idx] > 0:
+        if annulus_zone[i] > 0:
             # meaning only annular zones
             # compare it to the segment before and after
             been_lumped = False
-            if idx - 1 >= 0 and not been_lumped and annulus_zone[idx] == annulus_zone[idx - 1]:
+            if i - 1 >= 0 and not been_lumped and annulus_zone[i] == annulus_zone[i - 1]:
                 # compare it to the segment before
-                ndevices[idx - 1] = ndevices[idx - 1] + ndevices[idx]
+                number_of_devices[i - 1] = number_of_devices[i - 1] + number_of_devices[i]
                 been_lumped = True
-            if idx + 1 < number_of_rows and not been_lumped and annulus_zone[idx] == annulus_zone[idx + 1]:
+            if i + 1 < number_of_rows and not been_lumped and annulus_zone[i] == annulus_zone[i + 1]:
                 # compare it to the segment after
-                ndevices[idx + 1] = ndevices[idx + 1] + ndevices[idx]
-        # update the ndevice to 0 for this segment
+                number_of_devices[i + 1] = number_of_devices[i + 1] + number_of_devices[i]
+        # update the number of devices to 0 for this segment
         # because it is lumped to others
         # and it is 0 if it has no annulus zone
-        ndevices[idx] = 0.0
-    df_well["NDEVICES"] = ndevices
+        number_of_devices[i] = 0.0
+    df_well["NDEVICES"] = number_of_devices
     # from now on it is only original segment
     df_well = df_well[df_well["SEGMENT_DESC"] == "OriginalSegment"].copy()
     # reset index after filter
@@ -625,46 +595,19 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: DeviceType) -> pd.DataFrame:
-    """
-    Get device characteristics.
+    """Get device characteristics.
 
     Args:
-        df_well: Must contain columns ``DEVICETYPE``, ``DEVICENUMBER``, and
-                ``SCALINGFACTOR``
-        df_device: Device table
-        device_type: Device type. ``AICD``, ``ICD``, ``DAR``, ``VALVE``,
-                ``AICV``, ``ICV``
+        df_well: Must contain columns `DEVICETYPE`, `DEVICENUMBER`, and `SCALINGFACTOR`.
+        df_device: Device table.
+        device_type: Device type, in `AICD`, `ICD`, `DAR`, `VALVE`,`AICV`, `ICV`.
 
     Returns:
-        Updated well information with device characteristics
+        Updated well information with device characteristics.
 
     Raises:
-        ValueError: If DEVICETYPE keyword is missing in input files
+        ValueError: If `DEVICETYPE` keyword is missing in input files.
 
-    The df_well DataFrame format is shown in
-    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
-
-    | The return DataFrame ``df_device`` has one of the formats shown in the following
-      functions, depending on which device type was given:
-
-      .. list-table:: definitions
-            :widths: 10 10
-            :header-rows: 1
-
-            * - KIND
-              - DEFINITION
-            * - ``wsegvalv_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegvalv <wsegvalv_table>`
-            * - ``wsegsicd_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegsicd <wsegsicd_table>`
-            * - ``wsegaicd_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegaicd <wsegaicd_table>`
-            * - ``wsegdar_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegdar <wsegdar_table>`
-            * - ``wsegaicv_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegaicv <wsegaicv_table>`
-            * - ``wsegicv_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegicv <wsegicv_table>`
     """
     columns = ["DEVICETYPE", "DEVICENUMBER"]
     try:
