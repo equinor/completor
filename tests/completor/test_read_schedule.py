@@ -5,11 +5,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from common import ReadSchedule
 
 import completor.parse as fr
 from completor import utils
-from completor.read_schedule import fix_compsegs, fix_welsegs
+from completor.read_schedule import ReadSchedule, fix_compsegs, fix_welsegs
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 with open(Path(_TESTDIR / "schedule.testfile"), encoding="utf-8") as file:
@@ -152,6 +151,38 @@ ITEM11,ITEM12
     pd.testing.assert_frame_equal(true_welsegs1, _SCHEDULE.welsegs_header)
     pd.testing.assert_frame_equal(true_welsegs1_well4, well4_first)
     pd.testing.assert_frame_equal(true_well4, well4_second)
+
+
+def test_reading_wsegvalv():
+    """Test the functions which read the WSEGVALV keyword."""
+    true_wsegvalv = StringIO(
+        """
+WELL,SEGMENT,CD,AC,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,STATE
+WELL1,0,0.830,1.0000E-03,1*,1*,1*,1*,OPEN
+WELL1,1,0.830,1.0000E-02,1*,1*,1*,1*,SHUT
+WELL2,5,1,5e-3,1*,1*,1*,1*,OPEN
+WELL2,56,1,5e-4,1*,1*,1*,1*,OPEN
+WELL3,12,0.830,1.2E-03,1*,1*,1*,1*,OPEN
+WELL3,87,0.830,1.2E-03,1*,1*,1*,1*,OPEN
+WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN
+        """
+    )
+    df_true = pd.read_csv(true_wsegvalv, sep=",")
+    df_true = fr.remove_string_characters(df_true)
+    df_true = df_true.astype(
+        {
+            "WELL": "string",
+            "SEGMENT": "int",
+            "CD": "float",
+            "AC": "float",
+            "DEFAULT_1": "string",
+            "DEFAULT_2": "string",
+            "DEFAULT_3": "string",
+            "DEFAULT_4": "string",
+            "STATE": "string",
+        }
+    )
+    pd.testing.assert_frame_equal(df_true, _SCHEDULE.wsegvalv)
 
 
 def test_fix_compsegs():

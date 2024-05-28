@@ -3,9 +3,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from completor import parse
 from completor.constants import Completion, WellSegment
 from completor.logger import logger
-from completor.utils import sort_by_midpoint
+from completor.utils import clean_file_lines, sort_by_midpoint
 
 
 def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -197,3 +198,202 @@ def fix_compsegs_by_priority(
     df = df.dropna()
 
     return df.drop("priority", axis=1)
+
+
+class ReadSchedule:
+    """
+    Class for reading and processing of schedule/well files.
+
+    This class reads the schedule/well file.
+    It reads the following keywords WELSPECS, COMPDAT, WELSEGS, COMPSEGS.
+    The program also reads other keywords, but the unrelated keywords
+    will just be printed in the output file.
+
+    Attributes:
+        content (List[str]): List of strings
+        collections (List[completor.parser.ContentCollection]):
+            Content collection of keywords in schedule file
+        unused_keywords (np.ndarray[str]): Array of strings of unused keywords
+            in the schedule file
+        welspecs (pd.DataFrame): Table of WELSPECS keyword
+        compdat (pd.DataFrame): Table of COMPDAT keyword
+        compsegs (pd.DataFrame): Table of COMPSEGS keyword
+        wsegvalv (pd.DataFrame): Table of WSEGVALV keyword
+
+    See the following functions for a description of DataFrame formats:
+        :ref:`welspecs <welspecs_format>`.
+        :ref:`compdat <compdat_table>` (See: ref:`update_connection_factor <update_connection_factor>` for more details).
+        :ref:`welsegs_header <df_welsegs_header>`.
+        :ref:`welsegs_content <df_welsegs_content>`.
+        compsegs `get_compsegs_table`.
+    """
+
+    def __init__(
+        self,
+        schedule_file: str,
+        keywords: list[str] = ["WELSPECS", "COMPDAT", "WELSEGS", "COMPSEGS"],
+        optional_keywords: list[str] = ["WSEGVALV"],
+    ):
+        """
+        Initialize the class.
+
+        Args:
+            schedule_file: Schedule/well file which contains at least
+                      ``COMPDAT``, ``COMPSEGS`` and ``WELSEGS``
+            keywords: List of necessary keywords to find tables for.
+            optional_keywords: List of optional keywords to find tables for.
+        """
+        # read the file
+        self.content = clean_file_lines(schedule_file.splitlines(), "--")
+
+        # get contents of the listed keywords
+        # and the content of the not listed keywords
+        self.collections, self.unused_keywords = parse.read_schedule_keywords(self.content, keywords, optional_keywords)
+        # initiate values
+        self.welspecs = pd.DataFrame()
+        self.compdat = pd.DataFrame()
+        self.compsegs = pd.DataFrame()
+        self.wsegvalv = pd.DataFrame()
+        self._welsegs_header: pd.DataFrame | None = None
+        self._welsegs_content: pd.DataFrame | None = None
+
+        # extract tables
+        """
+        This procedures gets tables of the listed keywords.
+
+        It also formats the data type of the columns, which will be used
+        in the completor program.
+        """
+        # get dataframe table
+        self.welspecs = parse.get_welspecs_table(self.collections)
+        self.compdat = parse.get_compdat_table(self.collections)
+        self.compsegs = parse.get_compsegs_table(self.collections)
+        self.wsegvalv = parse.get_wsegvalv_table(self.collections)
+
+        self.compsegs = self.compsegs.astype(
+            {
+                "I": np.int64,
+                "J": np.int64,
+                "K": np.int64,
+                "BRANCH": np.int64,
+                "STARTMD": np.float64,
+                "ENDMD": np.float64,
+            }
+        )
+        self.compdat = self.compdat.astype(
+            {"I": np.int64, "J": np.int64, "K": np.int64, "K2": np.int64, "SKIN": np.float64}
+        )
+
+        # If CF and KH are defaulted by users, type conversion fails and
+        # we deliberately ignore it:
+        self.compdat = self.compdat.astype({"CF": np.float64, "KH": np.float64}, errors="ignore")
+
+    @property
+    def welsegs_header(self) -> pd.DataFrame:
+        """Table of the WELSEGS header, the first record of WELSEGS keyword."""
+        if self._welsegs_header is None:
+            welsegs_header, _ = self._compute_welsegs()
+            self._welsegs_header = welsegs_header
+        return self._welsegs_header
+
+    @property
+    def welsegs_content(self) -> pd.DataFrame:
+        """Table of the WELSEGS content, the second record of WELSEGS keyword."""
+        if self._welsegs_content is None:
+            _, welsegs_content = self._compute_welsegs()
+            self._welsegs_content = welsegs_content
+        return self._welsegs_content
+
+    def _compute_welsegs(self) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """Set correct types for information in WELSEGS header and content."""
+        welsegs_header, welsegs_content = parse.get_welsegs_table(self.collections)
+        self._welsegs_content = welsegs_content.astype(
+            {
+                "TUBINGSEGMENT": np.int64,
+                "TUBINGSEGMENT2": np.int64,
+                "TUBINGBRANCH": np.int64,
+                "TUBINGOUTLET": np.int64,
+                "TUBINGMD": np.float64,
+                "TUBINGTVD": np.float64,
+                "TUBINGROUGHNESS": np.float64,
+            }
+        )
+
+        self._welsegs_header = welsegs_header.astype({"SEGMENTTVD": np.float64, "SEGMENTMD": np.float64})
+        return self._welsegs_header, self._welsegs_content  # type: ignore
+
+    def get_welspecs(self, well_name: str) -> pd.DataFrame:
+        """
+        Return the WELSPECS table of the selected well.
+
+        Args:
+            well_name: Name of the well
+
+        Returns:
+            WELSPECS table for that well
+        """
+        df_temp = self.welspecs[self.welspecs["WELL"] == well_name]
+        # reset index after filtering
+        df_temp.reset_index(drop=True, inplace=True)
+        return df_temp
+
+    def get_compdat(self, well_name: str) -> pd.DataFrame:
+        """
+        Return the COMPDAT table for that well.
+
+        Args:
+            well_name: Name of the well
+
+        Returns:
+            COMPDAT table for that well
+        """
+        df_temp = self.compdat[self.compdat["WELL"] == well_name]
+        # reset index after filtering
+        df_temp.reset_index(drop=True, inplace=True)
+        return df_temp
+
+    def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Return WELSEGS table for both header and content for the selected well.
+
+        Args:
+            well_name: Name of the well
+            branch: Branch/lateral number
+
+        Returns:
+            | WELSEGS first record (df_header)
+            | WELSEGS second record (df_content)
+        """
+        df1_welsegs = self.welsegs_header[self.welsegs_header["WELL"] == well_name]
+        df2_welsegs = self.welsegs_content[self.welsegs_content["WELL"] == well_name].copy()
+        if branch is not None:
+            df2_welsegs = df2_welsegs[df2_welsegs["TUBINGBRANCH"] == branch]
+        # remove the well column because it does not exist
+        # in the original input
+        df2_welsegs.drop(["WELL"], inplace=True, axis=1)
+        # reset index after filtering
+        df1_welsegs.reset_index(drop=True, inplace=True)
+        df2_welsegs.reset_index(drop=True, inplace=True)
+        df_header, df_content = fix_welsegs(df1_welsegs, df2_welsegs)
+        return df_header, df_content
+
+    def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
+        """
+        Return COMPSEGS table for the selected well.
+
+        Args:
+            well_name: Name of the well
+            branch: Branch/lateral number
+
+        Returns:
+            COMPSEGS table
+        """
+        df_temp = self.compsegs[self.compsegs["WELL"] == well_name].copy()
+        if branch is not None:
+            df_temp = df_temp[df_temp["BRANCH"] == branch]
+        # remove the well column because it does not exist
+        # in the original input
+        df_temp.drop(["WELL"], inplace=True, axis=1)
+        # reset index after filtering
+        df_temp.reset_index(drop=True, inplace=True)
+        return fix_compsegs(df_temp, well_name)

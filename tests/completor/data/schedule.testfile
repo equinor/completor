@@ -1731,3 +1731,24 @@ COMPORD
  'WELL11'  INPUT /
  'WELL12'  INPUT /
 /
+
+WSEGVALV
+ WELL1   0    0.830	 1.0000E-03     4* OPEN    / -- Y1, 1000-04, pos 9 (max)
+ WELL1   1    0.830    1.0000E-02     4* SHUT    / -- Y2+Y3, 1000-03, shut
+/
+
+WSEGVALV
+ WELL2   5    1	 5e-3     4* OPEN 6e-3   / -- pos 10 (max)
+ WELL2  56    1  5e-4     4* OPEN 7e-4   / -- POS. 1
+/
+
+WSEGVALV
+ WELL3  12    0.830 	 1.2E-03     1* 1* 1* 1* OPEN    / -- Y1Y2 1000-04, pos 8 (full open)
+ WELL3  87    0.830 	 1.2E-03     4* OPEN    / -- Y3 1000-04, pos 8 (full open)
+ WELL3 145    0.830    6.0E-03     4* OPEN    / -- Y4, 100-01, pos 9 (full open)
+/
+
+--WSEGVALV
+--   PR67   5   0.830	  4.5161E-04  4*  OPEN  / -- Y1    316612-04     6
+--   PR67 150   0.830	  4.3290E-04  4*  OPEN  / -- Y3    D00389693-01  6
+--/
