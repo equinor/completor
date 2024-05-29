@@ -157,14 +157,14 @@ def test_reading_wsegvalv():
     """Test the functions which read the WSEGVALV keyword."""
     true_wsegvalv = StringIO(
         """
-WELL,SEGMENT,CD,AC,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,STATE
-WELL1,0,0.830,1.0000E-03,1*,1*,1*,1*,OPEN
-WELL1,1,0.830,1.0000E-02,1*,1*,1*,1*,SHUT
-WELL2,5,1,5e-3,1*,1*,1*,1*,OPEN
-WELL2,56,1,5e-4,1*,1*,1*,1*,OPEN
-WELL3,12,0.830,1.2E-03,1*,1*,1*,1*,OPEN
-WELL3,87,0.830,1.2E-03,1*,1*,1*,1*,OPEN
-WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN
+WELL,SEGMENT,CD,AC,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,STATE,AC_MAX
+WELL1,0,0.830,1.0000E-03,1*,1*,1*,1*,OPEN,1.0000E-03
+WELL1,1,0.830,1.0000E-02,1*,1*,1*,1*,SHUT,2.0000E-02
+WELL2,5,1,5e-3,1*,1*,1*,1*,OPEN,6e-3
+WELL2,56,1,5e-4,1*,1*,1*,1*,OPEN,7e-4
+WELL3,12,0.830,1.2E-03,1*,1*,1*,1*,OPEN,1.2E-03
+WELL3,87,0.830,1.2E-03,1*,1*,1*,1*,OPEN,1.2E-03
+WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN,6E-03
         """
     )
     df_true = pd.read_csv(true_wsegvalv, sep=",")
@@ -180,6 +180,7 @@ WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN
             "DEFAULT_3": "string",
             "DEFAULT_4": "string",
             "STATE": "string",
+            "AC_MAX": "float",
         }
     )
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.wsegvalv)

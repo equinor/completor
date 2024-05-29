@@ -177,9 +177,13 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
         keyword: Keyword name
 
     Returns:
-        List of updated string
+        Completed list of strings.
     """
-    dict_ncolumns = {"WELSPECS": 17, "COMPDAT": 14, "WELSEGS_H": 12, "WELSEGS": 15, "COMPSEGS": 11, "WSEGVALV": 9}
+
+    if keyword == "WSEGVALV":
+        return complete_wsegvalv_record(record)
+
+    dict_ncolumns = {"WELSPECS": 17, "COMPDAT": 14, "WELSEGS_H": 12, "WELSEGS": 15, "COMPSEGS": 11}
     max_column = dict_ncolumns[keyword]
     ncolumn = len(record)
     if ncolumn < max_column:
@@ -187,6 +191,41 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
         record.extend(extension)
     elif ncolumn > max_column:
         record = record[:max_column]
+    return record
+
+
+def complete_wsegvalv_record(record: list[str]) -> list[str]:
+    """
+    Complete the WSEGVALV record.
+
+    The columns DEFAULT_1 - DEFAULT_4, STATE and AC_MAX might not be provided and need to be filled in with default
+    values.
+
+    Args:
+        record: List of strings.
+
+    Returns:
+        Completed list of strings.
+    """
+    WSEGVALV_COLUMNS = 10
+    AC_INDEX = 3
+    DEFAULT_STATE = "OPEN"
+
+    if len(record) < 8:
+        # add defaults
+        record.extend(["1*"] * (8 - len(record)))
+
+    if len(record) < 9:
+        # append default state
+        record.append(DEFAULT_STATE)
+
+    if len(record) < WSEGVALV_COLUMNS:
+        # append default ac_max
+        record.append(record[AC_INDEX])
+
+    if len(record) > WSEGVALV_COLUMNS:
+        record = record[:WSEGVALV_COLUMNS]
+
     return record
 
 
@@ -665,17 +704,17 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
     Returns:
         WSEGVALV table
     """
-    columns = ["WELL", "SEGMENT", "CD", "AC", "DEFAULT_1", "DEFAULT_2", "DEFAULT_3", "DEFAULT_4", "STATE"]
+    COLUMNS = ["WELL", "SEGMENT", "CD", "AC", "DEFAULT_1", "DEFAULT_2", "DEFAULT_3", "DEFAULT_4", "STATE", "AC_MAX"]
 
     wsegvalv_collections = [np.asarray(collection) for collection in collections if collection.name == "WSEGVALV"]
     wsegvalv_table = np.vstack(wsegvalv_collections)
 
     if wsegvalv_table.size == 0:
-        return pd.DataFrame(columns=columns)
+        return pd.DataFrame(columns=COLUMNS)
 
     wsegvalv_table = pd.DataFrame(
         wsegvalv_table,
-        columns=columns,
+        columns=COLUMNS,
     )
     wsegvalv_table = wsegvalv_table.astype(
         {
@@ -688,6 +727,7 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
             "DEFAULT_3": "string",
             "DEFAULT_4": "string",
             "STATE": "string",
+            "AC_MAX": "float",
         }
     )
     return remove_string_characters(wsegvalv_table)
