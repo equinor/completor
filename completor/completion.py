@@ -19,7 +19,7 @@ except ImportError:
     pass
 
 # Use more precise type information, if possible
-MethodType: TypeAlias = 'Literal["cells", "user", "fix", "welsegs"]' | Method
+MethodType: TypeAlias = 'Literal["cells", "user", "fix", "welsegs"] | Method'
 DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
