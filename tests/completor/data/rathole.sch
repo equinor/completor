@@ -1,5 +1,4 @@
 -- Testing rathole
--- RMS output originally to WELSEGS up to 4377.28648, but modify it to check the ability of Completor
 -- to extend the segmentation
 
 WELSPECS

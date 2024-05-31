@@ -40,7 +40,6 @@ def handle_error_messages(func):
     If completor fails, the decorator will write a zip file to disk;
     Completor-<year><month><day>-<hour><minute><second>-<letter><5 numbers>.zip
     The last letter and numbers are chosen at random.
-    The format is similar to Roxar's RMS' error files.
 
     The zip file contains
 
