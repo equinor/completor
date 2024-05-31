@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from completor.constants import Completion, WellSegment
+from completor.constants import Headers
 from completor.logger import logger
 from completor.utils import sort_by_midpoint
 
@@ -31,10 +31,10 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
 
     ref_tvd = df_header["SEGMENTTVD"].iloc[0]
     ref_md = df_header["SEGMENTMD"].iloc[0]
-    inlet_segment = df_content[WellSegment.TUBING_SEGMENT].to_numpy()
-    outlet_segment = df_content[WellSegment.TUBING_OUTLET].to_numpy()
-    md_inc = df_content[WellSegment.TUBING_MD].to_numpy()
-    tvd_inc = df_content[WellSegment.TUBING_TVD].to_numpy()
+    inlet_segment = df_content[Headers.TUBING_SEGMENT].to_numpy()
+    outlet_segment = df_content[Headers.TUBING_OUTLET].to_numpy()
+    md_inc = df_content[Headers.TUBING_MD].to_numpy()
+    tvd_inc = df_content[Headers.TUBING_TVD].to_numpy()
     md_new = np.zeros(inlet_segment.shape[0])
     tvd_new = np.zeros(inlet_segment.shape[0])
 
@@ -49,8 +49,8 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
 
     # update data frame
     df_header["INFOTYPE"] = ["ABS"]
-    df_content[WellSegment.TUBING_MD] = md_new
-    df_content[WellSegment.TUBING_TVD] = tvd_new
+    df_content[Headers.TUBING_MD] = md_new
+    df_content[Headers.TUBING_TVD] = tvd_new
     return df_header, df_content
 
 
@@ -104,8 +104,8 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
              - int
     """
     df_compsegs = df_compsegs.copy(deep=True)
-    start_md = df_compsegs[Completion.START_MD].to_numpy()
-    end_md = df_compsegs[Completion.END_MD].to_numpy()
+    start_md = df_compsegs[Headers.START_MEASURED_DEPTH].to_numpy()
+    end_md = df_compsegs[Headers.END_MEASURED_DEPTH].to_numpy()
     data_length = len(start_md)
     start_md_new = np.zeros(data_length)
     end_md_new = np.zeros(data_length)

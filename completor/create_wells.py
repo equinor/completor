@@ -207,9 +207,9 @@ class CreateWells:
              - float
            * - ENDMD
              - float
-           * - INNER_ID
+           * - INNER_DIAMETER
              - float
-           * - OUTER_ID
+           * - OUTER_DIAMETER
              - float
            * - ROUGHNESS
              - float
@@ -481,9 +481,9 @@ class CreateWells:
              - float
            * - ENDMD
              - float
-           * - INNER_ID
+           * - INNER_DIAMETER
              - float
-           * - OUTER_ID
+           * - OUTER_DIAMETER
              - float
            * - ROUGHNESS
              - float

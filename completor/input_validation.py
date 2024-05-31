@@ -25,8 +25,8 @@ def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_completion``.
     """
     # Set default values for packer sections
-    df_comp["INNER_ID"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["INNER_ID"])
-    df_comp["OUTER_ID"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["OUTER_ID"])
+    df_comp["INNER_DIAMETER"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["INNER_DIAMETER"])
+    df_comp["OUTER_DIAMETER"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["OUTER_DIAMETER"])
     df_comp["ROUGHNESS"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["ROUGHNESS"])
     df_comp["NVALVEPERJOINT"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["NVALVEPERJOINT"])
     df_comp["DEVICETYPE"] = np.where(df_comp["ANNULUS"] == "PA", "PERF", df_comp["DEVICETYPE"])
@@ -105,8 +105,8 @@ def set_format_completion(df_comp: pd.DataFrame) -> pd.DataFrame:
             "BRANCH": np.int64,
             "STARTMD": np.float64,
             "ENDMD": np.float64,
-            "INNER_ID": np.float64,
-            "OUTER_ID": np.float64,
+            "INNER_DIAMETER": np.float64,
+            "OUTER_DIAMETER": np.float64,
             "ROUGHNESS": np.float64,
             "ANNULUS": str,
             "NVALVEPERJOINT": np.float64,

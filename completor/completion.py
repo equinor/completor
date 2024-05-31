@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Completion, Method
+from completor.constants import Headers, Method
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import abort, as_data_frame, log_and_raise_exception
@@ -115,16 +115,16 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
     # define annular zone
-    start_md = df_completion[Completion.START_MD].iloc[0]
-    end_md = df_completion[Completion.END_MD].iloc[-1]
-    gravel_pack_location = df_completion[df_completion[Completion.ANNULUS] == "GP"][["STARTMD", "ENDMD"]].to_numpy()
-    packer_location = df_completion[df_completion[Completion.ANNULUS] == "PA"][["STARTMD", "ENDMD"]].to_numpy()
+    start_md = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
+    end_md = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
+    gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][["STARTMD", "ENDMD"]].to_numpy()
+    packer_location = df_completion[df_completion[Headers.ANNULUS] == "PA"][["STARTMD", "ENDMD"]].to_numpy()
     # update df_completion by removing PA rows
-    df_completion = df_completion[df_completion[Completion.ANNULUS] != "PA"].copy()
+    df_completion = df_completion[df_completion[Headers.ANNULUS] != "PA"].copy()
     # reset index after filter
     df_completion.reset_index(drop=True, inplace=True)
-    annulus_content = df_completion[Completion.ANNULUS].to_numpy()
-    df_completion[Completion.ANNULUS_ZONE] = 0
+    annulus_content = df_completion[Headers.ANNULUS].to_numpy()
+    df_completion[Headers.ANNULUS_ZONE] = 0
     if "OA" in annulus_content:
         # only if there is an open annulus
         boundary = np.concatenate((packer_location.flatten(), gravel_pack_location.flatten()))
@@ -144,7 +144,11 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
                 annulus_zone[idx] = max(annulus_zone) + 1
             # else it is 0
         df_annulus = as_data_frame(
-            {Completion.START_MD: start_bound, Completion.END_MD: end_bound, Completion.ANNULUS_ZONE: annulus_zone}
+            {
+                Headers.START_MEASURED_DEPTH: start_bound,
+                Headers.END_MEASURED_DEPTH: end_bound,
+                Headers.ANNULUS_ZONE: annulus_zone,
+            }
         )
 
         annulus_zone = np.full(df_completion.shape[0], 0)
@@ -418,8 +422,8 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
     The format of the DataFrame df_completion is shown in
     :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
-    start_md = df_completion[Completion.START_MD].to_numpy()
-    end_md = df_completion[Completion.END_MD].to_numpy()
+    start_md = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
+    end_md = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
     _start = np.argwhere((start_md <= start) & (end_md > start)).flatten()
     _end = np.argwhere((start_md < end) & (end_md >= end)).flatten()
     if _start.size == 0 or _end.size == 0:
@@ -436,7 +440,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
         start: Start MD of the segment
         end: End MD of the segment
         df_completion: COMPLETION table that must contain columns:\
-        ``STARTMD``, ``ENDMD``, ``NVALVEPERJOINT``, ``INNER_ID``, ``OUTER_ID``,\
+        ``STARTMD``, ``ENDMD``, ``NVALVEPERJOINT``, ``INNER_DIAMETER``, ``OUTER_DIAMETER``,\
         ``ROUGHNESS``, ``DEVICETYPE``, ``DEVICENUMBER``, and ``ANNULUS_ZONE``
         joint_length: Length of a joint
 
@@ -469,8 +473,8 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
     roughness = None
     annulus_zone = None
 
-    start_completion = df_completion[Completion.START_MD].to_numpy()
-    end_completion = df_completion[Completion.END_MD].to_numpy()
+    start_completion = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
+    end_completion = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
     idx0, idx1 = completion_index(df_completion, start, end)
 
     if idx0 == -1 or idx1 == -1:
@@ -488,26 +492,26 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
                 "Start depth %s stop depth, in row %s, for well %s",
                 ("equals" if comp_length == 0 else "less than"),
                 completion_idx,
-                df_completion[Completion.WELL][completion_idx],
+                df_completion[Headers.WELL][completion_idx],
             )
         # calculate cumulative parameter
-        num_device += (comp_length / joint_length) * df_completion[Completion.NUM_VALVES_PER_JOINT].iloc[completion_idx]
+        num_device += (comp_length / joint_length) * df_completion[Headers.VALVES_PER_JOINT].iloc[completion_idx]
 
         if comp_length > prev_length:
             # get well geometry
-            inner_diameter = df_completion[Completion.INNER_ID].iloc[completion_idx]
-            outer_diameter = df_completion[Completion.OUTER_ID].iloc[completion_idx]
-            roughness = df_completion[Completion.ROUGHNESS].iloc[completion_idx]
+            inner_diameter = df_completion[Headers.INNER_DIAMETER].iloc[completion_idx]
+            outer_diameter = df_completion[Headers.OUTER_DIAMETER].iloc[completion_idx]
+            roughness = df_completion[Headers.ROUGHNESS].iloc[completion_idx]
             if outer_diameter > inner_diameter:
                 outer_diameter = (outer_diameter**2 - inner_diameter**2) ** 0.5
             else:
                 raise ValueError("Check screen/tubing and well/casing ID in case file.")
 
             # get device information
-            device_type = df_completion[Completion.DEVICE_TYPE].iloc[completion_idx]
-            device_number = df_completion[Completion.DEVICE_NUMBER].iloc[completion_idx]
+            device_type = df_completion[Headers.DEVICE_TYPE].iloc[completion_idx]
+            device_number = df_completion[Headers.DEVICE_NUMBER].iloc[completion_idx]
             # other information
-            annulus_zone = df_completion[Completion.ANNULUS_ZONE].iloc[completion_idx]
+            annulus_zone = df_completion[Headers.ANNULUS_ZONE].iloc[completion_idx]
             # set prev_length to this segment
             prev_length = comp_length
 
@@ -520,7 +524,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
         else:
             # I.e. if comp_length > prev_length never happens
             raise ValueError(
-                f"The completion data for well '{df_completion[Completion.WELL][completion_idx]}' "
+                f"The completion data for well '{df_completion[Headers.WELL][completion_idx]}' "
                 "contains illegal / invalid row(s). "
                 "Please check their start mD / end mD columns, and ensure that they start before they end."
             )
@@ -553,8 +557,8 @@ def complete_the_well(
         (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
     | ``df_well`` (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
     """
-    start = df_tubing_segments[Completion.START_MD].to_numpy()
-    end = df_tubing_segments[Completion.END_MD].to_numpy()
+    start = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()
+    end = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
     # initiate completion
     information = Information()
     # loop through the cells

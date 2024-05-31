@@ -301,7 +301,7 @@ def fix_tubing_inner_diam_roughness(
             completion_table_end = completion_table_well["ENDMD"].iloc[idx_completion_table_well]
             if (completion_table_end >= overburden_md >= completion_table_start) and not overburden_found_in_completion:
                 overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc("DIAM")] = completion_table_well[
-                    "INNER_ID"
+                    "INNER_DIAMETER"
                 ].iloc[idx_completion_table_well]
                 overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc("ROUGHNESS")] = (
                     completion_table_well["ROUGHNESS"].iloc[idx_completion_table_well]
@@ -914,7 +914,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
     completion_diameters = []
     for md_reservoir in df_reservoir["MD"]:
         for start_completion, outer_inner_diameter_completion, end_completion in zip(
-            df_completion["STARTMD"], df_completion["OUTER_ID"], df_completion["ENDMD"]
+            df_completion["STARTMD"], df_completion["OUTER_DIAMETER"], df_completion["ENDMD"]
         ):
             if start_completion <= md_reservoir <= end_completion:
                 completion_diameters.append(outer_inner_diameter_completion)

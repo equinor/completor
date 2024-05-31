@@ -158,9 +158,9 @@ class ReadCasefile:
             - float
           * - ENDMD
             - float
-          * - INNER_ID
+          * - INNER_DIAMETER
             - float
-          * - OUTER_ID
+          * - OUTER_DIAMETER
             - float
           * - ROUGHNESS
             - float
@@ -184,8 +184,8 @@ class ReadCasefile:
             "BRANCH",
             "STARTMD",
             "ENDMD",
-            "INNER_ID",
-            "OUTER_ID",
+            "INNER_DIAMETER",
+            "OUTER_DIAMETER",
             "ROUGHNESS",
             "ANNULUS",
             "NVALVEPERJOINT",
