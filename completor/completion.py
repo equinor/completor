@@ -419,7 +419,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
         start: Start measured depth of the segment.
         end: End measured depth of the segment.
         df_completion: COMPLETION table that must contain columns: `STARTMD`, `ENDMD`, `NVALVEPERJOINT`, `INNER_ID`,
-        `OUTER_ID`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
+            `OUTER_ID`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
         joint_length: Length of a joint.
 
     Returns:
@@ -499,8 +499,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             )
     if information is None:
         raise ValueError(
-            f"idx0 == idx1 + 1 (idx0={idx0}). "
-            "For the time being, the reason is unknown. "
+            f"idx0 == idx1 + 1 (idx0={idx0}). For the time being, the reason is unknown. "
             "Please reach out to the Equinor Inflow Control Team if you encounter this."
         )
     return information
@@ -557,7 +556,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     This only applies if the additional segments have an annulus zone.
 
     Args:
-        df_well: Must contain `ANNULUS_ZONE`, `NDEVICES`, and `SEGMENT_DESC`
+        df_well: Must contain `ANNULUS_ZONE`, `NDEVICES`, and `SEGMENT_DESC`.
 
     Returns:
         Updated well information.
@@ -653,38 +652,33 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
 def connect_cells_to_segments(
     df_well: pd.DataFrame, df_reservoir: pd.DataFrame, df_tubing_segments: pd.DataFrame, method: MethodType
 ) -> pd.DataFrame:
-    """
-    Connect cells to segments.
+    """Connect cells to segments.
 
     Args:
-        df_well: Segment table. Must contain column ``TUB_MD``
-        df_reservoir: COMPSEGS table. Must contain columns ``STARTMD`` and ``ENDMD``
-        df_tubing_segments: Tubing segment dataframe. Must contain columns ``STARTMD`` and ``ENDMD``.
+        df_well: Segment table. Must contain column `TUB_MD`.
+        df_reservoir: COMPSEGS table. Must contain columns `STARTMD` and `ENDMD`.
+        df_tubing_segments: Tubing segment dataframe. Must contain columns `STARTMD` and `ENDMD`.
         method: Segmentation method indicator. Must contain 'user', 'fix', 'welsegs', or 'cells'.
 
 
     Returns:
         Merged DataFrame.
 
-    | The DataFrame formats in this function are shown in
-    | df_well (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
-    | df_reservoir (:ref:`create_wells.CreateWells.select_well <df_reservoir>`)
     """
-    # Calculate mid cell MD
+    # Calculate mid cell measured depth
     df_reservoir["MD"] = (df_reservoir["STARTMD"] + df_reservoir["ENDMD"]) * 0.5
     if method == Method.USER:
         df_res = df_reservoir.copy(deep=True)
         df_wel = df_well.copy(deep=True)
-        # Ensure that tubing segment boundaries as described in the case file
-        # are honored.
+        # Ensure that tubing segment boundaries as described in the case file are honored.
         # Associate reservoir cells with tubing segment midpoints using markers
         marker = 1
-        df_res["MARKER"] = pd.Series([0 for _ in range(len(df_reservoir.index))])
-        df_wel["MARKER"] = pd.Series([x + 1 for x in range(len(df_well.index))])
+        df_res["MARKER"] = np.full(df_reservoir.shape[0], 0)
+        df_wel["MARKER"] = np.arange(df_well.shape[0]) + 1
         for idx in df_wel["TUB_MD"].index:
-            start_md = df_tubing_segments["STARTMD"].iloc[idx]
-            end_md = df_tubing_segments["ENDMD"].iloc[idx]
-            df_res.loc[df_res["MD"].between(start_md, end_md), "MARKER"] = marker
+            start_measured_depth = df_tubing_segments["STARTMD"].iloc[idx]
+            end_measured_depth = df_tubing_segments["ENDMD"].iloc[idx]
+            df_res.loc[df_res["MD"].between(start_measured_depth, end_measured_depth), "MARKER"] = marker
             marker += 1
         # Merge
         tmp = df_res.merge(df_wel, on=["MARKER"])
@@ -694,11 +688,10 @@ def connect_cells_to_segments(
 
 
 class WellSchedule:
-    """
-    A collection of all the active multi-segment wells.
+    """A collection of all the active multi-segment wells.
 
     Attributes:
-        msws: Multisegmentet well segments.
+        msws: Multisegmented well segments.
         active_wells: The active wells for completor to work on.
 
     Args:
@@ -712,66 +705,19 @@ class WellSchedule:
         self.active_wells = np.array(active_wells)
 
     def set_welspecs(self, records: list[list[str]]) -> None:
-        """
-        Convert a WELSPECS record set to a Pandas DataFrame.
+        """Convert a WELSPECS record set to a Pandas DataFrame.
 
-        * Sets DataFrame column titles
-        * Formats column values
-        * Pads missing columns at end of the DataFrame with default values (1*)
+        * Sets DataFrame column titles.
+        * Formats column values.
+        * Pads missing columns at end of the DataFrame with default values (1*).
 
         Args:
-            recs: A WELSPECS record set
+            records: A WELSPECS record set.
 
         Returns:
-            Record of inactive wells (in ``self.msws``)
-
-        The function creates the class property DataFrame
-        ``msws[well_name]['welspecs']`` with the following format:
-
-        .. _welspecs_format:
-        .. list-table:: ``msws[well_name]['welspecs']``
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - WELL
-             - str
-           * - GROUP
-             - str
-           * - I
-             - int
-           * - J
-             - int
-           * - BHP_DEPTH
-             - float
-           * - PHASE
-             - str
-           * - DR
-             - object
-           * - FLAG
-             - object
-           * - SHUT
-             - object
-           * - CROSS
-             - object
-           * - PRESSURETABLE
-             - object
-           * - DENSCAL
-             - object
-           * - REGION
-             - object
-           * - ITEM14
-             - object
-           * - ITEM15
-             - object
-           * - ITEM16
-             - object
-           * - ITEM17
-             - object
+            Record of inactive wells (in `self.msws`).
 
         """
-        # make df
         columns = [
             "WELL",
             "GROUP",
@@ -791,9 +737,8 @@ class WellSchedule:
             "ITEM16",
             "ITEM17",
         ]
-        ncols = len(columns)
-        _records = records[0] + ["1*"] * (ncols - len(records[0]))  # pad with default values (1*)
-        df = pd.DataFrame(np.array(_records).reshape((1, ncols)), columns=columns)
+        _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
+        df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
         #  datatypes
         df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
         try:
@@ -807,69 +752,30 @@ class WellSchedule:
             self.msws[well_name]["welspecs"] = df[df["WELL"] == well_name]
             logger.debug("set_welspecs for %s", well_name)
 
-    def handle_compdat(self, recs: list[list[str]]) -> list[list[str]]:
-        """
-        Convert a COMPDAT record set to a Pandas DataFrame.
+    def handle_compdat(self, records: list[list[str]]) -> list[list[str]]:
+        """Convert a COMPDAT record set to a Pandas DataFrame.
 
-        * Sets DataFrame column titles
-        * Pads missing values with default values (1*)
-        * Sets column data types
+        * Sets DataFrame column titles.
+        * Pads missing values with default values (1*).
+        * Sets column data types.
 
         Args:
-            recs: Record set of COMPDAT data
+            records: Record set of COMPDAT data.
 
         Returns:
-            list: Records for inactive wells
+            Records for inactive wells.
 
-        The function creates the class property DataFrame
-        msws[well_name]['compdat'] with the following format:
-
-        .. _compdat_format:
-        .. list-table:: msws[well_name]['compdat']
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - WELL
-             - str
-           * - I
-             - int
-           * - J
-             - int
-           * - K
-             - int
-           * - K2
-             - int
-           * - STATUS
-             - object
-           * - SATNUM
-             - object
-           * - CF
-             - float
-           * - DIAM
-             - float
-           * - KH
-             - float
-           * - SKIN
-             - float
-           * - DFACT
-             - object
-           * - COMPDAT_DIRECTION
-             - object
-           * - RO
-             - float
+        The function creates the class property DataFrame msws[well_name]['compdat']
 
         """
         well_names = set()  # the active well-names found in this chunk
         remains = []  # the other wells
-        for rec in recs:
+        for rec in records:
             well_name = rec[0]
             if well_name in list(self.active_wells):
                 well_names.add(well_name)
             else:
                 remains.append(rec)
-        # make df
         columns = [
             "WELL",
             "I",
@@ -886,11 +792,11 @@ class WellSchedule:
             "COMPDAT_DIRECTION",
             "RO",
         ]
-        df = pd.DataFrame(recs, columns=columns[0 : len(recs[0])])
+        df = pd.DataFrame(records, columns=columns[0 : len(records[0])])
         if "RO" in df.columns:
             df["RO"] = df["RO"].fillna("1*")
-        for idx in range(len(recs[0]), len(columns)):
-            df[columns[idx]] = ["1*"] * len(recs)
+        for i in range(len(records[0]), len(columns)):
+            df[columns[i]] = ["1*"] * len(records)
         # data types
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
@@ -920,91 +826,19 @@ class WellSchedule:
     def set_welsegs(self, recs: list[list[str]]) -> str | None:
         """Update WELSEGS for a given well if it is an active well.
 
-        * Pads missing record columns in header and contents with default values
-        * Converts header and column records to Pandas DataFrames
-        * Sets proper DataFrame column types and titles
-        * Converts segment depth specified by INC to ABS using fix_welsegs
+        * Pads missing record columns in header and contents with default values.
+        * Convert header and column records to Pandas DataFrames.
+        * Sets proper DataFrame column types and titles.
+        * Converts segment depth specified by INC to ABS using fix_welsegs.
 
         Args:
-            recs: Record set of header and contents data
+            recs: Record set of header and contents data.
 
         Returns:
-            Name of well if it was updated, or None if it is\
-            not in the active_wells list.
+            Name of well if it was updated, or None if it is not in the active_wells list.
 
-        The function creates two DataFrames stored in the tuple variable\
-        msws[well_name]['welsegs']. The first tuple element is the welsegs header\
-        and the second is the record DataFrame with following formats:
-
-        .. _welsegs_header_format:
-        .. list-table:: msws[well_name]['welsegs'][0] - Header
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - WELL
-             - str
-           * - SEGMENTTVD
-             - float
-           * - SEGMENTMD
-             - float
-           * - WBVOLUME
-             - float
-           * - INFOTYPE
-             - object
-           * - PDROPCOMP
-             - object
-           * - MPMODEL
-             - object
-           * - ITEM8
-             - object
-           * - ITEM9
-             - object
-           * - ITEM10
-             - object
-           * - ITEM11
-             - object
-           * - ITEM12
-             - object
-
-        .. _welsegs_content_format:
-        .. list-table:: msws[well_name]['welsegs'][1] - Record
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - TUBINGSEGMENT
-             - int
-           * - TUBINGSEGMENT2
-             - int
-           * - TUBINGBRANCH
-             - int
-           * - TUBINGOUTLET
-             - int
-           * - TUBINGMD
-             - float
-           * - TUBINGTVD
-             - float
-           * - TUBINGID
-             - float
-           * - TUBINGROUGHNESS
-             - float
-           * - CROSS
-             - float
-           * - VSEG
-             - float
-           * - ITEM11
-             - object
-           * - ITEM12
-             - object
-           * - ITEM13
-             - object
-           * - ITEM14
-             - object
-           * - ITEM15
-             - object
+        The function creates two DataFrames stored in the tuple variable msws[well_name]['welsegs'].
+        The first tuple element is the welsegs header, and the second is the content of the DataFrame.
 
         """
         well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
@@ -1026,11 +860,10 @@ class WellSchedule:
             "ITEM11",
             "ITEM12",
         ]
-        ncols = len(columns)
         # pad header with default values (1*)
-        header = recs[0] + ["1*"] * (ncols - len(recs[0]))
-        dfh = pd.DataFrame(np.array(header).reshape((1, ncols)), columns=columns)
-        dfh[columns[1:3]] = dfh[columns[1:3]].astype(np.float64)  # data types
+        header = recs[0] + ["1*"] * (len(columns) - len(recs[0]))
+        df_header = pd.DataFrame(np.array(header).reshape((1, len(columns))), columns=columns)
+        df_header[columns[1:3]] = df_header[columns[1:3]].astype(np.float64)  # data types
 
         # make df for data records
         columns = [
@@ -1050,20 +883,19 @@ class WellSchedule:
             "ITEM14",
             "ITEM15",
         ]
-        ncols = len(columns)
         # pad with default values (1*)
-        recs = [rec + ["1*"] * (ncols - len(rec)) for rec in recs[1:]]
-        dfr = pd.DataFrame(recs, columns=columns)
+        recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]
+        df_records = pd.DataFrame(recs, columns=columns)
         # data types
-        dfr[columns[:4]] = dfr[columns[:4]].astype(np.int64)
-        dfr[columns[4:7]] = dfr[columns[4:7]].astype(np.float64)
+        df_records[columns[:4]] = df_records[columns[:4]].astype(np.int64)
+        df_records[columns[4:7]] = df_records[columns[4:7]].astype(np.float64)
         # fix abs/inc issue with welsegs
-        dfh, dfr = fix_welsegs(dfh, dfr)
+        df_header, df_records = fix_welsegs(df_header, df_records)
 
         # Warn user if the tubing segments' measured depth for a branch
         # is not sorted in ascending order (monotonic)
-        for branch_num in dfr["TUBINGBRANCH"].unique():
-            if not dfr["TUBINGMD"].loc[dfr["TUBINGBRANCH"] == branch_num].is_monotonic_increasing:
+        for branch_num in df_records["TUBINGBRANCH"].unique():
+            if not df_records["TUBINGMD"].loc[df_records["TUBINGBRANCH"] == branch_num].is_monotonic_increasing:
                 logger.warning(
                     "The branch %s in well %s contains negative length segments. "
                     "Check the input schedulefile WELSEGS keyword for inconsistencies "
@@ -1074,54 +906,21 @@ class WellSchedule:
 
         if well_name not in self.msws:
             self.msws[well_name] = {}
-        self.msws[well_name]["welsegs"] = dfh, dfr
+        self.msws[well_name]["welsegs"] = df_header, df_records
         return well_name
 
     def set_compsegs(self, recs: list[list[str]]) -> str | None:
-        """
-        Update COMPSEGS for a well if it is an active well.
+        """Update COMPSEGS for a well if it is an active well.
 
-        * Pads missing record columns in header and contents with default 1*
-        * Converts header and column records to Pandas DataFrames
-        * Sets proper DataFrame column types and titles
+        * Pads missing record columns in header and contents with default 1*.
+        * Converts header and column records to Pandas DataFrames.
+        * Sets proper DataFrame column types and titles.
 
         Args:
-            recs: Record set of header and contents data
+            recs: Record set of header and contents data.
 
         Returns:
-            Name of well if it was updated, or None if it is not in active_wells
-
-        The function creates the class property DataFrame
-        ``msws[well_name]['compsegs']`` with the following format:
-
-        .. list-table:: ``msws[well_name]['compsegs']``
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - I
-             - int
-           * - J
-             - int
-           * - K
-             - int
-           * - BRANCH
-             - int
-           * - STARTMD
-             - float
-           * - ENDMD
-             - float
-           * - COMPSEGS_DIRECTION
-             - object
-           * - ENDGRID
-             - object
-           * - PERFDEPTH
-             - object
-           * - THERM
-             - object
-           * - SEGMENT
-             - int
+            Name of well if it was updated, or None if it is not in active_wells.
 
         """
         well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
@@ -1140,10 +939,8 @@ class WellSchedule:
             "THERM",
             "SEGMENT",
         ]
-        ncols = len(columns)
-        recs = [rec + ["1*"] * (ncols - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
+        recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
         df = pd.DataFrame(recs, columns=columns)
-        #  datatypes
         df[columns[:4]] = df[columns[:4]].astype(np.int64)
         df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
         if well_name not in self.msws:
@@ -1153,27 +950,25 @@ class WellSchedule:
         return well_name
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:
-        """
-        Get-function for WELSPECS.
+        """Get-function for WELSPECS.
 
         Args:
-            well_name: Well name
+            well_name: Well name.
 
         Returns:
-            :ref:`WELSPECS DataFrame <welspecs_format>`
+            Well specification DataFrame.
 
         """
         return self.msws[well_name]["welspecs"]
 
     def get_compdat(self, well_name: str) -> pd.DataFrame:
-        """
-        Get-function for COMPDAT.
+        """Get-function for COMPDAT.
 
         Args:
-            well_name: Well name
+            well_name: Well name.
 
         Returns:
-            :ref:`COMPDAT DataFrame <compdat_format>`
+            Completion data DataFrame.
 
         Raises:
             ValueError: If COMPDAT keyword is missing in input schedule file
@@ -1205,42 +1000,39 @@ class WellSchedule:
         # (why??)
         return fix_compsegs(df, well_name)
 
-    def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """
-        Get-function for WELSEGS.
+    def get_well_segments(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """Get-function for well segments.
 
         Args:
-            well_name: Well name
-            branch: Branch number
+            well_name: Well name.
+            branch: Branch number.
 
         Returns:
-            | :ref:`WELSEGS header <welsegs_header_format>`
-            | :ref:`WELSEGS records <welsegs_content_format>`
+            Well segment headers and well segment records.
 
         Raises:
             ValueError: If WELSEGS keyword missing in input schedule file
 
         """
         try:
-            dfh, dfr = self.msws[well_name]["welsegs"]
+            columns, content = self.msws[well_name]["welsegs"]
         except KeyError as err:
             if "'welsegs'" in str(err):
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
             raise err
         if branch is not None:
-            dfr = dfr[dfr["TUBINGBRANCH"] == branch]
-        dfr.reset_index(drop=True, inplace=True)  # reset index after filtering (why??)
-        return dfh, dfr
+            content = content[content["TUBINGBRANCH"] == branch]
+        content.reset_index(drop=True, inplace=True)
+        return columns, content
 
     def get_well_number(self, well_name: str) -> int:
-        """
-        Well number in the active_wells list.
+        """Well number in the active_wells list.
 
         Args:
-            well_name: Well name
+            well_name: Well name.
 
         Returns:
-            Well number
+            Well number.
 
         """
         return (self.active_wells == well_name).nonzero()[0][0]
