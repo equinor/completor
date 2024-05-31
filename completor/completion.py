@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, TypeAlias, overload
+from typing import overload
 
 import numpy as np
 import numpy.typing as npt
@@ -13,8 +13,13 @@ from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import abort, as_data_frame, log_and_raise_exception
 
+try:
+    from typing import Literal, TypeAlias  # type: ignore
+except ImportError:
+    pass
+
 # Use more precise type information, if possible
-MethodType: TypeAlias = 'Literal["cells", "user", "fix", "welsegs"] | Method'
+MethodType: TypeAlias = 'Literal["cells", "user", "fix", "welsegs"]' | Method
 DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
