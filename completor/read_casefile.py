@@ -19,7 +19,7 @@ def _mapper(map_file: str) -> dict[str, str]:
     """
     Read two-column file and store data as values and keys in a dictionary.
 
-    Used to map between RMS and Eclipse file names.
+    Used to map between pre-processing tools and reservoir simulator file names.
 
     Args:
         map_file: Two-column text file
