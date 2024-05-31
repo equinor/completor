@@ -113,6 +113,7 @@ class ReadSchedule:
         welspecs (pd.DataFrame): Table of WELSPECS keyword
         compdat (pd.DataFrame): Table of COMPDAT keyword
         compsegs (pd.DataFrame): Table of COMPSEGS keyword
+        wsegvalv (pd.DataFrame): Table of WSEGVALV keyword
 
     See the following functions for a description of DataFrame formats:
         :ref:`welspecs <welspecs_format>`.
@@ -122,26 +123,32 @@ class ReadSchedule:
         compsegs `get_compsegs_table`.
     """
 
-    def __init__(self, schedule_file: str):
+    def __init__(
+        self,
+        schedule_file: str,
+        keywords: list[str] = ["WELSPECS", "COMPDAT", "WELSEGS", "COMPSEGS"],
+        optional_keywords: list[str] = ["WSEGVALV"],
+    ):
         """
         Initialize the class.
 
         Args:
             schedule_file: Schedule/well file which contains at least
                       ``COMPDAT``, ``COMPSEGS`` and ``WELSEGS``
+            keywords: List of necessary keywords to find tables for.
+            optional_keywords: List of optional keywords to find tables for.
         """
         # read the file
         self.content = clean_file_lines(schedule_file.splitlines(), "--")
-        # keywords to be searched
-        list_keywords = ["WELSPECS", "COMPDAT", "WELSEGS", "COMPSEGS"]
 
         # get contents of the listed keywords
         # and the content of the not listed keywords
-        self.collections, self.unused_keywords = parse.read_schedule_keywords(self.content, list_keywords)
+        self.collections, self.unused_keywords = parse.read_schedule_keywords(self.content, keywords, optional_keywords)
         # initiate values
         self.welspecs = pd.DataFrame()
         self.compdat = pd.DataFrame()
         self.compsegs = pd.DataFrame()
+        self.wsegvalv = pd.DataFrame()
         self._welsegs_header: pd.DataFrame | None = None
         self._welsegs_content: pd.DataFrame | None = None
 
@@ -156,6 +163,7 @@ class ReadSchedule:
         self.welspecs = parse.get_welspecs_table(self.collections)
         self.compdat = parse.get_compdat_table(self.collections)
         self.compsegs = parse.get_compsegs_table(self.collections)
+        self.wsegvalv = parse.get_wsegvalv_table(self.collections)
 
         self.compsegs = self.compsegs.astype(
             {
