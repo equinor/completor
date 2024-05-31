@@ -14,8 +14,8 @@ from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import abort, as_data_frame, log_and_raise_exception
 
 # Use more precise type information, if possible
-MethodType: TypeAlias = Literal["cells", "user", "fix", "welsegs"] | Method
-DeviceType: TypeAlias = Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]
+MethodType: TypeAlias = 'Literal["cells", "user", "fix", "welsegs"] | Method'
+DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
 class Information:
