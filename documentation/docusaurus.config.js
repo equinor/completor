@@ -89,12 +89,8 @@ const config = {
             title: 'Contact',
             items: [
               {
-                label: 'Support Email',
-                href: 'mailto:fg_InflowControlSoftware@equinor.com',
-              },
-              {
                 label: 'Slack - Internal',
-                href: 'https://equinor.slack.com/archives/C02MVVAC9L4',
+                href: 'https://equinor.slack.com/archives/C074VK8HT6Y',
               },
               {
                 label: 'Engage (Yammer) - Internal',
