@@ -143,7 +143,7 @@ ITEM11,ITEM12
             Headers.TUBINGROUGHNESS: np.float64,
         }
     )
-    true_welsegs1_well4 = true_welsegs1[true_welsegs1["WELL"] == "WELL4"]
+    true_welsegs1_well4 = true_welsegs1[true_welsegs1[Headers.WELL] == "WELL4"]
     true_welsegs1_well4.reset_index(drop=True, inplace=True)
 
     # get the program reading

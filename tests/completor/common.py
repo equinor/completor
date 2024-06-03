@@ -73,26 +73,26 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     )
     # WELSEGS header
     wsh_true = true_output.welsegs_header
-    wsh_true.set_index("WELL", inplace=True)
-    wsh_true.sort_values("WELL", inplace=True)
+    wsh_true.set_index(Headers.WELL, inplace=True)
+    wsh_true.sort_values(Headers.WELL, inplace=True)
     wsh_test = test_output.welsegs_header
-    wsh_test.set_index("WELL", inplace=True)
-    wsh_test.sort_values("WELL", inplace=True)
+    wsh_test.set_index(Headers.WELL, inplace=True)
+    wsh_test.sort_values(Headers.WELL, inplace=True)
     pd.testing.assert_frame_equal(wsh_true, wsh_test, check_exact=check_exact, rtol=relative_tolerance)
     # WELSEGS content
     wsc_true = true_output.welsegs_content
-    wsc_true.set_index("WELL", inplace=True)
-    wsc_true.sort_values(["WELL", Headers.TUBINGMD], inplace=True)
+    wsc_true.set_index(Headers.WELL, inplace=True)
+    wsc_true.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
     wsc_test = test_output.welsegs_content
-    wsc_test.set_index("WELL", inplace=True)
-    wsc_test.sort_values(["WELL", Headers.TUBINGMD], inplace=True)
+    wsc_test.set_index(Headers.WELL, inplace=True)
+    wsc_test.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
     pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
 
     # COMPSEGS
-    cs_true = true_output.compsegs.set_index("WELL")
-    cs_true.sort_values(["WELL", Headers.START_MD], inplace=True)
-    cs_test = test_output.compsegs.set_index("WELL")
-    cs_test.sort_values(["WELL", Headers.START_MD], inplace=True)
+    cs_true = true_output.compsegs.set_index(Headers.WELL)
+    cs_true.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
+    cs_test = test_output.compsegs.set_index(Headers.WELL)
+    cs_test.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
     pd.testing.assert_frame_equal(cs_true, cs_test, check_exact=check_exact, rtol=relative_tolerance)
 
 
@@ -226,7 +226,7 @@ class ReadSchedule:
         Returns:
             WELSPECS table for that well
         """
-        df_temp = self.welspecs[self.welspecs["WELL"] == well_name]
+        df_temp = self.welspecs[self.welspecs[Headers.WELL] == well_name]
         # reset index after filtering
         df_temp.reset_index(drop=True, inplace=True)
         return df_temp
@@ -241,7 +241,7 @@ class ReadSchedule:
         Returns:
             COMPDAT table for that well
         """
-        df_temp = self.compdat[self.compdat["WELL"] == well_name]
+        df_temp = self.compdat[self.compdat[Headers.WELL] == well_name]
         # reset index after filtering
         df_temp.reset_index(drop=True, inplace=True)
         return df_temp
@@ -258,13 +258,13 @@ class ReadSchedule:
             | WELSEGS first record (df_header)
             | WELSEGS second record (df_content)
         """
-        df1_welsegs = self.welsegs_header[self.welsegs_header["WELL"] == well_name]
-        df2_welsegs = self.welsegs_content[self.welsegs_content["WELL"] == well_name].copy()
+        df1_welsegs = self.welsegs_header[self.welsegs_header[Headers.WELL] == well_name]
+        df2_welsegs = self.welsegs_content[self.welsegs_content[Headers.WELL] == well_name].copy()
         if branch is not None:
             df2_welsegs = df2_welsegs[df2_welsegs[Headers.TUBINGBRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
-        df2_welsegs.drop(["WELL"], inplace=True, axis=1)
+        df2_welsegs.drop([Headers.WELL], inplace=True, axis=1)
         # reset index after filtering
         df1_welsegs.reset_index(drop=True, inplace=True)
         df2_welsegs.reset_index(drop=True, inplace=True)
@@ -282,12 +282,12 @@ class ReadSchedule:
         Returns:
             COMPSEGS table
         """
-        df_temp = self.compsegs[self.compsegs["WELL"] == well_name].copy()
+        df_temp = self.compsegs[self.compsegs[Headers.WELL] == well_name].copy()
         if branch is not None:
             df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
-        df_temp.drop(["WELL"], inplace=True, axis=1)
+        df_temp.drop([Headers.WELL], inplace=True, axis=1)
         # reset index after filtering
         df_temp.reset_index(drop=True, inplace=True)
         return fix_compsegs(df_temp, well_name)

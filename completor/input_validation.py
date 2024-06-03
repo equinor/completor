@@ -102,7 +102,7 @@ def set_format_completion(df_comp: pd.DataFrame) -> pd.DataFrame:
     """
     return df_comp.astype(
         {
-            "WELL": str,
+            Headers.WELL: str,
             Headers.BRANCH: np.int64,
             Headers.START_MD: np.float64,
             Headers.END_MEASURED_DEPTH: np.float64,
@@ -127,9 +127,9 @@ def assess_completion(df_comp: pd.DataFrame):
     The format of the COMPLETION table DataFrame is shown in
     ``read_casefile.ReadCasefile.read_completion``.
     """
-    list_wells = df_comp["WELL"].unique()
+    list_wells = df_comp[Headers.WELL].unique()
     for well_name in list_wells:
-        df_well = df_comp[df_comp["WELL"] == well_name]
+        df_well = df_comp[df_comp[Headers.WELL] == well_name]
         list_branches = df_well[Headers.BRANCH].unique()
         for branch in list_branches:
             df_comp = df_well[df_well[Headers.BRANCH] == branch]
@@ -355,8 +355,8 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
 
     nrow = df_lat2dev.shape[0]
     for idx in range(0, nrow):
-        l2d_well = df_lat2dev["WELL"].iloc[idx]
-        if (df_comp[df_comp["WELL"] == l2d_well]["ANNULUS"] == "OA").any():
+        l2d_well = df_lat2dev[Headers.WELL].iloc[idx]
+        if (df_comp[df_comp[Headers.WELL] == l2d_well]["ANNULUS"] == "OA").any():
             raise abort(
                 f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
                 "This may trigger an error in reservoir simulator."

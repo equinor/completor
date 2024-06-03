@@ -645,7 +645,7 @@ def test_user_segment_lumping_gp(tmpdir):
 def test_print_wsegdar(tmpdir):
     tmpdir.chdir()
     df_wsegdar = pd.DataFrame(
-        [["WELL", 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
+        [[Headers.WELL, 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
         columns=[
             Headers.WELL,
             Headers.SEG,
@@ -803,10 +803,32 @@ def test_prepare_compdat(tmpdir):
     """Test function for prepare_compdat including change of well/casing ID from
     input schedule values to completion table values."""
     tmpdir.chdir()
-    well_name = "WELL"
+    well_name = Headers.WELL
     lateral = 1
     df_reservoir = pd.DataFrame(
-        [["WELL", 1, 5, 10, 15, 15, "OPEN", "1*", 100.0, 0.216, 50.0, 2.5, "1*", "Y", 12.25, 1000.0, 1, 1, "ICD"]],
+        [
+            [
+                Headers.WELL,
+                1,
+                5,
+                10,
+                15,
+                15,
+                "OPEN",
+                "1*",
+                100.0,
+                0.216,
+                50.0,
+                2.5,
+                "1*",
+                "Y",
+                12.25,
+                1000.0,
+                1,
+                1,
+                "ICD",
+            ]
+        ],
         columns=[
             Headers.WELL,
             Headers.LATERAL,
@@ -848,7 +870,7 @@ def test_prepare_compdat(tmpdir):
 
     prepare_compdat_out = prepare_outputs.prepare_compdat(well_name, lateral, df_reservoir, df_completion_table)
     prepare_compdat_true = pd.DataFrame(
-        [["WELL", 5, 10, 15, 15, "OPEN", "1*", 100.0, 0.311, 50.0, 2.5, "1*", "Y", 12.25, "/"]],
+        [[Headers.WELL, 5, 10, 15, 15, "OPEN", "1*", 100.0, 0.311, 50.0, 2.5, "1*", "Y", 12.25, "/"]],
         columns=[
             Headers.WELL,
             Headers.I,

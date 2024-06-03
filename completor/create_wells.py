@@ -108,12 +108,12 @@ class CreateWells:
         """
         # Need to check completion of all wells in completion table to remove
         # GP-PERF type wells
-        active_wells = list(set(self.case.completion_table["WELL"]))
+        active_wells = list(set(self.case.completion_table[Headers.WELL]))
         # We cannot update a list while iterating of it
         for well_name in active_wells.copy():
             # Annulus content of each well
-            ann_series = self.case.completion_table[self.case.completion_table["WELL"] == well_name]["ANNULUS"]
-            type_series = self.case.completion_table[self.case.completion_table["WELL"] == well_name][
+            ann_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name]["ANNULUS"]
+            type_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name][
                 Headers.DEVICE_TYPE
             ]
             gp_check = not ann_series.isin(["OA"]).any()
@@ -182,7 +182,9 @@ class CreateWells:
         ``read_casefile.ReadCasefile.read_completion``.
         """
         self.laterals = list(
-            self.case.completion_table[self.case.completion_table["WELL"] == self.well_name][Headers.BRANCH].unique()
+            self.case.completion_table[self.case.completion_table[Headers.WELL] == self.well_name][
+                Headers.BRANCH
+            ].unique()
         )
 
     def select_well(self, schedule: completion.WellSchedule, lateral: int) -> None:
@@ -784,8 +786,8 @@ class CreateWells:
         The format of the class property DataFrame df_well is described in
         ``complete_the_well`` and df_reservoir in ``select_well``.
         """
-        self.df_well["WELL"] = self.well_name
-        self.df_reservoir["WELL"] = self.well_name
+        self.df_well[Headers.WELL] = self.well_name
+        self.df_reservoir[Headers.WELL] = self.well_name
         self.df_well["LATERAL"] = lateral
         self.df_reservoir["LATERAL"] = lateral
 

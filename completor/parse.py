@@ -334,7 +334,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
          - object
     """
     header_columns = [
-        "WELL",
+        Headers.WELL,
         Headers.SEGMENTTVD,
         Headers.SEGMENTMD,
         Headers.WBVOLUME,
@@ -348,7 +348,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.ITEM12,
     ]
     content_columns = [
-        "WELL",
+        Headers.WELL,
         Headers.TUBINGSEGMENT,
         Headers.TUBINGSEGMENT2,
         Headers.TUBINGBRANCH,
@@ -450,7 +450,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
          - object
     """
     columns = [
-        "WELL",
+        Headers.WELL,
         Headers.GROUP,
         Headers.I,
         Headers.J,
@@ -550,7 +550,7 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
     compdat_table = pd.DataFrame(
         compdat_table,
         columns=[
-            "WELL",
+            Headers.WELL,
             Headers.I,
             Headers.J,
             Headers.K,
@@ -635,7 +635,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     compsegs_table = pd.DataFrame(
         compsegs_table,
         columns=[
-            "WELL",
+            Headers.WELL,
             Headers.I,
             Headers.J,
             Headers.K,

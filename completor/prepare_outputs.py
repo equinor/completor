@@ -98,8 +98,8 @@ def dataframe_tostring(
         # then add first column
         df_temp = add_columns_first_last(df_temp, add_first=True, add_last=False)
     # Add single quotes around well names in output file
-    if "WELL" in df_temp.columns:
-        df_temp["WELL"] = "'" + df_temp["WELL"].astype(str) + "'"
+    if Headers.WELL in df_temp.columns:
+        df_temp[Headers.WELL] = "'" + df_temp[Headers.WELL].astype(str) + "'"
     output_string = df_temp.to_string(index=False, justify="justify", header=header)
     if format_column:
         if formatters is None:
@@ -239,7 +239,7 @@ def prepare_tubing_layer(
         Headers.TUBINGROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
-    df_well = df_well[df_well["WELL"] == well_name]
+    df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well["LATERAL"] == lateral]
     df_tubing_in_reservoir = as_data_frame(
         MD=df_well[Headers.TUB_MD],
@@ -415,7 +415,7 @@ def prepare_device_layer(
     """
     start_segment = max(df_tubing["SEG"].to_numpy()) + 1
     start_branch = max(df_tubing[Headers.BRANCH].to_numpy()) + 1
-    df_well = df_well[df_well["WELL"] == well_name]
+    df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well["LATERAL"] == lateral]
     # device segments are only created if:
     # 1. the device type is PERF
@@ -484,7 +484,7 @@ def prepare_annulus_layer(
         Annulus DataFrame, wseglink DataFrame
     """
     # filter for this lateral
-    df_well = df_well[df_well["WELL"] == well_name]
+    df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well["LATERAL"] == lateral]
     # filter segments which have annular zones
     df_well = df_well[df_well[Headers.ANNULUS_ZONE] > 0]
@@ -564,7 +564,7 @@ def prepare_annulus_layer(
             df_wseglink = pd.concat([df_wseglink, df_wseglink_upstream])
 
     if df_wseglink.shape[0] > 0:
-        df_wseglink = df_wseglink[["WELL", "ANNULUS", "DEVICE"]]
+        df_wseglink = df_wseglink[[Headers.WELL, "ANNULUS", "DEVICE"]]
         df_wseglink["ANNULUS"] = df_wseglink["ANNULUS"].astype(np.int64)
         df_wseglink["DEVICE"] = df_wseglink["DEVICE"].astype(np.int64)
         df_wseglink[""] = "/"
@@ -724,7 +724,7 @@ def prepare_compsegs(
     """
     # filter for this lateral
 
-    df_reservoir = df_reservoir[df_reservoir["WELL"] == well_name]
+    df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir["LATERAL"] == lateral]
     # compsegs is only for those who are either:
     # 1. open perforation in the device segment
@@ -980,7 +980,7 @@ def prepare_compdat(
     if df_reservoir.shape[0] == 0:
         return pd.DataFrame()
     compdat = pd.DataFrame()
-    compdat["WELL"] = [well_name] * df_reservoir.shape[0]
+    compdat[Headers.WELL] = [well_name] * df_reservoir.shape[0]
     compdat[Headers.I] = df_reservoir[Headers.I].to_numpy()
     compdat[Headers.J] = df_reservoir[Headers.J].to_numpy()
     compdat[Headers.K] = df_reservoir[Headers.K].to_numpy()
@@ -1024,7 +1024,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "AICD"]
     wsegaicd = pd.DataFrame()
     if df_merge.shape[0] > 0:
-        wsegaicd["WELL"] = [well_name] * df_merge.shape[0]
+        wsegaicd[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegaicd["SEG"] = df_merge["SEG"].to_numpy()
         wsegaicd["SEG2"] = df_merge["SEG"].to_numpy()
         wsegaicd["ALPHA"] = df_merge["ALPHA"].to_numpy()
@@ -1068,7 +1068,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICD"]
     wsegsicd = pd.DataFrame()
     if df_merge.shape[0] > 0:
-        wsegsicd["WELL"] = [well_name] * df_merge.shape[0]
+        wsegsicd[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegsicd["SEG"] = df_merge["SEG"].to_numpy()
         wsegsicd["SEG2"] = df_merge["SEG"].to_numpy()
         wsegsicd["ALPHA"] = df_merge["STRENGTH"].to_numpy()
@@ -1103,7 +1103,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "VALVE"].reset_index(drop=True)
     wsegvalv = pd.DataFrame()
     if df_merge.shape[0] > 0:
-        wsegvalv["WELL"] = [well_name] * df_merge.shape[0]
+        wsegvalv[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegvalv["SEG"] = df_merge["SEG"].to_numpy()
         # the Cv is already corrected by the scaling factor
         wsegvalv[Headers.CV] = df_merge[Headers.CV].to_numpy()
@@ -1156,11 +1156,11 @@ def prepare_wsegicv(
         wsegicv["WELL"] = [well_name] * df_merge.shape[0]
         wsegicv["DEFAULTS"] = "5*"
         wsegicv["AC_MAX"] = wsegicv["AC_MAX"].fillna(df_merge["AC"])
-        wsegicv = wsegicv.reindex(columns=["WELL", "SEG", Headers.CV, "AC", "DEFAULTS", "AC_MAX"])
+        wsegicv = wsegicv.reindex(columns=[Headers.WELL, "SEG", Headers.CV, "AC", "DEFAULTS", "AC_MAX"])
         wsegicv[""] = "/"
         # create tubing icv table
     if not df_icv_tubing.empty:
-        mask = (df_icv_tubing["WELL"] == well_name) & (df_icv_tubing[Headers.BRANCH] == lateral)
+        mask = (df_icv_tubing[Headers.WELL] == well_name) & (df_icv_tubing[Headers.BRANCH] == lateral)
         df_icv_tubing = df_icv_tubing.loc[mask]
         df_merge_tubing = pd.merge_asof(left=df_icv_tubing, right=df_icv, on=Headers.DEVICE_NUMBER, direction="nearest")
         df_merge_tubing = pd.merge_asof(
@@ -1172,10 +1172,10 @@ def prepare_wsegicv(
         )
         df_temp = df_merge_tubing.copy()
         df_temp = df_temp[["SEG", Headers.CV, "AC", "AC_MAX"]]
-        df_temp["WELL"] = [well_name] * df_merge_tubing.shape[0]
+        df_temp[Headers.WELL] = [well_name] * df_merge_tubing.shape[0]
         df_temp["DEFAULTS"] = "5*"
         df_temp["AC_MAX"] = df_temp["AC_MAX"].fillna(math.pi * 0.5 * df_tubing[Headers.DIAM] ** 2)
-        df_temp = df_temp.reindex(columns=["WELL", "SEG", Headers.CV, "AC", "DEFAULTS", "AC_MAX"])
+        df_temp = df_temp.reindex(columns=[Headers.WELL, "SEG", Headers.CV, "AC", "DEFAULTS", "AC_MAX"])
         df_temp[""] = "/"
         wsegicv = pd.concat([wsegicv, df_temp], axis=0).reset_index(drop=True)
     return wsegicv
@@ -1204,7 +1204,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "DAR"]
     wsegdar = pd.DataFrame()
     if df_merge.shape[0] > 0:
-        wsegdar["WELL"] = [well_name] * df_merge.shape[0]
+        wsegdar[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegdar["SEG"] = df_merge["SEG"].to_numpy()
         # the Cv is already corrected by the scaling factor
         wsegdar[Headers.CV_DAR] = df_merge[Headers.CV_DAR].to_numpy()
@@ -1291,9 +1291,9 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         SystemExit: If there are to many wells and/or segments with DAR
     """
     header = [
-        ["WELL", "SEG", Headers.CV_DAR, "AC_GAS", "DEFAULTS", "AC_MAX"],
+        [Headers.WELL, "SEG", Headers.CV_DAR, "AC_GAS", "DEFAULTS", "AC_MAX"],
         ["WELL", "SEG", Headers.CV_DAR, "AC_WATER", "DEFAULTS", "AC_MAX"],
-        ["WELL", "SEG", Headers.CV_DAR, "AC_OIL", "DEFAULTS", "AC_MAX"],
+        [Headers.WELL, "SEG", Headers.CV_DAR, "AC_OIL", "DEFAULTS", "AC_MAX"],
         ["WELL", "SEG", Headers.CV_DAR, "AC_OIL", "DEFAULTS", "AC_MAX"],
     ]
     sign_water = ["<=", ">", "", "<"]
@@ -1302,7 +1302,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
     action = "UDQ\n"
     for idx in range(df_wsegdar.shape[0]):
         segment_number = df_wsegdar["SEG"].iloc[idx]
-        well_name = df_wsegdar["WELL"].iloc[idx]
+        well_name = df_wsegdar[Headers.WELL].iloc[idx]
         action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
     action += "/\n\n"
     iaction = 3
@@ -1321,7 +1321,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
     action += "/\n\n"
     for idx in range(df_wsegdar.shape[0]):
         segment_number = df_wsegdar["SEG"].iloc[idx]
-        well_name = df_wsegdar["WELL"].iloc[idx]
+        well_name = df_wsegdar[Headers.WELL].iloc[idx]
         water_holdup_fraction_low_cutoff = df_wsegdar["WHF_LCF_DAR"].iloc[idx]
         water_holdup_fraction_high_cutoff = df_wsegdar["WHF_HCF_DAR"].iloc[idx]
         gas_holdup_fraction_low_cutoff = df_wsegdar["GHF_LCF_DAR"].iloc[idx]
@@ -1438,7 +1438,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             "",
         ],
         [
-            "WELL",
+            Headers.WELL,
             "SEG",
             "SEG2",
             "ALPHA_PILOT",
@@ -1459,7 +1459,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
         ],
     ]
     new_column = [
-        "WELL",
+        Headers.WELL,
         "SEG",
         "SEG2",
         "ALPHA",
@@ -1484,7 +1484,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
     action = ""
     for idx in range(df_wsegaicv.shape[0]):
         segment_number = df_wsegaicv["SEG"].iloc[idx]
-        well_name = df_wsegaicv["WELL"].iloc[idx]
+        well_name = df_wsegaicv[Headers.WELL].iloc[idx]
         wct = df_wsegaicv["WCT_AICV"].iloc[idx]
         ghf = df_wsegaicv["GHF_AICV"].iloc[idx]
         # LOWWCT_LOWGHF

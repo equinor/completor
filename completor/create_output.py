@@ -451,9 +451,9 @@ class CreateOutput:
         if self.print_udq:
             self.finalprint += self.udq_correlation
 
-        self.df_reservoir = wells.df_reservoir_all[wells.df_reservoir_all["WELL"] == self.well_name]
-        self.df_well = wells.df_well_all[wells.df_well_all["WELL"] == self.well_name]
-        self.laterals = self.df_well[self.df_well["WELL"] == self.well_name]["LATERAL"].unique()
+        self.df_reservoir = wells.df_reservoir_all[wells.df_reservoir_all[Headers.WELL] == self.well_name]
+        self.df_well = wells.df_well_all[wells.df_well_all[Headers.WELL] == self.well_name]
+        self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name]["LATERAL"].unique()
 
         """Start printing per well."""
         self.welsegs_header, _ = self.schedule.get_welsegs(self.well_name, branch=1)
@@ -523,7 +523,7 @@ class CreateOutput:
 
             self.branch_revision(lateral)
 
-            completion_table_well = case.completion_table[case.completion_table["WELL"] == self.well_name]
+            completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == self.well_name]
             completion_table_lateral = completion_table_well[completion_table_well[Headers.BRANCH] == lateral]
             self.df_compsegs = po.prepare_compsegs(
                 self.well_name,

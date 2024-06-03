@@ -181,7 +181,7 @@ class ReadCasefile:
 
         # Table headers
         header = [
-            "WELL",
+            Headers.WELL,
             Headers.BRANCH,
             Headers.START_MD,
             Headers.END_MEASURED_DEPTH,
@@ -269,7 +269,7 @@ class ReadCasefile:
 
         """
         # Table headers
-        header = ["WELL", Headers.BRANCH]
+        header = [Headers.WELL, Headers.BRANCH]
         start_index, end_index = self.locate_keyword("LATERAL_TO_DEVICE")
 
         if start_index == end_index:
@@ -839,7 +839,7 @@ class ReadCasefile:
         in ``read_completion``.
 
         """
-        df_temp = self.completion_table[self.completion_table["WELL"] == well_name]
+        df_temp = self.completion_table[self.completion_table[Headers.WELL] == well_name]
         df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
