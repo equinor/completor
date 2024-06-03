@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from completor import completion  # type: ignore
+from completor.constants import Headers
 
 
 def test_completion_index():
@@ -30,7 +31,7 @@ def test_connect_cells_segment_cells():
             [5.0],
             [8.0],
         ],
-        columns=["TUB_MD"],
+        columns=[Headers.TUB_MD],
     )
     df_tubing_segments = pd.DataFrame(
         [
@@ -38,11 +39,11 @@ def test_connect_cells_segment_cells():
             [4.5, 5.5],
             [7.5, 8.5],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_compsegs = pd.DataFrame(
         [[0.0, 3.00], [3.0, 10.0], [10.0, 20.0]],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_merge = pd.DataFrame(
         [
@@ -50,7 +51,7 @@ def test_connect_cells_segment_cells():
             [3.0, 10.0, 6.5, 5.0],
             [10.0, 20.0, 15.0, 8.0],
         ],
-        columns=["STARTMD", "ENDMD", "MD", "TUB_MD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUB_MD],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="cells")
@@ -65,7 +66,7 @@ def test_connect_cells_segment_cells_2():
             [15.0],
             [18.0],
         ],
-        columns=["TUB_MD"],
+        columns=[Headers.TUB_MD],
     )
     df_tubing_segments = pd.DataFrame(
         [
@@ -73,7 +74,7 @@ def test_connect_cells_segment_cells_2():
             [14.5, 15.5],
             [17.5, 18.5],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_compsegs = pd.DataFrame(
         [
@@ -81,7 +82,7 @@ def test_connect_cells_segment_cells_2():
             [3.0, 10.0],
             [10.0, 20.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
 
     df_merge = pd.DataFrame(
@@ -90,7 +91,7 @@ def test_connect_cells_segment_cells_2():
             [3.0, 10.0, 6.5, 1.0],
             [10.0, 20.0, 15.0, 15.0],
         ],
-        columns=["STARTMD", "ENDMD", "MD", "TUB_MD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUB_MD],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="cells")
@@ -105,7 +106,7 @@ def test_connect_cells_segment_user():
             [5.0],
             [10.0],
         ],
-        columns=["TUB_MD"],
+        columns=[Headers.TUB_MD],
     )
     df_tubing_segments = pd.DataFrame(
         [
@@ -113,7 +114,7 @@ def test_connect_cells_segment_user():
             [2.6, 7.5],
             [7.5, 20.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_compsegs = pd.DataFrame(
         [
@@ -121,7 +122,7 @@ def test_connect_cells_segment_user():
             [3.0, 10.0],
             [10.0, 20.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_merge = pd.DataFrame(
         [
@@ -129,7 +130,7 @@ def test_connect_cells_segment_user():
             [3.0, 10.0, 6.5, 5.0],
             [10.0, 20.0, 15.0, 10.0],
         ],
-        columns=["STARTMD", "ENDMD", "MD", "TUB_MD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUB_MD],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="user")
@@ -137,17 +138,14 @@ def test_connect_cells_segment_user():
 
 
 def test_insert_missing_segments_no_gap():
-    """
-    Test insert_missing_segments does not insert dummy segments when
-    there are no inactive cells.
-    """
+    """Test insert_missing_segments does not insert dummy segments when there are no inactive cells."""
     df_tubing_segments = pd.DataFrame(
         [
             [1000, 2000],
             [2000, 3000],
             [3000, 4000],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_true = pd.DataFrame(
         [
@@ -155,7 +153,7 @@ def test_insert_missing_segments_no_gap():
             [2000, 3000, "OriginalSegment"],
             [3000, 4000, "OriginalSegment"],
         ],
-        columns=["STARTMD", "ENDMD", "SEGMENT_DESC"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.insert_missing_segments(df_tubing_segments, "A1")
@@ -163,14 +161,14 @@ def test_insert_missing_segments_no_gap():
 
 
 def test_insert_missing_segments_one_gap():
-    """Test insert_missing_segments inserts one dummy segments due to inactive cells."""
+    """Test insert_missing_segments inserts one dummy segment due to inactive cells."""
     df_tubing_segments = pd.DataFrame(
         [
             [1000, 2000],
             [2500, 3000],
             [3000, 4000],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_true = pd.DataFrame(
         [
@@ -179,7 +177,7 @@ def test_insert_missing_segments_one_gap():
             [2500, 3000, "OriginalSegment"],
             [3000, 4000, "OriginalSegment"],
         ],
-        columns=["STARTMD", "ENDMD", "SEGMENT_DESC"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.insert_missing_segments(df_tubing_segments, "A1")
@@ -194,7 +192,7 @@ def test_insert_missing_segments_two_gaps():
             [2500, 3000],
             [3005, 4000],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_true = pd.DataFrame(
         [
@@ -204,7 +202,7 @@ def test_insert_missing_segments_two_gaps():
             [3000, 3005, "AdditionalSegment"],
             [3005, 4000, "OriginalSegment"],
         ],
-        columns=["STARTMD", "ENDMD", "SEGMENT_DESC"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.insert_missing_segments(df_tubing_segments, "A1")
@@ -213,29 +211,28 @@ def test_insert_missing_segments_two_gaps():
 
 def test_insert_missing_segments_raise_error():
     """Test that an error is raised when there is no data in df_tubing_segments."""
-    df_tubing_segments = pd.DataFrame([], columns=["STARTMD", "ENDMD"])
+    df_tubing_segments = pd.DataFrame([], columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH])
 
     with pytest.raises(SystemExit):
         completion.insert_missing_segments(df_tubing_segments, "A1")
 
 
 def test_well_trajectory():
-    """
-    Test well_trajectory creates correct relation (sorted by MD) between
-    well segments' (welsegs) header and content.
+    """Test well_trajectory creates the correct relation (sorted by MD) between well segments'
+    (welsegs) header and content.
     """
     df_welsegs_header = pd.DataFrame(
         [
             [2.0, 1.0],
         ],
-        columns=["SEGMENTMD", "SEGMENTTVD"],
+        columns=[Headers.SEGMENTMD, Headers.SEGMENTTVD],
     )
     df_welsegs_content = pd.DataFrame(
         [
             [5.0, 1.0],
             [4.0, 3.0],
         ],
-        columns=["TUBINGMD", "TUBINGTVD"],
+        columns=[Headers.TUBINGMD, Headers.TUBINGTVD],
     )
     df_true = pd.DataFrame(
         [
@@ -243,7 +240,7 @@ def test_well_trajectory():
             [4.0, 3.0],
             [5.0, 1.0],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
 
     df_test = completion.well_trajectory(df_welsegs_header, df_welsegs_content)
@@ -251,9 +248,7 @@ def test_well_trajectory():
 
 
 def test_define_annulus_zone_keep_gravel_pack_1():
-    """
-    Test define_annulus_zone gives open annulus segment
-    when interrupted by packer segments and gravel packs.
+    """Test define_annulus_zone gives open annulus segment when interrupted by packer segments and gravel packs.
 
     Also check packer are removed, while gravel pack segments are kept.
     """
@@ -266,7 +261,7 @@ def test_define_annulus_zone_keep_gravel_pack_1():
             [5.0, 5.0, "PA"],
             [5.0, 6.0, "OA"],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
@@ -277,7 +272,7 @@ def test_define_annulus_zone_keep_gravel_pack_1():
             [4.0, 5.0, "GP", 0],
             [5.0, 6.0, "OA", 3],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS", "ANNULUS_ZONE"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
 
     df_test = completion.define_annulus_zone(df_completion)
@@ -286,9 +281,7 @@ def test_define_annulus_zone_keep_gravel_pack_1():
 
 
 def test_define_annulus_zone_keep_gravel_pack_2():
-    """
-    Test define_annulus_zone gives open annulus segment
-    when interrupted by packer segments and gravel packs.
+    """Test define_annulus_zone gives open annulus segment when interrupted by packer segments and gravel packs.
 
     Also check packer are removed, while gravel pack segments are kept.
     """
@@ -302,7 +295,7 @@ def test_define_annulus_zone_keep_gravel_pack_2():
             [5.0, 5.0, "PA"],
             [5.0, 6.0, "OA"],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
@@ -313,7 +306,7 @@ def test_define_annulus_zone_keep_gravel_pack_2():
             [4.0, 5.0, "OA", 3],
             [5.0, 6.0, "OA", 4],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS", "ANNULUS_ZONE"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
 
     df_test = completion.define_annulus_zone(df_completion)
@@ -322,9 +315,7 @@ def test_define_annulus_zone_keep_gravel_pack_2():
 
 
 def test_define_annulus_zone_packer_segments():
-    """
-    Test define_annulus_zone gives three open annulus segment
-    when interrupted by packer segments.
+    """Test define_annulus_zone gives three open annulus segment when interrupted by packer segments.
 
     Also check packer are removed.
     """
@@ -338,7 +329,7 @@ def test_define_annulus_zone_packer_segments():
             [5.0, 5.0, "PA"],
             [5.0, 6.0, "OA"],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
@@ -349,7 +340,7 @@ def test_define_annulus_zone_packer_segments():
             [4.0, 5.0, "OA", 2],
             [5.0, 6.0, "OA", 3],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS", "ANNULUS_ZONE"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
 
     df_test = completion.define_annulus_zone(df_completion)
@@ -357,11 +348,8 @@ def test_define_annulus_zone_packer_segments():
     pd.testing.assert_frame_equal(df_test, df_true)
 
 
-def test_define_annulus_zone_continious_annulus_1():
-    """
-    Test define_annulus_zone gives one continious open annulus segment
-    when all segment are open annulus.
-    """
+def test_define_annulus_zone_continuous_annulus_1():
+    """Test define_annulus_zone gives one continuous open annulus segment when all segment are open annulus."""
     df_completion = pd.DataFrame(
         [
             [1.0, 2.0, "OA"],
@@ -370,7 +358,7 @@ def test_define_annulus_zone_continious_annulus_1():
             [4.0, 5.0, "OA"],
             [5.0, 6.0, "OA"],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
@@ -381,7 +369,7 @@ def test_define_annulus_zone_continious_annulus_1():
             [4.0, 5.0, "OA", 1],
             [5.0, 6.0, "OA", 1],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS", "ANNULUS_ZONE"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
 
     df_test = completion.define_annulus_zone(df_completion)
@@ -402,7 +390,7 @@ def test_define_annulus_zone_continious_annulus_2():
             [4.0, 5.0, "OA"],
             [5.0, 6.0, "GP"],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
@@ -413,7 +401,7 @@ def test_define_annulus_zone_continious_annulus_2():
             [4.0, 5.0, "OA", 1],
             [5.0, 6.0, "GP", 0],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS", "ANNULUS_ZONE"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
 
     df_test = completion.define_annulus_zone(df_completion)
@@ -434,7 +422,7 @@ def test_define_annulus_zone_no_open_annulus():
             [4.0, 5.0, "GP"],
             [5.0, 6.0, "GP"],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
@@ -445,7 +433,7 @@ def test_define_annulus_zone_no_open_annulus():
             [4.0, 5.0, "GP", 0],
             [5.0, 6.0, "GP", 0],
         ],
-        columns=["STARTMD", "ENDMD", "ANNULUS", "ANNULUS_ZONE"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
 
     df_test = completion.define_annulus_zone(df_completion)
@@ -463,7 +451,7 @@ def test_create_tubing_segments_cells():
             [4.0, 5.0],
             [5.0, 6.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -471,7 +459,7 @@ def test_create_tubing_segments_cells():
             [0, 0],
             [10, 10],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -481,7 +469,7 @@ def test_create_tubing_segments_cells():
             [4.0, 5.0, 4.5, 4.5],
             [5.0, 6.0, 5.5, 5.5],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, method="CELLS")
@@ -498,7 +486,7 @@ def test_create_tubing_segments_cells_with_input_lumping():
             [4.0, 5.0],
             [5.0, 6.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = pd.DataFrame(
         [
@@ -508,21 +496,21 @@ def test_create_tubing_segments_cells_with_input_lumping():
             [4.0, 5.0, 2],
             [5.0, 6.0, 2],
         ],
-        columns=["STARTMD", "ENDMD", "SEGMENT"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT],
     )
     df_mdtvd = pd.DataFrame(
         [
             [0, 0],
             [10, 10],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
             [1.0, 3.0, 2.0, 2.0],
             [3.0, 6.0, 4.5, 4.5],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, method="CELLS")
@@ -540,7 +528,7 @@ def test_minimum_segment_length_gt_zero():
             [20.0, 29.0],
             [29.0, 30.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -548,7 +536,7 @@ def test_minimum_segment_length_gt_zero():
             [0, 0],
             [30, 30],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -556,7 +544,7 @@ def test_minimum_segment_length_gt_zero():
             [12.0, 29.0, 20.5, 20.5],
             [29.0, 30.0, 29.5, 29.5],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(
@@ -580,7 +568,7 @@ def test_minimum_segment_length_eq_zero():
             [20.0, 29.0],
             [29.0, 30.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -588,7 +576,7 @@ def test_minimum_segment_length_eq_zero():
             [0, 0],
             [30, 30],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -598,15 +586,11 @@ def test_minimum_segment_length_eq_zero():
             [20.0, 29.0, 24.5, 24.5],
             [29.0, 30.0, 29.5, 29.5],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(
-        df_reservoir,
-        df_completion,
-        df_mdtvd,
-        method="CELLS",
-        minimum_segment_length=minimum_segment_length,
+        df_reservoir, df_completion, df_mdtvd, method="CELLS", minimum_segment_length=minimum_segment_length
     )
     pd.testing.assert_frame_equal(df_test, df_true)
 
@@ -621,7 +605,7 @@ def test_minimum_segment_length_default():
             [20.0, 29.0],
             [29.0, 30.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -629,7 +613,7 @@ def test_minimum_segment_length_default():
             [0, 0],
             [30, 30],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -639,7 +623,7 @@ def test_minimum_segment_length_default():
             [20.0, 29.0, 24.5, 24.5],
             [29.0, 30.0, 29.5, 29.5],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
     df_test = completion.create_tubing_segments(
         df_reservoir,
@@ -660,7 +644,7 @@ def test_create_tubing_segments_user():
             [8.1, 8.7],
             [9.0, 9.5],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -668,7 +652,7 @@ def test_create_tubing_segments_user():
             [0, 0],
             [10, 10],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -678,7 +662,7 @@ def test_create_tubing_segments_user():
             [8.1, 8.7, 8.399999999999999, 8.399999999999999],
             [9.0, 9.5, 9.25, 9.25],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "USER")
@@ -695,7 +679,7 @@ def test_create_tubing_segments_fix_15():
             [4.0, 5.0],
             [5.0, 6.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -703,7 +687,7 @@ def test_create_tubing_segments_fix_15():
             [0, 0],
             [10, 10],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -712,7 +696,7 @@ def test_create_tubing_segments_fix_15():
             [4.0, 5.5, 4.75, 4.75],
             [5.5, 6.0, 5.75, 5.75],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "FIX", 1.5)
@@ -729,7 +713,7 @@ def test_create_tubing_segments_fix_1():
             [4.0, 5.0],
             [5.0, 6.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -737,7 +721,7 @@ def test_create_tubing_segments_fix_1():
             [0, 0],
             [10, 10],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -747,7 +731,7 @@ def test_create_tubing_segments_fix_1():
             [4.0, 5.0, 4.5, 4.5],
             [5.0, 6.0, 5.5, 5.5],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "FIX", 1.0)
@@ -761,7 +745,7 @@ def test_create_tubing_segment_welsegs():
             [1.0, 2.0],
             [5.0, 6.0],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_reservoir = df_completion.copy()
     df_mdtvd = pd.DataFrame(
@@ -772,7 +756,7 @@ def test_create_tubing_segment_welsegs():
             [5.0, 5.0],
             [6.0, 6.0],
         ],
-        columns=["MD", "TVD"],
+        columns=[Headers.MD, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -783,7 +767,7 @@ def test_create_tubing_segment_welsegs():
             [4.5, 5.0, 4.75, 4.75],
             [5.0, 6.0, 5.50, 5.50],
         ],
-        columns=["STARTMD", "ENDMD", "TUB_MD", "TUB_TVD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "WELSEGS")
@@ -829,11 +813,9 @@ OUTER_DIAMETER;ROUGHNESS;ANNULUS_ZONE;SCALINGFACTOR
 
 
 def test_fix_compsegs():
-    """
-    Test that fix_compsegs correctly assigns start and end measured depths.
+    """Test that fix_compsegs correctly assigns start and end measured depths.
 
-    In cases where there are overlapping segments in compsegs, also test zero
-    length segments.
+    In cases where there are overlapping segments in compsegs, also test zero length segments.
     """
     data_frame_in = pd.DataFrame(
         [
@@ -845,7 +827,7 @@ def test_fix_compsegs():
             [3019.764, 3039.297],
             [3039.297, 3041.915],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
 
     data_frame_true = pd.DataFrame(
@@ -858,15 +840,14 @@ def test_fix_compsegs():
             [3026.67405, 3039.297],
             [3039.297, 3041.915],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     result = completion.fix_compsegs(data_frame_in, "")
     pd.testing.assert_frame_equal(data_frame_true, result)
 
 
 def test_lumping_segment_1():
-    """Test lumping_segment lumps the additional segment only with
-    original segment containing an annulus zone."""
+    """Test lumping_segment lumps the additional segment only with original segment containing an annulus zone."""
     df_well = pd.DataFrame(
         [
             [1.0, 0, "OriginalSegment"],
@@ -874,7 +855,7 @@ def test_lumping_segment_1():
             [3.0, 1, "AdditionalSegment"],
             [4.0, 1, "OriginalSegment"],
         ],
-        columns=["NDEVICES", "ANNULUS_ZONE", "SEGMENT_DESC"],
+        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
@@ -882,7 +863,7 @@ def test_lumping_segment_1():
             [2.0, 0, "OriginalSegment"],
             [7.0, 1, "OriginalSegment"],
         ],
-        columns=["NDEVICES", "ANNULUS_ZONE", "SEGMENT_DESC"],
+        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.lumping_segments(df_well)
@@ -901,7 +882,7 @@ def test_lumping_segment_2():
             [3.0, 1, "AdditionalSegment"],
             [4.0, 1, "OriginalSegment"],
         ],
-        columns=["NDEVICES", "ANNULUS_ZONE", "SEGMENT_DESC"],
+        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
@@ -909,7 +890,7 @@ def test_lumping_segment_2():
             [5.0, 1, "OriginalSegment"],
             [4.0, 1, "OriginalSegment"],
         ],
-        columns=["NDEVICES", "ANNULUS_ZONE", "SEGMENT_DESC"],
+        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.lumping_segments(df_well)
@@ -937,20 +918,20 @@ def test_skin():
             ["A1", 1, 6, 3, 3, "OPEN", "1*", 9.0, 2.0, 1.0, 2.0, "1*", "X", 1.0],
         ],
         columns=[
-            "WELL",
-            "I",
-            "J",
-            "K",
-            "K2",
-            "STATUS",
-            "SATNUM",
-            "CF",
-            "DIAM",
-            "KH",
-            "SKIN",
-            "DFACT",
-            "COMPDAT_DIRECTION",
-            "RO",
+            Headers.WELL,
+            Headers.I,
+            Headers.J,
+            Headers.K,
+            Headers.K2,
+            Headers.STATUS,
+            Headers.SATNUM,
+            Headers.CF,
+            Headers.DIAM,
+            Headers.KH,
+            Headers.SKIN,
+            Headers.DFACT,
+            Headers.COMPDAT_DIRECTION,
+            Headers.RO,
         ],
     )
     well_schedule = completion.WellSchedule(["A1"])
@@ -960,7 +941,7 @@ def test_skin():
 
 
 def test_set_welsegs_negative_length_segments(caplog):
-    """Test that negative segments inside of a branch gives a warning."""
+    """Test that negative segments inside a branch give a warning."""
     schedule = completion.WellSchedule(["A1"])
     well_segments = [
         ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],

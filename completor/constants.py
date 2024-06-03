@@ -16,6 +16,30 @@ class Headers:
     """Headers for DataFrames."""
 
     # Autoadded / To be triaged.
+
+    NDEVICES = "NDEVICES"
+    I = "I"  # noqa: E741
+    J = "J"
+    K = "K"
+    K2 = "K2"
+    STATUS = "STATUS"
+    SATNUM = "SATNUM"
+    CF = "CF"
+    DIAM = "DIAM"
+    KH = "KH"
+    SKIN = "SKIN"
+    DFACT = "DFACT"
+    COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
+    RO = "RO"
+
+    TUB_TVD = "TUB_TVD"  # Same as TUBINGTVD
+    TVD = "TVD"
+    TUBINGMD = "TUBINGMD"
+    TUBINGTVD = "TUBINGTVD"
+    SEGMENTTVD = "SEGMENTTVD"
+    SEGMENTMD = "SEGMENTMD"
+    SEGMENT_DESC = "SEGMENT_DESC"
+    SEGMENT = "SEGMENT"
     WCUT = "WCUT"
     VISCAL_ICD = "VISCAL_ICD"
     RHOCAL_ICD = "RHOCAL_ICD"
@@ -75,6 +99,9 @@ class Headers:
     TUBINGBRANCH = "TUBINGBRANCH"
     MD = "MD"
     DIAM = "DIAM"
+
+    # from `test_completion.py`
+    TUB_MD = "TUB_MD"
 
     # Completion
     START_MEASURED_DEPTH = "STARTMD"
