@@ -188,7 +188,7 @@ class ReadCasefile:
             Headers.INNER_DIAMETER,
             Headers.OUTER_DIAMETER,
             Headers.ROUGHNESS,
-            "ANNULUS",
+            Headers.ANNULUS,
             "NVALVEPERJOINT",
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,

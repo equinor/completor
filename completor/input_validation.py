@@ -26,12 +26,12 @@ def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_completion``.
     """
     # Set default values for packer sections
-    df_comp[Headers.INNER_DIAMETER] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp[Headers.INNER_DIAMETER])
-    df_comp[Headers.OUTER_DIAMETER] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp[Headers.OUTER_DIAMETER])
-    df_comp[Headers.ROUGHNESS] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp[Headers.ROUGHNESS])
-    df_comp["NVALVEPERJOINT"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["NVALVEPERJOINT"])
-    df_comp[Headers.DEVICE_TYPE] = np.where(df_comp["ANNULUS"] == "PA", "PERF", df_comp[Headers.DEVICE_TYPE])
-    df_comp[Headers.DEVICE_NUMBER] = np.where(df_comp["ANNULUS"] == "PA", 0, df_comp[Headers.DEVICE_NUMBER])
+    df_comp[Headers.INNER_DIAMETER] = np.where(df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp[Headers.INNER_DIAMETER])
+    df_comp[Headers.OUTER_DIAMETER] = np.where(df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp[Headers.OUTER_DIAMETER])
+    df_comp[Headers.ROUGHNESS] = np.where(df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp[Headers.ROUGHNESS])
+    df_comp["NVALVEPERJOINT"] = np.where(df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp["NVALVEPERJOINT"])
+    df_comp[Headers.DEVICE_TYPE] = np.where(df_comp[Headers.ANNULUS] == "PA", "PERF", df_comp[Headers.DEVICE_TYPE])
+    df_comp[Headers.DEVICE_NUMBER] = np.where(df_comp[Headers.ANNULUS] == "PA", 0, df_comp[Headers.DEVICE_NUMBER])
     return df_comp
 
 
@@ -79,7 +79,7 @@ def check_default_non_packer(df_comp: pd.DataFrame) -> pd.DataFrame:
     df_comp[Headers.ROUGHNESS] = (
         df_comp[Headers.ROUGHNESS].replace("1*", "1e-5").astype(np.float64)
     )  # Ensures float after replacing!
-    df_nonpa = df_comp[df_comp["ANNULUS"] != "PA"]
+    df_nonpa = df_comp[df_comp[Headers.ANNULUS] != "PA"]
     df_columns = df_nonpa.columns.to_numpy()
     for column in df_columns:
         if "1*" in df_nonpa[column]:
@@ -109,7 +109,7 @@ def set_format_completion(df_comp: pd.DataFrame) -> pd.DataFrame:
             Headers.INNER_DIAMETER: np.float64,
             Headers.OUTER_DIAMETER: np.float64,
             Headers.ROUGHNESS: np.float64,
-            "ANNULUS": str,
+            Headers.ANNULUS: str,
             "NVALVEPERJOINT": np.float64,
             Headers.DEVICE_TYPE: str,
             Headers.DEVICE_NUMBER: np.int64,
@@ -154,13 +154,13 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int):
             If the completion description is incomplete for some range of depth
             If the completion description is overlapping for some range of depth
     """
-    if df_comp["ANNULUS"].iloc[idx] == "PA" and (
+    if df_comp[Headers.ANNULUS].iloc[idx] == "PA" and (
         df_comp[Headers.START_MD].iloc[idx] != df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
         raise abort("Packer segments must not have length")
 
     if (
-        df_comp["ANNULUS"].iloc[idx] != "PA"
+        df_comp[Headers.ANNULUS].iloc[idx] != "PA"
         and df_comp[Headers.DEVICE_TYPE].iloc[idx] != "ICV"
         and df_comp[Headers.START_MD].iloc[idx] == df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
@@ -183,7 +183,7 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int):
             f"{df_comp['DEVICETYPE'].iloc[idx]} not a valid device type. "
             "Valid types are PERF, AICD, ICD, VALVE, DAR, AICV, and ICV."
         )
-    if df_comp["ANNULUS"].iloc[idx] not in ["GP", "OA", "PA"]:
+    if df_comp[Headers.ANNULUS].iloc[idx] not in ["GP", "OA", "PA"]:
         raise abort(f"{df_comp['ANNULUS'].iloc[idx]} not a valid annulus type. Valid types are GP, OA, and PA")
 
 
@@ -356,7 +356,7 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
     nrow = df_lat2dev.shape[0]
     for idx in range(0, nrow):
         l2d_well = df_lat2dev[Headers.WELL].iloc[idx]
-        if (df_comp[df_comp[Headers.WELL] == l2d_well]["ANNULUS"] == "OA").any():
+        if (df_comp[df_comp[Headers.WELL] == l2d_well][Headers.ANNULUS] == "OA").any():
             raise abort(
                 f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
                 "This may trigger an error in reservoir simulator."

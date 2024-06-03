@@ -453,7 +453,7 @@ class CreateOutput:
 
         self.df_reservoir = wells.df_reservoir_all[wells.df_reservoir_all[Headers.WELL] == self.well_name]
         self.df_well = wells.df_well_all[wells.df_well_all[Headers.WELL] == self.well_name]
-        self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name]["LATERAL"].unique()
+        self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
         """Start printing per well."""
         self.welsegs_header, _ = self.schedule.get_welsegs(self.well_name, branch=1)

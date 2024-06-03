@@ -196,7 +196,7 @@ def visualize_well(
     | :ref:`df_well`
     """
     figure = visualization.create_figure()
-    laterals = df_well["LATERAL"].unique()
+    laterals = df_well[Headers.LATERAL].unique()
     if isinstance(segment_length, float):
         if segment_length >= 0.0:
             max_md = max(df_well[Headers.TUB_MD].to_numpy())
@@ -210,8 +210,8 @@ def visualize_well(
     else:
         raise TypeError(f"segment_length has invalid type ({type(segment_length)})")
     for lateral_idx, lateral in enumerate(laterals):
-        df_this_well = df_well[df_well["LATERAL"] == lateral]
-        df_this_reservoir = df_reservoir[df_reservoir["LATERAL"] == lateral]
+        df_this_well = df_well[df_well[Headers.LATERAL] == lateral]
+        df_this_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
         axs = figure.add_subplot(len(laterals), 1, lateral_idx + 1)
         axs.get_yaxis().set_visible(False)
         axs.set_title(f" Well : {well_name} : Lateral : {lateral}")

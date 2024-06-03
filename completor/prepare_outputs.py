@@ -240,7 +240,7 @@ def prepare_tubing_layer(
     }
     cols = list(rnm.values())
     df_well = df_well[df_well[Headers.WELL] == well_name]
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_tubing_in_reservoir = as_data_frame(
         MD=df_well[Headers.TUB_MD],
         TVD=df_well[Headers.TUB_TVD],
@@ -416,7 +416,7 @@ def prepare_device_layer(
     start_segment = max(df_tubing["SEG"].to_numpy()) + 1
     start_branch = max(df_tubing[Headers.BRANCH].to_numpy()) + 1
     df_well = df_well[df_well[Headers.WELL] == well_name]
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     # device segments are only created if:
     # 1. the device type is PERF
     # 2. if it is not PERF then it must have number of device > 0
@@ -485,7 +485,7 @@ def prepare_annulus_layer(
     """
     # filter for this lateral
     df_well = df_well[df_well[Headers.WELL] == well_name]
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     # filter segments which have annular zones
     df_well = df_well[df_well[Headers.ANNULUS_ZONE] > 0]
     # loop through all annular zones
@@ -564,8 +564,8 @@ def prepare_annulus_layer(
             df_wseglink = pd.concat([df_wseglink, df_wseglink_upstream])
 
     if df_wseglink.shape[0] > 0:
-        df_wseglink = df_wseglink[[Headers.WELL, "ANNULUS", "DEVICE"]]
-        df_wseglink["ANNULUS"] = df_wseglink["ANNULUS"].astype(np.int64)
+        df_wseglink = df_wseglink[[Headers.WELL, Headers.ANNULUS, "DEVICE"]]
+        df_wseglink[Headers.ANNULUS] = df_wseglink[Headers.ANNULUS].astype(np.int64)
         df_wseglink["DEVICE"] = df_wseglink["DEVICE"].astype(np.int64)
         df_wseglink[""] = "/"
 
@@ -667,7 +667,7 @@ def connect_compseg_icv(
     df_temp = df_completion_table[
         (df_completion_table["NVALVEPERJOINT"] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
     ]
-    df_completion_table_clean = df_temp[(df_temp["ANNULUS"] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
+    df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
     df_res = df_reservoir.copy(deep=True)
 
     df_res["MD_MARKER"] = df_res[Headers.MD]
@@ -686,7 +686,7 @@ def connect_compseg_icv(
         left=df_res, right=df_device, left_on="MD_MARKER", right_on=Headers.MD, direction="nearest"
     )
     df_compseg_annulus = pd.DataFrame()
-    if (df_completion_table["ANNULUS"] == "OA").any():
+    if (df_completion_table[Headers.ANNULUS] == "OA").any():
         df_compseg_annulus = pd.merge_asof(
             left=df_res, right=df_annulus, left_on="MD_MARKER", right_on=Headers.MD, direction="nearest"
         )
@@ -725,7 +725,7 @@ def prepare_compsegs(
     # filter for this lateral
 
     df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
-    df_reservoir = df_reservoir[df_reservoir["LATERAL"] == lateral]
+    df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
     # compsegs is only for those who are either:
     # 1. open perforation in the device segment
     # 2. has number of device > 0
@@ -855,9 +855,9 @@ def connect_compseg_usersegment(
     df_temp = df_completion_table[
         (df_completion_table["NVALVEPERJOINT"] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
     ]
-    df_completion_table_clean = df_temp[(df_temp["ANNULUS"] != "PA")]
+    df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA")]
     if not df_annulus.empty:
-        df_completion_table_clean = df_completion_table[df_completion_table["ANNULUS"] == "OA"]
+        df_completion_table_clean = df_completion_table[df_completion_table[Headers.ANNULUS] == "OA"]
     df_completion_table_clean = df_completion_table_clean[
         (df_completion_table_clean[Headers.END_MEASURED_DEPTH] > df_reservoir[Headers.START_MD].iloc[0])
     ]
@@ -972,7 +972,7 @@ def prepare_compdat(
         COMPDAT
     """
     df_reservoir = df_reservoir[df_reservoir["WELL"] == well_name]
-    df_reservoir = df_reservoir[df_reservoir["LATERAL"] == lateral]
+    df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
     df_reservoir = df_reservoir[
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
         | ((df_reservoir[Headers.NDEVICES] > 0) | (df_reservoir[Headers.DEVICE_TYPE] == "PERF"))
@@ -1014,7 +1014,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         WSEGAICD
     """
     df_well = df_well[df_well["WELL"] == well_name]
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1058,7 +1058,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Returns:
         WSEGSICD
     """
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1093,7 +1093,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Returns:
         WSEGVALV
     """
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1141,7 +1141,8 @@ def prepare_wsegicv(
         Dataframe for ICV
     """
     df_well = df_well[
-        (df_well["LATERAL"] == lateral) & ((df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0))
+        (df_well[Headers.LATERAL] == lateral)
+        & ((df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0))
     ]
     if df_well.empty:
         return df_well
@@ -1194,7 +1195,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
     Returns:
         DataFrame for DAR
     """
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1234,7 +1235,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Returns:
         DataFrame for AICV
     """
-    df_well = df_well[df_well["LATERAL"] == lateral]
+    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()

@@ -112,7 +112,9 @@ class CreateWells:
         # We cannot update a list while iterating of it
         for well_name in active_wells.copy():
             # Annulus content of each well
-            ann_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name]["ANNULUS"]
+            ann_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name][
+                Headers.ANNULUS
+            ]
             type_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name][
                 Headers.DEVICE_TYPE
             ]
@@ -367,7 +369,7 @@ class CreateWells:
         self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
         # Remove WELL column in the df_reservoir.
-        self.df_reservoir.drop(["WELL"], inplace=True, axis=1)
+        self.df_reservoir.drop([Headers.WELL], inplace=True, axis=1)
         # If multiple occurrences of same IJK in compdat/compsegs --> keep the last one.
         self.df_reservoir.drop_duplicates(subset=Headers.START_MD, keep="last", inplace=True)
         self.df_reservoir.reset_index(inplace=True)
@@ -498,7 +500,7 @@ class CreateWells:
            * - DEVICETYPE
              - str
            * - ANNULUS_ZONE
-             - int
+         - int
         """
         self.df_completion = completion.define_annulus_zone(self.df_completion)
 
@@ -618,7 +620,7 @@ class CreateWells:
         )
 
         if (len(self.df_completion[Headers.DEVICE_TYPE].unique()) > 1) & (
-            (self.df_completion[Headers.DEVICE_TYPE] == "ICV") & (self.df_completion["NVALVEPERJOINT"] > 0)
+            (self.df_completion[Headers.DEVICE_TYPE] == "ICV") & (self.df_completion[Headers.VALVES_PER_JOINT] > 0)
         ).any():
             self.df_tubing_segments = fix_compsegs_by_priority(self.df_completion, df_tubing_cells, df_tubing_user)
 
@@ -788,8 +790,8 @@ class CreateWells:
         """
         self.df_well[Headers.WELL] = self.well_name
         self.df_reservoir[Headers.WELL] = self.well_name
-        self.df_well["LATERAL"] = lateral
-        self.df_reservoir["LATERAL"] = lateral
+        self.df_well[Headers.LATERAL] = lateral
+        self.df_reservoir[Headers.LATERAL] = lateral
 
     def combine_df(self, lateral: int) -> None:
         """
