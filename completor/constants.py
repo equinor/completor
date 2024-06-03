@@ -17,6 +17,15 @@ class Headers:
 
     # Autoadded / To be triaged.
 
+    SAT = "SAT"
+    FLAG = "FLAG"
+    DEF = "DEF"
+    DIR = "DIR"
+    SEG = "SEG"
+    SEG2 = "SEG2"
+    OUT = "OUT"
+    COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"
+    LATERAL = "LATERAL"
     NDEVICES = "NDEVICES"
     I = "I"  # noqa: E741
     J = "J"
@@ -88,6 +97,17 @@ class Headers:
     F = "F"
     RHOCAL_AICD = "RHOCAL_AICD"
     VISCAL_AICD = "VISCAL_AICD"
+
+    CV_DAR = "CV_DAR"
+    AC_OIL = "AC_OIL"
+    AC_GAS = "AC_GAS"
+    AC_WATER = "AC_WATER"
+    WHF_LCF_DAR = "WHF_LCF_DAR"
+    WHF_HCF_DAR = "WHF_HCF_DAR"
+    GHF_LCF_DAR = "GHF_LCF_DAR"
+    GHF_HCF_DAR = "GHF_HCF_DAR"
+    DEFAULTS = "DEFAULTS"
+    AC_MAX = "AC_MAX"
 
     CV = "CV"
     AC = "AC"

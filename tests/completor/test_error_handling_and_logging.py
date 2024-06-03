@@ -15,9 +15,7 @@ _debug_information_file_name_pattern = re.compile(r"^Completor-\d{8}-\d{6}-\w\d{
 
 
 def test_debug_information_is_written_to_disk_on_failure(tmpdir, caplog):
-    """
-    Check if completor writes debug information to disk in the event of a failure.
-    """
+    """Check if completor writes debug information to disk in the event of a failure."""
     tmpdir.chdir()
     case_file = str(_testdir / "usestrict_default_missingbranch.casefile")
     sch_file = str(_testdir / "ml_well.sch")
