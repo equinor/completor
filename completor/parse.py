@@ -151,20 +151,20 @@ def unpack_records(record: list[str]) -> list[str]:
     """
     record = deepcopy(record)
     record_length = len(record)
-    idx = -1
-    while idx < record_length - 1:
+    i = -1
+    while i < record_length - 1:
         # Loop and find if default records are found
-        idx = idx + 1
-        if "*" in str(record[idx]):
+        i += 1
+        if "*" in str(record[i]):
             # default is found and get the number before the star *
-            ndefaults = re.search(r"\d+", record[idx])
-            record[idx] = "1*"
+            ndefaults = re.search(r"\d+", record[i])
+            record[i] = "1*"
             if ndefaults:
                 _ndefaults = int(ndefaults.group())
                 idef = 0
                 while idef < _ndefaults - 1:
-                    record.insert(idx, "1*")
-                    idef = idef + 1
+                    record.insert(i, "1*")
+                    idef += 1
             record_length = len(record)
     return record
 
@@ -353,7 +353,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.TUBINGSEGMENT2,
         Headers.TUBINGBRANCH,
         Headers.TUBINGOUTLET,
-        "TUBINGMD",
+        Headers.TUBINGMD,
         Headers.TUBINGTVD,
         Headers.TUBINGID,
         Headers.TUBINGROUGHNESS,

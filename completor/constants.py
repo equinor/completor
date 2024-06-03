@@ -17,6 +17,13 @@ class Headers:
 
     # Autoadded / To be triaged.
 
+    WCT = "WCT"  # Though used once, meaning Water cut.
+    OPEN = "OPEN"
+    RHO = "RHO"
+    VIS = "VIS"
+    MD_MARKER = "MD_MARKER"
+    DEVICE = "DEVICE"
+    SF = "SF"
     THERM = "THERM"
     PERFDEPTH = "PERFDEPTH"
     ENDGRID = "ENDGRID"
@@ -58,7 +65,7 @@ class Headers:
     SAT = "SAT"
     FLAG = "FLAG"
     DEF = "DEF"
-    DIR = "DIR"
+    DIR = "DIR"  # Only used in COMPSEGS, in prepare_outputs.py
     SEG = "SEG"
     SEG2 = "SEG2"
     OUT = "OUT"

@@ -793,7 +793,7 @@ def test_prepare_wsegvalv():
             ["'WELL'", 3, 1.0, 1.2, "5*", 2.1, "/"],
             ["'WELL'", 4, 1.0, 1.2, "5*", 1.2, "/"],
         ],
-        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, "L", Headers.AC_MAX, ""],
+        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX, ""],
     )
     wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", 1, df_well, df_device)
     pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
@@ -814,7 +814,7 @@ def test_prepare_compdat(tmpdir):
                 10,
                 15,
                 15,
-                "OPEN",
+                Headers.OPEN,
                 "1*",
                 100.0,
                 0.216,
@@ -870,7 +870,7 @@ def test_prepare_compdat(tmpdir):
 
     prepare_compdat_out = prepare_outputs.prepare_compdat(well_name, lateral, df_reservoir, df_completion_table)
     prepare_compdat_true = pd.DataFrame(
-        [[Headers.WELL, 5, 10, 15, 15, "OPEN", "1*", 100.0, 0.311, 50.0, 2.5, "1*", "Y", 12.25, "/"]],
+        [[Headers.WELL, 5, 10, 15, 15, Headers.OPEN, "1*", 100.0, 0.311, 50.0, 2.5, "1*", "Y", 12.25, "/"]],
         columns=[
             Headers.WELL,
             Headers.I,

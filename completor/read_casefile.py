@@ -440,7 +440,7 @@ class ReadCasefile:
                 raise abort("WSEGVALV keyword must be defined, " "if VALVE is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, "L"]
+            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
                 df_temp[Headers.AC_MAX] = np.nan
@@ -495,7 +495,7 @@ class ReadCasefile:
                 raise abort("WSEGSICD keyword must be defined, " "if ICD is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", Headers.WCUT]
+            header = [Headers.DEVICE_NUMBER, Headers.STRENGTH, Headers.RHOCAL_ICD, Headers.VISCAL_ICD, Headers.WCUT]
             self.wsegsicd_table = val.set_format_wsegsicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
@@ -563,7 +563,7 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                "ALPHA",
+                Headers.ALPHA,
                 "X",
                 "Y",
                 "A",
@@ -572,8 +572,8 @@ class ReadCasefile:
                 "D",
                 "E",
                 "F",
-                "RHOCAL_AICD",
-                "VISCAL_AICD",
+                Headers.RHOCAL_AICD,
+                Headers.VISCAL_AICD,
             ]
             # Fix table format
             self.wsegaicd_table = val.set_format_wsegaicd(
@@ -636,13 +636,13 @@ class ReadCasefile:
             header = [
                 Headers.DEVICE_NUMBER,
                 Headers.CV_DAR,
-                "AC_OIL",
-                "AC_GAS",
-                "AC_WATER",
-                "WHF_LCF_DAR",
-                "WHF_HCF_DAR",
-                "GHF_LCF_DAR",
-                "GHF_HCF_DAR",
+                Headers.AC_OIL,
+                Headers.AC_GAS,
+                Headers.AC_WATER,
+                Headers.WHF_LCF_DAR,
+                Headers.WHF_HCF_DAR,
+                Headers.GHF_LCF_DAR,
+                Headers.GHF_HCF_DAR,
             ]
 
             # Fix table format
@@ -736,28 +736,28 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                "WCT_AICV",
-                "GHF_AICV",
-                "RHOCAL_AICV",
-                "VISCAL_AICV",
-                "ALPHA_MAIN",
-                "X_MAIN",
-                "Y_MAIN",
-                "A_MAIN",
-                "B_MAIN",
-                "C_MAIN",
-                "D_MAIN",
-                "E_MAIN",
-                "F_MAIN",
-                "ALPHA_PILOT",
-                "X_PILOT",
-                "Y_PILOT",
-                "A_PILOT",
-                "B_PILOT",
-                "C_PILOT",
-                "D_PILOT",
-                "E_PILOT",
-                "F_PILOT",
+                Headers.WCT_AICV,
+                Headers.GHF_AICV,
+                Headers.RHOCAL_AICV,
+                Headers.VISCAL_AICV,
+                Headers.ALPHA_MAIN,
+                Headers.X_MAIN,
+                Headers.Y_MAIN,
+                Headers.A_MAIN,
+                Headers.B_MAIN,
+                Headers.C_MAIN,
+                Headers.D_MAIN,
+                Headers.E_MAIN,
+                Headers.F_MAIN,
+                Headers.ALPHA_PILOT,
+                Headers.X_PILOT,
+                Headers.Y_PILOT,
+                Headers.B_PILOT,
+                Headers.B_PILOT,
+                Headers.C_PILOT,
+                Headers.D_PILOT,
+                Headers.E_PILOT,
+                Headers.F_PILOT,
             ]
             # Fix table format
             self.wsegaicv_table = val.set_format_wsegaicv(

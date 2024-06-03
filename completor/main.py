@@ -15,7 +15,7 @@ import numpy as np
 import completor
 from completor import parse
 from completor.completion import WellSchedule
-from completor.constants import Headers, Keywords
+from completor.constants import Keywords
 from completor.create_output import CreateOutput
 from completor.create_wells import CreateWells
 from completor.logger import handle_error_messages, logger
@@ -156,8 +156,7 @@ class FileWriter:
                     if isinstance(line, list):
                         logger.warning(
                             "chunk is False, but content contains lists of lists, "
-                            "instead of a list of strings the lines will be "
-                            "concatenated"
+                            "instead of a list of strings the lines will be concatenated."
                         )
                         line = " ".join(line)
                     txt += line + "\n"
