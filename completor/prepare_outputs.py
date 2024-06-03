@@ -115,11 +115,11 @@ def dataframe_tostring(
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.CV_DAR: "{:.10g}".format,
                 Headers.CV: "{:.10g}".format,
-                "AC": "{:.3e}".format,
+                Headers.AC: "{:.3e}".format,
                 "AC_OIL": "{:.3e}".format,
                 "AC_GAS": "{:.3e}".format,
                 "AC_WATER": "{:.3e}".format,
-                "AC_MAX": "{:.3e}".format,
+                Headers.AC_MAX: "{:.3e}".format,
                 "DEFAULTS": "{:.10s}".format,
                 "WHF_LCF_DAR": "{:.10g}".format,
                 "WHF_HCF_DAR": "{:.10g}".format,
@@ -665,7 +665,7 @@ def connect_compseg_icv(
     """
 
     df_temp = df_completion_table[
-        (df_completion_table["NVALVEPERJOINT"] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
+        (df_completion_table[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
     ]
     df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
     df_res = df_reservoir.copy(deep=True)
@@ -853,7 +853,7 @@ def connect_compseg_usersegment(
     """
     # check on top of df_res if the completion table is feasible
     df_temp = df_completion_table[
-        (df_completion_table["NVALVEPERJOINT"] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
+        (df_completion_table[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
     ]
     df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA")]
     if not df_annulus.empty:
@@ -1075,7 +1075,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd["SF"] = df_merge[Headers.SCALINGFACTOR].to_numpy()
         wsegsicd["RHO"] = df_merge["RHOCAL_ICD"].to_numpy()
         wsegsicd["VIS"] = df_merge["VISCAL_ICD"].to_numpy()
-        wsegsicd["WCT"] = df_merge["WCUT"].to_numpy()
+        wsegsicd["WCT"] = df_merge[Headers.WCUT].to_numpy()
         wsegsicd[""] = "/"
     return wsegsicd
 
@@ -1107,10 +1107,10 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegvalv["SEG"] = df_merge["SEG"].to_numpy()
         # the Cv is already corrected by the scaling factor
         wsegvalv[Headers.CV] = df_merge[Headers.CV].to_numpy()
-        wsegvalv["AC"] = df_merge["AC"].to_numpy()
+        wsegvalv[Headers.AC] = df_merge[Headers.AC].to_numpy()
         wsegvalv["L"] = "5*"
-        wsegvalv["AC_MAX"] = df_merge["AC_MAX"].to_numpy()
-        wsegvalv["AC_MAX"] = wsegvalv["AC_MAX"].fillna(df_merge["AC"])
+        wsegvalv[Headers.AC_MAX] = df_merge[Headers.AC_MAX].to_numpy()
+        wsegvalv[Headers.AC_MAX] = wsegvalv[Headers.AC_MAX].fillna(df_merge[Headers.AC])
         wsegvalv[""] = "/"
     return wsegvalv
 
@@ -1153,11 +1153,11 @@ def prepare_wsegicv(
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICV"]
     if not df_merge.empty:
         wsegicv = df_merge.copy()
-        wsegicv = wsegicv[["SEG", Headers.CV, "AC", "AC_MAX"]]
+        wsegicv = wsegicv[["SEG", Headers.CV, Headers.AC, Headers.AC_MAX]]
         wsegicv["WELL"] = [well_name] * df_merge.shape[0]
         wsegicv["DEFAULTS"] = "5*"
-        wsegicv["AC_MAX"] = wsegicv["AC_MAX"].fillna(df_merge["AC"])
-        wsegicv = wsegicv.reindex(columns=[Headers.WELL, "SEG", Headers.CV, "AC", "DEFAULTS", "AC_MAX"])
+        wsegicv[Headers.AC_MAX] = wsegicv[Headers.AC_MAX].fillna(df_merge[Headers.AC])
+        wsegicv = wsegicv.reindex(columns=[Headers.WELL, "SEG", Headers.CV, Headers.AC, "DEFAULTS", Headers.AC_MAX])
         wsegicv[""] = "/"
         # create tubing icv table
     if not df_icv_tubing.empty:
@@ -1172,11 +1172,11 @@ def prepare_wsegicv(
             direction="nearest",
         )
         df_temp = df_merge_tubing.copy()
-        df_temp = df_temp[["SEG", Headers.CV, "AC", "AC_MAX"]]
+        df_temp = df_temp[["SEG", Headers.CV, Headers.AC, Headers.AC_MAX]]
         df_temp[Headers.WELL] = [well_name] * df_merge_tubing.shape[0]
         df_temp["DEFAULTS"] = "5*"
-        df_temp["AC_MAX"] = df_temp["AC_MAX"].fillna(math.pi * 0.5 * df_tubing[Headers.DIAM] ** 2)
-        df_temp = df_temp.reindex(columns=[Headers.WELL, "SEG", Headers.CV, "AC", "DEFAULTS", "AC_MAX"])
+        df_temp[Headers.AC_MAX] = df_temp[Headers.AC_MAX].fillna(math.pi * 0.5 * df_tubing[Headers.DIAM] ** 2)
+        df_temp = df_temp.reindex(columns=[Headers.WELL, "SEG", Headers.CV, Headers.AC, "DEFAULTS", Headers.AC_MAX])
         df_temp[""] = "/"
         wsegicv = pd.concat([wsegicv, df_temp], axis=0).reset_index(drop=True)
     return wsegicv
@@ -1217,7 +1217,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         wsegdar["GHF_LCF_DAR"] = df_merge["GHF_LCF_DAR"].to_numpy()
         wsegdar["GHF_HCF_DAR"] = df_merge["GHF_HCF_DAR"].to_numpy()
         wsegdar["DEFAULTS"] = "5*"
-        wsegdar["AC_MAX"] = wsegdar["AC_OIL"].to_numpy()
+        wsegdar[Headers.AC_MAX] = wsegdar["AC_OIL"].to_numpy()
         wsegdar[""] = "/"
     return wsegdar
 
@@ -1292,10 +1292,10 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         SystemExit: If there are to many wells and/or segments with DAR
     """
     header = [
-        [Headers.WELL, "SEG", Headers.CV_DAR, "AC_GAS", "DEFAULTS", "AC_MAX"],
-        ["WELL", "SEG", Headers.CV_DAR, "AC_WATER", "DEFAULTS", "AC_MAX"],
-        [Headers.WELL, "SEG", Headers.CV_DAR, "AC_OIL", "DEFAULTS", "AC_MAX"],
-        ["WELL", "SEG", Headers.CV_DAR, "AC_OIL", "DEFAULTS", "AC_MAX"],
+        [Headers.WELL, "SEG", Headers.CV_DAR, "AC_GAS", "DEFAULTS", Headers.AC_MAX],
+        ["WELL", "SEG", Headers.CV_DAR, "AC_WATER", "DEFAULTS", Headers.AC_MAX],
+        [Headers.WELL, "SEG", Headers.CV_DAR, "AC_OIL", "DEFAULTS", Headers.AC_MAX],
+        ["WELL", "SEG", Headers.CV_DAR, "AC_OIL", "DEFAULTS", Headers.AC_MAX],
     ]
     sign_water = ["<=", ">", "", "<"]
     sign_gas = [">", "<=", "<", ""]

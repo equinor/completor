@@ -189,7 +189,7 @@ class ReadCasefile:
             Headers.OUTER_DIAMETER,
             Headers.ROUGHNESS,
             Headers.ANNULUS,
-            "NVALVEPERJOINT",
+            Headers.VALVES_PER_JOINT,
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
         ]
@@ -440,12 +440,12 @@ class ReadCasefile:
                 raise abort("WSEGVALV keyword must be defined, " "if VALVE is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, "AC", "L"]
+            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, "L"]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp["AC_MAX"] = np.nan
+                df_temp[Headers.AC_MAX] = np.nan
             except CaseReaderFormatError:
-                header += ["AC_MAX"]
+                header += [Headers.AC_MAX]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
 
             self.wsegvalv_table = val.set_format_wsegvalv(df_temp)
@@ -495,7 +495,7 @@ class ReadCasefile:
                 raise abort("WSEGSICD keyword must be defined, " "if ICD is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", "WCUT"]
+            header = [Headers.DEVICE_NUMBER, "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", Headers.WCUT]
             self.wsegsicd_table = val.set_format_wsegsicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
@@ -808,12 +808,12 @@ class ReadCasefile:
                 raise abort("WSEGICV keyword must be defined, " "if ICV is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, "AC"]
+            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp["AC_MAX"] = np.nan
+                df_temp[Headers.AC_MAX] = np.nan
             except CaseReaderFormatError:
-                header += ["AC_MAX"]
+                header += [Headers.AC_MAX]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
             # Fix format
             self.wsegicv_table = val.set_format_wsegicv(df_temp)

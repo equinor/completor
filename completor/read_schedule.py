@@ -171,7 +171,7 @@ def fix_compsegs_by_priority(
     """
     # slicing two dataframe for user and cells segment length
     start_md_comp = df_completion[
-        (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion["NVALVEPERJOINT"] > 0)
+        (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
     ][Headers.START_MD].reset_index(drop=True)
     df_custom_compsegs = df_custom_compsegs[df_custom_compsegs[Headers.START_MD].isin(start_md_comp)]
     df_compsegs["priority"] = 1
