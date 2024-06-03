@@ -103,7 +103,7 @@ def set_format_completion(df_comp: pd.DataFrame) -> pd.DataFrame:
     return df_comp.astype(
         {
             "WELL": str,
-            "BRANCH": np.int64,
+            Headers.BRANCH: np.int64,
             Headers.START_MD: np.float64,
             Headers.END_MEASURED_DEPTH: np.float64,
             Headers.INNER_DIAMETER: np.float64,
@@ -130,9 +130,9 @@ def assess_completion(df_comp: pd.DataFrame):
     list_wells = df_comp["WELL"].unique()
     for well_name in list_wells:
         df_well = df_comp[df_comp["WELL"] == well_name]
-        list_branches = df_well["BRANCH"].unique()
+        list_branches = df_well[Headers.BRANCH].unique()
         for branch in list_branches:
-            df_comp = df_well[df_well["BRANCH"] == branch]
+            df_comp = df_well[df_well[Headers.BRANCH] == branch]
             nrow = df_comp.shape[0]
             for idx in range(0, nrow):
                 _check_for_errors(df_comp, well_name, idx)
@@ -347,7 +347,7 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
     ``read_casefile.ReadCasefile.read_completion``.
     """
     try:
-        df_lat2dev["BRANCH"].astype(np.int64)
+        df_lat2dev[Headers.BRANCH].astype(np.int64)
     except ValueError:
         raise abort(
             f"Could not convert BRANCH {df_lat2dev['BRANCH'].values} to integer. Make sure that BRANCH is an integer."

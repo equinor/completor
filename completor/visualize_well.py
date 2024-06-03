@@ -131,12 +131,12 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
                     arrowprops=dict(facecolor="black", shrink=0.05, width=0.5, headwidth=4.0),
                 )
     # get connection factor
-    if "1*" not in df_reservoir["CF"].to_numpy().tolist():
-        max_cf = max(df_reservoir["CF"].to_numpy())
-        ax_twinx.plot(df_reservoir[Headers.MD], df_reservoir["CF"], "k-")
+    if "1*" not in df_reservoir[Headers.CF].to_numpy().tolist():
+        max_cf = max(df_reservoir[Headers.CF].to_numpy())
+        ax_twinx.plot(df_reservoir[Headers.MD], df_reservoir[Headers.CF], "k-")
         ax_twinx.invert_yaxis()
         ax_twinx.set_ylim([max_cf * 5.0 + 1e-5, 0])
-        ax_twinx.fill_between(df_reservoir[Headers.MD], 0, df_reservoir["CF"], alpha=0.5)
+        ax_twinx.fill_between(df_reservoir[Headers.MD], 0, df_reservoir[Headers.CF], alpha=0.5)
 
     return axs, ax_twinx
 
@@ -171,7 +171,7 @@ def visualize_annotation(axs: Axes, ax_twinx: Axes, max_md: float, min_md: float
     axs.set_ylim([0, 5])
     axs.set_xlim([min_md - 0.1 * (max_md - min_md), max_md + 0.3 * (max_md - min_md)])
     axs.set_xlabel("mMD")
-    ax_twinx.set_ylabel("CF")
+    ax_twinx.set_ylabel(Headers.CF)
     axs.minorticks_on()
     return axs, ax_twinx
 

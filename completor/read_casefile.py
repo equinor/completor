@@ -182,7 +182,7 @@ class ReadCasefile:
         # Table headers
         header = [
             "WELL",
-            "BRANCH",
+            Headers.BRANCH,
             Headers.START_MD,
             Headers.END_MEASURED_DEPTH,
             Headers.INNER_DIAMETER,
@@ -269,7 +269,7 @@ class ReadCasefile:
 
         """
         # Table headers
-        header = ["WELL", "BRANCH"]
+        header = ["WELL", Headers.BRANCH]
         start_index, end_index = self.locate_keyword("LATERAL_TO_DEVICE")
 
         if start_index == end_index:
@@ -278,7 +278,7 @@ class ReadCasefile:
             return
         self.lat2device = self._create_dataframe_with_columns(header, start_index, end_index)
         val.validate_lateral2device(self.lat2device, self.completion_table)
-        self.lat2device["BRANCH"] = self.lat2device["BRANCH"].astype(np.int64)
+        self.lat2device[Headers.BRANCH] = self.lat2device[Headers.BRANCH].astype(np.int64)
 
     def read_joint_length(self) -> None:
         """Read the JOINTLENGTH keyword in the case file."""
@@ -840,7 +840,7 @@ class ReadCasefile:
 
         """
         df_temp = self.completion_table[self.completion_table["WELL"] == well_name]
-        df_temp = df_temp[df_temp["BRANCH"] == branch]
+        df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
     def check_input(self, well_name: str, schedule: WellSchedule) -> None:

@@ -163,18 +163,24 @@ class ReadSchedule:
                 Headers.I: np.int64,
                 Headers.J: np.int64,
                 Headers.K: np.int64,
-                "BRANCH": np.int64,
+                Headers.BRANCH: np.int64,
                 Headers.START_MD: np.float64,
                 Headers.END_MEASURED_DEPTH: np.float64,
             }
         )
         self.compdat = self.compdat.astype(
-            {Headers.I: np.int64, Headers.J: np.int64, Headers.K: np.int64, Headers.K2: np.int64, "SKIN": np.float64}
+            {
+                Headers.I: np.int64,
+                Headers.J: np.int64,
+                Headers.K: np.int64,
+                Headers.K2: np.int64,
+                Headers.SKIN: np.float64,
+            }
         )
 
         # If CF and KH are defaulted by users, type conversion fails and
         # we deliberately ignore it:
-        self.compdat = self.compdat.astype({"CF": np.float64, "KH": np.float64}, errors="ignore")
+        self.compdat = self.compdat.astype({Headers.CF: np.float64, Headers.KH: np.float64}, errors="ignore")
 
     @property
     def welsegs_header(self) -> pd.DataFrame:
@@ -197,13 +203,13 @@ class ReadSchedule:
         welsegs_header, welsegs_content = parse.get_welsegs_table(self.collections)
         self._welsegs_content = welsegs_content.astype(
             {
-                "TUBINGSEGMENT": np.int64,
-                "TUBINGSEGMENT2": np.int64,
-                "TUBINGBRANCH": np.int64,
-                "TUBINGOUTLET": np.int64,
+                Headers.TUBINGSEGMENT: np.int64,
+                Headers.TUBINGSEGMENT2: np.int64,
+                Headers.TUBINGBRANCH: np.int64,
+                Headers.TUBINGOUTLET: np.int64,
                 Headers.TUBINGMD: np.float64,
                 Headers.TUBINGTVD: np.float64,
-                "TUBINGROUGHNESS": np.float64,
+                Headers.TUBINGROUGHNESS: np.float64,
             }
         )
 
@@ -255,7 +261,7 @@ class ReadSchedule:
         df1_welsegs = self.welsegs_header[self.welsegs_header["WELL"] == well_name]
         df2_welsegs = self.welsegs_content[self.welsegs_content["WELL"] == well_name].copy()
         if branch is not None:
-            df2_welsegs = df2_welsegs[df2_welsegs["TUBINGBRANCH"] == branch]
+            df2_welsegs = df2_welsegs[df2_welsegs[Headers.TUBINGBRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
         df2_welsegs.drop(["WELL"], inplace=True, axis=1)
@@ -278,7 +284,7 @@ class ReadSchedule:
         """
         df_temp = self.compsegs[self.compsegs["WELL"] == well_name].copy()
         if branch is not None:
-            df_temp = df_temp[df_temp["BRANCH"] == branch]
+            df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
         df_temp.drop(["WELL"], inplace=True, axis=1)

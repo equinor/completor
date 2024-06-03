@@ -182,7 +182,7 @@ class CreateWells:
         ``read_casefile.ReadCasefile.read_completion``.
         """
         self.laterals = list(
-            self.case.completion_table[self.case.completion_table["WELL"] == self.well_name]["BRANCH"].unique()
+            self.case.completion_table[self.case.completion_table["WELL"] == self.well_name][Headers.BRANCH].unique()
         )
 
     def select_well(self, schedule: completion.WellSchedule, lateral: int) -> None:
@@ -763,7 +763,7 @@ class CreateWells:
         class property DataFrame :ref:`df_well`.
         """
         # drop BRANCH column, not needed
-        self.df_reservoir.drop(["BRANCH"], axis=1, inplace=True)
+        self.df_reservoir.drop([Headers.BRANCH], axis=1, inplace=True)
         icv_device = (
             self.df_well[Headers.DEVICE_TYPE].nunique() > 1
             and (self.df_well[Headers.DEVICE_TYPE] == "ICV").any()

@@ -965,44 +965,44 @@ class WellSchedule:
             Headers.J,
             Headers.K,
             Headers.K2,
-            "STATUS",
-            "SATNUM",
-            "CF",
-            "DIAM",
-            "KH",
-            "SKIN",
-            "DFACT",
-            "COMPDAT_DIRECTION",
-            "RO",
+            Headers.STATUS,
+            Headers.SATNUM,
+            Headers.CF,
+            Headers.DIAM,
+            Headers.KH,
+            Headers.SKIN,
+            Headers.DFACT,
+            Headers.COMPDAT_DIRECTION,
+            Headers.RO,
         ]
         df = pd.DataFrame(recs, columns=columns[0 : len(recs[0])])
-        if "RO" in df.columns:
-            df["RO"] = df["RO"].fillna("1*")
+        if Headers.RO in df.columns:
+            df[Headers.RO] = df[Headers.RO].fillna("1*")
         for idx in range(len(recs[0]), len(columns)):
             df[columns[idx]] = ["1*"] * len(recs)
         # data types
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
         df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
-        df[["DIAM", "SKIN"]] = df[["DIAM", "SKIN"]].astype(np.float64)
+        df[[Headers.DIAM, Headers.SKIN]] = df[[Headers.DIAM, Headers.SKIN]].astype(np.float64)
         # check if CF, KH, and RO are defaulted by the users
         try:
-            df[["CF"]] = df[["CF"]].astype(np.float64)
+            df[[Headers.CF]] = df[[Headers.CF]].astype(np.float64)
         except ValueError:
             pass
         try:
-            df[["KH"]] = df[["KH"]].astype(np.float64)
+            df[[Headers.KH]] = df[[Headers.KH]].astype(np.float64)
         except ValueError:
             pass
         try:
-            df[["RO"]] = df[["RO"]].astype(np.float64)
+            df[[Headers.RO]] = df[[Headers.RO]].astype(np.float64)
         except ValueError:
             pass
         # compdat could be for multiple wells - split it
         for well_name in well_names:
             if well_name not in self.msws:
                 self.msws[well_name] = {}
-            self.msws[well_name]["compdat"] = df[df["WELL"] == well_name]
+            self.msws[well_name]["compdat"] = df[df[Headers.WELL] == well_name]
             logger.debug("handle_compdat for %s", well_name)
         return remains
 
@@ -1102,18 +1102,18 @@ class WellSchedule:
 
         # make df for header record
         columns = [
-            "WELL",
+            Headers.WELL,
             Headers.SEGMENTTVD,
             Headers.SEGMENTMD,
-            "WBVOLUME",
-            "INFOTYPE",
-            "PDROPCOMP",
-            "MPMODEL",
-            "ITEM8",
-            "ITEM9",
-            "ITEM10",
-            "ITEM11",
-            "ITEM12",
+            Headers.WBVOLUME,
+            Headers.INFOTYPE,
+            Headers.PDROPCOMP,
+            Headers.MPMODEL,
+            Headers.ITEM8,
+            Headers.ITEM9,
+            Headers.ITEM10,
+            Headers.ITEM11,
+            Headers.ITEM12,
         ]
         ncols = len(columns)
         # pad header with default values (1*)
@@ -1123,19 +1123,19 @@ class WellSchedule:
 
         # make df for data records
         columns = [
-            "TUBINGSEGMENT",
-            "TUBINGSEGMENT2",
-            "TUBINGBRANCH",
-            "TUBINGOUTLET",
+            Headers.TUBINGSEGMENT,
+            Headers.TUBINGSEGMENT2,
+            Headers.TUBINGBRANCH,
+            Headers.TUBINGOUTLET,
             Headers.TUBINGMD,
             Headers.TUBINGTVD,
-            "TUBINGID",
-            "TUBINGROUGHNESS",
+            Headers.TUBINGID,
+            Headers.TUBINGROUGHNESS,
             Headers.CROSS,
-            "VSEG",
-            "ITEM11",
-            "ITEM12",
-            "ITEM13",
+            Headers.VSEG,
+            Headers.ITEM11,
+            Headers.ITEM12,
+            Headers.ITEM13,
             Headers.ITEM14,
             Headers.ITEM15,
         ]
@@ -1151,8 +1151,8 @@ class WellSchedule:
 
         # Warn user if the tubing segments' measured depth for a branch
         # is not sorted in ascending order (monotonic)
-        for branch_num in dfr["TUBINGBRANCH"].unique():
-            if not dfr[Headers.TUBINGMD].loc[dfr["TUBINGBRANCH"] == branch_num].is_monotonic_increasing:
+        for branch_num in dfr[Headers.TUBINGBRANCH].unique():
+            if not dfr[Headers.TUBINGMD].loc[dfr[Headers.TUBINGBRANCH] == branch_num].is_monotonic_increasing:
                 logger.warning(
                     "The branch %s in well %s contains negative length segments. "
                     "Check the input schedulefile WELSEGS keyword for inconsistencies "
@@ -1220,13 +1220,13 @@ class WellSchedule:
             Headers.I,
             Headers.J,
             Headers.K,
-            "BRANCH",
+            Headers.BRANCH,
             Headers.START_MD,
             Headers.END_MEASURED_DEPTH,
-            "COMPSEGS_DIRECTION",
-            "ENDGRID",
-            "PERFDEPTH",
-            "THERM",
+            Headers.COMPSEGS_DIRECTION,
+            Headers.ENDGRID,
+            Headers.PERFDEPTH,
+            Headers.THERM,
             Headers.SEGMENT,
         ]
         ncols = len(columns)
@@ -1289,7 +1289,7 @@ class WellSchedule:
         """
         df = self.msws[well_name]["compsegs"].copy()
         if branch is not None:
-            df = df[df["BRANCH"] == branch]
+            df = df[df[Headers.BRANCH] == branch]
         df.reset_index(drop=True, inplace=True)  # reset index after filtering
         # (why??)
         return fix_compsegs(df, well_name)
@@ -1317,7 +1317,7 @@ class WellSchedule:
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
             raise err
         if branch is not None:
-            dfr = dfr[dfr["TUBINGBRANCH"] == branch]
+            dfr = dfr[dfr[Headers.TUBINGBRANCH] == branch]
         dfr.reset_index(drop=True, inplace=True)  # reset index after filtering (why??)
         return dfh, dfr
 

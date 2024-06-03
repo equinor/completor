@@ -108,7 +108,7 @@ def dataframe_tostring(
                 "SF": "{:.10g}".format,
                 Headers.ROUGHNESS: "{:.10g}".format,
                 "CF": "{:.10g}".format,
-                "KH": "{:.10g}".format,
+                Headers.KH: "{:.10g}".format,
                 Headers.MD: "{:.3f}".format,
                 Headers.TVD: "{:.3f}".format,
                 Headers.START_MD: "{:.3f}".format,
@@ -235,8 +235,8 @@ def prepare_tubing_layer(
     rnm = {
         Headers.TUBINGMD: Headers.MD,
         Headers.TUBINGTVD: Headers.TVD,
-        "TUBINGID": "DIAM",
-        "TUBINGROUGHNESS": Headers.ROUGHNESS,
+        Headers.TUBINGID: Headers.DIAM,
+        Headers.TUBINGROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
     df_well = df_well[df_well["WELL"] == well_name]
@@ -260,13 +260,13 @@ def prepare_tubing_layer(
         df_tubing_with_overburden = df_tubing_in_reservoir
     df_tubing_with_overburden["SEG"] = start_segment + np.arange(df_tubing_with_overburden.shape[0])
     df_tubing_with_overburden["SEG2"] = df_tubing_with_overburden["SEG"]
-    df_tubing_with_overburden["BRANCH"] = branch_no
+    df_tubing_with_overburden[Headers.BRANCH] = branch_no
     df_tubing_with_overburden.reset_index(drop=True, inplace=True)
     # set out-segment to be successive.
     # The first item will be updated in connect_lateral
     df_tubing_with_overburden["OUT"] = df_tubing_with_overburden["SEG"] - 1
     # make sure order is correct
-    df_tubing_with_overburden = df_tubing_with_overburden.reindex(columns=["SEG", "SEG2", "BRANCH", "OUT"] + cols)
+    df_tubing_with_overburden = df_tubing_with_overburden.reindex(columns=["SEG", "SEG2", Headers.BRANCH, "OUT"] + cols)
     df_tubing_with_overburden[""] = "/"  # for printing
     # locate where it attached to (the top segment)
     wsa = schedule.get_welsegs(well_name)[1]  # all laterals
@@ -300,7 +300,7 @@ def fix_tubing_inner_diam_roughness(
     overburden_out = overburden.copy(deep=True)
     completion_table_well = completion_table.loc[completion_table["WELL"] == well_name]
     completion_table_well = completion_table_well.loc[
-        completion_table_well["BRANCH"] == overburden_out["TUBINGBRANCH"].iloc[0]
+        completion_table_well[Headers.BRANCH] == overburden_out[Headers.TUBINGBRANCH].iloc[0]
     ]
     overburden_found_in_completion = False
 
@@ -311,9 +311,9 @@ def fix_tubing_inner_diam_roughness(
             completion_table_start = completion_table_well[Headers.START_MD].iloc[idx_completion_table_well]
             completion_table_end = completion_table_well[Headers.END_MEASURED_DEPTH].iloc[idx_completion_table_well]
             if (completion_table_end >= overburden_md >= completion_table_start) and not overburden_found_in_completion:
-                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc("DIAM")] = completion_table_well[
-                    Headers.INNER_DIAMETER
-                ].iloc[idx_completion_table_well]
+                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.DIAM)] = (
+                    completion_table_well[Headers.INNER_DIAMETER].iloc[idx_completion_table_well]
+                )
                 overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.ROUGHNESS)] = (
                     completion_table_well[Headers.ROUGHNESS].iloc[idx_completion_table_well]
                 )
@@ -414,7 +414,7 @@ def prepare_device_layer(
         DataFrame for device layer
     """
     start_segment = max(df_tubing["SEG"].to_numpy()) + 1
-    start_branch = max(df_tubing["BRANCH"].to_numpy()) + 1
+    start_branch = max(df_tubing[Headers.BRANCH].to_numpy()) + 1
     df_well = df_well[df_well["WELL"] == well_name]
     df_well = df_well[df_well["LATERAL"] == lateral]
     # device segments are only created if:
@@ -428,13 +428,13 @@ def prepare_device_layer(
     df_device = pd.DataFrame()
     df_device["SEG"] = start_segment + np.arange(df_well.shape[0])
     df_device["SEG2"] = df_device["SEG"].to_numpy()
-    df_device["BRANCH"] = start_branch + np.arange(df_well.shape[0])
+    df_device[Headers.BRANCH] = start_branch + np.arange(df_well.shape[0])
     df_device["OUT"] = get_outlet_segment(
         df_well[Headers.TUB_MD].to_numpy(), df_tubing[Headers.MD].to_numpy(), df_tubing["SEG"].to_numpy()
     )
     df_device[Headers.MD] = df_well[Headers.TUB_MD].to_numpy() + device_length
     df_device[Headers.TVD] = df_well[Headers.TUB_TVD].to_numpy()
-    df_device["DIAM"] = df_well[Headers.INNER_DIAMETER].to_numpy()
+    df_device[Headers.DIAM] = df_well[Headers.INNER_DIAMETER].to_numpy()
     df_device[Headers.ROUGHNESS] = df_well[Headers.ROUGHNESS].to_numpy()
     device_comment = np.where(
         df_well[Headers.DEVICE_TYPE] == "PERF",
@@ -501,10 +501,10 @@ def prepare_annulus_layer(
         # setting the start segment number and start branch number
         if izone == 0:
             start_segment = max(df_device["SEG"]) + 1
-            start_branch = max(df_device["BRANCH"]) + 1
+            start_branch = max(df_device[Headers.BRANCH]) + 1
         else:
             start_segment = max(df_annulus["SEG"]) + 1
-            start_branch = max(df_annulus["BRANCH"]) + 1
+            start_branch = max(df_annulus[Headers.BRANCH]) + 1
         # now find the most downstream connection of the annulus zone
         idx_connection = np.argwhere(
             (df_branch[Headers.NDEVICES].to_numpy() > 0) | (df_branch[Headers.DEVICE_TYPE].to_numpy() == "PERF")
@@ -533,11 +533,11 @@ def prepare_annulus_layer(
             df_annulus_downstream = pd.DataFrame()
             df_annulus_downstream["SEG"] = start_segment + np.arange(df_branch_downstream.shape[0])
             df_annulus_downstream["SEG2"] = df_annulus_downstream["SEG"]
-            df_annulus_downstream["BRANCH"] = start_branch
+            df_annulus_downstream[Headers.BRANCH] = start_branch
             df_annulus_downstream["OUT"] = df_annulus_downstream["SEG"] + 1
             df_annulus_downstream[Headers.MD] = df_branch_downstream[Headers.TUB_MD].to_numpy() + annulus_length
             df_annulus_downstream[Headers.TVD] = df_branch_downstream[Headers.TUB_TVD].to_numpy()
-            df_annulus_downstream["DIAM"] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
+            df_annulus_downstream[Headers.DIAM] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
             df_annulus_downstream[Headers.ROUGHNESS] = df_branch_downstream[Headers.ROUGHNESS].to_numpy()
 
             # no WSEGLINK in the downstream part because
@@ -547,7 +547,7 @@ def prepare_annulus_layer(
             # upstream part
             # update the start segment and start branch
             start_segment = max(df_annulus_downstream["SEG"]) + 1
-            start_branch = max(df_annulus_downstream["BRANCH"]) + 1
+            start_branch = max(df_annulus_downstream[Headers.BRANCH]) + 1
             # create dataframe for upstream part
             df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
                 df_branch_upstream, df_active, df_device, start_branch, annulus_length, start_segment, well_name
@@ -602,7 +602,7 @@ def calculate_upstream(
     df_annulus_upstream = pd.DataFrame()
     df_annulus_upstream["SEG"] = start_segment + np.arange(df_branch.shape[0])
     df_annulus_upstream["SEG2"] = df_annulus_upstream["SEG"]
-    df_annulus_upstream["BRANCH"] = start_branch
+    df_annulus_upstream[Headers.BRANCH] = start_branch
     out_segment = df_annulus_upstream["SEG"].to_numpy() - 1
     # determining the outlet segment of the annulus segment
     # if the annulus segment is not the most downstream which has connection
@@ -619,7 +619,7 @@ def calculate_upstream(
     df_annulus_upstream["OUT"] = out_segment
     df_annulus_upstream[Headers.MD] = md_
     df_annulus_upstream[Headers.TVD] = df_branch[Headers.TUB_TVD].to_numpy()
-    df_annulus_upstream["DIAM"] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
+    df_annulus_upstream[Headers.DIAM] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
     df_annulus_upstream[Headers.ROUGHNESS] = df_branch[Headers.ROUGHNESS].to_numpy()
     device_segment = get_outlet_segment(
         df_active[Headers.TUB_MD].to_numpy(), df_device[Headers.MD].to_numpy(), df_device["SEG"].to_numpy()
@@ -773,10 +773,10 @@ def prepare_compsegs(
         compseg[Headers.J] = df_compseg_device[Headers.J].to_numpy()
         compseg[Headers.K] = df_compseg_device[Headers.K].to_numpy()
         # take the BRANCH column from df_device
-        compseg["BRANCH"] = df_compseg_device["BRANCH"].to_numpy()
+        compseg[Headers.BRANCH] = df_compseg_device[Headers.BRANCH].to_numpy()
         compseg[Headers.START_MD] = df_compseg_device[Headers.START_MD].to_numpy()
         compseg[Headers.END_MEASURED_DEPTH] = df_compseg_device[Headers.END_MEASURED_DEPTH].to_numpy()
-        compseg["DIR"] = df_compseg_device["COMPSEGS_DIRECTION"].to_numpy()
+        compseg["DIR"] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
         compseg["DEF"] = "3*"
         compseg["SEG"] = df_compseg_device["SEG"].to_numpy()
     else:
@@ -821,10 +821,10 @@ def prepare_compsegs(
             I=_choose(Headers.I),
             J=_choose(Headers.J),
             K=_choose(Headers.K),
-            BRANCH=_choose("BRANCH"),
+            BRANCH=_choose(Headers.BRANCH),
             STARTMD=_choose(Headers.START_MD),
             ENDMD=_choose(Headers.END_MEASURED_DEPTH),
-            DIR=_choose("COMPSEGS_DIRECTION"),
+            DIR=_choose(Headers.COMPSEGS_DIRECTION),
             DEF="3*",
             SEG=_choose("SEG"),
         )
@@ -952,7 +952,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
             if start_completion <= md_reservoir <= end_completion:
                 completion_diameters.append(outer_inner_diameter_completion)
                 break
-    df_reservoir["DIAM"] = completion_diameters
+    df_reservoir[Headers.DIAM] = completion_diameters
     return df_reservoir
 
 
@@ -985,15 +985,15 @@ def prepare_compdat(
     compdat[Headers.J] = df_reservoir[Headers.J].to_numpy()
     compdat[Headers.K] = df_reservoir[Headers.K].to_numpy()
     compdat[Headers.K2] = df_reservoir[Headers.K2].to_numpy()
-    compdat[Headers.FLAG] = df_reservoir["STATUS"].to_numpy()
-    compdat["SAT"] = df_reservoir["SATNUM"].to_numpy()
-    compdat["CF"] = df_reservoir["CF"].to_numpy()
-    compdat["DIAM"] = fix_well_id(df_reservoir, df_completion_table)["DIAM"].to_numpy()
-    compdat["KH"] = df_reservoir["KH"].to_numpy()
-    compdat["SKIN"] = df_reservoir["SKIN"].to_numpy()
-    compdat["DFACT"] = df_reservoir["DFACT"].to_numpy()
-    compdat["DIR"] = df_reservoir["COMPDAT_DIRECTION"].to_numpy()
-    compdat["RO"] = df_reservoir["RO"].to_numpy()
+    compdat[Headers.FLAG] = df_reservoir[Headers.STATUS].to_numpy()
+    compdat["SAT"] = df_reservoir[Headers.SATNUM].to_numpy()
+    compdat[Headers.CF] = df_reservoir[Headers.CF].to_numpy()
+    compdat[Headers.DIAM] = fix_well_id(df_reservoir, df_completion_table)[Headers.DIAM].to_numpy()
+    compdat[Headers.KH] = df_reservoir[Headers.KH].to_numpy()
+    compdat[Headers.SKIN] = df_reservoir[Headers.SKIN].to_numpy()
+    compdat[Headers.DFACT] = df_reservoir[Headers.DFACT].to_numpy()
+    compdat["DIR"] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
+    compdat[Headers.RO] = df_reservoir[Headers.RO].to_numpy()
     # remove default columns
     compdat = trim_pandas(compdat)
     compdat[""] = "/"
@@ -1160,7 +1160,7 @@ def prepare_wsegicv(
         wsegicv[""] = "/"
         # create tubing icv table
     if not df_icv_tubing.empty:
-        mask = (df_icv_tubing["WELL"] == well_name) & (df_icv_tubing["BRANCH"] == lateral)
+        mask = (df_icv_tubing["WELL"] == well_name) & (df_icv_tubing[Headers.BRANCH] == lateral)
         df_icv_tubing = df_icv_tubing.loc[mask]
         df_merge_tubing = pd.merge_asof(left=df_icv_tubing, right=df_icv, on=Headers.DEVICE_NUMBER, direction="nearest")
         df_merge_tubing = pd.merge_asof(
@@ -1174,7 +1174,7 @@ def prepare_wsegicv(
         df_temp = df_temp[["SEG", Headers.CV, "AC", "AC_MAX"]]
         df_temp["WELL"] = [well_name] * df_merge_tubing.shape[0]
         df_temp["DEFAULTS"] = "5*"
-        df_temp["AC_MAX"] = df_temp["AC_MAX"].fillna(math.pi * 0.5 * df_tubing["DIAM"] ** 2)
+        df_temp["AC_MAX"] = df_temp["AC_MAX"].fillna(math.pi * 0.5 * df_tubing[Headers.DIAM] ** 2)
         df_temp = df_temp.reindex(columns=["WELL", "SEG", Headers.CV, "AC", "DEFAULTS", "AC_MAX"])
         df_temp[""] = "/"
         wsegicv = pd.concat([wsegicv, df_temp], axis=0).reset_index(drop=True)

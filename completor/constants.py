@@ -17,6 +17,21 @@ class Headers:
 
     # Autoadded / To be triaged.
 
+    THERM = "THERM"
+    PERFDEPTH = "PERFDEPTH"
+    ENDGRID = "ENDGRID"
+    COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"
+    ITEM13 = "ITEM13"
+    VSEG = "VSEG"
+    TUBINGID = "TUBINGID"
+    MPMODEL = "MPMODEL"
+    PDROPCOMP = "PDROPCOMP"
+    WBVOLUME = "WBVOLUME"
+    ITEM8 = "ITEM8"
+    ITEM9 = "ITEM9"
+    ITEM10 = "ITEM10"
+    ITEM11 = "ITEM11"
+    ITEM12 = "ITEM12"
     ITEM14 = "ITEM14"
     ITEM15 = "ITEM15"
     ITEM16 = "ITEM16"
@@ -122,20 +137,11 @@ class Headers:
     RHOCAL_AICD = "RHOCAL_AICD"
     VISCAL_AICD = "VISCAL_AICD"
 
-    CV_DAR = "CV_DAR"
-    AC_OIL = "AC_OIL"
-    AC_GAS = "AC_GAS"
-    AC_WATER = "AC_WATER"
-    WHF_LCF_DAR = "WHF_LCF_DAR"
-    WHF_HCF_DAR = "WHF_HCF_DAR"
-    GHF_LCF_DAR = "GHF_LCF_DAR"
-    GHF_HCF_DAR = "GHF_HCF_DAR"
     DEFAULTS = "DEFAULTS"
     AC_MAX = "AC_MAX"
 
     CV = "CV"
     AC = "AC"
-    AC_MAX = "AC_MAX"
     L = "L"
 
     BRANCH = "BRANCH"
