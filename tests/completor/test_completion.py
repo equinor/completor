@@ -13,7 +13,9 @@ from completor.constants import Headers
 
 def test_completion_index():
     """Test completion_index gives correct indexes for start and end measured depth."""
-    df_tubing_segments = pd.DataFrame([[1000, 2000], [2000, 3000], [3000, 4000]], columns=["STARTMD", "ENDMD"])
+    df_tubing_segments = pd.DataFrame(
+        [[1000, 2000], [2000, 3000], [3000, 4000]], columns=[Headers.START_MD, Headers.END_MEASURED_DEPTH]
+    )
     assert (completion.completion_index(df_tubing_segments, 1000, 2001)) == (0, 1)
     assert (completion.completion_index(df_tubing_segments, 1000, 2000)) == (0, 0)
     assert (completion.completion_index(df_tubing_segments, 1000, 3000)) == (0, 1)
@@ -149,9 +151,9 @@ def test_insert_missing_segments_no_gap():
     )
     df_true = pd.DataFrame(
         [
-            [1000, 2000, "OriginalSegment"],
-            [2000, 3000, "OriginalSegment"],
-            [3000, 4000, "OriginalSegment"],
+            [1000, 2000, Headers.ORIGINALSEGMENT],
+            [2000, 3000, Headers.ORIGINALSEGMENT],
+            [3000, 4000, Headers.ORIGINALSEGMENT],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
@@ -172,10 +174,10 @@ def test_insert_missing_segments_one_gap():
     )
     df_true = pd.DataFrame(
         [
-            [1000, 2000, "OriginalSegment"],
-            [2000, 2500, "AdditionalSegment"],
-            [2500, 3000, "OriginalSegment"],
-            [3000, 4000, "OriginalSegment"],
+            [1000, 2000, Headers.ORIGINALSEGMENT],
+            [2000, 2500, Headers.ADDITIONALSEGMENT],
+            [2500, 3000, Headers.ORIGINALSEGMENT],
+            [3000, 4000, Headers.ORIGINALSEGMENT],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
@@ -196,11 +198,11 @@ def test_insert_missing_segments_two_gaps():
     )
     df_true = pd.DataFrame(
         [
-            [1000, 2000, "OriginalSegment"],
-            [2000, 2500, "AdditionalSegment"],
-            [2500, 3000, "OriginalSegment"],
-            [3000, 3005, "AdditionalSegment"],
-            [3005, 4000, "OriginalSegment"],
+            [1000, 2000, Headers.ORIGINALSEGMENT],
+            [2000, 2500, Headers.ADDITIONALSEGMENT],
+            [2500, 3000, Headers.ORIGINALSEGMENT],
+            [3000, 3005, Headers.ADDITIONALSEGMENT],
+            [3005, 4000, Headers.ORIGINALSEGMENT],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
@@ -850,18 +852,18 @@ def test_lumping_segment_1():
     """Test lumping_segment lumps the additional segment only with original segment containing an annulus zone."""
     df_well = pd.DataFrame(
         [
-            [1.0, 0, "OriginalSegment"],
-            [2.0, 0, "OriginalSegment"],
-            [3.0, 1, "AdditionalSegment"],
-            [4.0, 1, "OriginalSegment"],
+            [1.0, 0, Headers.ORIGINALSEGMENT],
+            [2.0, 0, Headers.ORIGINALSEGMENT],
+            [3.0, 1, Headers.ADDITIONALSEGMENT],
+            [4.0, 1, Headers.ORIGINALSEGMENT],
         ],
         columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
-            [1.0, 0, "OriginalSegment"],
-            [2.0, 0, "OriginalSegment"],
-            [7.0, 1, "OriginalSegment"],
+            [1.0, 0, Headers.ORIGINALSEGMENT],
+            [2.0, 0, Headers.ORIGINALSEGMENT],
+            [7.0, 1, Headers.ORIGINALSEGMENT],
         ],
         columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
@@ -877,18 +879,18 @@ def test_lumping_segment_2():
     """
     df_well = pd.DataFrame(
         [
-            [1.0, 0, "OriginalSegment"],
-            [2.0, 1, "OriginalSegment"],
-            [3.0, 1, "AdditionalSegment"],
-            [4.0, 1, "OriginalSegment"],
+            [1.0, 0, Headers.ORIGINALSEGMENT],
+            [2.0, 1, Headers.ORIGINALSEGMENT],
+            [3.0, 1, Headers.ADDITIONALSEGMENT],
+            [4.0, 1, Headers.ORIGINALSEGMENT],
         ],
         columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
-            [1.0, 0, "OriginalSegment"],
-            [5.0, 1, "OriginalSegment"],
-            [4.0, 1, "OriginalSegment"],
+            [1.0, 0, Headers.ORIGINALSEGMENT],
+            [5.0, 1, Headers.ORIGINALSEGMENT],
+            [4.0, 1, Headers.ORIGINALSEGMENT],
         ],
         columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )

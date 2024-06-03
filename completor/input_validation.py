@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from completor.constants import Headers
 from completor.utils import abort
 
 
@@ -25,12 +26,12 @@ def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_completion``.
     """
     # Set default values for packer sections
-    df_comp["INNER_DIAMETER"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["INNER_DIAMETER"])
-    df_comp["OUTER_DIAMETER"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["OUTER_DIAMETER"])
-    df_comp["ROUGHNESS"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["ROUGHNESS"])
+    df_comp[Headers.INNER_DIAMETER] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp[Headers.INNER_DIAMETER])
+    df_comp[Headers.OUTER_DIAMETER] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp[Headers.OUTER_DIAMETER])
+    df_comp[Headers.ROUGHNESS] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp[Headers.ROUGHNESS])
     df_comp["NVALVEPERJOINT"] = np.where(df_comp["ANNULUS"] == "PA", 0.0, df_comp["NVALVEPERJOINT"])
-    df_comp["DEVICETYPE"] = np.where(df_comp["ANNULUS"] == "PA", "PERF", df_comp["DEVICETYPE"])
-    df_comp["DEVICENUMBER"] = np.where(df_comp["ANNULUS"] == "PA", 0, df_comp["DEVICENUMBER"])
+    df_comp[Headers.DEVICE_TYPE] = np.where(df_comp["ANNULUS"] == "PA", "PERF", df_comp[Headers.DEVICE_TYPE])
+    df_comp[Headers.DEVICE_NUMBER] = np.where(df_comp["ANNULUS"] == "PA", 0, df_comp[Headers.DEVICE_NUMBER])
     return df_comp
 
 
@@ -48,8 +49,8 @@ def set_default_perf_section(df_comp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_completion``.
     """
     # set default value of the PERF section
-    df_comp["NVALVEPERJOINT"] = np.where(df_comp["DEVICETYPE"] == "PERF", 0.0, df_comp["NVALVEPERJOINT"])
-    df_comp["DEVICENUMBER"] = np.where(df_comp["DEVICETYPE"] == "PERF", 0, df_comp["DEVICENUMBER"])
+    df_comp["NVALVEPERJOINT"] = np.where(df_comp[Headers.DEVICE_TYPE] == "PERF", 0.0, df_comp["NVALVEPERJOINT"])
+    df_comp[Headers.DEVICE_NUMBER] = np.where(df_comp[Headers.DEVICE_TYPE] == "PERF", 0, df_comp[Headers.DEVICE_NUMBER])
     return df_comp
 
 
@@ -75,8 +76,8 @@ def check_default_non_packer(df_comp: pd.DataFrame) -> pd.DataFrame:
     """
     df_comp = df_comp.copy(True)
     # set default value of roughness
-    df_comp["ROUGHNESS"] = (
-        df_comp["ROUGHNESS"].replace("1*", "1e-5").astype(np.float64)
+    df_comp[Headers.ROUGHNESS] = (
+        df_comp[Headers.ROUGHNESS].replace("1*", "1e-5").astype(np.float64)
     )  # Ensures float after replacing!
     df_nonpa = df_comp[df_comp["ANNULUS"] != "PA"]
     df_columns = df_nonpa.columns.to_numpy()
@@ -103,15 +104,15 @@ def set_format_completion(df_comp: pd.DataFrame) -> pd.DataFrame:
         {
             "WELL": str,
             "BRANCH": np.int64,
-            "STARTMD": np.float64,
-            "ENDMD": np.float64,
-            "INNER_DIAMETER": np.float64,
-            "OUTER_DIAMETER": np.float64,
-            "ROUGHNESS": np.float64,
+            Headers.START_MD: np.float64,
+            Headers.END_MEASURED_DEPTH: np.float64,
+            Headers.INNER_DIAMETER: np.float64,
+            Headers.OUTER_DIAMETER: np.float64,
+            Headers.ROUGHNESS: np.float64,
             "ANNULUS": str,
             "NVALVEPERJOINT": np.float64,
-            "DEVICETYPE": str,
-            "DEVICENUMBER": np.int64,
+            Headers.DEVICE_TYPE: str,
+            Headers.DEVICE_NUMBER: np.int64,
         }
     )
 
@@ -153,29 +154,31 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int):
             If the completion description is incomplete for some range of depth
             If the completion description is overlapping for some range of depth
     """
-    if df_comp["ANNULUS"].iloc[idx] == "PA" and (df_comp["STARTMD"].iloc[idx] != df_comp["ENDMD"].iloc[idx]):
+    if df_comp["ANNULUS"].iloc[idx] == "PA" and (
+        df_comp[Headers.START_MD].iloc[idx] != df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
+    ):
         raise abort("Packer segments must not have length")
 
     if (
         df_comp["ANNULUS"].iloc[idx] != "PA"
-        and df_comp["DEVICETYPE"].iloc[idx] != "ICV"
-        and df_comp["STARTMD"].iloc[idx] == df_comp["ENDMD"].iloc[idx]
+        and df_comp[Headers.DEVICE_TYPE].iloc[idx] != "ICV"
+        and df_comp[Headers.START_MD].iloc[idx] == df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
         raise abort("Non packer segments must have length")
 
     if idx > 0:
-        if df_comp["STARTMD"].iloc[idx] > df_comp["ENDMD"].iloc[idx - 1]:
+        if df_comp[Headers.START_MD].iloc[idx] > df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
             raise abort(
                 f"Incomplete completion description in well {well_name} from depth {df_comp['ENDMD'].iloc[idx - 1]} "
                 f"to depth {df_comp['STARTMD'].iloc[idx]}"
             )
 
-        if df_comp["STARTMD"].iloc[idx] < df_comp["ENDMD"].iloc[idx - 1]:
+        if df_comp[Headers.START_MD].iloc[idx] < df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
             raise abort(
                 f"Overlapping completion description in well {well_name} from depth {df_comp['ENDMD'].iloc[idx - 1]} "
                 f"to depth {(df_comp['STARTMD'].iloc[idx])}"
             )
-    if df_comp["DEVICETYPE"].iloc[idx] not in ["PERF", "AICD", "ICD", "VALVE", "DAR", "AICV", "ICV"]:
+    if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in ["PERF", "AICD", "ICD", "VALVE", "DAR", "AICV", "ICV"]:
         raise abort(
             f"{df_comp['DEVICETYPE'].iloc[idx]} not a valid device type. "
             "Valid types are PERF, AICD, ICD, VALVE, DAR, AICV, and ICV."
@@ -198,11 +201,11 @@ def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_wsegvalv``.
     """
     # set data type
-    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
-    df_temp[["CV", "AC", "AC_MAX"]] = df_temp[["CV", "AC", "AC_MAX"]].astype(np.float64)
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
+    df_temp[[Headers.CV, "AC", "AC_MAX"]] = df_temp[[Headers.CV, "AC", "AC_MAX"]].astype(np.float64)
     # allows column L to have default value 1* thus it is not set to float
     # Create ID device column
-    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], fill_value="VALVE"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], fill_value="VALVE"))
     return df_temp
 
 
@@ -223,12 +226,12 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
     # the same default value as in simulator
     df_temp["WCUT"] = df_temp["WCUT"].replace("1*", "0.5").astype(np.float64)  # Ensures float after replacing!
     # set data type
-    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
     # left out devicenumber because it has been formatted as integer
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "ICD"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "ICD"))
     return df_temp
 
 
@@ -246,12 +249,12 @@ def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_wsegaicd``.
     """
     # Fix table format
-    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
     # left out devicenumber because it has been formatted as integer
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "AICD"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "AICD"))
     return df_temp
 
 
@@ -269,12 +272,12 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_wsegdar``.
     """
     # Set data type
-    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
     # left out devicenumber because it has been formatted as integer
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "DAR"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "DAR"))
     return df_temp
 
 
@@ -292,12 +295,12 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_wsegaicv``.
     """
     # Fix table format
-    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
     # left out devicenumber because it has been formatted as integer
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], "AICV"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "AICV"))
     return df_temp
 
 
@@ -315,12 +318,12 @@ def set_format_wsegicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_wsegicv``.
     """
     # set data type
-    df_temp["DEVICENUMBER"] = df_temp["DEVICENUMBER"].astype(np.int64)
-    df_temp[["CV", "AC", "AC_MAX"]] = df_temp[["CV", "AC", "AC_MAX"]].astype(np.float64)
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
+    df_temp[[Headers.CV, "AC", "AC_MAX"]] = df_temp[[Headers.CV, "AC", "AC_MAX"]].astype(np.float64)
     # allows column DEFAULTS to have default value 5*
     # thus it is not set to float
     # Create ID device column
-    df_temp.insert(0, "DEVICETYPE", np.full(df_temp.shape[0], fill_value="ICV"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], fill_value="ICV"))
     return df_temp
 
 

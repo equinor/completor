@@ -6,6 +6,8 @@ from pathlib import Path
 
 import common
 
+from completor.constants import Headers
+
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
 

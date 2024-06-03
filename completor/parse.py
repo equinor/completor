@@ -10,6 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from completor.constants import Headers
 from completor.utils import abort
 
 
@@ -334,8 +335,8 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
     """
     header_columns = [
         "WELL",
-        "SEGMENTTVD",
-        "SEGMENTMD",
+        Headers.SEGMENTTVD,
+        Headers.SEGMENTMD,
         "WBVOLUME",
         "INFOTYPE",
         "PDROPCOMP",
@@ -353,16 +354,16 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         "TUBINGBRANCH",
         "TUBINGOUTLET",
         "TUBINGMD",
-        "TUBINGTVD",
+        Headers.TUBINGTVD,
         "TUBINGID",
         "TUBINGROUGHNESS",
-        "CROSS",
+        Headers.CROSS,
         "VSEG",
         "ITEM11",
         "ITEM12",
         "ITEM13",
-        "ITEM14",
-        "ITEM15",
+        Headers.ITEM14,
+        Headers.ITEM15,
     ]
     for collection in collections:
         if collection.name == "WELSEGS":
@@ -450,22 +451,22 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     """
     columns = [
         "WELL",
-        "GROUP",
-        "I",
-        "J",
-        "BHP_DEPTH",
-        "PHASE",
-        "DR",
-        "FLAG",
-        "SHUT",
-        "CROSS",
-        "PRESSURETABLE",
-        "DENSCAL",
-        "REGION",
-        "ITEM14",
-        "ITEM15",
-        "ITEM16",
-        "ITEM17",
+        Headers.GROUP,
+        Headers.I,
+        Headers.J,
+        Headers.BHP_DEPTH,
+        Headers.PHASE,
+        Headers.DR,
+        Headers.FLAG,
+        Headers.SHUT,
+        Headers.CROSS,
+        Headers.PRESSURETABLE,
+        Headers.DENSCAL,
+        Headers.REGION,
+        Headers.ITEM14,
+        Headers.ITEM15,
+        Headers.ITEM16,
+        Headers.ITEM17,
     ]
     welspecs_table = None
     for collection in collections:
@@ -550,10 +551,10 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
         compdat_table,
         columns=[
             "WELL",
-            "I",
-            "J",
-            "K",
-            "K2",
+            Headers.I,
+            Headers.J,
+            Headers.K,
+            Headers.K2,
             "STATUS",
             "SATNUM",
             "CF",
@@ -635,17 +636,17 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
         compsegs_table,
         columns=[
             "WELL",
-            "I",
-            "J",
-            "K",
+            Headers.I,
+            Headers.J,
+            Headers.K,
             "BRANCH",
-            "STARTMD",
-            "ENDMD",
+            Headers.START_MD,
+            Headers.END_MEASURED_DEPTH,
             "COMPSEGS_DIRECTION",
             "ENDGRID",
             "PERFDEPTH",
             "THERM",
-            "SEGMENT",
+            Headers.SEGMENT,
         ],
     )
     # replace string component " or ' in the columns

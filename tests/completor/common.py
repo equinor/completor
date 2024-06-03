@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from completor import main, parse  # type: ignore
+from completor.constants import Headers
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
 from completor.utils import clean_file_lines  # type: ignore
 
@@ -81,17 +82,17 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     # WELSEGS content
     wsc_true = true_output.welsegs_content
     wsc_true.set_index("WELL", inplace=True)
-    wsc_true.sort_values(["WELL", "TUBINGMD"], inplace=True)
+    wsc_true.sort_values(["WELL", Headers.TUBINGMD], inplace=True)
     wsc_test = test_output.welsegs_content
     wsc_test.set_index("WELL", inplace=True)
-    wsc_test.sort_values(["WELL", "TUBINGMD"], inplace=True)
+    wsc_test.sort_values(["WELL", Headers.TUBINGMD], inplace=True)
     pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
 
     # COMPSEGS
     cs_true = true_output.compsegs.set_index("WELL")
-    cs_true.sort_values(["WELL", "STARTMD"], inplace=True)
+    cs_true.sort_values(["WELL", Headers.START_MD], inplace=True)
     cs_test = test_output.compsegs.set_index("WELL")
-    cs_test.sort_values(["WELL", "STARTMD"], inplace=True)
+    cs_test.sort_values(["WELL", Headers.START_MD], inplace=True)
     pd.testing.assert_frame_equal(cs_true, cs_test, check_exact=check_exact, rtol=relative_tolerance)
 
 
@@ -159,16 +160,16 @@ class ReadSchedule:
 
         self.compsegs = self.compsegs.astype(
             {
-                "I": np.int64,
-                "J": np.int64,
-                "K": np.int64,
+                Headers.I: np.int64,
+                Headers.J: np.int64,
+                Headers.K: np.int64,
                 "BRANCH": np.int64,
-                "STARTMD": np.float64,
-                "ENDMD": np.float64,
+                Headers.START_MD: np.float64,
+                Headers.END_MEASURED_DEPTH: np.float64,
             }
         )
         self.compdat = self.compdat.astype(
-            {"I": np.int64, "J": np.int64, "K": np.int64, "K2": np.int64, "SKIN": np.float64}
+            {Headers.I: np.int64, Headers.J: np.int64, Headers.K: np.int64, Headers.K2: np.int64, "SKIN": np.float64}
         )
 
         # If CF and KH are defaulted by users, type conversion fails and
@@ -200,13 +201,13 @@ class ReadSchedule:
                 "TUBINGSEGMENT2": np.int64,
                 "TUBINGBRANCH": np.int64,
                 "TUBINGOUTLET": np.int64,
-                "TUBINGMD": np.float64,
-                "TUBINGTVD": np.float64,
+                Headers.TUBINGMD: np.float64,
+                Headers.TUBINGTVD: np.float64,
                 "TUBINGROUGHNESS": np.float64,
             }
         )
 
-        self._welsegs_header = welsegs_header.astype({"SEGMENTTVD": np.float64, "SEGMENTMD": np.float64})
+        self._welsegs_header = welsegs_header.astype({Headers.SEGMENTTVD: np.float64, Headers.SEGMENTMD: np.float64})
         return self._welsegs_header, self._welsegs_content  # type: ignore
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:

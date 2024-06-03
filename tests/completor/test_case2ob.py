@@ -5,6 +5,8 @@ are described by the case file and not the input schedule file.
 
 import common
 
+from completor.constants import Headers
+
 _TEST_FILE = "test.sch"
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from completor import parse
+from completor.constants import Headers
 
 
 class _BaseCaseException(Exception):

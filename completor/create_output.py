@@ -9,6 +9,7 @@ import matplotlib  # type: ignore
 
 from completor import prepare_outputs as po
 from completor.completion import WellSchedule
+from completor.constants import Headers
 from completor.create_wells import CreateWells
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
@@ -440,7 +441,7 @@ class CreateOutput:
         self.print_udq = False
         self.udq_correlation = ""
         self.udq_parameter: dict[str, str] = {}
-        if self.case.completion_table["DEVICETYPE"].isin(["AICV"]).any():
+        if self.case.completion_table[Headers.DEVICE_TYPE].isin(["AICV"]).any():
             self.print_udq = True
             self.udq_correlation = CORRELATION_UDQ
 
@@ -597,9 +598,9 @@ class CreateOutput:
 
         Uses DataFrame df_reservoir with format shown in ``CreateOutput``.
         """
-        start_md = self.df_reservoir["STARTMD"].iloc[0]
-        if self.welsegs_header["SEGMENTMD"].iloc[0] > start_md:
-            self.welsegs_header["SEGMENTMD"] = start_md - 1.0
+        start_md = self.df_reservoir[Headers.START_MD].iloc[0]
+        if self.welsegs_header[Headers.SEGMENTMD].iloc[0] > start_md:
+            self.welsegs_header[Headers.SEGMENTMD] = start_md - 1.0
 
     def check_segments(self, lateral: int) -> None:
         """

@@ -227,8 +227,8 @@ def test_prepare_compsegs():
     df_annulus = pd.DataFrame([], columns=[])
     df_tubing_segments = pd.DataFrame(
         [
-            [1000.0, 2000.0, 1500.0, 1500.0, "OriginalSegment", 1, "PERF", "GP"],
-            [2000.0, 3000.0, 2500.0, 2500.0, "OriginalSegment", 1, "PERF", "GP"],
+            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINALSEGMENT, 1, "PERF", "GP"],
+            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINALSEGMENT, 1, "PERF", "GP"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -289,8 +289,8 @@ def test_prepare_compsegs():
     )
     df_completion_table = pd.DataFrame(
         [
-            [1000.0, 1500.0, 1250.0, 1250.0, "OriginalSegment", "GP", 1, "PERF"],
-            [1500.0, 3000.0, 2250.0, 2250.0, "OriginalSegment", "GP", 1, "PERF"],
+            [1000.0, 1500.0, 1250.0, 1250.0, Headers.ORIGINALSEGMENT, "GP", 1, "PERF"],
+            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINALSEGMENT, "GP", 1, "PERF"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -365,8 +365,8 @@ def test_prepare_compsegs():
     )
     df_tubing_segments = pd.DataFrame(
         [
-            [1000.0, 2000.0, 1500.0, 1500.0, "OriginalSegment", 1, "GP", "ICD"],
-            [2000.0, 3000.0, 2500.0, 2500.0, "OriginalSegment", 1, "GP", "ICD"],
+            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINALSEGMENT, 1, "GP", "ICD"],
+            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINALSEGMENT, 1, "GP", "ICD"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -441,8 +441,8 @@ def test_prepare_compsegs():
     )
     df_completion_table = pd.DataFrame(
         [
-            [1000.0, 1500.0, 1300.0, 1300.0, "OriginalSegment", "OA", 1, "PERF"],
-            [1500.0, 3000.0, 2250.0, 2250.0, "OriginalSegment", "OA", 1, "PERF"],
+            [1000.0, 1500.0, 1300.0, 1300.0, Headers.ORIGINALSEGMENT, "OA", 1, "PERF"],
+            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINALSEGMENT, "OA", 1, "PERF"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -517,8 +517,8 @@ def test_prepare_compsegs():
     )
     df_tubing_segments = pd.DataFrame(
         [
-            [1000.0, 2000.0, 1500.0, 1500.0, "OriginalSegment", "GP", 1, "ICD"],
-            [2000.0, 3000.0, 2500.0, 2500.0, "OriginalSegment", "GP", 1, "ICD"],
+            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINALSEGMENT, "GP", 1, "ICD"],
+            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINALSEGMENT, "GP", 1, "ICD"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -831,7 +831,7 @@ def test_prepare_compdat(tmpdir):
     )
 
     df_completion_table = pd.DataFrame(
-        [[500.0, 1500.0, 500.0, 1500.0, "OriginalSegment", "OA", 1, "ICD", 0.15, 0.311]],
+        [[500.0, 1500.0, 500.0, 1500.0, Headers.ORIGINALSEGMENT, "OA", 1, "ICD", 0.15, 0.311]],
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
