@@ -7,8 +7,6 @@ from matplotlib.axes import Axes  # type: ignore
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 from matplotlib.figure import Figure  # type: ignore
 
-from completor.constants import Headers
-
 
 def update_fonts(family: str = "DejaVu Serif", size: float = 12) -> None:
     """

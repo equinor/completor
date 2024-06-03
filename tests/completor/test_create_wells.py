@@ -8,7 +8,6 @@ import common
 import pytest
 
 from completor.constants import Method  # type: ignore
-from completor.constants import Headers
 from completor.create_wells import CreateWells  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
 

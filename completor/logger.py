@@ -8,7 +8,6 @@ from functools import wraps
 from pathlib import Path
 
 import completor
-from completor.constants import Headers
 
 
 def getLogger(module_name="completor"):

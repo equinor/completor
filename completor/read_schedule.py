@@ -129,10 +129,7 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
                 start_md_new[idx] = start_md[idx]
                 end_md_new[idx] = end_md[idx]
             else:
-                logger.info(
-                    "Overlapping in COMPSEGS for %s. Sorts the depths accordingly",
-                    well_name,
-                )
+                logger.info("Overlapping in COMPSEGS for %s. Sorts the depths accordingly", well_name)
                 comb_depth = np.append(start_md, end_md)
                 comb_depth = np.sort(comb_depth)
                 start_md_new = np.copy(comb_depth[::2])

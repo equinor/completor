@@ -564,14 +564,14 @@ class ReadCasefile:
             header = [
                 Headers.DEVICE_NUMBER,
                 Headers.ALPHA,
-                "X",
-                "Y",
-                "A",
-                "B",
-                "C",
-                "D",
-                "E",
-                "F",
+                Headers.X,
+                Headers.Y,
+                Headers.A,
+                Headers.B,
+                Headers.C,
+                Headers.D,
+                Headers.E,
+                Headers.F,
                 Headers.RHOCAL_AICD,
                 Headers.VISCAL_AICD,
             ]
@@ -752,7 +752,7 @@ class ReadCasefile:
                 Headers.ALPHA_PILOT,
                 Headers.X_PILOT,
                 Headers.Y_PILOT,
-                Headers.B_PILOT,
+                Headers.A_PILOT,
                 Headers.B_PILOT,
                 Headers.C_PILOT,
                 Headers.D_PILOT,
@@ -945,10 +945,7 @@ class ReadCasefile:
             match = re.search(r"(?<=\/\n{1})\/{1}(?=\n)", content_str)
             if match is None:
                 raise CaseReaderFormatError(
-                    "Cannot determine correct end of record '/' for keyword.",
-                    self.case_file,
-                    header,
-                    keyword,
+                    "Cannot determine correct end of record '/' for keyword.", self.case_file, header, keyword
                 )
             end_record = match.span()[0]
             # From keyword to the end (without the last slash)
