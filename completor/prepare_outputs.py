@@ -61,7 +61,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
     if add_first:
         df_temp.insert(loc=0, column="--", value=np.full(nline, fill_value=" "))
     if add_last:
-        df_temp[""] = ["/"] * nline
+        df_temp[Headers.EMPTY] = ["/"] * nline
     return df_temp
 
 
@@ -271,7 +271,7 @@ def prepare_tubing_layer(
     df_tubing_with_overburden = df_tubing_with_overburden.reindex(
         columns=[Headers.SEG, Headers.SEG2, Headers.BRANCH, Headers.OUT] + cols
     )
-    df_tubing_with_overburden[""] = "/"  # for printing
+    df_tubing_with_overburden[Headers.EMPTY] = "/"  # for printing
     # locate where it attached to (the top segment)
     wsa = schedule.get_welsegs(well_name)[1]  # all laterals
     top = wsa[wsa.TUBINGSEGMENT == well_segments.iloc[0].TUBINGOUTLET]  # could be empty
@@ -466,7 +466,7 @@ def prepare_device_layer(
             ),
         ),
     )
-    df_device[""] = device_comment
+    df_device[Headers.EMPTY] = device_comment
     return df_device
 
 
@@ -572,10 +572,10 @@ def prepare_annulus_layer(
         df_wseglink = df_wseglink[[Headers.WELL, Headers.ANNULUS, Headers.DEVICE]]
         df_wseglink[Headers.ANNULUS] = df_wseglink[Headers.ANNULUS].astype(np.int64)
         df_wseglink[Headers.DEVICE] = df_wseglink[Headers.DEVICE].astype(np.int64)
-        df_wseglink[""] = "/"
+        df_wseglink[Headers.EMPTY] = "/"
 
     if df_annulus.shape[0] > 0:
-        df_annulus[""] = "/"
+        df_annulus[Headers.EMPTY] = "/"
     return df_annulus, df_wseglink
 
 
@@ -753,9 +753,7 @@ def prepare_compsegs(
         and not df_reservoir[Headers.NDEVICES].empty
     )
     if df_annulus.empty:
-        # meaning there are no annular zones then
-        # all cells in this lateral and this well
-        # are connected to the device segment
+        # There are no annular zones then all cells in this lateral and this well is connected to the device segment.
         if isinstance(segment_length, float):
             if segment_length >= 0:
                 df_compseg_device = pd.merge_asof(
@@ -833,7 +831,7 @@ def prepare_compsegs(
             DEF="3*",
             SEG=_choose(Headers.SEG),
         )
-    compseg[""] = "/"
+    compseg[Headers.EMPTY] = "/"
     return compseg
 
 
@@ -974,7 +972,7 @@ def prepare_compdat(
     Returns:
         COMPDAT
     """
-    df_reservoir = df_reservoir[df_reservoir["WELL"] == well_name]
+    df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
     df_reservoir = df_reservoir[
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
@@ -989,7 +987,7 @@ def prepare_compdat(
     compdat[Headers.K] = df_reservoir[Headers.K].to_numpy()
     compdat[Headers.K2] = df_reservoir[Headers.K2].to_numpy()
     compdat[Headers.FLAG] = df_reservoir[Headers.STATUS].to_numpy()
-    compdat["SAT"] = df_reservoir[Headers.SATNUM].to_numpy()
+    compdat[Headers.SAT] = df_reservoir[Headers.SATNUM].to_numpy()
     compdat[Headers.CF] = df_reservoir[Headers.CF].to_numpy()
     compdat[Headers.DIAM] = fix_well_id(df_reservoir, df_completion_table)[Headers.DIAM].to_numpy()
     compdat[Headers.KH] = df_reservoir[Headers.KH].to_numpy()
@@ -999,7 +997,7 @@ def prepare_compdat(
     compdat[Headers.RO] = df_reservoir[Headers.RO].to_numpy()
     # remove default columns
     compdat = trim_pandas(compdat)
-    compdat[""] = "/"
+    compdat[Headers.EMPTY] = "/"
     return compdat
 
 
@@ -1044,7 +1042,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicd[Headers.D] = df_merge[Headers.D].to_numpy()
         wsegaicd[Headers.E] = df_merge[Headers.E].to_numpy()
         wsegaicd[Headers.F] = df_merge[Headers.F].to_numpy()
-        wsegaicd[""] = "/"
+        wsegaicd[Headers.EMPTY] = "/"
     return wsegaicd
 
 
@@ -1079,7 +1077,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
         wsegsicd[Headers.VIS] = df_merge[Headers.VISCAL_ICD].to_numpy()
         wsegsicd[Headers.WCT] = df_merge[Headers.WCUT].to_numpy()
-        wsegsicd[""] = "/"
+        wsegsicd[Headers.EMPTY] = "/"
     return wsegsicd
 
 
@@ -1114,7 +1112,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegvalv[Headers.L] = "5*"
         wsegvalv[Headers.AC_MAX] = df_merge[Headers.AC_MAX].to_numpy()
         wsegvalv[Headers.AC_MAX] = wsegvalv[Headers.AC_MAX].fillna(df_merge[Headers.AC])
-        wsegvalv[""] = "/"
+        wsegvalv[Headers.EMPTY] = "/"
     return wsegvalv
 
 
@@ -1163,18 +1161,14 @@ def prepare_wsegicv(
         wsegicv = wsegicv.reindex(
             columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX]
         )
-        wsegicv[""] = "/"
+        wsegicv[Headers.EMPTY] = "/"
         # create tubing icv table
     if not df_icv_tubing.empty:
         mask = (df_icv_tubing[Headers.WELL] == well_name) & (df_icv_tubing[Headers.BRANCH] == lateral)
         df_icv_tubing = df_icv_tubing.loc[mask]
         df_merge_tubing = pd.merge_asof(left=df_icv_tubing, right=df_icv, on=Headers.DEVICE_NUMBER, direction="nearest")
         df_merge_tubing = pd.merge_asof(
-            left=df_merge_tubing,
-            right=df_tubing,
-            left_on=Headers.START_MD,
-            right_on=Headers.MD,
-            direction="nearest",
+            left=df_merge_tubing, right=df_tubing, left_on=Headers.START_MD, right_on=Headers.MD, direction="nearest"
         )
         df_temp = df_merge_tubing.copy()
         df_temp = df_temp[[Headers.SEG, Headers.CV, Headers.AC, Headers.AC_MAX]]
@@ -1184,7 +1178,7 @@ def prepare_wsegicv(
         df_temp = df_temp.reindex(
             columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX]
         )
-        df_temp[""] = "/"
+        df_temp[Headers.EMPTY] = "/"
         wsegicv = pd.concat([wsegicv, df_temp], axis=0).reset_index(drop=True)
     return wsegicv
 
@@ -1225,7 +1219,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         wsegdar[Headers.GHF_HCF_DAR] = df_merge[Headers.GHF_HCF_DAR].to_numpy()
         wsegdar[Headers.DEFAULTS] = "5*"
         wsegdar[Headers.AC_MAX] = wsegdar[Headers.AC_OIL].to_numpy()
-        wsegdar[""] = "/"
+        wsegdar[Headers.EMPTY] = "/"
     return wsegdar
 
 
@@ -1280,7 +1274,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv[Headers.F_PILOT] = df_merge[Headers.F_PILOT].to_numpy()
         wsegaicv[Headers.WCT_AICV] = df_merge[Headers.WCT_AICV].to_numpy()
         wsegaicv[Headers.GHF_AICV] = df_merge[Headers.GHF_AICV].to_numpy()
-        wsegaicv[""] = "/"
+        wsegaicv[Headers.EMPTY] = "/"
     return wsegaicv
 
 
@@ -1442,7 +1436,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             Headers.D_MAIN,
             Headers.E_MAIN,
             Headers.F_MAIN,
-            "",
+            Headers.EMPTY,
         ],
         [
             Headers.WELL,
@@ -1462,7 +1456,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             Headers.D_PILOT,
             Headers.E_PILOT,
             Headers.F_PILOT,
-            "",
+            Headers.EMPTY,
         ],
     ]
     new_column = [
@@ -1483,7 +1477,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
         Headers.D,
         Headers.E,
         Headers.F,
-        "",
+        Headers.EMPTY,
     ]
     sign_water = ["<", ">="]
     sign_gas = ["<", ">="]

@@ -881,11 +881,11 @@ class ReadCasefile:
                         [self.completion_table.loc[self.completion_table.WELL == well_name].iloc[0]],
                         columns=self.completion_table.columns,
                     )
-                    lateral.STARTMD = 0
-                    lateral.ENDMD = 999999
-                    lateral.DEVICETYPE = "PERF"
-                    lateral.ANNULUS = "GP"
-                    lateral.BRANCH = branch_no
+                    lateral[Headers.START_MEASURED_DEPTH] = 0
+                    lateral[Headers.END_MEASURED_DEPTH] = 999999
+                    lateral[Headers.DEVICE_TYPE] = "PERF"
+                    lateral[Headers.ANNULUS] = "GP"
+                    lateral[Headers.BRANCH] = branch_no
                     # add new entry
                     self.completion_table = pd.concat([self.completion_table, lateral])
 

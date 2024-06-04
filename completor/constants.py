@@ -185,6 +185,8 @@ class Headers:
     TUBING_ID = "TUBINGID"
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
 
+    EMPTY = ""
+
 
 class Completion:
     """Columns for Completion."""

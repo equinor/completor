@@ -52,7 +52,7 @@ def test_add_columns_first_last():
     df_test = pd.DataFrame([[1, 2, 3, "1*", 5, 6], [1, 2, "5*", 3, 4, 5]], columns=["A", "B", "C", "D", "E", "F"])
     df_true_first_last = pd.DataFrame(
         [[" ", 1, 2, 3, "1*", 5, 6, "/"], [" ", 1, 2, "5*", 3, 4, 5, "/"]],
-        columns=["--", "A", "B", "C", "D", "E", "F", ""],
+        columns=["--", "A", "B", "C", "D", "E", "F", Headers.EMPTY],
     )
     df_true_only_first = pd.DataFrame(
         [[" ", 1, 2, 3, "1*", 5, 6], [" ", 1, 2, "5*", 3, 4, 5]], columns=["--", "A", "B", "C", "D", "E", "F"]
@@ -71,7 +71,7 @@ def test_dataframe_to_string():
     )
     df_true_common = pd.DataFrame(
         [[" ", 1, 2, 3, "1*", 5, 6, "/"], [" ", 1, 2, "5*", 3, 4, 5, "/"]],
-        columns=["--", "A", "B", "C", "D", "E", "F", ""],
+        columns=["--", "A", "B", "C", "D", "E", "F", Headers.EMPTY],
     )
 
     df_test_default = prepare_outputs.dataframe_tostring(df_test_common)
@@ -793,7 +793,7 @@ def test_prepare_wsegvalv():
             ["'WELL'", 3, 1.0, 1.2, "5*", 2.1, "/"],
             ["'WELL'", 4, 1.0, 1.2, "5*", 1.2, "/"],
         ],
-        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX, ""],
+        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX, Headers.EMPTY],
     )
     wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", 1, df_well, df_device)
     pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
@@ -987,7 +987,7 @@ def test_prepare_wsegicv(tmpdir):
             ["'WELL'", 3, 1.2, 4.1, "5*", 5.1, "/"],
             ["'WELL'", 4, 3.5, 3.2, "5*", 6.1, "/"],
         ],
-        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX, ""],
+        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX, Headers.EMPTY],
     )
     pd.testing.assert_frame_equal(wsegicv_output, true_wsegicv_output)
 
