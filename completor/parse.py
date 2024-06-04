@@ -688,10 +688,7 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
         if len(columns) == 0:
             iterator: range | list[str] = range(df.shape[1])
         else:
-            if columns is None:
-                iterator = []  # Makes MyPy happy
-            else:
-                iterator = columns
+            iterator = [] if columns is None else columns
         for column in iterator:
             try:
                 df.iloc[:, column] = remove_quotes(df.iloc[:, column].str)

@@ -261,7 +261,7 @@ def test_prepare_compsegs():
             Headers.DIR,
             Headers.DEF,
             Headers.SEG,
-            "",
+            Headers.EMPTY,
         ],
     )
     test_compsegs = prepare_outputs.prepare_compsegs(
@@ -320,7 +320,7 @@ def test_prepare_compsegs():
             Headers.DIR,
             Headers.DEF,
             Headers.SEG,
-            "",
+            Headers.EMPTY,
         ],
     )
     test_compsegs = prepare_outputs.prepare_compsegs(
@@ -360,7 +360,7 @@ def test_prepare_compsegs():
             Headers.TVD,
             Headers.DIAM,
             Headers.ROUGHNESS,
-            "",
+            Headers.EMPTY,
         ],
     )
     df_tubing_segments = pd.DataFrame(
@@ -396,7 +396,7 @@ def test_prepare_compsegs():
             Headers.DIR,
             Headers.DEF,
             Headers.SEG,
-            "",
+            Headers.EMPTY,
         ],
     )
     test_compsegs = prepare_outputs.prepare_compsegs(
@@ -436,7 +436,7 @@ def test_prepare_compsegs():
             Headers.TVD,
             Headers.DIAM,
             Headers.ROUGHNESS,
-            "",
+            Headers.EMPTY,
         ],
     )
     df_completion_table = pd.DataFrame(
@@ -472,7 +472,7 @@ def test_prepare_compsegs():
             Headers.DIR,
             Headers.DEF,
             Headers.SEG,
-            "",
+            Headers.EMPTY,
         ],
     )
     test_compsegs = prepare_outputs.prepare_compsegs(
@@ -512,7 +512,7 @@ def test_prepare_compsegs():
             Headers.TVD,
             Headers.DIAM,
             Headers.ROUGHNESS,
-            "",
+            Headers.EMPTY,
         ],
     )
     df_tubing_segments = pd.DataFrame(
@@ -548,7 +548,7 @@ def test_prepare_compsegs():
             Headers.DIR,
             Headers.DEF,
             Headers.SEG,
-            "",
+            Headers.EMPTY,
         ],
     )
     test_compsegs = prepare_outputs.prepare_compsegs(
@@ -886,7 +886,7 @@ def test_prepare_compdat(tmpdir):
             Headers.DFACT,
             Headers.DIR,
             Headers.RO,
-            "",
+            Headers.EMPTY,
         ],
     )
     pd.testing.assert_frame_equal(prepare_compdat_out, prepare_compdat_true)
