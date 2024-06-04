@@ -154,6 +154,39 @@ ITEM11,ITEM12
     pd.testing.assert_frame_equal(true_well4, well4_second)
 
 
+def test_reading_wsegvalv():
+    """Test the functions which read the WSEGVALV keyword."""
+    true_wsegvalv = StringIO(
+        """
+WELL,SEGMENT,CD,AC,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,STATE,AC_MAX
+WELL1,0,0.830,1.0000E-03,1*,1*,1*,1*,OPEN,1.0000E-03
+WELL1,1,0.830,1.0000E-02,1*,1*,1*,1*,SHUT,2.0000E-02
+WELL2,5,1,5e-3,1*,1*,1*,1*,OPEN,6e-3
+WELL2,56,1,5e-4,1*,1*,1*,1*,OPEN,7e-4
+WELL3,12,0.830,1.2E-03,1*,1*,1*,1*,OPEN,1.2E-03
+WELL3,87,0.830,1.2E-03,1*,1*,1*,1*,OPEN,1.2E-03
+WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN,6E-03
+        """
+    )
+    df_true = pd.read_csv(true_wsegvalv, sep=",")
+    df_true = fr.remove_string_characters(df_true)
+    df_true = df_true.astype(
+        {
+            "WELL": "string",
+            "SEGMENT": "int",
+            "CD": "float",
+            "AC": "float",
+            "DEFAULT_1": "string",
+            "DEFAULT_2": "string",
+            "DEFAULT_3": "string",
+            "DEFAULT_4": "string",
+            "STATE": "string",
+            "AC_MAX": "float",
+        }
+    )
+    pd.testing.assert_frame_equal(df_true, _SCHEDULE.wsegvalv)
+
+
 def test_fix_compsegs():
     """
     Test that fix_compsegs correctly assigns start and end measured depths.
