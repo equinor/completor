@@ -6,12 +6,6 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 
-class Header:
-    """Custom class for DataFrame columns."""
-
-    ...
-
-
 class Headers:
     """Headers for DataFrames."""
 
@@ -226,6 +220,22 @@ class _Keywords:
     COMPDAT = "COMPDAT"
     WELSEGS = "WELSEGS"
     COMPSEGS = "COMPSEGS"
+
+    COMPLETION = "COMPLETION"
+
+    WELSEGS_H = "WELSEGS_H"
+    WSEGLINK = "WSEGLINK"
+    WSEGVALV = "WSEGVALV"
+    WSEGAICD = "WSEGAICD"
+    WSEGAICV = "WSEGAICV"
+    WSEGICV = "WSEGICV"
+    WSEGSICD = "WSEGSICD"
+    WSEGDAR = "WSEGDAR"
+
+    SCHFILE = "SCHFILE"
+    OUTFILE = "OUTFILE"
+
+    main_keywords = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
 
     _items = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
     _members = set(_items)

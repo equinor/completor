@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from completor import completion  # type: ignore
-from completor.constants import Headers
+from completor.constants import Headers, Method
 
 
 def test_completion_index():
@@ -772,7 +772,7 @@ def test_create_tubing_segment_welsegs():
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
-    df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "WELSEGS")
+    df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, Method.WELSEGS)
     pd.testing.assert_frame_equal(df_test, df_true)
 
 

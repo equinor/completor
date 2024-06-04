@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from completor import completion, prepare_outputs, read_casefile  # type:ignore
-from completor.constants import Headers
+from completor.constants import Headers, Keywords
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -481,7 +481,7 @@ def test_prepare_compsegs():
     pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
 
     # Test5: WELSEGS segment length with annulus
-    segment_length = "WELSEGS"
+    segment_length = Keywords.WELSEGS
     df_device = pd.DataFrame(
         [
             [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],

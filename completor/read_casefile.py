@@ -10,7 +10,7 @@ import pandas as pd
 from completor import input_validation as val
 from completor import parse
 from completor.completion import WellSchedule
-from completor.constants import Headers
+from completor.constants import Headers, Keywords
 from completor.exceptions import CaseReaderFormatError
 from completor.logger import logger
 from completor.utils import abort, clean_file_lines
@@ -175,7 +175,7 @@ class ReadCasefile:
             - int
 
         """
-        start_index, end_index = self.locate_keyword("COMPLETION")
+        start_index, end_index = self.locate_keyword(Keywords.COMPLETION)
         if start_index == end_index:
             raise ValueError("No completion is defined in the case file.")
 
@@ -434,10 +434,10 @@ class ReadCasefile:
               - float
 
         """
-        start_index, end_index = self.locate_keyword("WSEGVALV")
+        start_index, end_index = self.locate_keyword(Keywords.WSEGVALV)
         if start_index == end_index:
             if "VALVE" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGVALV keyword must be defined, " "if VALVE is used in the completion")
+                raise abort("WSEGVALV keyword must be defined, if VALVE is used in the completion")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
@@ -489,10 +489,10 @@ class ReadCasefile:
               - float
 
         """
-        start_index, end_index = self.locate_keyword("WSEGSICD")
+        start_index, end_index = self.locate_keyword(Keywords.WSEGSICD)
         if start_index == end_index:
             if "ICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGSICD keyword must be defined, " "if ICD is used in the completion")
+                raise abort("WSEGSICD keyword must be defined, if ICD is used in the completion")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.STRENGTH, Headers.RHOCAL_ICD, Headers.VISCAL_ICD, Headers.WCUT]
@@ -555,10 +555,10 @@ class ReadCasefile:
               - float
 
         """
-        start_index, end_index = self.locate_keyword("WSEGAICD")
+        start_index, end_index = self.locate_keyword(Keywords.WSEGAICD)
         if start_index == end_index:
             if "AICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGAICD keyword must be defined, " "if AICD is used in the completion")
+                raise abort("WSEGAICD keyword must be defined, if AICD is used in the completion")
         else:
             # Table headers
             header = [
@@ -627,7 +627,7 @@ class ReadCasefile:
               - float
 
         """
-        start_index, end_index = self.locate_keyword("WSEGDAR")
+        start_index, end_index = self.locate_keyword(Keywords.WSEGDAR)
         if start_index == end_index:
             if "DAR" in self.completion_table[Headers.DEVICE_TYPE]:
                 raise abort("WSEGDAR keyword must be defined, if DAR is used in the completion")
@@ -728,10 +728,10 @@ class ReadCasefile:
 
 
         """
-        start_index, end_index = self.locate_keyword("WSEGAICV")
+        start_index, end_index = self.locate_keyword(Keywords.WSEGAICV)
         if start_index == end_index:
             if "AICV" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGAICV keyword must be defined, " "if AICV is used in the completion")
+                raise abort("WSEGAICV keyword must be defined, if AICV is used in the completion")
         else:
             # Table headers
             header = [
@@ -802,10 +802,10 @@ class ReadCasefile:
               - float
         """
 
-        start_index, end_index = self.locate_keyword("WSEGICV")
+        start_index, end_index = self.locate_keyword(Keywords.WSEGICV)
         if start_index == end_index:
             if "ICV" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGICV keyword must be defined, " "if ICV is used in the completion")
+                raise abort("WSEGICV keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC]

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from completor import main, parse  # type: ignore
-from completor.constants import Headers
+from completor.constants import Headers, Keywords
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
 from completor.utils import clean_file_lines  # type: ignore
 
@@ -133,12 +133,10 @@ class ReadSchedule:
         """
         # read the file
         self.content = clean_file_lines(schedule_file.splitlines(), "--")
-        # keywords to be searched
-        list_keywords = ["WELSPECS", "COMPDAT", "WELSEGS", "COMPSEGS"]
 
         # get contents of the listed keywords
         # and the content of the not listed keywords
-        self.collections, self.unused_keywords = parse.read_schedule_keywords(self.content, list_keywords)
+        self.collections, self.unused_keywords = parse.read_schedule_keywords(self.content, Keywords.main_keywords)
         # initiate values
         self.welspecs = pd.DataFrame()
         self.compdat = pd.DataFrame()

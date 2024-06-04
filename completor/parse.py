@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Headers
+from completor.constants import Headers, Keywords
 from completor.utils import abort
 
 
@@ -180,7 +180,13 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
     Returns:
         List of updated string
     """
-    dict_ncolumns = {"WELSPECS": 17, "COMPDAT": 14, "WELSEGS_H": 12, "WELSEGS": 15, "COMPSEGS": 11}
+    dict_ncolumns = {
+        Keywords.WELSPECS: 17,
+        Keywords.COMPDAT: 14,
+        Keywords.WELSEGS_H: 12,
+        Keywords.WELSEGS: 15,
+        Keywords.COMPSEGS: 11,
+    }
     max_column = dict_ncolumns[keyword]
     ncolumn = len(record)
     if ncolumn < max_column:
@@ -221,7 +227,7 @@ def read_schedule_keywords(
             used_index = np.append(used_index, np.arange(start, end + 1))
             keyword_content = [_create_record(content, keyword, irec, start) for irec in range(start + 1, end)]
             collection = ContentCollection(keyword_content, name=keyword)
-            if keyword in ["WELSEGS", "COMPSEGS"]:
+            if keyword in [Keywords.WELSEGS, Keywords.COMPSEGS]:
                 # remove string characters
                 collection.well = remove_string_characters(keyword_content[0][0])
             collections.append(collection)
@@ -242,7 +248,9 @@ def _create_record(content: list[str], keyword: str, irec: int, start: int) -> l
     # unpack records
     record = unpack_records(record)
     # complete records
-    record = complete_records(record, "WELSEGS_H" if keyword == "WELSEGS" and irec == start + 1 else keyword)
+    record = complete_records(
+        record, Keywords.WELSEGS_H if keyword == Keywords.WELSEGS and irec == start + 1 else keyword
+    )
     return record
 
 
@@ -366,7 +374,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.ITEM15,
     ]
     for collection in collections:
-        if collection.name == "WELSEGS":
+        if collection.name == Keywords.WELSEGS:
             header_collection = np.asarray(collection[:1])
             record_collection = np.asarray(collection[1:])
             # add additional well column on the second collection
@@ -470,7 +478,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     ]
     welspecs_table = None
     for collection in collections:
-        if collection.name == "WELSPECS":
+        if collection.name == Keywords.WELSPECS:
             the_collection = np.asarray(collection)
             if welspecs_table is None:
                 welspecs_table = np.copy(the_collection)
@@ -539,7 +547,7 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
     """
     compdat_table = None
     for collection in collections:
-        if collection.name == "COMPDAT":
+        if collection.name == Keywords.COMPDAT:
             the_collection = np.asarray(collection)
             if compdat_table is None:
                 compdat_table = np.copy(the_collection)
@@ -619,7 +627,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     """
     compsegs_table = None
     for collection in collections:
-        if collection.name == "COMPSEGS":
+        if collection.name == Keywords.COMPSEGS:
             the_collection = np.asarray(collection[1:])
             # add additional well column
             well_column = np.full(the_collection.shape[0], collection.well)
