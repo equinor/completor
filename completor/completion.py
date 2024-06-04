@@ -1,4 +1,4 @@
-"""Completion."""
+"""Completion related methods. Completion is the area where there is production."""
 
 from __future__ import annotations
 
@@ -71,8 +71,7 @@ class Information:
 
 
 def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.DataFrame) -> pd.DataFrame:
-    """
-    Create trajectory relation between MD and TVD.
+    """Create trajectory relation between MD and TVD.
 
     WELSEGS must be defined as ABS and not INC.
 
@@ -83,10 +82,6 @@ def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.Data
     Return:
         MD versus TVD
 
-    The DataFrame format of df_mdtvd is shown in the class function
-    ``create_wells.CreateWells.well_trajectory``. The formats of ``df_welsegs_header``
-    and ``df_welsegs_content`` are shown in the function
-    :ref:`create_wells.CreateWells.select_well <select_well>`.
     """
     md_ = df_welsegs_content[Headers.TUBINGMD].to_numpy()
     md_ = np.insert(md_, 0, df_welsegs_header[Headers.SEGMENTMD].iloc[0])
@@ -199,8 +194,7 @@ def create_tubing_segments(
     segment_length: float | str = 0.0,
     minimum_segment_length: float = 0.0,
 ) -> pd.DataFrame:
-    """
-    Procedure to create segments in the tubing layer.
+    """Procedure to create segments in the tubing layer.
 
     Args:
         df_reservoir: Must contain ``STARTMD`` and ``ENDMD``
@@ -365,8 +359,7 @@ def create_tubing_segments(
 
 
 def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | None) -> pd.DataFrame:
-    """
-    Create segments for inactive cells.
+    """Create segments for inactive cells.
 
     Sometimes inactive cells have no segments. It is required to create segments for
     these cells to get the scaling factor correct. Inactive cells are indicated if
@@ -419,8 +412,7 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
 
 
 def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> tuple[int, int]:
-    """
-    Find the indices in the completion DataFrame of start MD and end MD.
+    """Find the indices in the completion DataFrame of start MD and end MD.
 
     Args:
         df_completion: Must contain ``STARTMD`` and ``ENDMD``
@@ -444,8 +436,7 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
 
 
 def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_length: float) -> Information:
-    """
-    Get information from the COMPLETION.
+    """Get information from the COMPLETION.
 
     Args:
         start: Start MD of the segment
@@ -551,8 +542,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
 def complete_the_well(
     df_tubing_segments: pd.DataFrame, df_completion: pd.DataFrame, joint_length: float
 ) -> pd.DataFrame:
-    """
-    Complete the well with the user completion.
+    """Complete the well with the user completion.
 
     Args:
         df_tubing_segments: Output from function create_tubing_segments
@@ -603,8 +593,7 @@ def complete_the_well(
 
 
 def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
-    """
-    Lump additional segments to the original segments.
+    """Lump additional segments to the original segments.
 
     This only applies if the additional segments have an annulus zone.
 
@@ -649,8 +638,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: DeviceType) -> pd.DataFrame:
-    """
-    Get device characteristics.
+    """Get device characteristics.
 
     Args:
         df_well: Must contain columns ``DEVICETYPE``, ``DEVICENUMBER``, and
@@ -709,8 +697,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
 
 
 def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
-    """
-    Correct the annulus zone.
+    """Correct the annulus zone.
 
     If there are no connections to the tubing in the annulus zone then there is no
     annulus zone.
@@ -740,8 +727,7 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
 def connect_cells_to_segments(
     df_well: pd.DataFrame, df_reservoir: pd.DataFrame, df_tubing_segments: pd.DataFrame, method: MethodType
 ) -> pd.DataFrame:
-    """
-    Connect cells to segments.
+    """Connect cells to segments.
 
     Args:
         df_well: Segment table. Must contain column ``TUB_MD``
@@ -753,9 +739,6 @@ def connect_cells_to_segments(
     Returns:
         Merged DataFrame.
 
-    | The DataFrame formats in this function are shown in
-    | df_well (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
-    | df_reservoir (:ref:`create_wells.CreateWells.select_well <df_reservoir>`)
     """
     # Calculate mid cell MD
     df_reservoir[Headers.MD] = (df_reservoir[Headers.START_MD] + df_reservoir[Headers.END_MEASURED_DEPTH]) * 0.5
@@ -783,8 +766,7 @@ def connect_cells_to_segments(
 
 
 class WellSchedule:
-    """
-    A collection of all the active multi-segment wells.
+    """A collection of all the active multi-segment wells.
 
     Attributes:
         msws: Multisegmentet well segments.
@@ -801,8 +783,7 @@ class WellSchedule:
         self.active_wells = np.array(active_wells)
 
     def set_welspecs(self, records: list[list[str]]) -> None:
-        """
-        Convert a WELSPECS record set to a Pandas DataFrame.
+        """Convert a WELSPECS record set to a Pandas DataFrame.
 
         * Sets DataFrame column titles
         * Formats column values
@@ -897,8 +878,7 @@ class WellSchedule:
             logger.debug("set_welspecs for %s", well_name)
 
     def handle_compdat(self, recs: list[list[str]]) -> list[list[str]]:
-        """
-        Convert a COMPDAT record set to a Pandas DataFrame.
+        """Convert a COMPDAT record set to a Pandas DataFrame.
 
         * Sets DataFrame column titles
         * Pads missing values with default values (1*)
@@ -1167,8 +1147,7 @@ class WellSchedule:
         return well_name
 
     def set_compsegs(self, recs: list[list[str]]) -> str | None:
-        """
-        Update COMPSEGS for a well if it is an active well.
+        """Update COMPSEGS for a well if it is an active well.
 
         * Pads missing record columns in header and contents with default 1*
         * Converts header and column records to Pandas DataFrames
@@ -1242,8 +1221,7 @@ class WellSchedule:
         return well_name
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:
-        """
-        Get-function for WELSPECS.
+        """Get-function for WELSPECS.
 
         Args:
             well_name: Well name
@@ -1255,8 +1233,7 @@ class WellSchedule:
         return self.msws[well_name]["welspecs"]
 
     def get_compdat(self, well_name: str) -> pd.DataFrame:
-        """
-        Get-function for COMPDAT.
+        """Get-function for COMPDAT.
 
         Args:
             well_name: Well name
@@ -1276,8 +1253,7 @@ class WellSchedule:
             raise err
 
     def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
-        """
-        Get-function for COMPSEGS.
+        """Get-function for COMPSEGS.
 
         Args:
            well_name: Well name
@@ -1295,8 +1271,7 @@ class WellSchedule:
         return fix_compsegs(df, well_name)
 
     def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """
-        Get-function for WELSEGS.
+        """Get-function for WELSEGS.
 
         Args:
             well_name: Well name
@@ -1322,8 +1297,7 @@ class WellSchedule:
         return dfh, dfr
 
     def get_well_number(self, well_name: str) -> int:
-        """
-        Well number in the active_wells list.
+        """Well number in the active_wells list.
 
         Args:
             well_name: Well name
