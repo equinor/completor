@@ -24,7 +24,9 @@ DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
 class Information:
-    """Holds information from ``get_completion``."""
+    """Holds information from `get_completion`."""
+
+    # TODO(#85): Improve the class.
 
     def __init__(
         self,
