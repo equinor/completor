@@ -19,8 +19,8 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
     Returns:
         tuple: (Updated header DataFrame, Updated content DataFrame)
 
-    The formats of df_header and df_content are shown as df_welsegs_header and
-    df_welsegs_content respectively in the function
+    The formats of df_header and df_content are shown as df_well_segments_header and
+    df_well_segments_content respectively in the function
     :ref:`create_wells.CreateWells.select_well <select_well>`.
     """
     df_header = df_header.copy()
