@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Union, overload
+from typing import overload
 
 import numpy as np
 import numpy.typing as npt
@@ -19,7 +19,6 @@ except ImportError:
     pass
 
 # Use more precise type information, if possible
-MethodType: TypeAlias = Union['Literal["cells", "user", "fix", "welsegs"]', Method]
 DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
@@ -183,7 +182,7 @@ def create_tubing_segments(
     df_reservoir: pd.DataFrame,
     df_completion: pd.DataFrame,
     df_mdtvd: pd.DataFrame,
-    method: MethodType = ...,
+    method: Method = ...,
     segment_length: float | str = ...,
     minimum_segment_length: float = 0.0,
 ) -> pd.DataFrame: ...
@@ -194,7 +193,7 @@ def create_tubing_segments(
     # Technically, df_completion is only required for SegmentCreationMethod.USER
     df_completion: pd.DataFrame,
     df_mdtvd: pd.DataFrame,
-    method: MethodType = Method.CELLS,
+    method: Method = Method.CELLS,
     segment_length: float | str = 0.0,
     minimum_segment_length: float = 0.0,
 ) -> pd.DataFrame:
@@ -675,7 +674,7 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
 
 
 def connect_cells_to_segments(
-    df_well: pd.DataFrame, df_reservoir: pd.DataFrame, df_tubing_segments: pd.DataFrame, method: MethodType
+    df_well: pd.DataFrame, df_reservoir: pd.DataFrame, df_tubing_segments: pd.DataFrame, method: Method
 ) -> pd.DataFrame:
     """Connect cells to segments.
 
