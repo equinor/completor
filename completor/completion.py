@@ -84,7 +84,6 @@ def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.Data
     Return:
         Measured depth and true vertical depth.
     """
-
     md_ = df_welsegs_content[Headers.TUBINGMD].to_numpy()
     md_ = np.insert(md_, 0, df_welsegs_header[Headers.SEGMENTMD].iloc[0])
     tvd = df_welsegs_content[Headers.TUBINGTVD].to_numpy()
@@ -112,7 +111,6 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     Raise:
         ValueError: If the dimensions are incorrect.
     """
-
     start_md = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
     end_md = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
     gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][
@@ -220,7 +218,6 @@ def create_tubing_segments(
     Raises:
         ValueError: If the method is unknown.
     """
-
     start_measure_depth: npt.NDArray[np.float64]
     end_measure_depth: npt.NDArray[np.float64]
     if method == Method.CELLS:
@@ -370,7 +367,6 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     Raises:
         SystemExit: If the Schedule file is missing data for one or more branches in the case file.
     """
-
     if df_tubing_segments.empty:
         raise abort(
             "Schedule file is missing data for one or more branches defined in the case file. "
@@ -414,7 +410,6 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
     Returns:
         Indices - Tuple of int.
     """
-
     start_md = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
     end_md = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
     _start = np.argwhere((start_md <= start) & (end_md > start)).flatten()
@@ -452,7 +447,6 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             If the completion data contains illegal / invalid rows.
             If information class is None.
     """
-
     information = None
     device_type = None
     device_number = None
@@ -537,7 +531,6 @@ def complete_the_well(
     Returns:
         Well information.
     """
-
     start = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()
     end = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
     # initiate completion
@@ -583,7 +576,6 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     Returns:
         Updated well information.
     """
-
     ndevices = df_well[Headers.NDEVICES].to_numpy()
     annulus_zone = df_well[Headers.ANNULUS_ZONE].to_numpy()
     seg_desc = df_well[Headers.SEGMENT_DESC].to_numpy()
@@ -629,7 +621,6 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     Raises:
         ValueError: If missing device type in input files.
     """
-
     columns = [Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER]
     try:
         df_well = pd.merge(df_well, df_device, how="left", on=columns)
@@ -659,7 +650,6 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
     Returns:
         Updated DataFrame with corrected annulus zone.
     """
-
     zones = df_well[Headers.ANNULUS_ZONE].unique()
     for zone in zones:
         if zone == 0:
@@ -687,7 +677,6 @@ def connect_cells_to_segments(
     Returns:
         Merged DataFrame.
     """
-
     # Calculate mid cell MD
     df_reservoir[Headers.MD] = (df_reservoir[Headers.START_MD] + df_reservoir[Headers.END_MEASURED_DEPTH]) * 0.5
     if method == Method.USER:
@@ -742,7 +731,6 @@ class WellSchedule:
         Returns:
             Record of inactive wells (in `self.msws`).
         """
-
         columns = [
             Headers.WELL,
             Headers.GROUP,
@@ -790,7 +778,6 @@ class WellSchedule:
         Returns:
             Records for inactive wells.
         """
-
         well_names = set()  # the active well-names found in this chunk
         remains = []  # the other wells
         for rec in records:
@@ -861,7 +848,6 @@ class WellSchedule:
         Returns:
             Name of well if it was updated, or None if it is not in the active_wells list.
         """
-
         well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
         if well_name not in self.active_wells:
             return None
@@ -943,7 +929,6 @@ class WellSchedule:
         Returns:
             Name of well if it was updated, or None if it is not in active_wells.
         """
-
         well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
         if well_name not in self.active_wells:
             return None
@@ -980,7 +965,6 @@ class WellSchedule:
         Returns:
             Well specifications.
         """
-
         return self.msws[well_name]["welspecs"]
 
     def get_compdat(self, well_name: str) -> pd.DataFrame:
@@ -995,7 +979,6 @@ class WellSchedule:
         Raises:
             ValueError: If completion data keyword is missing in input schedule file.
         """
-
         try:
             return self.msws[well_name]["compdat"]
         except KeyError as err:
@@ -1013,7 +996,6 @@ class WellSchedule:
         Returns:
             Completion segment data.
         """
-
         df = self.msws[well_name]["compsegs"].copy()
         if branch is not None:
             df = df[df[Headers.BRANCH] == branch]
@@ -1033,7 +1015,6 @@ class WellSchedule:
         Raises:
             ValueError: If WELSEGS keyword missing in input schedule file.
         """
-
         try:
             dfh, dfr = self.msws[well_name]["welsegs"]
         except KeyError as err:
@@ -1054,5 +1035,4 @@ class WellSchedule:
         Returns:
             Well number.
         """
-
         return (self.active_wells == well_name).nonzero()[0][0]

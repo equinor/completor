@@ -268,7 +268,6 @@ class Method(Enum):
             >>>Method.CELLS == "CELLS"
             >>>True
         """
-
         if isinstance(other, Enum):
             return self.__class__ == other.__class__ and self.value == other.value and self.name == other.name
         elif isinstance(other, str):
