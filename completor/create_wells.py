@@ -189,8 +189,8 @@ class CreateWells:
 
         Filter all of the required DataFrames for this well and its laterals.
 
-        The function sets the class property DataFrames df_completion, df_welsegs_header
-        and df_welsegs_content, and df_reservoir, with the following formats:
+        The function sets the class property DataFrames df_completion, df_well_segments_header
+        and df_well_segments_content, and df_reservoir, with the following formats:
 
         .. _df_completion:
         .. list-table:: df_completion
@@ -223,7 +223,7 @@ class CreateWells:
              - int
 
         .. _df_welsegs_header:
-        .. list-table:: df_welsegs_header (WELSEGS header)
+        .. list-table:: df_well_segments_header (WELSEGS header)
            :widths: 10 10
            :header-rows: 1
 
@@ -255,7 +255,7 @@ class CreateWells:
              - float
 
         .. _df_welsegs_content:
-        .. list-table:: df_welsegs_content (WELSEGS record)
+        .. list-table:: df_well_segments_content (WELSEGS record)
            :widths: 10 10
            :header-rows: 1
 
@@ -357,7 +357,7 @@ class CreateWells:
             raise ValueError("No well name given")
 
         self.df_completion = self.case.get_completion(self.well_name, lateral)
-        self.df_welsegs_header, self.df_welsegs_content = schedule.get_welsegs(self.well_name, lateral)
+        self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(self.well_name, lateral)
         df_compsegs = schedule.get_compsegs(self.well_name, lateral)
         df_compdat = schedule.get_compdat(self.well_name)
         self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=["I", "J", "K"])
@@ -372,10 +372,10 @@ class CreateWells:
         """
         Create trajectory DataFrame relations between MD and TVD.
 
-        The function uses the class property DataFrames df_welsegs_header
-        and df_welsegs_content with the following formats:
+        The function uses the class property DataFrames df_well_segments_header
+        and df_well_segments_content with the following formats:
 
-        .. list-table:: df_welsegs_header (WELSEGS header)
+        .. list-table:: df_well_segments_header (WELSEGS header)
            :widths: 10 10
            :header-rows: 1
 
@@ -406,7 +406,7 @@ class CreateWells:
            * - ITEM12
              - float
 
-        .. list-table:: df_welsegs_content (WELSEGS record)
+        .. list-table:: df_well_segments_content (WELSEGS record)
            :widths: 10 10
            :header-rows: 1
 
