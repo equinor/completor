@@ -277,7 +277,7 @@ class ReadCasefile:
             self.lat2device = pd.DataFrame([], columns=header)  # empty df
             return
         self.lat2device = self._create_dataframe_with_columns(header, start_index, end_index)
-        val.validate_lateral2device(self.lat2device, self.completion_table)
+        val.validate_lateral_to_device(self.lat2device, self.completion_table)
         self.lat2device[Headers.BRANCH] = self.lat2device[Headers.BRANCH].astype(np.int64)
 
     def read_joint_length(self) -> None:
