@@ -250,7 +250,7 @@ def prepare_tubing_layer(
         ROUGHNESS=df_well[Headers.ROUGHNESS],
     )
     # handle overburden
-    well_segments = schedule.get_welsegs(well_name, lateral)[1]
+    well_segments = schedule.get_well_segments(well_name, lateral)[1]
     md_input_welsegs = well_segments[Headers.TUBINGMD]
     md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MD]
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
@@ -273,7 +273,7 @@ def prepare_tubing_layer(
     )
     df_tubing_with_overburden[Headers.EMPTY] = "/"  # for printing
     # locate where it attached to (the top segment)
-    wsa = schedule.get_welsegs(well_name)[1]  # all laterals
+    wsa = schedule.get_well_segments(well_name)[1]  # all laterals
     top = wsa[wsa.TUBINGSEGMENT == well_segments.iloc[0].TUBINGOUTLET]  # could be empty
 
     return df_tubing_with_overburden, top

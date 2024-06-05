@@ -176,7 +176,7 @@ class CreateWells:
             raise ValueError("No well name given")
 
         self.df_completion = self.case.get_completion(self.well_name, lateral)
-        self.df_welsegs_header, self.df_welsegs_content = schedule.get_welsegs(self.well_name, lateral)
+        self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(self.well_name, lateral)
         df_compsegs = schedule.get_compsegs(self.well_name, lateral)
         df_compdat = schedule.get_compdat(self.well_name)
         self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])

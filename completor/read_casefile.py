@@ -437,7 +437,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGVALV)
         if start_index == end_index:
             if "VALVE" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGVALV keyword must be defined, if VALVE is used in the completion")
+                raise abort("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
@@ -492,7 +492,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGSICD)
         if start_index == end_index:
             if "ICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGSICD keyword must be defined, if ICD is used in the completion")
+                raise abort("WSEGSICD keyword must be defined, if ICD is used in the completion.")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.STRENGTH, Headers.RHOCAL_ICD, Headers.VISCAL_ICD, Headers.WCUT]
@@ -558,7 +558,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICD)
         if start_index == end_index:
             if "AICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGAICD keyword must be defined, if AICD is used in the completion")
+                raise abort("WSEGAICD keyword must be defined, if AICD is used in the completion.")
         else:
             # Table headers
             header = [
@@ -731,7 +731,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICV)
         if start_index == end_index:
             if "AICV" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGAICV keyword must be defined, if AICV is used in the completion")
+                raise abort("WSEGAICV keyword must be defined, if AICV is used in the completion.")
         else:
             # Table headers
             header = [
@@ -868,7 +868,7 @@ class ReadCasefile:
         compl = self.completion_table[self.completion_table.WELL == well_name]
 
         # check that all branches are defined in case-file
-        branch_nos = set(msw["compsegs"].BRANCH).difference(set(compl.BRANCH))
+        branch_nos = set(msw[Keywords.COMPSEGS].BRANCH).difference(set(compl.BRANCH))
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:
