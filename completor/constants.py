@@ -205,15 +205,10 @@ class _Keywords:
     Used as constants, and to check if a given word / string is a keyword.
 
     Attributes:
-        WELSPECS (str): Constant representing the keyword 'WELSPECS'
-        COMPDAT (str): Constant representing the keyword 'COMPDAT'
-        WELSEGS (str): Constant representing the keyword 'WELSEGS'
-        COMPSEGS (str): Constant representing the keyword 'COMPSEGS'
-
-        _items (List[str]]): Private helper to iterate through all keywords
-        _members (Set[str]): Private helper to check membership
-
-        segments (Set[str]): Set of keywords that are used in a segment
+        _items: Private helper to iterate through all keywords.
+        _members: Private helper to check membership.
+        main_keywords: collection of the main keywords: welspecs, compdat, welsegs, and compsegs.
+        segments: Set of keywords that are used in a segment.
     """
 
     WELSPECS = "WELSPECS"
@@ -253,7 +248,7 @@ Keywords = _Keywords()
 
 
 class Method(Enum):
-    """An enumeration of legal methods for ``create_wells.CreateWells``."""
+    """An enumeration of legal methods to create wells."""
 
     CELLS = auto()
     FIX = auto()
@@ -261,20 +256,19 @@ class Method(Enum):
     WELSEGS = auto()
 
     def __eq__(self, other: object) -> bool:
-        """
-        Implement the equality function to compare enums with their string literal.
+        """Implement the equality function to compare enums with their string literal.
 
         Arguments:
-            other (SegmentCreationMethod, str): other item to be compared with
+            other: Item to compare with.
 
         Returns:
-            bool: Whether enums are equal
+            Whether enums are equal.
 
         Example:
             >>>Method.CELLS == "CELLS"
             >>>True
-
         """
+
         if isinstance(other, Enum):
             return self.__class__ == other.__class__ and self.value == other.value and self.name == other.name
         elif isinstance(other, str):
