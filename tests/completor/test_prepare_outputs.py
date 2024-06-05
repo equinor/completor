@@ -558,7 +558,7 @@ def test_prepare_compsegs():
 
 
 def test_connect_lateral_logs_warning(caplog):
-    """ATest the warning occurs in connect_lateral when given segments with negative length.
+    """Test the warning occurs in connect_lateral when given segments with negative length.
 
     Segments with negative lengths can occur when trying to connect a lateral to its main bore/mother branch.
     They are caused by an error in the input, so the user must be warned about this.
