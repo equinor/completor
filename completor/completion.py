@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Headers, Method
+from completor.constants import Headers, Keywords, Method
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import abort, as_data_frame, log_and_raise_exception
@@ -694,7 +694,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     try:
         df_well = pd.merge(df_well, df_device, how="left", on=columns)
     except KeyError as err:
-        if "'DEVICETYPE'" in str(err):
+        if f"'{Headers.DEVICE_TYPE}'" in str(err):
             raise ValueError(f"Missing keyword 'DEVICETYPE {device_type}' in input files.") from err
         raise err
     if device_type == "VALVE":
@@ -893,7 +893,7 @@ class WellSchedule:
         for well_name in df[Headers.WELL].unique():
             if well_name not in self.msws:
                 self.msws[well_name] = {}
-            self.msws[well_name]["welspecs"] = df[df[Headers.WELL] == well_name]
+            self.msws[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
             logger.debug("set_welspecs for %s", well_name)
 
     def handle_compdat(self, recs: list[list[str]]) -> list[list[str]]:
@@ -1002,7 +1002,7 @@ class WellSchedule:
         for well_name in well_names:
             if well_name not in self.msws:
                 self.msws[well_name] = {}
-            self.msws[well_name]["compdat"] = df[df[Headers.WELL] == well_name]
+            self.msws[well_name][Keywords.COMPDAT] = df[df[Headers.WELL] == well_name]
             logger.debug("handle_compdat for %s", well_name)
         return remains
 
@@ -1163,7 +1163,7 @@ class WellSchedule:
 
         if well_name not in self.msws:
             self.msws[well_name] = {}
-        self.msws[well_name]["welsegs"] = dfh, dfr
+        self.msws[well_name][Keywords.WELSEGS] = dfh, dfr
         return well_name
 
     def set_compsegs(self, recs: list[list[str]]) -> str | None:
@@ -1237,7 +1237,7 @@ class WellSchedule:
         df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
         if well_name not in self.msws:
             self.msws[well_name] = {}
-        self.msws[well_name]["compsegs"] = df
+        self.msws[well_name][Keywords.COMPSEGS] = df
         logger.debug("set_compsegs for %s", well_name)
         return well_name
 
@@ -1252,7 +1252,7 @@ class WellSchedule:
             :ref:`WELSPECS DataFrame <welspecs_format>`
 
         """
-        return self.msws[well_name]["welspecs"]
+        return self.msws[well_name][Keywords.WELSPECS]
 
     def get_compdat(self, well_name: str) -> pd.DataFrame:
         """
@@ -1269,9 +1269,9 @@ class WellSchedule:
 
         """
         try:
-            return self.msws[well_name]["compdat"]
+            return self.msws[well_name][Keywords.COMPDAT]
         except KeyError as err:
-            if "'compdat'" in str(err):
+            if f"'{Keywords.COMPDAT}'" in str(err):
                 raise ValueError("Input schedule file missing COMPDAT keyword.") from err
             raise err
 
@@ -1287,7 +1287,7 @@ class WellSchedule:
             :ref:`COMPSEGS DataFrame <compsegs_format>`
 
         """
-        df = self.msws[well_name]["compsegs"].copy()
+        df = self.msws[well_name][Keywords.COMPSEGS].copy()
         if branch is not None:
             df = df[df[Headers.BRANCH] == branch]
         df.reset_index(drop=True, inplace=True)  # reset index after filtering
@@ -1311,9 +1311,9 @@ class WellSchedule:
 
         """
         try:
-            dfh, dfr = self.msws[well_name]["welsegs"]
+            dfh, dfr = self.msws[well_name][Keywords.WELSEGS]
         except KeyError as err:
-            if "'welsegs'" in str(err):
+            if f"'{Keywords.WELSEGS}'" in str(err):
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
             raise err
         if branch is not None:

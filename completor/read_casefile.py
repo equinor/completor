@@ -868,7 +868,7 @@ class ReadCasefile:
         compl = self.completion_table[self.completion_table.WELL == well_name]
 
         # check that all branches are defined in case-file
-        branch_nos = set(msw["compsegs"].BRANCH).difference(set(compl.BRANCH))
+        branch_nos = set(msw[Keywords.COMPSEGS].BRANCH).difference(set(compl.BRANCH))
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:

@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from completor import completion  # type: ignore
-from completor.constants import Headers, Method
+from completor.constants import Headers, Keywords, Method
 
 
 def test_completion_index():
@@ -938,7 +938,7 @@ def test_skin():
     )
     well_schedule = completion.WellSchedule(["A1"])
     well_schedule.handle_compdat(compdat)
-    df_out = well_schedule.msws["A1"]["compdat"]
+    df_out = well_schedule.msws["A1"][Keywords.COMPDAT]
     pd.testing.assert_frame_equal(df_out, df_true)
 
 
