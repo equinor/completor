@@ -110,8 +110,8 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
     # define annular zone
-    start_md = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
-    end_md = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
+    start_measured_depth = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
+    end_measured_depth = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
     gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][["STARTMD", "ENDMD"]].to_numpy()
     packer_location = df_completion[df_completion[Headers.ANNULUS] == "PA"][["STARTMD", "ENDMD"]].to_numpy()
     # update df_completion by removing PA rows
@@ -472,7 +472,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
                 f"for well {df_completion[Headers.WELL][completion_idx]}"
             )
         # calculate cumulative parameter
-        num_device += (comp_length / joint_length) * df_completion[Headers.VALVES_PER_JOINT].iloc[completion_idx]
+        num_device += (completion_length / joint_length) * df_completion[Headers.VALVES_PER_JOINT].iloc[completion_idx]
 
         if completion_length > prev_length:
             # get well geometry
