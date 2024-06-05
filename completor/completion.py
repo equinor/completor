@@ -73,16 +73,17 @@ class Information:
 
 
 def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.DataFrame) -> pd.DataFrame:
-    """Create trajectory relation between MD and TVD.
+    """Create trajectory relation between measured depth and true vertical depth.
 
-    WELSEGS must be defined as ABS and not INC.
+    Note:
+        Well segments must be defined with absolute (ABS) and not incremental (INC) values.
 
     Args:
-        df_welsegs_header: First record of WELSEGS
-        df_welsegs_content: Second record WELSEGS
+        df_welsegs_header: First record of well segments.
+        df_welsegs_content: Second record well segments.
 
     Return:
-        MD versus TVD
+        Measured depth and true vertical depth.
 
     """
     md_ = df_welsegs_content[Headers.TUBINGMD].to_numpy()
@@ -97,21 +98,22 @@ def well_trajectory(df_welsegs_header: pd.DataFrame, df_welsegs_content: pd.Data
 
 
 def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
-    """Define the annulus zone from the COMPLETION.
+    """Define annulus zones based on completion data.
+
+    Zones are divided to better track individual separated areas of completion.
+    The divisions are based on depths, packer location, and the annulus content.
+
 
     Args:
-        df_completion: Must contain the columns ``STARTMD``, ``ENDMD``, and ``ANNULUS``
+        df_completion: Raw completion data, must contain start/end measured depth, and annulus content.
 
     Returns:
-        Updated COMPLETION with additional column ``ANNULUS_ZONE``
+        Updated completion data with additional column `ANNULUS_ZONE`.
 
     Raise:
-        ValueError: If the dimension is not correct
+        ValueError: If the dimensions are incorrect.
 
-    The DataFrame format of df_completion is shown in
-    :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
-    # define annular zone
     start_md = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
     end_md = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
     gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][
@@ -199,33 +201,25 @@ def create_tubing_segments(
     """Procedure to create segments in the tubing layer.
 
     Args:
-        df_reservoir: Must contain ``STARTMD`` and ``ENDMD``
-        df_completion: Must contain ``ANNULUS``, ``STARTMD``, ``ENDMD``,
-                    ``ANNULUS_ZONE`` and no packer content in the completion
-        df_mdtvd: Must contain ``MD`` and ``TVD``
-        method: Method for segmentation. Default: cells
+        df_reservoir: Must contain start and end measured depth.
+        df_completion: Must contain annulus, start and end measured depth, and annulus zone.
+            The packers must be removed in the completion.
+        df_mdtvd: Measured and true vertical depths.
+        method: Method for segmentation. Defaults to cells.
         segment_length: Only if fix is selected in the method.
         minimum_segment_length: User input minimum segment length.
 
-    Segmentation methods
-
-    | cells: Create one segment per cell
-    | user: Create segment based on the completion definition
-    | fix: Create segment based on fix interval
-    | welsegs: Create segment based on ``WELSEGS`` keyword
+    Segmentation methods:
+        cells: Create one segment per cell.
+        user: Create segment based on the completion definition.
+        fix: Create segment based on a fixed interval.
+        welsegs: Create segment based on well segments keyword.
 
     Returns:
-        A dataframe with columns ``STARTMD``, ``ENDMD``, ``TUB_MD``, ``TUB_TVD``
-
-    | The formats of DataFrames are shown in
-    | df_reservoir (:ref:`create_wells.CreateWells.select_well <df_reservoir>`)
-    | df_completion (:ref:`create_wells.CreateWells.select_well <df_completion>`)
-    | df_mdtvd (:ref:`create_wells.CreateWells.well_trajectory <df_mdtvd>`)
-    | df_tubing_segments
-        (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
+        DataFrame with start and end measured depth, tubing measured depth, and tubing true vertical depth.
 
     Raises:
-        ValueError: If the method is unknown
+        ValueError: If the method is unknown.
 
     """
     start_measure_depth: npt.NDArray[np.float64]
@@ -363,28 +357,25 @@ def create_tubing_segments(
 def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | None) -> pd.DataFrame:
     """Create segments for inactive cells.
 
-    Sometimes inactive cells have no segments. It is required to create segments for
-    these cells to get the scaling factor correct. Inactive cells are indicated if
-    there are segments starting at MD deeper than the end MD of the previous cell.
+    Sometimes inactive cells have no segments.
+    It is required to create segments for these cells to get the scaling factor correct.
+    Inactive cells are indicated by segments starting at measured depth deeper than the end of the previous cell.
 
     Args:
-        df_tubing_segments: Must contain column ``STARTMD`` and ``ENDMD``
-        well_name: Name of well
+        df_tubing_segments: Must contain start and end measured depth.
+        well_name: Name of well.
 
     Returns:
-        Updated dataframe if missing cells are found
+        DataFrame with the gaps filled.
 
     Raises:
-        SystemExit: If the Schedule file is missing data for one or more branches
-                    in the case file
+        SystemExit: If the Schedule file is missing data for one or more branches in the case file.
 
-    The format of the DataFrame df_tubing_segments is shown in
-    :ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`.
     """
     if df_tubing_segments.empty:
         raise abort(
-            "Schedule file is missing data for one or more branches defined in the "
-            f"case file. Please check the data for Well {well_name}."
+            "Schedule file is missing data for one or more branches defined in the case file. "
+            f"Please check the data for well {well_name}."
         )
     # sort the data frame based on STARTMD
     df_tubing_segments.sort_values(by=[Headers.START_MD], inplace=True)
@@ -400,7 +391,7 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     if missing_index.size == 0:
         return df_tubing_segments
     # shift one row down because we move it up one row
-    missing_index = missing_index + 1
+    missing_index += 1
     df_copy = df_tubing_segments.iloc[missing_index, :].copy(deep=True)
     # new start md is the previous segment end md
     df_copy[Headers.START_MD] = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()[missing_index - 1]
@@ -414,18 +405,16 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
 
 
 def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> tuple[int, int]:
-    """Find the indices in the completion DataFrame of start MD and end MD.
+    """Find the indices in the completion DataFrame of start and end measured depth.
 
     Args:
-        df_completion: Must contain ``STARTMD`` and ``ENDMD``
-        start: Start measured depth
-        end: End measured depth
+        df_completion: Must contain start and end measured depth.
+        start: Start measured depth.
+        end: End measured depth.
 
     Returns:
         Indices - Tuple of int.
 
-    The format of the DataFrame df_completion is shown in
-    :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
     start_md = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
     end_md = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
@@ -438,36 +427,32 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
 
 
 def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_length: float) -> Information:
-    """Get information from the COMPLETION.
+    """Get information from the completion.
 
     Args:
-        start: Start MD of the segment
-        end: End MD of the segment
-        df_completion: COMPLETION table that must contain columns:\
-        ``STARTMD``, ``ENDMD``, ``NVALVEPERJOINT``, ``INNER_DIAMETER``, ``OUTER_DIAMETER``,\
-        ``ROUGHNESS``, ``DEVICETYPE``, ``DEVICENUMBER``, and ``ANNULUS_ZONE``
-        joint_length: Length of a joint
+        start: Start measured depth of the segment.
+        end: End measured depth of the segment.
+        df_completion: COMPLETION table that must contain columns: `STARTMD`, `ENDMD`, `NVALVEPERJOINT`,
+        `INNER_DIAMETER`, `OUTER_DIAMETER`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
+        joint_length: Length of a joint.
 
     Returns:
-        Instance of Information with the following attributes
-
-        1. num_device: Number of device
-        2. device_type: The type of valve in device
-        3. device_number: Reference to parameters of valve
-        4. inner_diameter: Inner diameter
-        5. outer_diameter: Equivalent outer diameter
-        6. roughness: The roughness inside of tubing
-        7. annulus_zone: The content of annulus zone
+        Instance of Information with the following attributes:
+            1. num_device: Number of the device.
+            2. device_type: The type of valve in device.
+            3. device_number: Reference to parameters of valve.
+            4. inner_diameter: Inner diameter.
+            5. outer_diameter: Equivalent outer diameter.
+            6. roughness: The roughness inside tubing.
+            7. annulus_zone: The content of annulus zone.
 
     Raises:
         ValueError:
-            If the completion is not definded from start to end
-            If outer diameter is smaller than inner diameter
-            If the completion data contains illegal / invalid rows
-            If information class is None
+            If the completion is not defined from start to end.
+            If outer diameter is smaller than inner diameter.
+            If the completion data contains illegal / invalid rows.
+            If information class is None.
 
-    The format of the DataFrame df_completion is shown in
-    :ref:`create_wells.CreateWells.select_well <df_completion>`.
     """
     information = None
     device_type = None
@@ -534,8 +519,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             )
     if information is None:
         raise ValueError(
-            f"idx0 == idx1 + 1 (idx0={idx0}). "
-            "For the time being, the reason is unknown. "
+            f"idx0 == idx1 + 1 (idx0={idx0}). For the time being, the reason is unknown. "
             "Please reach out to the Equinor Inflow Control Team if you encounter this."
         )
     return information
@@ -547,18 +531,13 @@ def complete_the_well(
     """Complete the well with the user completion.
 
     Args:
-        df_tubing_segments: Output from function create_tubing_segments
-        df_completion: Output from define_annulus_zone
-        joint_length: Length of a joint
+        df_tubing_segments: Output from function create_tubing_segments.
+        df_completion: Output from define_annulus_zone.
+        joint_length: Length of a joint:
 
     Returns:
         Well information.
 
-    | The formats of DataFrames are shown in
-    | ``df_completion`` (:ref:`create_wells.CreateWells.select_well <df_completion>`)
-    | ``df_tubing_segments``
-        (:ref:`create_wells.CreateWells.create_tubing_segments <df_tubing_segments>`)
-    | ``df_well`` (:ref:`create_wells.CreateWells.complete_the_well <df_well>`)
     """
     start = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()
     end = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
@@ -600,13 +579,11 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     This only applies if the additional segments have an annulus zone.
 
     Args:
-        df_well: Must contain ``ANNULUS_ZONE``, ``NDEVICES``, and ``SEGMENT_DESC``
+        df_well: Must contain data on annulus zone, number of devices and the segments descending.
 
     Returns:
         Updated well information.
 
-    The DataFrame format for df_well is shown in
-    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
     """
     ndevices = df_well[Headers.NDEVICES].to_numpy()
     annulus_zone = df_well[Headers.ANNULUS_ZONE].to_numpy()
@@ -643,42 +620,16 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     """Get device characteristics.
 
     Args:
-        df_well: Must contain columns ``DEVICETYPE``, ``DEVICENUMBER``, and
-                ``SCALINGFACTOR``
-        df_device: Device table
-        device_type: Device type. ``AICD``, ``ICD``, ``DAR``, ``VALVE``,
-                ``AICV``, ``ICV``
+        df_well: Must contain device type, device number, and the scaling factor.
+        df_device: Device table.
+        device_type: Device type. `AICD`, `ICD`, `DAR`, `VALVE`, `AICV`, `ICV`.
 
     Returns:
-        Updated well information with device characteristics
+        Updated well information with device characteristics.
 
     Raises:
-        ValueError: If DEVICETYPE keyword is missing in input files
+        ValueError: If missing device type in input files.
 
-    The df_well DataFrame format is shown in
-    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
-
-    | The return DataFrame ``df_device`` has one of the formats shown in the following
-      functions, depending on which device type was given:
-
-      .. list-table:: definitions
-            :widths: 10 10
-            :header-rows: 1
-
-            * - KIND
-              - DEFINITION
-            * - ``wsegvalv_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegvalv <wsegvalv_table>`
-            * - ``wsegsicd_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegsicd <wsegsicd_table>`
-            * - ``wsegaicd_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegaicd <wsegaicd_table>`
-            * - ``wsegdar_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegdar <wsegdar_table>`
-            * - ``wsegaicv_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegaicv <wsegaicv_table>`
-            * - ``wsegicv_table``
-              - :ref:`read_casefile.ReadCasefile.read_wsegicv <wsegicv_table>`
     """
     columns = [Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER]
     try:
@@ -701,17 +652,14 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
 def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
     """Correct the annulus zone.
 
-    If there are no connections to the tubing in the annulus zone then there is no
-    annulus zone.
+    If there are no connections to the tubing in the annulus zone, then there is no annulus zone.
 
     Args:
-        df_well: Must contain ANNULUS_ZONE, NDEVICES, and DEVICETYPE
+        df_well: Must contain annulus zone, number of devices, and device type.
 
     Returns:
-        Updated DataFrame with corrected annulus zone
+        Updated DataFrame with corrected annulus zone.
 
-    The DataFrame df_well has the format shown in the following function:
-    :ref:`create_wells.CreateWells.complete_the_well <df_well>`.
     """
     zones = df_well[Headers.ANNULUS_ZONE].unique()
     for zone in zones:
@@ -732,10 +680,10 @@ def connect_cells_to_segments(
     """Connect cells to segments.
 
     Args:
-        df_well: Segment table. Must contain column ``TUB_MD``
-        df_reservoir: COMPSEGS table. Must contain columns ``STARTMD`` and ``ENDMD``
-        df_tubing_segments: Tubing segment dataframe. Must contain columns ``STARTMD`` and ``ENDMD``.
-        method: Segmentation method indicator. Must contain 'user', 'fix', 'welsegs', or 'cells'.
+        df_well: Segment table. Must contain tubing measured depth.
+        df_reservoir: COMPSEGS table. Must contain start and end measured depth.
+        df_tubing_segments: Tubing segment dataframe. Must contain start and end measured depth.
+        method: Segmentation method indicator. Must be one of 'user', 'fix', 'welsegs', or 'cells'.
 
 
     Returns:
@@ -775,7 +723,7 @@ class WellSchedule:
         active_wells: The active wells for completor to work on.
 
     Args:
-        active_wells: Active multi-segment wells defined in a case file
+        active_wells: Active multi-segment wells defined in a case file.
 
     """
 
@@ -785,65 +733,19 @@ class WellSchedule:
         self.active_wells = np.array(active_wells)
 
     def set_welspecs(self, records: list[list[str]]) -> None:
-        """Convert a WELSPECS record set to a Pandas DataFrame.
+        """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
 
-        * Sets DataFrame column titles
-        * Formats column values
-        * Pads missing columns at end of the DataFrame with default values (1*)
+        * Sets DataFrame column titles.
+        * Formats column values.
+        * Pads missing columns at the end of the DataFrame with default values (1*).
 
         Args:
-            recs: A WELSPECS record set
+            records: Raw well specification.
 
         Returns:
-            Record of inactive wells (in ``self.msws``)
-
-        The function creates the class property DataFrame
-        ``msws[well_name]['welspecs']`` with the following format:
-
-        .. _welspecs_format:
-        .. list-table:: ``msws[well_name]['welspecs']``
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - WELL
-             - str
-           * - GROUP
-             - str
-           * - I
-             - int
-           * - J
-             - int
-           * - BHP_DEPTH
-             - float
-           * - PHASE
-             - str
-           * - DR
-             - object
-           * - FLAG
-             - object
-           * - SHUT
-             - object
-           * - CROSS
-             - object
-           * - PRESSURETABLE
-             - object
-           * - DENSCAL
-             - object
-           * - REGION
-             - object
-           * - ITEM14
-             - object
-           * - ITEM15
-             - object
-           * - ITEM16
-             - object
-           * - ITEM17
-             - object
+            Record of inactive wells (in `self.msws`).
 
         """
-        # make df
         columns = [
             Headers.WELL,
             Headers.GROUP,
@@ -863,9 +765,8 @@ class WellSchedule:
             Headers.ITEM16,
             Headers.ITEM17,
         ]
-        ncols = len(columns)
-        _records = records[0] + ["1*"] * (ncols - len(records[0]))  # pad with default values (1*)
-        df = pd.DataFrame(np.array(_records).reshape((1, ncols)), columns=columns)
+        _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
+        df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
         #  datatypes
         df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
         try:
@@ -879,62 +780,23 @@ class WellSchedule:
             self.msws[well_name]["welspecs"] = df[df[Headers.WELL] == well_name]
             logger.debug("set_welspecs for %s", well_name)
 
-    def handle_compdat(self, recs: list[list[str]]) -> list[list[str]]:
-        """Convert a COMPDAT record set to a Pandas DataFrame.
+    def handle_compdat(self, records: list[list[str]]) -> list[list[str]]:
+        """Convert completion data (COMPDAT) record to a DataFrame.
 
-        * Sets DataFrame column titles
-        * Pads missing values with default values (1*)
-        * Sets column data types
+        * Sets DataFrame column titles.
+        * Pads missing values with default values (1*).
+        * Sets column data types.
 
         Args:
-            recs: Record set of COMPDAT data
+            records: Record set of COMPDAT data.
 
         Returns:
-            list: Records for inactive wells
-
-        The function creates the class property DataFrame
-        msws[well_name]['compdat'] with the following format:
-
-        .. _compdat_format:
-        .. list-table:: msws[well_name]['compdat']
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - WELL
-             - str
-           * - I
-             - int
-           * - J
-             - int
-           * - K
-             - int
-           * - K2
-             - int
-           * - STATUS
-             - object
-           * - SATNUM
-             - object
-           * - CF
-             - float
-           * - DIAM
-             - float
-           * - KH
-             - float
-           * - SKIN
-             - float
-           * - DFACT
-             - object
-           * - COMPDAT_DIRECTION
-             - object
-           * - RO
-             - float
+            Records for inactive wells.
 
         """
         well_names = set()  # the active well-names found in this chunk
         remains = []  # the other wells
-        for rec in recs:
+        for rec in records:
             well_name = rec[0]
             if well_name in list(self.active_wells):
                 well_names.add(well_name)
@@ -957,11 +819,11 @@ class WellSchedule:
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
         ]
-        df = pd.DataFrame(recs, columns=columns[0 : len(recs[0])])
+        df = pd.DataFrame(records, columns=columns[0 : len(records[0])])
         if Headers.RO in df.columns:
             df[Headers.RO] = df[Headers.RO].fillna("1*")
-        for idx in range(len(recs[0]), len(columns)):
-            df[columns[idx]] = ["1*"] * len(recs)
+        for idx in range(len(records[0]), len(columns)):
+            df[columns[idx]] = ["1*"] * len(records)
         # data types
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
@@ -989,93 +851,18 @@ class WellSchedule:
         return remains
 
     def set_welsegs(self, recs: list[list[str]]) -> str | None:
-        """Update WELSEGS for a given well if it is an active well.
+        """Update the well segments (WELSEGS) for a given well if it is an active well.
 
-        * Pads missing record columns in header and contents with default values
-        * Converts header and column records to Pandas DataFrames
-        * Sets proper DataFrame column types and titles
-        * Converts segment depth specified by INC to ABS using fix_welsegs
+        * Pads missing record columns in header and contents with default values.
+        * Convert header and column records to DataFrames.
+        * Sets proper DataFrame column types and titles.
+        * Converts segment depth specified in incremental (INC) to absolute (ABS) values using fix_welsegs.
 
         Args:
-            recs: Record set of header and contents data
+            recs: Record set of header and contents data.
 
         Returns:
-            Name of well if it was updated, or None if it is\
-            not in the active_wells list.
-
-        The function creates two DataFrames stored in the tuple variable\
-        msws[well_name]['welsegs']. The first tuple element is the welsegs header\
-        and the second is the record DataFrame with following formats:
-
-        .. _welsegs_header_format:
-        .. list-table:: msws[well_name]['welsegs'][0] - Header
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - WELL
-             - str
-           * - SEGMENTTVD
-             - float
-           * - SEGMENTMD
-             - float
-           * - WBVOLUME
-             - float
-           * - INFOTYPE
-             - object
-           * - PDROPCOMP
-             - object
-           * - MPMODEL
-             - object
-           * - ITEM8
-             - object
-           * - ITEM9
-             - object
-           * - ITEM10
-             - object
-           * - ITEM11
-             - object
-           * - ITEM12
-             - object
-
-        .. _welsegs_content_format:
-        .. list-table:: msws[well_name]['welsegs'][1] - Record
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - TUBINGSEGMENT
-             - int
-           * - TUBINGSEGMENT2
-             - int
-           * - TUBINGBRANCH
-             - int
-           * - TUBINGOUTLET
-             - int
-           * - TUBINGMD
-             - float
-           * - TUBINGTVD
-             - float
-           * - TUBINGID
-             - float
-           * - TUBINGROUGHNESS
-             - float
-           * - CROSS
-             - float
-           * - VSEG
-             - float
-           * - ITEM11
-             - object
-           * - ITEM12
-             - object
-           * - ITEM13
-             - object
-           * - ITEM14
-             - object
-           * - ITEM15
-             - object
+            Name of well if it was updated, or None if it is not in the active_wells list.
 
         """
         well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
@@ -1083,7 +870,7 @@ class WellSchedule:
             return None
 
         # make df for header record
-        columns = [
+        columns_header = [
             Headers.WELL,
             Headers.SEGMENTTVD,
             Headers.SEGMENTMD,
@@ -1097,14 +884,13 @@ class WellSchedule:
             Headers.ITEM11,
             Headers.ITEM12,
         ]
-        ncols = len(columns)
         # pad header with default values (1*)
-        header = recs[0] + ["1*"] * (ncols - len(recs[0]))
-        dfh = pd.DataFrame(np.array(header).reshape((1, ncols)), columns=columns)
-        dfh[columns[1:3]] = dfh[columns[1:3]].astype(np.float64)  # data types
+        header = recs[0] + ["1*"] * (len(columns_header) - len(recs[0]))
+        dfh = pd.DataFrame(np.array(header).reshape((1, len(columns_header))), columns=columns_header)
+        dfh[columns_header[1:3]] = dfh[columns_header[1:3]].astype(np.float64)  # data types
 
         # make df for data records
-        columns = [
+        columns_data = [
             Headers.TUBINGSEGMENT,
             Headers.TUBINGSEGMENT2,
             Headers.TUBINGBRANCH,
@@ -1121,13 +907,12 @@ class WellSchedule:
             Headers.ITEM14,
             Headers.ITEM15,
         ]
-        ncols = len(columns)
         # pad with default values (1*)
-        recs = [rec + ["1*"] * (ncols - len(rec)) for rec in recs[1:]]
-        dfr = pd.DataFrame(recs, columns=columns)
+        recs = [rec + ["1*"] * (len(columns_data) - len(rec)) for rec in recs[1:]]
+        dfr = pd.DataFrame(recs, columns=columns_data)
         # data types
-        dfr[columns[:4]] = dfr[columns[:4]].astype(np.int64)
-        dfr[columns[4:7]] = dfr[columns[4:7]].astype(np.float64)
+        dfr[columns_data[:4]] = dfr[columns_data[:4]].astype(np.int64)
+        dfr[columns_data[4:7]] = dfr[columns_data[4:7]].astype(np.float64)
         # fix abs/inc issue with welsegs
         dfh, dfr = fix_welsegs(dfh, dfr)
 
@@ -1151,47 +936,15 @@ class WellSchedule:
     def set_compsegs(self, recs: list[list[str]]) -> str | None:
         """Update COMPSEGS for a well if it is an active well.
 
-        * Pads missing record columns in header and contents with default 1*
-        * Converts header and column records to Pandas DataFrames
-        * Sets proper DataFrame column types and titles
+        * Pads missing record columns in header and contents with default 1*.
+        * Convert header and column records to DataFrames.
+        * Sets proper DataFrame column types and titles.
 
         Args:
-            recs: Record set of header and contents data
+            recs: Record set of header and contents data.
 
         Returns:
-            Name of well if it was updated, or None if it is not in active_wells
-
-        The function creates the class property DataFrame
-        ``msws[well_name]['compsegs']`` with the following format:
-
-        .. list-table:: ``msws[well_name]['compsegs']``
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - I
-             - int
-           * - J
-             - int
-           * - K
-             - int
-           * - BRANCH
-             - int
-           * - STARTMD
-             - float
-           * - ENDMD
-             - float
-           * - COMPSEGS_DIRECTION
-             - object
-           * - ENDGRID
-             - object
-           * - PERFDEPTH
-             - object
-           * - THERM
-             - object
-           * - SEGMENT
-             - int
+            Name of well if it was updated, or None if it is not in active_wells.
 
         """
         well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
@@ -1210,8 +963,7 @@ class WellSchedule:
             Headers.THERM,
             Headers.SEGMENT,
         ]
-        ncols = len(columns)
-        recs = [rec + ["1*"] * (ncols - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
+        recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
         df = pd.DataFrame(recs, columns=columns)
         #  datatypes
         df[columns[:4]] = df[columns[:4]].astype(np.int64)
@@ -1226,10 +978,10 @@ class WellSchedule:
         """Get-function for WELSPECS.
 
         Args:
-            well_name: Well name
+            well_name: Well name.
 
         Returns:
-            :ref:`WELSPECS DataFrame <welspecs_format>`
+            Well specifications.
 
         """
         return self.msws[well_name]["welspecs"]
@@ -1238,13 +990,13 @@ class WellSchedule:
         """Get-function for COMPDAT.
 
         Args:
-            well_name: Well name
+            well_name: Well name.
 
         Returns:
-            :ref:`COMPDAT DataFrame <compdat_format>`
+            Completion data.
 
         Raises:
-            ValueError: If COMPDAT keyword is missing in input schedule file
+            ValueError: If completion data keyword is missing in input schedule file.
 
         """
         try:
@@ -1258,33 +1010,31 @@ class WellSchedule:
         """Get-function for COMPSEGS.
 
         Args:
-           well_name: Well name
-           branch: Branch number
+           well_name: Well name.
+           branch: Branch number.
 
         Returns:
-            :ref:`COMPSEGS DataFrame <compsegs_format>`
+            Completion segment data.
 
         """
         df = self.msws[well_name]["compsegs"].copy()
         if branch is not None:
             df = df[df[Headers.BRANCH] == branch]
         df.reset_index(drop=True, inplace=True)  # reset index after filtering
-        # (why??)
         return fix_compsegs(df, well_name)
 
     def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Get-function for WELSEGS.
+        """Get-function for well segments.
 
         Args:
-            well_name: Well name
-            branch: Branch number
+            well_name: Well name.
+            branch: Branch number.
 
         Returns:
-            | :ref:`WELSEGS header <welsegs_header_format>`
-            | :ref:`WELSEGS records <welsegs_content_format>`
+            Well segments headers and content.
 
         Raises:
-            ValueError: If WELSEGS keyword missing in input schedule file
+            ValueError: If WELSEGS keyword missing in input schedule file.
 
         """
         try:
@@ -1302,10 +1052,10 @@ class WellSchedule:
         """Well number in the active_wells list.
 
         Args:
-            well_name: Well name
+            well_name: Well name.
 
         Returns:
-            Well number
+            Well number.
 
         """
         return (self.active_wells == well_name).nonzero()[0][0]
