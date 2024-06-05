@@ -182,22 +182,6 @@ class Headers:
     EMPTY = ""
 
 
-class Completion:
-    """Columns for Completion."""
-
-    START_MD = "STARTMD"
-    END_MD = "ENDMD"
-    ANNULUS = "ANNULUS"
-    ANNULUS_ZONE = "ANNULUS_ZONE"
-    NUM_VALVES_PER_JOINT = "NVALVEPERJOINT"
-    INNER_DIAMETER = "INNER_DIAMETER"
-    OUTER_ID = "OUTER_DIAMETER"
-    ROUGHNESS = "ROUGHNESS"
-    DEVICE_TYPE = "DEVICETYPE"
-    DEVICE_NUMBER = "DEVICENUMBER"
-    WELL = "WELL"
-
-
 @dataclass(frozen=True)
 class _Keywords:
     """Define keywords used in the schedule file.
