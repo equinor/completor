@@ -178,8 +178,12 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
         keyword: Keyword name
 
     Returns:
-        List of updated string
+        Completed list of strings.
     """
+
+    if keyword == Keywords.WSEGVALV:
+        return complete_wsegvalv_record(record)
+
     dict_ncolumns = {
         Keywords.WELSPECS: 17,
         Keywords.COMPDAT: 14,
@@ -192,20 +196,58 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
     if ncolumn < max_column:
         extension = ["1*"] * (max_column - ncolumn)
         record.extend(extension)
+    elif ncolumn > max_column:
+        record = record[:max_column]
+    return record
+
+
+def complete_wsegvalv_record(record: list[str]) -> list[str]:
+    """
+    Complete the WSEGVALV record.
+
+    The columns DEFAULT_1 - DEFAULT_4, STATE and AC_MAX might not be provided and need to be filled in with default
+    values.
+
+    Args:
+        record: List of strings.
+
+    Returns:
+        Completed list of strings.
+    """
+    WSEGVALV_COLUMNS = 10
+    AC_INDEX = 3
+    DEFAULT_STATE = "OPEN"
+
+    if len(record) < 8:
+        # add defaults
+        record.extend(["1*"] * (8 - len(record)))
+
+    if len(record) < 9:
+        # append default state
+        record.append(DEFAULT_STATE)
+
+    if len(record) < WSEGVALV_COLUMNS:
+        # append default ac_max
+        record.append(record[AC_INDEX])
+
+    if len(record) > WSEGVALV_COLUMNS:
+        record = record[:WSEGVALV_COLUMNS]
+
     return record
 
 
 def read_schedule_keywords(
-    content: list[str], keywords: list[str]
+    content: list[str], keywords: list[str], optional_keywords: list[str] = []
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """
     Read schedule keywords or all keywords in table format.
 
-    E.g. WELSPECS, COMPDAT, WELSEGS, COMPSEGS.
+    E.g. WELSPECS, COMPDAT, WELSEGS, COMPSEGS, WSEGVALV.
 
     Args:
-        content: List of strings
-        keywords: List of keywords to be found
+        content: List of strings. Lines from the schedule file.
+        keywords: List of keywords to find data for.
+        optional_keywords: List of optional keywords. Will not raise error if not found.
 
     Returns:
         df_collection - Object collection (pd.DataFrame)
@@ -218,9 +260,9 @@ def read_schedule_keywords(
     used_index = np.asarray([-1])
     collections = []
     # get the contents correspond to the list_keywords
-    for keyword in keywords:
+    for keyword in keywords + optional_keywords:
         start_index, end_index = locate_keyword(content, keyword, take_first=False)
-        if start_index[0] == end_index[0]:
+        if start_index[0] == end_index[0] and keyword not in optional_keywords:
             raise abort(f"Keyword {keyword} is not found")
         for idx, start in enumerate(start_index):
             end = end_index[idx]
@@ -660,6 +702,44 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     # replace string component " or ' in the columns
     compsegs_table = remove_string_characters(compsegs_table)
     return compsegs_table
+
+
+def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
+    """Return a dataframe of WSEGVALV.
+
+    Args:
+        collections: ContentCollection class
+
+    Returns:
+        WSEGVALV table
+    """
+    COLUMNS = ["WELL", "SEGMENT", "CD", "AC", "DEFAULT_1", "DEFAULT_2", "DEFAULT_3", "DEFAULT_4", "STATE", "AC_MAX"]
+
+    wsegvalv_collections = [np.asarray(collection) for collection in collections if collection.name == "WSEGVALV"]
+    wsegvalv_table = np.vstack(wsegvalv_collections)
+
+    if wsegvalv_table.size == 0:
+        return pd.DataFrame(columns=COLUMNS)
+
+    wsegvalv_table = pd.DataFrame(
+        wsegvalv_table,
+        columns=COLUMNS,
+    )
+    wsegvalv_table = wsegvalv_table.astype(
+        {
+            "WELL": "string",
+            "SEGMENT": "int",
+            "CD": "float",
+            "AC": "float",
+            "DEFAULT_1": "string",
+            "DEFAULT_2": "string",
+            "DEFAULT_3": "string",
+            "DEFAULT_4": "string",
+            "STATE": "string",
+            "AC_MAX": "float",
+        }
+    )
+    return remove_string_characters(wsegvalv_table)
 
 
 @overload

@@ -220,7 +220,7 @@ def test_insert_missing_segments_raise_error():
 
 
 def test_well_trajectory():
-    """Test well_trajectory creates the correct relation (sorted by MD) between well segments'
+    """Test well_trajectory creates the correct relation (sorted by measured depth) between well segments'
     (welsegs) header and content.
     """
     df_welsegs_header = pd.DataFrame(

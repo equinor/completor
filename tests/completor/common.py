@@ -118,29 +118,37 @@ class ReadSchedule:
     See the following functions for a description of DataFrame formats:
         :ref:`welspecs <welspecs_format>`.
         :ref:`compdat <compdat_table>` (See: ref:`update_connection_factor <update_connection_factor>` for more details).
-        :ref:`welsegs_header <df_welsegs_header>`.
-        :ref:`welsegs_content <df_welsegs_content>`.
+        :ref:`welsegs_header <df_well_segments_header>`.
+        :ref:`welsegs_content <df_well_segments_content>`.
         compsegs `get_compsegs_table`.
     """
 
-    def __init__(self, schedule_file: str):
+    def __init__(
+        self,
+        schedule_file: str,
+        optional_keywords: list[str] = ["WSEGVALV"],
+    ):
         """
         Initialize the class.
 
         Args:
             schedule_file: Schedule/well file which contains at least
                       ``COMPDAT``, ``COMPSEGS`` and ``WELSEGS``
+            optional_keywords: List of optional keywords to find tables for.
         """
         # read the file
         self.content = clean_file_lines(schedule_file.splitlines(), "--")
 
         # get contents of the listed keywords
         # and the content of the not listed keywords
-        self.collections, self.unused_keywords = parse.read_schedule_keywords(self.content, Keywords.main_keywords)
+        self.collections, self.unused_keywords = parse.read_schedule_keywords(
+            self.content, Keywords.main_keywords, optional_keywords
+        )
         # initiate values
         self.welspecs = pd.DataFrame()
         self.compdat = pd.DataFrame()
         self.compsegs = pd.DataFrame()
+        self.wsegvalv = pd.DataFrame()
         self._welsegs_header: pd.DataFrame | None = None
         self._welsegs_content: pd.DataFrame | None = None
 
@@ -155,6 +163,7 @@ class ReadSchedule:
         self.welspecs = parse.get_welspecs_table(self.collections)
         self.compdat = parse.get_compdat_table(self.collections)
         self.compsegs = parse.get_compsegs_table(self.collections)
+        self.wsegvalv = parse.get_wsegvalv_table(self.collections)
 
         self.compsegs = self.compsegs.astype(
             {

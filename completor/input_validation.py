@@ -180,8 +180,8 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int):
 
         if df_comp[Headers.START_MD].iloc[idx] < df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
             raise abort(
-                f"Overlapping completion description in well {well_name} from depth "
-                f"{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
+                f"Overlapping completion description in well '{well_name}' from depth "
+                f"t{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
                 f"to depth {(df_comp[Headers.START_MEASURED_DEPTH].iloc[idx])}"
             )
     if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in ["PERF", "AICD", "ICD", "VALVE", "DAR", "AICV", "ICV"]:

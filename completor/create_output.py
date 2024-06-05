@@ -456,7 +456,7 @@ class CreateOutput:
         self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
         # Start printing per well.
-        self.welsegs_header, _ = self.schedule.get_welsegs(self.well_name, branch=1)
+        self.welsegs_header, _ = self.schedule.get_well_segments(self.well_name, branch=1)
         self.check_welsegs1()
         self.print_welsegs = f"{Keywords.WELSEGS}\n{po.dataframe_tostring(self.welsegs_header, True)}\n"
         self.print_welsegsinit = self.print_welsegs
