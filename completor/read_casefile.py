@@ -558,7 +558,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICD)
         if start_index == end_index:
             if "AICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGAICD keyword must be defined, if AICD is used in the completion")
+                raise abort("WSEGAICD keyword must be defined, if AICD is used in the completion.")
         else:
             # Table headers
             header = [
