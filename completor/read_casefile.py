@@ -437,7 +437,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGVALV)
         if start_index == end_index:
             if "VALVE" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGVALV keyword must be defined, if VALVE is used in the completion")
+                raise abort("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
