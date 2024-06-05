@@ -6,7 +6,7 @@ from completor.completion import Information
 def test_creation():
     """Test creation of empty Information object."""
     info = Information()
-    assert info.num_device is None
+    assert info.number_of_devices is None
     assert info.inner_diameter is None
     assert info.outer_diameter is None
     assert info.annulus_zone is None
@@ -18,7 +18,7 @@ def test_creation():
 def test_simple_initiation():
     """Test initialization of Information object with values."""
     info = Information(
-        num_device=1.0,
+        number_of_devices=1.0,
         device_type="AICD",
         device_number=1,
         inner_diameter=3.0,
@@ -26,7 +26,7 @@ def test_simple_initiation():
         roughness=0.5,
         annulus_zone=1,
     )
-    assert info.num_device == 1.0
+    assert info.number_of_devices == 1.0
     assert info.device_type == "AICD"
     assert info.device_number == 1
     assert info.inner_diameter == 3.0
@@ -35,7 +35,7 @@ def test_simple_initiation():
     assert info.annulus_zone == 1
 
     info = Information(
-        num_device=[1.0],
+        number_of_devices=[1.0],
         device_type=["AICD"],
         device_number=[1],
         inner_diameter=[3.0],
@@ -43,7 +43,7 @@ def test_simple_initiation():
         roughness=[0.5],
         annulus_zone=[1],
     )
-    assert info.num_device == [1.0]
+    assert info.number_of_devices == [1.0]
     assert info.device_type == ["AICD"]
     assert info.device_number == [1]
     assert info.inner_diameter == [3.0]
@@ -56,7 +56,7 @@ def test_add_empty_information_objects():
     """Test addition on Information object with None-values."""
     info = Information()
     info += Information()
-    assert info.num_device == [None]
+    assert info.number_of_devices == [None]
     assert info.device_type == [None]
     assert info.device_number == [None]
     assert info.inner_diameter == [None]
@@ -66,7 +66,7 @@ def test_add_empty_information_objects():
 
     info = Information()
     info += Information(
-        num_device=1.0,
+        number_of_devices=1.0,
         device_type="ICD",
         device_number=2,
         inner_diameter=3.0,
@@ -75,7 +75,7 @@ def test_add_empty_information_objects():
         annulus_zone=1,
     )
 
-    assert info.num_device == [1.0]
+    assert info.number_of_devices == [1.0]
     assert info.device_type == ["ICD"]
     assert info.device_number == [2]
     assert info.inner_diameter == [3.0]
@@ -87,7 +87,7 @@ def test_add_empty_information_objects():
 def test_add_non_empty_information_objects():
     """Test addition on Information object with values."""
     info = Information(
-        num_device=3.0,
+        number_of_devices=3.0,
         device_type="DAR",
         device_number=1,
         inner_diameter=1.0,
@@ -96,7 +96,7 @@ def test_add_non_empty_information_objects():
         annulus_zone=4,
     )
     info += Information(
-        num_device=4.2,
+        number_of_devices=4.2,
         device_type="VALVE",
         device_number=2,
         inner_diameter=2.0,
@@ -105,7 +105,7 @@ def test_add_non_empty_information_objects():
         annulus_zone=2,
     )
 
-    assert info.num_device == [3.0, 4.2]
+    assert info.number_of_devices == [3.0, 4.2]
     assert info.device_type == ["DAR", "VALVE"]
     assert info.device_number == [1, 2]
     assert info.inner_diameter == [1.0, 2.0]
