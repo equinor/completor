@@ -14,7 +14,7 @@ from completor.constants import Headers, Keywords, Method
 def test_completion_index():
     """Test completion_index gives correct indexes for start and end measured depth."""
     df_tubing_segments = pd.DataFrame(
-        [[1000, 2000], [2000, 3000], [3000, 4000]], columns=[Headers.START_MD, Headers.END_MEASURED_DEPTH]
+        [[1000, 2000], [2000, 3000], [3000, 4000]], columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     )
     assert (completion.completion_index(df_tubing_segments, 1000, 2001)) == (0, 1)
     assert (completion.completion_index(df_tubing_segments, 1000, 2000)) == (0, 0)
