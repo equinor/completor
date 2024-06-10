@@ -362,7 +362,8 @@ def validate_lateral2device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame):
         df_lat2dev[Headers.BRANCH].astype(np.int64)
     except ValueError:
         raise abort(
-            f"Could not convert BRANCH {df_lat2dev[Headers.BRANCH].values} to integer. Make sure that BRANCH is an integer."
+            f"Could not convert BRANCH {df_lat2dev[Headers.BRANCH].values} "
+            "to integer. Make sure that BRANCH is an integer."
         )
 
     nrow = df_lat2dev.shape[0]

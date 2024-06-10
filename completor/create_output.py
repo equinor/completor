@@ -9,7 +9,7 @@ import matplotlib  # type: ignore
 
 from completor import prepare_outputs as po
 from completor.completion import WellSchedule
-from completor.constants import Headers
+from completor.constants import Headers, Keywords
 from completor.create_wells import CreateWells
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
@@ -455,24 +455,24 @@ class CreateOutput:
         self.df_well = wells.df_well_all[wells.df_well_all[Headers.WELL] == self.well_name]
         self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
-        """Start printing per well."""
+        # Start printing per well.
         self.welsegs_header, _ = self.schedule.get_well_segments(self.well_name, branch=1)
         self.check_welsegs1()
-        self.print_welsegs = "WELSEGS\n" + po.dataframe_tostring(self.welsegs_header, True) + "\n"
+        self.print_welsegs = f"{Keywords.WELSEGS}\n{po.dataframe_tostring(self.welsegs_header, True)}\n"
         self.print_welsegsinit = self.print_welsegs
-        self.print_wseglink = "WSEGLINK\n"
+        self.print_wseglink = f"{Keywords.WSEGLINK}\n"
         self.print_wseglinkinit = self.print_wseglink
-        self.print_compsegs = "COMPSEGS\n" + "'" + self.well_name + "' /\n"
+        self.print_compsegs = f"{Keywords.COMPSEGS}\n'{self.well_name}' /\n"
         self.print_compsegsinit = self.print_compsegs
-        self.print_compdat = "COMPDAT\n"
+        self.print_compdat = f"{Keywords.COMPDAT}\n"
         self.print_compdatinit = self.print_compdat
-        self.print_wsegvalv = "WSEGVALV\n"
+        self.print_wsegvalv = f"{Keywords.WSEGVALV}\n"
         self.print_wsegvalvinit = self.print_wsegvalv
-        self.print_wsegicv = "WSEGVALV\n"
+        self.print_wsegicv = f"{Keywords.WSEGVALV}\n"
         self.print_wsegicvinit = self.print_wsegicv
-        self.print_wsegaicd = "WSEGAICD\n"
+        self.print_wsegaicd = f"{Keywords.WSEGAICD}\n"
         self.print_wsegaicdinit = self.print_wsegaicd
-        self.print_wsegsicd = "WSEGSICD\n"
+        self.print_wsegsicd = f"{Keywords.WSEGSICD}\n"
         self.print_wsegsicdinit = self.print_wsegsicd
         self.print_wsegdar = f"""\
 {'-' * 100}
@@ -491,10 +491,10 @@ class CreateOutput:
 -- the DP parameters change according to the segment water cut (at downhole condition )
 -- and gas volume fraction (at downhole condition)
 {"-" * 100}{self.newline1}"""
-        self.print_wsegaicvinit = self.print_wsegaicv
 
-        (self.start_segment, self.start_branch) = (2, 1)
-        #
+        self.print_wsegaicvinit = self.print_wsegaicv
+        self.start_segment = 2
+        self.start_branch = 1
         # pre-preparations
         data = {}  # just a container. need to to loop twice to make connect_lateral work
         for lateral in self.laterals:
@@ -642,7 +642,7 @@ class CreateOutput:
         nchar = po.get_number_of_characters(self.df_compdat)
         if self.df_compdat.shape[0] > 0:
             self.print_compdat += (
-                po.get_header(self.well_name, "COMPDAT", lateral, "", nchar)
+                po.get_header(self.well_name, Keywords.COMPDAT, lateral, "", nchar)
                 + po.dataframe_tostring(self.df_compdat, True)
                 + "\n"
             )
@@ -657,21 +657,21 @@ class CreateOutput:
         nchar = po.get_number_of_characters(self.df_tubing)
         if self.df_device.shape[0] > 0:
             self.print_welsegs += (
-                po.get_header(self.well_name, "WELSEGS", lateral, "Tubing", nchar)
+                po.get_header(self.well_name, Keywords.WELSEGS, lateral, "Tubing", nchar)
                 + po.dataframe_tostring(self.df_tubing, True)
                 + "\n"
             )
         if self.df_device.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_tubing)
             self.print_welsegs += (
-                po.get_header(self.well_name, "WELSEGS", lateral, "Device", nchar)
+                po.get_header(self.well_name, Keywords.WELSEGS, lateral, "Device", nchar)
                 + po.dataframe_tostring(self.df_device, True)
                 + "\n"
             )
         if self.df_annulus.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_tubing)
             self.print_welsegs += (
-                po.get_header(self.well_name, "WELSEGS", lateral, "Annulus", nchar)
+                po.get_header(self.well_name, Keywords.WELSEGS, lateral, "Annulus", nchar)
                 + po.dataframe_tostring(self.df_annulus, True)
                 + "\n"
             )
@@ -685,7 +685,7 @@ class CreateOutput:
         if self.df_wseglink.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wseglink)
             self.print_wseglink += (
-                po.get_header(self.well_name, "WSEGLINK", lateral, "", nchar)
+                po.get_header(self.well_name, Keywords.WSEGLINK, lateral, "", nchar)
                 + po.dataframe_tostring(self.df_wseglink, True)
                 + "\n"
             )
@@ -699,7 +699,7 @@ class CreateOutput:
         nchar = po.get_number_of_characters(self.df_compsegs)
         if self.df_compsegs.shape[0] > 0:
             self.print_compsegs += (
-                po.get_header(self.well_name, "COMPSEGS", lateral, "", nchar)
+                po.get_header(self.well_name, Keywords.COMPSEGS, lateral, "", nchar)
                 + po.dataframe_tostring(self.df_compsegs, True)
                 + "\n"
             )
@@ -713,7 +713,7 @@ class CreateOutput:
         if self.df_wsegaicd.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegaicd)
             self.print_wsegaicd += (
-                po.get_header(self.well_name, "WSEGAICD", lateral, "", nchar)
+                po.get_header(self.well_name, Keywords.WSEGAICD, lateral, "", nchar)
                 + po.dataframe_tostring(self.df_wsegaicd, True)
                 + "\n"
             )
@@ -727,7 +727,7 @@ class CreateOutput:
         if self.df_wsegsicd.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegsicd)
             self.print_wsegsicd += (
-                po.get_header(self.well_name, "WSEGSICD", lateral, "", nchar)
+                po.get_header(self.well_name, Keywords.WSEGSICD, lateral, "", nchar)
                 + po.dataframe_tostring(self.df_wsegsicd, True)
                 + "\n"
             )
@@ -741,7 +741,7 @@ class CreateOutput:
         if self.df_wsegvalv.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegvalv)
             self.print_wsegvalv += (
-                po.get_header(self.well_name, "WSEGVALV", lateral, "", nchar)
+                po.get_header(self.well_name, Keywords.WSEGVALV, lateral, "", nchar)
                 + po.dataframe_tostring(self.df_wsegvalv, True)
                 + "\n"
             )
@@ -755,7 +755,7 @@ class CreateOutput:
         if self.df_wsegicv.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegicv)
             self.print_wsegicv += (
-                po.get_header(self.well_name, "WSEGVALV", lateral, "", nchar)
+                po.get_header(self.well_name, Keywords.WSEGVALV, lateral, "", nchar)
                 + po.dataframe_tostring(self.df_wsegicv, True)
                 + "\n"
             )
@@ -796,22 +796,22 @@ class CreateOutput:
         else:
             self.print_compsegs += self.newline3
         # if no weseglink then dont print it
-        if self.print_wseglink == "WSEGLINK\n":
+        if self.print_wseglink == Keywords.WSEGLINK + "\n":
             self.print_wseglink = ""
         else:
             self.print_wseglink += self.newline3
         # if no VALVE then dont print
-        if self.print_wsegvalv == "WSEGVALV\n":
+        if self.print_wsegvalv == Keywords.WSEGVALV + "\n":
             self.print_wsegvalv = ""
         else:
             self.print_wsegvalv += self.newline3
         # if no ICD then dont print
-        if self.print_wsegsicd == "WSEGSICD\n":
+        if self.print_wsegsicd == Keywords.WSEGSICD + "\n":
             self.print_wsegsicd = ""
         else:
             self.print_wsegsicd += self.newline3
         # if no AICD then dont print
-        if self.print_wsegaicd == "WSEGAICD\n":
+        if self.print_wsegaicd == Keywords.WSEGAICD + "\n":
             self.print_wsegaicd = ""
         else:
             self.print_wsegaicd += self.newline3
@@ -826,7 +826,7 @@ class CreateOutput:
         else:
             self.print_wsegaicv += self.newline1
         # if no ICV then dont print
-        if self.print_wsegicv == "WSEGVALV\n":
+        if self.print_wsegicv == Keywords.WSEGVALV + "\n":
             self.print_wsegicv = ""
         else:
             self.print_wsegicv += self.newline3

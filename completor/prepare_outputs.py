@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor.completion import WellSchedule
-from completor.constants import Headers
+from completor.constants import Headers, Keywords
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, as_data_frame
@@ -199,7 +199,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
     Returns:
         String header
     """
-    if keyword == "WELSEGS":
+    if keyword == Keywords.WELSEGS:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
     else:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
@@ -1308,7 +1308,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
     action += "/\n\n"
     iaction = 3
-    action += "WSEGVALV\n"
+    action += Keywords.WSEGVALV + "\n"
     header_string = "--"
     for itm in header[iaction]:
         header_string += "  " + itm
@@ -1343,7 +1343,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             )
             print_df = df_wsegdar[df_wsegdar[Headers.SEG] == segment_number]
             print_df = print_df[header[iaction]]  # type: ignore
-            header_string = "WSEGVALV\n--"
+            header_string = Keywords.WSEGVALV + "\n--"
             for item in header[iaction]:
                 header_string += "  " + item
             header_string = header_string.rstrip() + "\n"
@@ -1369,7 +1369,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         )
         print_df = df_wsegdar[df_wsegdar[Headers.SEG] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
-        header_string = "WSEGVALV\n--"
+        header_string = Keywords.WSEGVALV + "\n--"
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"
@@ -1392,7 +1392,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         )
         print_df = df_wsegdar[df_wsegdar[Headers.SEG] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
-        header_string = "WSEGVALV\n--"
+        header_string = Keywords.WSEGVALV + "\n--"
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"
@@ -1504,6 +1504,6 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             print_df = df_wsegaicv[df_wsegaicv[Headers.SEG] == segment_number]
             print_df = print_df[header[iaction]]
             print_df.columns = new_column
-            print_df = "WSEGAICD\n" + dataframe_tostring(print_df, True)
+            print_df = Keywords.WSEGAICD + "\n" + dataframe_tostring(print_df, True)
             action += f"{print_df}\n/\nENDACTIO\n\n"
     return action

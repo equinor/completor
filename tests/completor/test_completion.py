@@ -8,13 +8,13 @@ import pandas as pd
 import pytest
 
 from completor import completion  # type: ignore
-from completor.constants import Headers
+from completor.constants import Headers, Keywords, Method
 
 
 def test_completion_index():
     """Test completion_index gives correct indexes for start and end measured depth."""
     df_tubing_segments = pd.DataFrame(
-        [[1000, 2000], [2000, 3000], [3000, 4000]], columns=[Headers.START_MD, Headers.END_MEASURED_DEPTH]
+        [[1000, 2000], [2000, 3000], [3000, 4000]], columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     )
     assert (completion.completion_index(df_tubing_segments, 1000, 2001)) == (0, 1)
     assert (completion.completion_index(df_tubing_segments, 1000, 2000)) == (0, 0)
@@ -772,7 +772,7 @@ def test_create_tubing_segment_welsegs():
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
     )
 
-    df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "WELSEGS")
+    df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, Method.WELSEGS)
     pd.testing.assert_frame_equal(df_test, df_true)
 
 
@@ -938,7 +938,7 @@ def test_skin():
     )
     well_schedule = completion.WellSchedule(["A1"])
     well_schedule.handle_compdat(compdat)
-    df_out = well_schedule.msws["A1"]["compdat"]
+    df_out = well_schedule.msws["A1"][Keywords.COMPDAT]
     pd.testing.assert_frame_equal(df_out, df_true)
 
 

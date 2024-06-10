@@ -6,12 +6,6 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 
-class Header:
-    """Custom class for DataFrame columns."""
-
-    ...
-
-
 class Headers:
     """Headers for DataFrames."""
 
@@ -188,22 +182,6 @@ class Headers:
     EMPTY = ""
 
 
-class Completion:
-    """Columns for Completion."""
-
-    START_MD = "STARTMD"
-    END_MD = "ENDMD"
-    ANNULUS = "ANNULUS"
-    ANNULUS_ZONE = "ANNULUS_ZONE"
-    NUM_VALVES_PER_JOINT = "NVALVEPERJOINT"
-    INNER_DIAMETER = "INNER_DIAMETER"
-    OUTER_ID = "OUTER_DIAMETER"
-    ROUGHNESS = "ROUGHNESS"
-    DEVICE_TYPE = "DEVICETYPE"
-    DEVICE_NUMBER = "DEVICENUMBER"
-    WELL = "WELL"
-
-
 @dataclass(frozen=True)
 class _Keywords:
     """Define keywords used in the schedule file.
@@ -226,6 +204,22 @@ class _Keywords:
     COMPDAT = "COMPDAT"
     WELSEGS = "WELSEGS"
     COMPSEGS = "COMPSEGS"
+
+    COMPLETION = "COMPLETION"
+
+    WELSEGS_H = "WELSEGS_H"
+    WSEGLINK = "WSEGLINK"
+    WSEGVALV = "WSEGVALV"
+    WSEGAICD = "WSEGAICD"
+    WSEGAICV = "WSEGAICV"
+    WSEGICV = "WSEGICV"
+    WSEGSICD = "WSEGSICD"
+    WSEGDAR = "WSEGDAR"
+
+    SCHFILE = "SCHFILE"
+    OUTFILE = "OUTFILE"
+
+    main_keywords = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
 
     _items = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
     _members = set(_items)
