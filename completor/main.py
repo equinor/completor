@@ -30,28 +30,26 @@ except ImportError:
 
 
 def create_get_well_name(schedule_lines: dict[int, str]) -> Callable[[int], str]:
-    """
-    Create a function to get the well name from line number.
+    """Create a function to get the well name from line number.
 
     Args:
-        schedule_lines: All lines in schedule file
+        schedule_lines: All lines in schedule file.
 
     Returns:
-        get_well_name (Function)
+        get_well_name (Function).
     """
     keys = np.array(sorted(list(schedule_lines.keys())))
 
     def get_well_name(line_number: int) -> str:
-        """
-        Get well name for WELSEGS or COMPSEGS.
+        """Get well name for WELSEGS or COMPSEGS.
 
         Assumes that line_number points to one of these keywords.
 
         Args:
-            line_number: Line number
+            line_number: Line number.
 
         Returns:
-            Well name
+            Well name.
 
         """
         i = (keys == line_number).nonzero()[0][0]
@@ -62,16 +60,15 @@ def create_get_well_name(schedule_lines: dict[int, str]) -> Callable[[int], str]
 
 
 def format_chunk(chunk_str: str) -> list[list[str]]:
-    """
-    Format the data-records and resolve the repeat-mechanism.
+    """Format the data-records and resolve the repeat-mechanism.
 
-    E.g. 3* == 1* 1* 1*, 3*250 == 250 250 250
+    E.g. 3* == 1* 1* 1*, 3*250 == 250 250 250.
 
     Args:
-        chunk_str: A chunk data-record
+        chunk_str: A chunk data-record.
 
     Returns:
-        Expanded values
+        Expanded values.
     """
     chunk = re.split(r"\s+/", chunk_str)[:-1]
     expanded_data = []
@@ -97,13 +94,12 @@ class FileWriter:
     """Functionality for writing a new schedule file."""
 
     def __init__(self, file: str, mapper: Mapping[str, str] | None):
-        """
-        Initialize the FileWriter.
+        """Initialize the FileWriter.
 
         Args:
             file: Name of file to be written. Does not check if it already exists.
-            mapper: A dictionary for mapping strings. Typically used for mapping
-            pre-processor reservoir modelling tools to reservoir simulator well names.
+            mapper: A dictionary for mapping strings.
+                Typically used for mapping pre-processor reservoir modelling tools to reservoir simulator well names.
         """
         self.fh = open(file, "w", encoding="utf-8")  # create new output file
         self.mapper = mapper
@@ -133,16 +129,15 @@ class FileWriter:
         chunk: bool = True,
         end_of_record: bool = False,
     ) -> None:
-        """
-        Write the content of a keyword to the output file.
+        """Write the content of a keyword to the output file.
 
         Args:
-            keyword: Reservoir simulator keyword
-            content: Text to be written. string, string-list or record-list
+            keyword: Reservoir simulator keyword.
+            content: Text to be written.
             chunk: Flag for indicating this is a list of records.
-            end_of_record: Flag for adding end-of-record ('/')
+            end_of_record: Flag for adding end-of-record ('/').
         """
-        txt = ""  # to be written
+        txt = ""
 
         if keyword is None:
             txt = content  # type: ignore  # it's really a formatted string
@@ -155,7 +150,7 @@ class FileWriter:
                 for line in content:
                     if isinstance(line, list):
                         logger.warning(
-                            "chunk is False, but content contains lists of lists, "
+                            "Chunk is False, but content contains lists of lists, "
                             "instead of a list of strings the lines will be concatenated."
                         )
                         line = " ".join(line)
@@ -167,14 +162,13 @@ class FileWriter:
         self.fh.write(txt)
 
     def _replace_preprocessing_names(self, text: str) -> str:
-        """
-        Expand start and end marker pairs for well pattern recognition as needed.
+        """Expand start and end marker pairs for well pattern recognition as needed.
 
         Args:
-            text: Text with pre-processor reservoir modelling well names
+            text: Text with pre-processor reservoir modelling well names.
 
         Returns:
-            Text with reservoir simulator well names
+            Text with reservoir simulator well names.
         """
         if self.mapper is None:
             raise ValueError(
@@ -198,36 +192,33 @@ class FileWriter:
 
 
 class ProgressStatus:
-    """
-    Bookmark the reading progress of a schedule file.
+    """Bookmark the reading progress of a schedule file.
 
     See https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     for improved functionality.
     """
 
     def __init__(self, num_lines: int, percent: float):
-        """
-        Initialize ProgressStatus.
+        """Initialize ProgressStatus.
 
         Args:
-            num_lines: Number of lines in schedule file
-            percent: Indicates schedule file processing progress (in per cent)
+            num_lines: Number of lines in schedule file.
+            percent: Indicates schedule file processing progress (in percent).
         """
         self.percent = percent
         self.nlines = num_lines
         self.prev_n = 0
 
     def update(self, line_number: int) -> None:
-        """
-        Update logger information.
+        """Update logger information.
 
         Args:
-            line_number: Input schedule file line number
+            line_number: Input schedule file line number.
 
         Returns:
-            Logger info message
+            Logger info message.
         """
-        # If the divisor, or numerator is a  float, the integer division gives a float
+        # If the divisor, or numerator is a float, the integer division gives a float
         n = int((line_number / self.nlines * 100) // self.percent)
         if n > self.prev_n:
             logger.info("=" * 80)
@@ -237,25 +228,22 @@ class ProgressStatus:
 
 
 def get_content_and_path(case_content: str, file_path: str | None, keyword: str) -> tuple[str | None, str | None]:
-    """
-    Get the contents of file from path defined by user or case file.
+    """Get the contents of a file from a path defined by user or case file.
 
-    The method prioritize paths given as input argument over the paths
-    found in the case file.
+    The method prioritizes paths given as input argument over the paths found in the case file.
 
     Args:
-        case_content: The case file content
-        file_path: Path to file if given
+        case_content: The case file content.
+        file_path: Path to file if given.
+        keyword: Reservoir simulator keyword.
 
     Returns:
-        File content, file path
+        File content, file path.
 
     Raises:
         SystemExit: If the keyword cannot be found.
         SystemExit: If the file cannot be found.
-
     """
-
     if file_path is None:
         # Find the path/name of file from case file
         case_file_lines = clean_file_lines(case_content.splitlines())
@@ -267,8 +255,7 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
             file_path = re.sub("[\"']+", "", file_path)
 
         else:
-            # OUTFILE is optional, if it's needed but not supplied the error is
-            # caught in `ReadCasefile:check_pvt_file()`
+            # OUTFILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
             if keyword == "OUTFILE":
                 return None, None
             raise abort(f"The keyword {keyword} is not defined correctly in the casefile")
@@ -299,18 +286,18 @@ def create(
     tuple[list[tuple[str, list[list[str]]]], ReadCasefile, WellSchedule, CreateWells, CreateOutput]
     | tuple[list[tuple[str, list[list[str]]]], ReadCasefile, WellSchedule, CreateWells]
 ):
-    """
-    Create a new Completor schedule file from input case- and schedule files.
+    """Create a new Completor schedule file from input case- and schedule files.
 
     Args:
-        input_file: Input case file
-        schedule_file: Input schedule file
-        new_file: Output schedule file
-        show_fig: Flag indicating if a figure is to be shown
-        percent: ProgressStatus percentage steps to be shown (in per cent, %)
+        input_file: Input case file.
+        schedule_file: Input schedule file.
+        new_file: Output schedule file.
+        show_fig: Flag indicating if a figure is to be shown.
+        percent: ProgressStatus percentage steps to be shown (in percent, %).
+        paths: Optional additional paths.
 
     Returns:
-        Completor schedule file
+        Completor schedule file.
     """
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     wells = CreateWells(case)
@@ -488,11 +475,10 @@ COMPLETOR_VERSION = completor.__version__
 
 
 def get_parser() -> argparse.ArgumentParser:
-    """
-    Parse user input from the command line.
+    """Parse user input from the command line.
 
     Returns:
-        argparse.ArgumentParser
+        argparse.ArgumentParser.
     """
     parser = argparse.ArgumentParser(description=COMPLETOR_DESCRIPTION)
     parser.add_argument("-i", "--inputfile", required=True, type=str, help="(Compulsory) Completor case file")
@@ -517,10 +503,9 @@ def get_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    """
-    Generate a Completor output schedule file from the input given from user.
+    """Generate a Completor output schedule file from the input given from user.
 
-    Also sets the correct loglevel based on user input. Defaults to WARNING if not set.
+    Also set the correct loglevel based on user input. Defaults to WARNING if not set.
 
     Raises:
         SystemExit: If input schedule file is not defined as input or in case file.
