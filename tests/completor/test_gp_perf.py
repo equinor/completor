@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import common
+import utils
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -24,8 +24,8 @@ def test_gp_perf_default(tmpdir):
     No GP_PERF_DEVICELAYER keyword (default to False).
     """
     tmpdir.chdir()
-    common.open_files_run_create(GP_PERF_BASE_CASE, WELL_DEFINITION, _TEST_FILE)
-    common.assert_results(WELL_DEFINITION, _TEST_FILE)
+    utils.open_files_run_create(GP_PERF_BASE_CASE, WELL_DEFINITION, _TEST_FILE)
+    utils.assert_results(WELL_DEFINITION, _TEST_FILE)
 
 
 def test_gp_perf_false(tmpdir):
@@ -42,8 +42,8 @@ def test_gp_perf_false(tmpdir):
      FALSE
     /
     """
-    common.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    common.assert_results(WELL_DEFINITION, _TEST_FILE)
+    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils.assert_results(WELL_DEFINITION, _TEST_FILE)
 
 
 def test_gp_perf_true(tmpdir):
@@ -61,8 +61,8 @@ def test_gp_perf_true(tmpdir):
     /
     """
     true_file = Path(_TESTDIR / "wb_perf.true")
-    common.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_mix_in_branch(tmpdir):
@@ -81,8 +81,8 @@ def test_mix_in_branch(tmpdir):
     /
     """
     true_file = Path(_TESTDIR / "wb_perf_mix_inbranch.true")
-    common.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_mix_multibranch(tmpdir):
@@ -103,5 +103,5 @@ def test_mix_multibranch(tmpdir):
     with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as f:
         schedule_file = f.read()
     true_file = Path(_TESTDIR / "wb_perf_mix_multibranch.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)

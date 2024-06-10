@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import common
 import pytest
+import utils
 
 from completor.constants import Method  # type: ignore
 from completor.create_wells import CreateWells  # type: ignore
@@ -24,8 +24,8 @@ def test_duplicates(tmpdir):
     case_file = Path(_TESTDIR / "duplicate.case")
     schedule_file = Path(_TESTDIR / "duplicate.sch")
     true_file = Path(_TESTDIR / "duplicate.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_segment_creation_method():
@@ -97,5 +97,5 @@ def test_tubing_segment_icv(tmpdir):
     case_file = Path(_TESTDIR / "icv_tubing.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")
     true_file = Path(_TESTDIR / "icv_tubing.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)

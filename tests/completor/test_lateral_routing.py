@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-import common
 import pytest
+import utils
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "ml_well.sch"
@@ -67,8 +67,8 @@ def test_lat2device(tmpdir):
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
     true_file = Path(_TESTDIR / "lat2device.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_lat2device_non_existing(tmpdir):
@@ -104,8 +104,8 @@ LATERAL_TO_DEVICE
     schedule_file = Path(_TESTDIR / "ml_well.sch")
     true_file = Path(_TESTDIR / "lat2device_nonexisting.true")
 
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_lat2device_no_device(tmpdir, caplog):
@@ -147,7 +147,7 @@ LATERAL_TO_DEVICE
     """
     schedule_file = Path(_TESTDIR / "ml_well_l2d_nodevicetest.sch")
     with pytest.raises(SystemExit) as pytest_wrapped_exc:
-        common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+        utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
     assert pytest_wrapped_exc.type == SystemExit
     assert pytest_wrapped_exc.value.code == 1
     assert "Cannot find a device layer at junction of lateral 2 in A1" in caplog.text
@@ -175,5 +175,5 @@ def test_lat2tubing(tmpdir):
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
     true_file = Path(_TESTDIR / "lat2tubing.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
