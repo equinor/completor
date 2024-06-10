@@ -1,4 +1,4 @@
-"""Common Completor test functions."""
+"""Utilities for tests."""
 
 from __future__ import annotations
 
