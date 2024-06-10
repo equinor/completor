@@ -156,8 +156,7 @@ class FileWriter:
                     if isinstance(line, list):
                         logger.warning(
                             "chunk is False, but content contains lists of lists, "
-                            "instead of a list of strings the lines will be "
-                            "concatenated"
+                            "instead of a list of strings the lines will be concatenated."
                         )
                         line = " ".join(line)
                     txt += line + "\n"
@@ -349,7 +348,7 @@ def create(
         keyword = line[:8].rstrip()  # look for keywords
 
         # most lines will just be duplicated
-        if keyword not in Keywords:
+        if keyword not in Keywords.main_keywords:
             outfile.write(None, f"{line}\n")
         else:
             # This is a (potential) MSW keyword.
@@ -545,14 +544,14 @@ def main() -> None:
     else:
         raise abort("Need input case file to run Completor")
 
-    schedule_file_content, inputs.schedulefile = get_content_and_path(case_file_content, inputs.schedulefile, "SCHFILE")
+    schedule_file_content, inputs.schedulefile = get_content_and_path(
+        case_file_content, inputs.schedulefile, Keywords.SCHFILE
+    )
 
     if isinstance(schedule_file_content, str):
-        parse.read_schedule_keywords(
-            clean_file_lines(schedule_file_content.splitlines()), ["WELSPECS", "WELSEGS", "COMPDAT", "COMPSEGS"]
-        )
+        parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
 
-    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, "OUTFILE")
+    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUTFILE)
 
     if inputs.outputfile is None:
         if inputs.schedulefile is None:

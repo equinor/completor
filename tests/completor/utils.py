@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from argparse import Namespace
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from completor import main, parse  # type: ignore
+from completor.constants import Headers, Keywords
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
 from completor.utils import clean_file_lines  # type: ignore
 
@@ -73,26 +73,26 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     )
     # WELSEGS header
     wsh_true = true_output.welsegs_header
-    wsh_true.set_index("WELL", inplace=True)
-    wsh_true.sort_values("WELL", inplace=True)
+    wsh_true.set_index(Headers.WELL, inplace=True)
+    wsh_true.sort_values(Headers.WELL, inplace=True)
     wsh_test = test_output.welsegs_header
-    wsh_test.set_index("WELL", inplace=True)
-    wsh_test.sort_values("WELL", inplace=True)
+    wsh_test.set_index(Headers.WELL, inplace=True)
+    wsh_test.sort_values(Headers.WELL, inplace=True)
     pd.testing.assert_frame_equal(wsh_true, wsh_test, check_exact=check_exact, rtol=relative_tolerance)
     # WELSEGS content
     wsc_true = true_output.welsegs_content
-    wsc_true.set_index("WELL", inplace=True)
-    wsc_true.sort_values(["WELL", "TUBINGMD"], inplace=True)
+    wsc_true.set_index(Headers.WELL, inplace=True)
+    wsc_true.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
     wsc_test = test_output.welsegs_content
-    wsc_test.set_index("WELL", inplace=True)
-    wsc_test.sort_values(["WELL", "TUBINGMD"], inplace=True)
+    wsc_test.set_index(Headers.WELL, inplace=True)
+    wsc_test.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
     pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
 
     # COMPSEGS
-    cs_true = true_output.compsegs.set_index("WELL")
-    cs_true.sort_values(["WELL", "STARTMD"], inplace=True)
-    cs_test = test_output.compsegs.set_index("WELL")
-    cs_test.sort_values(["WELL", "STARTMD"], inplace=True)
+    cs_true = true_output.compsegs.set_index(Headers.WELL)
+    cs_true.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
+    cs_test = test_output.compsegs.set_index(Headers.WELL)
+    cs_test.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
     pd.testing.assert_frame_equal(cs_true, cs_test, check_exact=check_exact, rtol=relative_tolerance)
 
 
@@ -118,31 +118,37 @@ class ReadSchedule:
     See the following functions for a description of DataFrame formats:
         :ref:`welspecs <welspecs_format>`.
         :ref:`compdat <compdat_table>` (See: ref:`update_connection_factor <update_connection_factor>` for more details).
-        :ref:`welsegs_header <df_welsegs_header>`.
-        :ref:`welsegs_content <df_welsegs_content>`.
+        :ref:`welsegs_header <df_well_segments_header>`.
+        :ref:`welsegs_content <df_well_segments_content>`.
         compsegs `get_compsegs_table`.
     """
 
-    def __init__(self, schedule_file: str):
+    def __init__(
+        self,
+        schedule_file: str,
+        optional_keywords: list[str] = ["WSEGVALV"],
+    ):
         """
         Initialize the class.
 
         Args:
             schedule_file: Schedule/well file which contains at least
                       ``COMPDAT``, ``COMPSEGS`` and ``WELSEGS``
+            optional_keywords: List of optional keywords to find tables for.
         """
         # read the file
         self.content = clean_file_lines(schedule_file.splitlines(), "--")
-        # keywords to be searched
-        list_keywords = ["WELSPECS", "COMPDAT", "WELSEGS", "COMPSEGS"]
 
         # get contents of the listed keywords
         # and the content of the not listed keywords
-        self.collections, self.unused_keywords = parse.read_schedule_keywords(self.content, list_keywords)
+        self.collections, self.unused_keywords = parse.read_schedule_keywords(
+            self.content, Keywords.main_keywords, optional_keywords
+        )
         # initiate values
         self.welspecs = pd.DataFrame()
         self.compdat = pd.DataFrame()
         self.compsegs = pd.DataFrame()
+        self.wsegvalv = pd.DataFrame()
         self._welsegs_header: pd.DataFrame | None = None
         self._welsegs_content: pd.DataFrame | None = None
 
@@ -157,24 +163,31 @@ class ReadSchedule:
         self.welspecs = parse.get_welspecs_table(self.collections)
         self.compdat = parse.get_compdat_table(self.collections)
         self.compsegs = parse.get_compsegs_table(self.collections)
+        self.wsegvalv = parse.get_wsegvalv_table(self.collections)
 
         self.compsegs = self.compsegs.astype(
             {
-                "I": np.int64,
-                "J": np.int64,
-                "K": np.int64,
-                "BRANCH": np.int64,
-                "STARTMD": np.float64,
-                "ENDMD": np.float64,
+                Headers.I: np.int64,
+                Headers.J: np.int64,
+                Headers.K: np.int64,
+                Headers.BRANCH: np.int64,
+                Headers.START_MD: np.float64,
+                Headers.END_MEASURED_DEPTH: np.float64,
             }
         )
         self.compdat = self.compdat.astype(
-            {"I": np.int64, "J": np.int64, "K": np.int64, "K2": np.int64, "SKIN": np.float64}
+            {
+                Headers.I: np.int64,
+                Headers.J: np.int64,
+                Headers.K: np.int64,
+                Headers.K2: np.int64,
+                Headers.SKIN: np.float64,
+            }
         )
 
         # If CF and KH are defaulted by users, type conversion fails and
         # we deliberately ignore it:
-        self.compdat = self.compdat.astype({"CF": np.float64, "KH": np.float64}, errors="ignore")
+        self.compdat = self.compdat.astype({Headers.CF: np.float64, Headers.KH: np.float64}, errors="ignore")
 
     @property
     def welsegs_header(self) -> pd.DataFrame:
@@ -197,17 +210,17 @@ class ReadSchedule:
         welsegs_header, welsegs_content = parse.get_welsegs_table(self.collections)
         self._welsegs_content = welsegs_content.astype(
             {
-                "TUBINGSEGMENT": np.int64,
-                "TUBINGSEGMENT2": np.int64,
-                "TUBINGBRANCH": np.int64,
-                "TUBINGOUTLET": np.int64,
-                "TUBINGMD": np.float64,
-                "TUBINGTVD": np.float64,
-                "TUBINGROUGHNESS": np.float64,
+                Headers.TUBINGSEGMENT: np.int64,
+                Headers.TUBINGSEGMENT2: np.int64,
+                Headers.TUBINGBRANCH: np.int64,
+                Headers.TUBINGOUTLET: np.int64,
+                Headers.TUBINGMD: np.float64,
+                Headers.TUBINGTVD: np.float64,
+                Headers.TUBINGROUGHNESS: np.float64,
             }
         )
 
-        self._welsegs_header = welsegs_header.astype({"SEGMENTTVD": np.float64, "SEGMENTMD": np.float64})
+        self._welsegs_header = welsegs_header.astype({Headers.SEGMENTTVD: np.float64, Headers.SEGMENTMD: np.float64})
         return self._welsegs_header, self._welsegs_content  # type: ignore
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:
@@ -220,7 +233,7 @@ class ReadSchedule:
         Returns:
             WELSPECS table for that well
         """
-        df_temp = self.welspecs[self.welspecs["WELL"] == well_name]
+        df_temp = self.welspecs[self.welspecs[Headers.WELL] == well_name]
         # reset index after filtering
         df_temp.reset_index(drop=True, inplace=True)
         return df_temp
@@ -235,7 +248,7 @@ class ReadSchedule:
         Returns:
             COMPDAT table for that well
         """
-        df_temp = self.compdat[self.compdat["WELL"] == well_name]
+        df_temp = self.compdat[self.compdat[Headers.WELL] == well_name]
         # reset index after filtering
         df_temp.reset_index(drop=True, inplace=True)
         return df_temp
@@ -252,13 +265,13 @@ class ReadSchedule:
             | WELSEGS first record (df_header)
             | WELSEGS second record (df_content)
         """
-        df1_welsegs = self.welsegs_header[self.welsegs_header["WELL"] == well_name]
-        df2_welsegs = self.welsegs_content[self.welsegs_content["WELL"] == well_name].copy()
+        df1_welsegs = self.welsegs_header[self.welsegs_header[Headers.WELL] == well_name]
+        df2_welsegs = self.welsegs_content[self.welsegs_content[Headers.WELL] == well_name].copy()
         if branch is not None:
-            df2_welsegs = df2_welsegs[df2_welsegs["TUBINGBRANCH"] == branch]
+            df2_welsegs = df2_welsegs[df2_welsegs[Headers.TUBINGBRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
-        df2_welsegs.drop(["WELL"], inplace=True, axis=1)
+        df2_welsegs.drop([Headers.WELL], inplace=True, axis=1)
         # reset index after filtering
         df1_welsegs.reset_index(drop=True, inplace=True)
         df2_welsegs.reset_index(drop=True, inplace=True)
@@ -276,45 +289,12 @@ class ReadSchedule:
         Returns:
             COMPSEGS table
         """
-        df_temp = self.compsegs[self.compsegs["WELL"] == well_name].copy()
+        df_temp = self.compsegs[self.compsegs[Headers.WELL] == well_name].copy()
         if branch is not None:
-            df_temp = df_temp[df_temp["BRANCH"] == branch]
+            df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
-        df_temp.drop(["WELL"], inplace=True, axis=1)
+        df_temp.drop([Headers.WELL], inplace=True, axis=1)
         # reset index after filtering
         df_temp.reset_index(drop=True, inplace=True)
         return fix_compsegs(df_temp, well_name)
-
-
-def _mock_parse_args(**kwargs):
-
-    # Set default values.
-    kwargs["loglevel"] = 0 if kwargs.get("loglevel") is None else kwargs["loglevel"]
-    kwargs["figure"] = False if kwargs.get("figure") is None else kwargs["figure"]
-    kwargs["schedulefile"] = None if kwargs.get("schedulefile") is None else kwargs["schedulefile"]
-    kwargs["outputfile"] = None if kwargs.get("outputfile") is None else kwargs["outputfile"]
-
-    def _mock_get_parser():
-        class MockObject:
-            @staticmethod
-            def parse_args() -> Namespace:
-                return Namespace(**kwargs)
-
-        return MockObject
-
-    setattr(main, "get_parser", _mock_get_parser)
-
-
-def completor_runner(**kwargs) -> None:
-    """
-    Helper function to run completor as if it was launched as a CLI program.
-
-    Function mocks args_parser and makes it return the values specified in **kwargs.
-
-    Args:
-        kwargs: Keyword arguments to run completor with.
-
-    """
-    _mock_parse_args(**kwargs)
-    main.main()

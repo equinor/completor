@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from completor.constants import Headers
 from completor.prepare_outputs import fix_tubing_inner_diam_roughness
 
 
@@ -12,15 +13,22 @@ def test_fix_inner_diam_roughness_default_parameters():
     well_name = "A1"
     overburden = pd.DataFrame(
         [["A1", 1, 2000.0, 0.15, 0.00065]],
-        columns=["WELL", "TUBINGBRANCH", "MD", "DIAM", "ROUGHNESS"],
+        columns=[Headers.WELL, Headers.TUBINGBRANCH, Headers.MD, Headers.DIAM, Headers.ROUGHNESS],
     )
     completion_table = pd.DataFrame(
         [["A1", 1, 0.0, 5000.0, 0.2, 0.00035]],
-        columns=["WELL", "BRANCH", "STARTMD", "ENDMD", "INNER_ID", "ROUGHNESS"],
+        columns=[
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.ROUGHNESS,
+        ],
     )
     true_overburden = pd.DataFrame(
         [["A1", 1, 2000.0, 0.2, 0.00035]],
-        columns=["WELL", "TUBINGBRANCH", "MD", "DIAM", "ROUGHNESS"],
+        columns=[Headers.WELL, Headers.TUBINGBRANCH, Headers.MD, Headers.DIAM, Headers.ROUGHNESS],
     )
     test_overburden = fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)
     assert_frame_equal(test_overburden, true_overburden)
@@ -39,18 +47,25 @@ def test_overburden_md_at_boundary():
     well_name = "A1"
     overburden = pd.DataFrame(
         [["A1", 1, 2000.0, 0.15, 0.00065]],
-        columns=["WELL", "TUBINGBRANCH", "MD", "DIAM", "ROUGHNESS"],
+        columns=[Headers.WELL, Headers.TUBINGBRANCH, Headers.MD, Headers.DIAM, Headers.ROUGHNESS],
     )
     completion_table = pd.DataFrame(
         [
             ["A1", 1, 0.0, 2000.0, 0.2, 0.00035],
             ["A1", 1, 2000.0, 5000.0, 0.1, 0.00015],
         ],
-        columns=["WELL", "BRANCH", "STARTMD", "ENDMD", "INNER_ID", "ROUGHNESS"],
+        columns=[
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.ROUGHNESS,
+        ],
     )
     true_overburden = pd.DataFrame(
         [["A1", 1, 2000.0, 0.2, 0.00035]],
-        columns=["WELL", "TUBINGBRANCH", "MD", "DIAM", "ROUGHNESS"],
+        columns=[Headers.WELL, Headers.TUBINGBRANCH, Headers.MD, Headers.DIAM, Headers.ROUGHNESS],
     )
     test_overburden = fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)
     assert_frame_equal(test_overburden, true_overburden)
@@ -65,14 +80,21 @@ def test_overburden_md_above_completion_table():
     well_name = "A1"
     overburden = pd.DataFrame(
         [["A1", 1, 2000.0, 0.15, 0.00065]],
-        columns=["WELL", "TUBINGBRANCH", "MD", "DIAM", "ROUGHNESS"],
+        columns=[Headers.WELL, Headers.TUBINGBRANCH, Headers.MD, Headers.DIAM, Headers.ROUGHNESS],
     )
     completion_table = pd.DataFrame(
         [
             ["A1", 1, 3000.0, 5000.0, 0.2, 0.00035],
             ["A1", 1, 5000.0, 6000.0, 0.1, 0.00025],
         ],
-        columns=["WELL", "BRANCH", "STARTMD", "ENDMD", "INNER_ID", "ROUGHNESS"],
+        columns=[
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.ROUGHNESS,
+        ],
     )
     with pytest.raises(ValueError, match="Cannot find A1 completion in overburden at 2000.0 mMD"):
         fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)
@@ -87,14 +109,21 @@ def test_overburden_md_outside_completion_table():
     well_name = "A1"
     overburden = pd.DataFrame(
         [["A1", 1, 5000.0, 0.15, 0.00065]],
-        columns=["WELL", "TUBINGBRANCH", "MD", "DIAM", "ROUGHNESS"],
+        columns=[Headers.WELL, Headers.TUBINGBRANCH, Headers.MD, Headers.DIAM, Headers.ROUGHNESS],
     )
     completion_table = pd.DataFrame(
         [
             ["A1", 1, 0.0, 2000.0, 0.2, 0.00035],
             ["A1", 1, 2000.0, 4000.0, 0.1, 0.00055],
         ],
-        columns=["WELL", "BRANCH", "STARTMD", "ENDMD", "INNER_ID", "ROUGHNESS"],
+        columns=[
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.ROUGHNESS,
+        ],
     )
     with pytest.raises(ValueError, match="Cannot find A1 completion in overburden at 5000.0 mMD"):
         fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)

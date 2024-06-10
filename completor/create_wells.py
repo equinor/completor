@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from completor import completion
-from completor.constants import Method
+from completor.constants import Headers, Method
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
 from completor.read_schedule import fix_compsegs_by_priority
@@ -108,12 +108,16 @@ class CreateWells:
         """
         # Need to check completion of all wells in completion table to remove
         # GP-PERF type wells
-        active_wells = list(set(self.case.completion_table["WELL"]))
+        active_wells = list(set(self.case.completion_table[Headers.WELL]))
         # We cannot update a list while iterating of it
         for well_name in active_wells.copy():
             # Annulus content of each well
-            ann_series = self.case.completion_table[self.case.completion_table["WELL"] == well_name]["ANNULUS"]
-            type_series = self.case.completion_table[self.case.completion_table["WELL"] == well_name]["DEVICETYPE"]
+            ann_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name][
+                Headers.ANNULUS
+            ]
+            type_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name][
+                Headers.DEVICE_TYPE
+            ]
             gp_check = not ann_series.isin(["OA"]).any()
             perf_check = not type_series.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"]).any()
             if gp_check and perf_check and not self.case.gp_perf_devicelayer:
@@ -180,7 +184,9 @@ class CreateWells:
         ``read_casefile.ReadCasefile.read_completion``.
         """
         self.laterals = list(
-            self.case.completion_table[self.case.completion_table["WELL"] == self.well_name]["BRANCH"].unique()
+            self.case.completion_table[self.case.completion_table[Headers.WELL] == self.well_name][
+                Headers.BRANCH
+            ].unique()
         )
 
     def select_well(self, schedule: completion.WellSchedule, lateral: int) -> None:
@@ -189,8 +195,8 @@ class CreateWells:
 
         Filter all of the required DataFrames for this well and its laterals.
 
-        The function sets the class property DataFrames df_completion, df_welsegs_header
-        and df_welsegs_content, and df_reservoir, with the following formats:
+        The function sets the class property DataFrames df_completion, df_well_segments_header
+        and df_well_segments_content, and df_reservoir, with the following formats:
 
         .. _df_completion:
         .. list-table:: df_completion
@@ -207,9 +213,9 @@ class CreateWells:
              - float
            * - ENDMD
              - float
-           * - INNER_ID
+           * - INNER_DIAMETER
              - float
-           * - OUTER_ID
+           * - OUTER_DIAMETER
              - float
            * - ROUGHNESS
              - float
@@ -223,7 +229,7 @@ class CreateWells:
              - int
 
         .. _df_welsegs_header:
-        .. list-table:: df_welsegs_header (WELSEGS header)
+        .. list-table:: df_well_segments_header (WELSEGS header)
            :widths: 10 10
            :header-rows: 1
 
@@ -255,7 +261,7 @@ class CreateWells:
              - float
 
         .. _df_welsegs_content:
-        .. list-table:: df_welsegs_content (WELSEGS record)
+        .. list-table:: df_well_segments_content (WELSEGS record)
            :widths: 10 10
            :header-rows: 1
 
@@ -357,25 +363,25 @@ class CreateWells:
             raise ValueError("No well name given")
 
         self.df_completion = self.case.get_completion(self.well_name, lateral)
-        self.df_welsegs_header, self.df_welsegs_content = schedule.get_welsegs(self.well_name, lateral)
+        self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(self.well_name, lateral)
         df_compsegs = schedule.get_compsegs(self.well_name, lateral)
         df_compdat = schedule.get_compdat(self.well_name)
-        self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=["I", "J", "K"])
+        self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
         # Remove WELL column in the df_reservoir.
-        self.df_reservoir.drop(["WELL"], inplace=True, axis=1)
+        self.df_reservoir.drop([Headers.WELL], inplace=True, axis=1)
         # If multiple occurrences of same IJK in compdat/compsegs --> keep the last one.
-        self.df_reservoir.drop_duplicates(subset="STARTMD", keep="last", inplace=True)
+        self.df_reservoir.drop_duplicates(subset=Headers.START_MD, keep="last", inplace=True)
         self.df_reservoir.reset_index(inplace=True)
 
     def well_trajectory(self) -> None:
         """
         Create trajectory DataFrame relations between MD and TVD.
 
-        The function uses the class property DataFrames df_welsegs_header
-        and df_welsegs_content with the following formats:
+        The function uses the class property DataFrames df_well_segments_header
+        and df_well_segments_content with the following formats:
 
-        .. list-table:: df_welsegs_header (WELSEGS header)
+        .. list-table:: df_well_segments_header (WELSEGS header)
            :widths: 10 10
            :header-rows: 1
 
@@ -406,7 +412,7 @@ class CreateWells:
            * - ITEM12
              - float
 
-        .. list-table:: df_welsegs_content (WELSEGS record)
+        .. list-table:: df_well_segments_content (WELSEGS record)
            :widths: 10 10
            :header-rows: 1
 
@@ -481,9 +487,9 @@ class CreateWells:
              - float
            * - ENDMD
              - float
-           * - INNER_ID
+           * - INNER_DIAMETER
              - float
-           * - OUTER_ID
+           * - OUTER_DIAMETER
              - float
            * - ROUGHNESS
              - float
@@ -494,7 +500,7 @@ class CreateWells:
            * - DEVICETYPE
              - str
            * - ANNULUS_ZONE
-             - int
+         - int
         """
         self.df_completion = completion.define_annulus_zone(self.df_completion)
 
@@ -613,13 +619,13 @@ class CreateWells:
             self.case.minimum_segment_length,
         )
 
-        if (len(self.df_completion["DEVICETYPE"].unique()) > 1) & (
-            (self.df_completion["DEVICETYPE"] == "ICV") & (self.df_completion["NVALVEPERJOINT"] > 0)
+        if (len(self.df_completion[Headers.DEVICE_TYPE].unique()) > 1) & (
+            (self.df_completion[Headers.DEVICE_TYPE] == "ICV") & (self.df_completion[Headers.VALVES_PER_JOINT] > 0)
         ).any():
             self.df_tubing_segments = fix_compsegs_by_priority(self.df_completion, df_tubing_cells, df_tubing_user)
 
         # If all the devices are ICVs, lump the segments.
-        elif (self.df_completion["DEVICETYPE"] == "ICV").all():
+        elif (self.df_completion[Headers.DEVICE_TYPE] == "ICV").all():
             self.df_tubing_segments = df_tubing_user
         # If none of the devices are ICVs use defined method.
         else:
@@ -702,7 +708,7 @@ class CreateWells:
              - int
         """
         self.df_well = completion.complete_the_well(self.df_tubing_segments, self.df_completion, self.case.joint_length)
-        self.df_well["ROUGHNESS"] = self.df_well["ROUGHNESS"].apply(lambda x: f"{x:.3E}")
+        self.df_well[Headers.ROUGHNESS] = self.df_well[Headers.ROUGHNESS].apply(lambda x: f"{x:.3E}")
 
     def get_devices(self) -> None:
         """
@@ -722,10 +728,10 @@ class CreateWells:
         """
         if not self.case.completion_icv_tubing.empty:
             active_devices = pd.concat(
-                [self.df_completion["DEVICETYPE"], self.case.completion_icv_tubing["DEVICETYPE"]]
+                [self.df_completion[Headers.DEVICE_TYPE], self.case.completion_icv_tubing[Headers.DEVICE_TYPE]]
             ).unique()
         else:
-            active_devices = self.df_completion["DEVICETYPE"].unique()
+            active_devices = self.df_completion[Headers.DEVICE_TYPE].unique()
         if "VALVE" in active_devices:
             self.df_well = completion.get_device(self.df_well, self.case.wsegvalv_table, "VALVE")
         if "ICD" in active_devices:
@@ -761,15 +767,15 @@ class CreateWells:
         class property DataFrame :ref:`df_well`.
         """
         # drop BRANCH column, not needed
-        self.df_reservoir.drop(["BRANCH"], axis=1, inplace=True)
+        self.df_reservoir.drop([Headers.BRANCH], axis=1, inplace=True)
         icv_device = (
-            self.df_well["DEVICETYPE"].nunique() > 1
-            and (self.df_well["DEVICETYPE"] == "ICV").any()
-            and not self.df_well["NDEVICES"].empty
+            self.df_well[Headers.DEVICE_TYPE].nunique() > 1
+            and (self.df_well[Headers.DEVICE_TYPE] == "ICV").any()
+            and not self.df_well[Headers.NDEVICES].empty
         )
         method = Method.USER if icv_device else self.method
         self.df_reservoir = completion.connect_cells_to_segments(
-            self.df_well[["TUB_MD", "NDEVICES", "DEVICETYPE", "ANNULUS_ZONE"]],
+            self.df_well[[Headers.TUB_MD, Headers.NDEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]],
             self.df_reservoir,
             self.df_tubing_segments,
             method,
@@ -782,10 +788,10 @@ class CreateWells:
         The format of the class property DataFrame df_well is described in
         ``complete_the_well`` and df_reservoir in ``select_well``.
         """
-        self.df_well["WELL"] = self.well_name
-        self.df_reservoir["WELL"] = self.well_name
-        self.df_well["LATERAL"] = lateral
-        self.df_reservoir["LATERAL"] = lateral
+        self.df_well[Headers.WELL] = self.well_name
+        self.df_reservoir[Headers.WELL] = self.well_name
+        self.df_well[Headers.LATERAL] = lateral
+        self.df_reservoir[Headers.LATERAL] = lateral
 
     def combine_df(self, lateral: int) -> None:
         """
