@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from common import ReadSchedule
+from utils import ReadSchedule
 
 import completor.parse as fr
 from completor import utils
