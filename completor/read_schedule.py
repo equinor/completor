@@ -9,19 +9,14 @@ from completor.utils import sort_by_midpoint
 
 
 def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Convert a WELSEGS DataFrame specified in INC to ABS.
+    """Convert a WELSEGS DataFrame specified in incremental (INC) to absolute (ABS) values.
 
     Args:
-        df_header: First record table of WELSEGS
-        df_content: Second record table of WELSEGS
+        df_header: First record table of WELSEGS.
+        df_content: Second record table of WELSEGS.
 
     Returns:
-        tuple: (Updated header DataFrame, Updated content DataFrame)
-
-    The formats of df_header and df_content are shown as df_well_segments_header and
-    df_well_segments_content respectively in the function
-    :ref:`create_wells.CreateWells.select_well <select_well>`.
+        Updated header DataFrame, Updated content DataFrame.
     """
     df_header = df_header.copy()
     df_content = df_content.copy()
@@ -55,53 +50,18 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
 
 
 def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
-    """
-    Fix the problem of having multiple connections in one cell.
+    """Fix the problem of having multiple connections in one cell.
 
     The issue occurs when one cell is penetrated more than once by a well, and happens
     when there are big cells and the well path is complex.
-    The issue can be observed from a COMPSEGS definition that has overlapping start and
-    end measured depth.
+    The issue can be observed from a COMPSEGS definition that has overlapping start and end measured depth.
 
     Args:
-        df_compsegs: DataFrame
-        well_name: Well name
+        df_compsegs: DataFrame.
+        well_name: Well name.
 
     Returns:
-        Sorted DataFrame
-
-    The DataFrame df is obtained from`` msws[well_name]['compsegs']``
-    and has the following format:
-
-        .. _compsegs_format:
-        .. list-table:: df
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMNS
-             - TYPE
-           * - I
-             - int
-           * - J
-             - int
-           * - K
-             - int
-           * - BRANCH
-             - int
-           * - STARTMD
-             - float
-           * - ENDMD
-             - float
-           * - COMPSEGS_DIRECTION
-             - str
-           * - ENDGRID
-             - object
-           * - PERFDEPTH
-             - float
-           * - THERM
-             - object
-           * - SEGMENT
-             - int
+        Sorted DataFrame.
     """
     df_compsegs = df_compsegs.copy(deep=True)
     start_md = df_compsegs[Headers.START_MEASURED_DEPTH].to_numpy()
@@ -154,8 +114,7 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
 def fix_compsegs_by_priority(
     df_completion: pd.DataFrame, df_compsegs: pd.DataFrame, df_custom_compsegs: pd.DataFrame
 ) -> pd.DataFrame:
-    """
-    Fixes a dataframe of composition segments, prioritizing the custom compseg.
+    """Fixes a dataframe of composition segments, prioritizing the custom compsegs.
 
     Args:
         df_completion: ..
@@ -164,7 +123,6 @@ def fix_compsegs_by_priority(
 
     Returns:
         Fixed composition segments dataframe.
-
     """
     # slicing two dataframe for user and cells segment length
     start_md_comp = df_completion[
