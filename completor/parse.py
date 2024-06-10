@@ -15,11 +15,7 @@ from completor.utils import abort
 
 
 class ContentCollection(list):
-    """
-    A subclass of list that can accept additional attributes.
-
-    To be used like a regular list.
-    """
+    """A subclass of list that can accept additional attributes. To be used like a regular list."""
 
     def __new__(cls, *args, **kwargs):
         """Override new method of list."""
@@ -61,27 +57,24 @@ def locate_keyword(
 def locate_keyword(
     content: list[str], keyword: str, end_char: str = "/", take_first: bool = True
 ) -> tuple[int, int] | tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]]:
-    """
-    Find the start and end of a keyword.
+    """Find the start and end of a keyword.
 
     The start of the keyword is the keyword itself.
-    The end of the keyword is end_char if specified
+    The end of the keyword is end_char if specified.
 
     Args:
-        content: List of strings
-        keyword: Keyword name
-        end_char: String which ends the keyword. By default '/'
-                  Because it's the most used in this code base
-        take_first: Flag to toggle whether to return the first elements
-                    of the arrays
+        content: List of strings.
+        keyword: Keyword name.
+        end_char: String which ends the keyword. Defaults to '/' Because it's the most used in this code base.
+        take_first: Flag to toggle whether to return the first elements of the arrays.
 
     Returns:
-            | start_index - np.array that located the keyword (or its first element)
-            | end_index - np.array that locates the end of the keyword
-                          (or its first element)
+        start_index - array that located the keyword (or its first element).
+        end_index - array that locates the end of the keyword (or its first element).
+
     Raises:
-        SystemExit: If keyword had no end record
-        ValueError: If keyword cannot be found in case file
+        SystemExit: If keyword had no end record.
+        ValueError: If keyword cannot be found in case file.
     """
     content_length = len(content)
     start_index: npt.NDArray[np.int64] = np.where(np.asarray(content) == keyword)[0]
@@ -101,8 +94,7 @@ def locate_keyword(
                 # error if until the last line the end char is not found
                 raise abort(f"Keyword {keyword} has no end record")
         else:
-            # if there is no end character is specified
-            # then the end of a record is the next keyword or end of line
+            # if there is no end character is specified, then the end of a record is the next keyword or end of line
             for idx in range(istart + 1, content_length):
                 first_char = content[idx][0]
                 if first_char.isalpha():
@@ -124,30 +116,28 @@ def locate_keyword(
 def take_first_record(
     start_index: list[float] | npt.NDArray[np.float64], end_index: list[float] | npt.NDArray[np.float64]
 ) -> tuple[float | int, float | int]:
-    """
-    Take the first record of a list.
+    """Take the first record of a list.
 
     Args:
-        start_index
-        end_index
+        start_index:
+        end_index:
 
     Returns:
-        Tuple of floats
+        Tuple of floats.
     """
     return start_index[0], end_index[0]
 
 
 def unpack_records(record: list[str]) -> list[str]:
-    """
-    Unpack the keyword content.
+    """Unpack the keyword content.
 
     E.g. 3* --> 1* 1* 1*
 
     Args:
-        record: List of strings
+        record: List of strings.
 
     Returns:
-        Updated record of strings
+        Updated record of strings.
     """
     record = deepcopy(record)
     record_length = len(record)
@@ -170,17 +160,15 @@ def unpack_records(record: list[str]) -> list[str]:
 
 
 def complete_records(record: list[str], keyword: str) -> list[str]:
-    """
-    Complete the record.
+    """Complete the record.
 
     Args:
-        record: List of strings
-        keyword: Keyword name
+        record: List of strings.
+        keyword: Keyword name.
 
     Returns:
         Completed list of strings.
     """
-
     if keyword == Keywords.WSEGVALV:
         return complete_wsegvalv_record(record)
 
@@ -202,11 +190,9 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
 
 
 def complete_wsegvalv_record(record: list[str]) -> list[str]:
-    """
-    Complete the WSEGVALV record.
+    """Complete the WSEGVALV record.
 
-    The columns DEFAULT_1 - DEFAULT_4, STATE and AC_MAX might not be provided and need to be filled in with default
-    values.
+    Columns DEFAULT_1 - DEFAULT_4, STATE and AC_MAX might not be provided and need to be filled in with default values.
 
     Args:
         record: List of strings.
@@ -239,8 +225,7 @@ def complete_wsegvalv_record(record: list[str]) -> list[str]:
 def read_schedule_keywords(
     content: list[str], keywords: list[str], optional_keywords: list[str] = []
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
-    """
-    Read schedule keywords or all keywords in table format.
+    """Read schedule keywords or all keywords in table format.
 
     E.g. WELSPECS, COMPDAT, WELSEGS, COMPSEGS, WSEGVALV.
 
@@ -250,11 +235,11 @@ def read_schedule_keywords(
         optional_keywords: List of optional keywords. Will not raise error if not found.
 
     Returns:
-        df_collection - Object collection (pd.DataFrame)
-        remaining_content - List of strings of un-listed keywords
+        df_collection - Object collection (pd.DataFrame).
+        remaining_content - List of strings of un-listed keywords.
 
     Raises:
-        SystemExit: If keyword is not found
+        SystemExit: If keyword is not found.
     """
     content = deepcopy(content)
     used_index = np.asarray([-1])
@@ -297,91 +282,17 @@ def _create_record(content: list[str], keyword: str, irec: int, start: int) -> l
 
 
 def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Return dataframe table of WELSEGS.
+    """Return dataframe table of WELSEGS.
 
     Args:
-        collections:  ContentCollection class
+        collections: ContentCollection class.
 
     Returns:
-        | header_table - The header of WELSEGS
-        | record_table - the record of WELSEGS
+        header_table - The header of WELSEGS.
+        record_table - The record of WELSEGS.
+
     Raises:
-        ValueError: If collection does not contain the 'WELSEGS' keyword
-
-    The first DataFrame has the following format:
-
-    .. list-table:: First DataFrame (WELSEGS header)
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - SEGMENTTVD
-         - float
-       * - SEGMENTMD
-         - float
-       * - WBVOLUME
-         - float
-       * - INFOTYPE
-         - str
-       * - PDROPCOMP
-         - str
-       * - MPMODEL
-         - str
-       * - ITEM8
-         - object
-       * - ITEM9
-         - object
-       * - ITEM10
-         - object
-       * - ITEM11
-         - object
-       * - ITEM12
-         - object
-
-    The second DataFrame has the following format:
-
-    .. list-table:: Second DataFrame (WELSEGS record)
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - TUBINGSEGMENT
-         - int
-       * - TUBINGSEGMENT2
-         - int
-       * - TUBINGBRANCH
-         - int
-       * - TUBINGOUTLET
-         - int
-       * - TUBINGMD
-         - float
-       * - TUBINGTVD
-         - float
-       * - TUBINGID
-         - float
-       * - TUBINGROUGHNESS
-         - float
-       * - CROSS
-         - float
-       * - VSEG
-         - float
-       * - ITEM11
-         - object
-       * - ITEM12
-         - object
-       * - ITEM13
-         - object
-       * - ITEM14
-         - object
-       * - ITEM15
-         - object
+        ValueError: If collection does not contain the 'WELSEGS' keyword.
     """
     header_columns = [
         Headers.WELL,
@@ -444,60 +355,16 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
 
 
 def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """
-    Return dataframe table of WELSPECS.
+    """Return dataframe table of WELSPECS.
 
     Args:
-        collections: ContentCollection class
+        collections: ContentCollection class.
 
     Returns:
-        WELSPECS table
+        WELSPECS table.
 
     Raises:
-        ValueError: If collection does not contain the 'WELSPECS' keyword
-
-    The return DataFrame welspecs_table has the following format:
-
-    .. list-table:: welspecs_table
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - GROUP
-         - str
-       * - I
-         - int
-       * - J
-         - int
-       * - BHP_DEPTH
-         - float
-       * - PHASE
-         - str
-       * - DR
-         - float
-       * - FLAG
-         - str
-       * - SHUT
-         - object
-       * - CROSS
-         - object
-       * - PRESSURETABLE
-         - int
-       * - DENSCAL
-         - float
-       * - REGION
-         - object
-       * - ITEM14
-         - object
-       * - ITEM15
-         - object
-       * - ITEM16
-         - object
-       * - ITEM17
-         - object
+        ValueError: If collection does not contain the 'WELSPECS' keyword.
     """
     columns = [
         Headers.WELL,
@@ -537,55 +404,16 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """
-    Return dataframe table of COMPDAT.
+    """Return dataframe table of COMPDAT.
 
     Args:
-        collections: ContentCollection class
+        collections: ContentCollection class.
 
     Returns:
-        COMPDAT table
+        COMPDAT table.
 
     Raises:
-        ValueError: If collection does not contain the 'COMPDAT' keyword
-
-    The return DataFrame has the following format:
-
-    .. _compdat_table:
-    .. list-table:: compdat_table
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - I
-         - int
-       * - J
-         - int
-       * - K
-         - int
-       * - K2
-         - int
-       * - STATUS
-         - str
-       * - SATNUM
-         - int
-       * - CF
-         - float
-       * - DIAM
-         - float
-       * - KH
-         - float
-       * - SKIN
-         - float
-       * - DFACT
-         - object
-       * - COMPDAT_DIRECTION
-         - object
-       * - RO
-         - float
+        ValueError: If a collection does not contain the 'COMPDAT' keyword.
     """
     compdat_table = None
     for collection in collections:
@@ -622,50 +450,17 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """
-    Return data frame table of COMPSEGS.
+    """Return data frame table of COMPSEGS.
 
     Args:
-        collections: ContentCollection class
+        collections: ContentCollection class.
 
     Returns:
-        COMPSEGS table
+        COMPSEGS table.
 
     Raises:
-        ValueError: If collection does not contain the 'COMPSEGS' keyword
+        ValueError: If collection does not contain the 'COMPSEGS' keyword.
 
-    The return DataFrame compsegs_table has the following format:
-
-    .. list-table:: compsegs_table
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - I
-         - int
-       * - J
-         - int
-       * - K
-         - int
-       * - BRANCH
-         - int
-       * - STARTMD
-         - float
-       * - ENDMD
-         - float
-       * - COMPSEGS_DIRECTION
-         - object
-       * - ENDGRID
-         - object
-       * - PERFDEPTH
-         - float
-       * - THERM
-         - object
-       * - SEGMENT
-         - int
     """
     compsegs_table = None
     for collection in collections:
@@ -708,23 +503,20 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
     """Return a dataframe of WSEGVALV.
 
     Args:
-        collections: ContentCollection class
+        collections: ContentCollection class.
 
     Returns:
-        WSEGVALV table
+        WSEGVALV table.
     """
-    COLUMNS = ["WELL", "SEGMENT", "CD", "AC", "DEFAULT_1", "DEFAULT_2", "DEFAULT_3", "DEFAULT_4", "STATE", "AC_MAX"]
+    columns = ["WELL", "SEGMENT", "CD", "AC", "DEFAULT_1", "DEFAULT_2", "DEFAULT_3", "DEFAULT_4", "STATE", "AC_MAX"]
 
     wsegvalv_collections = [np.asarray(collection) for collection in collections if collection.name == "WSEGVALV"]
     wsegvalv_table = np.vstack(wsegvalv_collections)
 
     if wsegvalv_table.size == 0:
-        return pd.DataFrame(columns=COLUMNS)
+        return pd.DataFrame(columns=columns)
 
-    wsegvalv_table = pd.DataFrame(
-        wsegvalv_table,
-        columns=COLUMNS,
-    )
+    wsegvalv_table = pd.DataFrame(wsegvalv_table, columns=columns)
     wsegvalv_table = wsegvalv_table.astype(
         {
             "WELL": "string",
@@ -751,18 +543,17 @@ def remove_string_characters(df: str, columns: list[str] | None = ...) -> str: .
 
 
 def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None = None) -> pd.DataFrame | str:
-    """
-    Remove string characters `"` and `'`.
+    """Remove string characters `"` and `'`.
 
     Args:
-        df: DataFrame or string
-        columns: List of column names to be checked
+        df: DataFrame or string.
+        columns: List of column names to be checked.
 
     Returns:
-        DataFrame without string characters
+        DataFrame without string characters.
 
     Raises:
-        Exception: If an unexpected error occurred
+        Exception: If an unexpected error occurred.
     """
     if columns is None:
         columns = []
