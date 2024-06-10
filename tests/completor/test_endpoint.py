@@ -11,7 +11,7 @@ _TESTDIR_DROGON = Path(__file__).absolute().parent / "data" / "drogon"
 
 
 def test_run_completor(tmpdir):
-    """Test Completor for command line run. Schedule included on command line."""
+    """Test Completor for command line run. Schedule included on the command line."""
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
@@ -31,7 +31,7 @@ def test_run_completor_schedule_in_case(tmpdir):
 
 
 def test_run_completor_without_schedule(tmpdir):
-    """Test Completor without input schedule file."""
+    """Test Completor without an input schedule file."""
     shutil.copy(_TESTDIR_DROGON / "perf_gp_nosched.case", tmpdir)
     tmpdir.chdir()
     with pytest.raises(SystemExit) as e:
@@ -41,7 +41,7 @@ def test_run_completor_without_schedule(tmpdir):
 
 
 def test_figure(tmpdir):
-    """Test Completor for command line run including figure option."""
+    """Test Completor for command line run including the figure option."""
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
@@ -53,7 +53,7 @@ def test_figure(tmpdir):
 
 
 def test_run_completor_without_output(tmpdir):
-    """Test Completor for command line run excluding output file option."""
+    """Test Completor for command line run excluding the output file option."""
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()
@@ -63,7 +63,7 @@ def test_run_completor_without_output(tmpdir):
 
 
 def test_run_completor_without_schedule_output(tmpdir):
-    """Test Completor for command line run excluding output file option."""
+    """Test Completor for command line run excluding the output file option."""
     shutil.copy(_TESTDIR_DROGON / "perf_gp.case", tmpdir)
     shutil.copy(_TESTDIR_DROGON / "drogon_input.sch", tmpdir)
     tmpdir.chdir()

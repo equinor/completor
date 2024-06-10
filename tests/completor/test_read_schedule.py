@@ -9,6 +9,7 @@ from common import ReadSchedule
 
 import completor.parse as fr
 from completor import utils
+from completor.constants import Headers
 from completor.read_schedule import fix_compsegs, fix_welsegs
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -77,11 +78,11 @@ def test_reading_compdat():
     true_compdat = Path(_TESTDIR / "compdat.true")
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
     df_true = fr.remove_string_characters(df_true)
-    columns1 = ["I", "J", "K", "K2"]
-    columns2 = ["CF", "KH", "SKIN"]
+    columns1 = [Headers.I, Headers.J, Headers.K, Headers.K2]
+    columns2 = [Headers.CF, Headers.KH, Headers.SKIN]
     df_true[columns1] = df_true[columns1].astype(np.int64)
     df_true[columns2] = df_true[columns2].astype(np.float64)
-    df_well10 = df_true[df_true["WELL"] == "WELL10"]
+    df_well10 = df_true[df_true[Headers.WELL] == "WELL10"]
     df_well10.reset_index(drop=True, inplace=True)
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.compdat)
     pd.testing.assert_frame_equal(df_well10, _SCHEDULE.get_compdat("WELL10"))
@@ -95,8 +96,8 @@ def test_reading_compsegs():
     """
     true_compsegs = Path(_TESTDIR / "compsegs_well12.true")
     df_true = pd.read_csv(true_compsegs, sep=",", dtype=object)
-    columns1 = ["I", "J", "K", "BRANCH"]
-    columns2 = ["STARTMD", "ENDMD"]
+    columns1 = [Headers.I, Headers.J, Headers.K, Headers.BRANCH]
+    columns2 = [Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     df_true[columns1] = df_true[columns1].astype(np.int64)
     df_true[columns2] = df_true[columns2].astype(np.float64)
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.get_compsegs("WELL12", 1))
@@ -125,22 +126,21 @@ ITEM11,ITEM12
 'WELL12',1335,1335,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
     """
     )
-    true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_welsegs1 = pd.read_csv(true_welsegs1, sep=",", dtype=object)
     true_welsegs1 = fr.remove_string_characters(true_welsegs1)
-    true_welsegs1 = true_welsegs1.astype({"SEGMENTTVD": np.float64, "SEGMENTMD": np.float64})
-    true_well4 = str(_TESTDIR / "welsegs_well4.true")
+    true_welsegs1 = true_welsegs1.astype({Headers.SEGMENTTVD: np.float64, Headers.SEGMENTMD: np.float64})
+    true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_well4 = pd.read_csv(true_well4, sep=",", dtype=object)
     true_well4 = fr.remove_string_characters(true_well4)
     true_well4 = true_well4.astype(
         {
-            "TUBINGSEGMENT": np.int64,
-            "TUBINGSEGMENT2": np.int64,
-            "TUBINGBRANCH": np.int64,
-            "TUBINGOUTLET": np.int64,
-            "TUBINGMD": np.float64,
-            "TUBINGTVD": np.float64,
-            "TUBINGROUGHNESS": np.float64,
+            Headers.TUBINGSEGMENT: np.int64,
+            Headers.TUBINGSEGMENT2: np.int64,
+            Headers.TUBINGBRANCH: np.int64,
+            Headers.TUBINGOUTLET: np.int64,
+            Headers.TUBINGMD: np.float64,
+            Headers.TUBINGTVD: np.float64,
+            Headers.TUBINGROUGHNESS: np.float64,
         }
     )
     true_welsegs1_well4 = true_welsegs1[true_welsegs1["WELL"] == "WELL4"]
@@ -204,7 +204,7 @@ def test_fix_compsegs():
             [3019.764, 3039.297],
             [3039.297, 3041.915],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
 
     df_true = pd.DataFrame(
@@ -217,7 +217,7 @@ def test_fix_compsegs():
             [3026.67405, 3039.297],
             [3039.297, 3041.915],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_test = fix_compsegs(df_test, "")
     pd.testing.assert_frame_equal(df_true, df_test)
@@ -232,7 +232,7 @@ def test_fix_welsegs():
     """
     df_header = pd.DataFrame(
         [[1000.0, 1500.0, "INC"]],
-        columns=["SEGMENTTVD", "SEGMENTMD", "INFOTYPE"],
+        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFOTYPE],
     )
     df_content = pd.DataFrame(
         [
@@ -241,12 +241,12 @@ def test_fix_welsegs():
             [4, 3, 30.0, 30.0],
             [5, 4, 40.0, 40.0],
         ],
-        columns=["TUBINGSEGMENT", "TUBINGOUTLET", "TUBINGTVD", "TUBINGMD"],
+        columns=[Headers.TUBINGSEGMENT, Headers.TUBINGOUTLET, Headers.TUBINGTVD, Headers.TUBINGMD],
     )
 
     df_header_true = pd.DataFrame(
         [[1000.0, 1500.0, "ABS"]],
-        columns=["SEGMENTTVD", "SEGMENTMD", "INFOTYPE"],
+        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFOTYPE],
     )
     df_content_true = pd.DataFrame(
         [
@@ -255,7 +255,7 @@ def test_fix_welsegs():
             [4, 3, 1060.0, 1600.0],
             [5, 4, 1100.0, 1640.0],
         ],
-        columns=["TUBINGSEGMENT", "TUBINGOUTLET", "TUBINGTVD", "TUBINGMD"],
+        columns=[Headers.TUBINGSEGMENT, Headers.TUBINGOUTLET, Headers.TUBING_TVD, Headers.TUBING_MD],
     )
 
     df_header, df_content = fix_welsegs(df_header, df_content)
