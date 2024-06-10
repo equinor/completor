@@ -1,7 +1,7 @@
 name: 🔖 Release please
 
 on:
-  workflow_dispatch: #  Enable manual triggers.
+  workflow_dispatch: # Enable manual triggers.
   workflow_call: # Enables workflow to be called from another workflow.
     outputs:
       release_created:
