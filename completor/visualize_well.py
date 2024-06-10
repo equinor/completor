@@ -9,18 +9,14 @@ from completor.constants import Headers
 
 
 def visualize_tubing(axs: Axes, df_well: pd.DataFrame) -> Axes:
-    """
-    Visualize the tubing layer.
+    """Visualize the tubing layer.
 
     Args:
-        axs: Pyplot axis
-        df_well: Well information
+        axs: Pyplot axis.
+        df_well: Well information.
 
     Returns:
-        Pyplot axis
-
-    Uses the DataFrame df_well with format shown in
-    ``create_wells.CreateWells.complete_the_well``.
+        Pyplot axis.
     """
     df_device = df_well[(df_well[Headers.NDEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
     if df_device.shape[0] > 0:
@@ -29,18 +25,14 @@ def visualize_tubing(axs: Axes, df_well: pd.DataFrame) -> Axes:
 
 
 def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
-    """
-    Visualize device layer.
+    """Visualize device layer.
 
     Args:
-        axs: Pyplot axis
-        df_well: Well DataFrame
+        axs: Pyplot axis.
+        df_well: Well DataFrame.
 
     Returns:
         Pyplot axis
-
-    Uses the DataFrame df_well with format shown in
-    ``create_wells.CreateWells.complete_the_well``.
     """
     df_device = df_well[(df_well[Headers.NDEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
     for idx in range(df_device.shape[0]):
@@ -62,18 +54,14 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
 
 
 def visualize_annulus(axs: Axes, df_well: pd.DataFrame) -> Axes:
-    """
-    Visualize annulus layer.
+    """Visualize annulus layer.
 
     Args:
-        axs: Pyplot axis
-        df_well: Well DataFrame
+        axs: Pyplot axis.
+        df_well: Well DataFrame.
 
     Returns:
-        Pyplot axis
-
-    Uses the DataFrame df_well with format shown in
-    ``create_wells.CreateWells.complete_the_well``.
+        Pyplot axis.
     """
     df_annulus = df_well[df_well[Headers.ANNULUS_ZONE] > 0]
     branches = df_well[Headers.ANNULUS_ZONE].unique()
@@ -97,19 +85,15 @@ def visualize_annulus(axs: Axes, df_well: pd.DataFrame) -> Axes:
 
 
 def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -> tuple[Axes, Axes]:
-    """
-    Visualize reservoir layer.
+    """Visualize reservoir layer.
 
     Args:
-        axs: Pyplot axis
-        ax_twinx: Pyplot axis
-        df_reservoir: Reservoir DataFrame
+        axs: Pyplot axis.
+        ax_twinx: Pyplot axis.
+        df_reservoir: Reservoir DataFrame.
 
     Returns:
-        Pyplot axis
-
-    Uses the DataFrame df_reservoir with format shown in
-    ``create_wells.CreateWells.select_well``.
+        Pyplot axis.
     """
     for idx in range(df_reservoir.shape[0]):
         xpar = [df_reservoir[Headers.START_MD].iloc[idx], df_reservoir[Headers.END_MEASURED_DEPTH].iloc[idx]]
@@ -142,17 +126,16 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
 
 
 def visualize_annotation(axs: Axes, ax_twinx: Axes, max_md: float, min_md: float) -> tuple[Axes, Axes]:
-    """
-    Add annotation in the plot.
+    """Add annotation in the plot.
 
     Args:
-        axs: Pyplot axis
-        ax_twinx: Pyplot axis
-        max_md: Maximum measured depth
-        min_md: Minimum measured depth
+        axs: Pyplot axis.
+        ax_twinx: Pyplot axis.
+        max_md: Maximum measured depth.
+        min_md: Minimum measured depth.
 
     Returns:
-        Pyplot axis
+        Pyplot axis.
     """
     axs.annotate(
         "Tubing Layer", xy=(max_md + 0.1 * (max_md - min_md), 1.0), xytext=(max_md + 0.1 * (max_md - min_md), 1.0)
@@ -179,21 +162,16 @@ def visualize_annotation(axs: Axes, ax_twinx: Axes, max_md: float, min_md: float
 def visualize_well(
     well_name: str, df_well: pd.DataFrame, df_reservoir: pd.DataFrame, segment_length: float | str
 ) -> Figure:
-    """
-    Visualizing well completion schematic.
+    """Visualizing well completion schematic.
 
     Args:
-        well_name: Well name
-        df_well: Well DataFrame
-        df_reservoir: Reservoir DataFrame for the well
-        segment_length: Segment length
+        well_name: Well name.
+        df_well: Well DataFrame.
+        df_reservoir: Reservoir DataFrame for the well.
+        segment_length: Segment length.
 
     Returns:
-        Matplotlib figure
-
-    | Uses DataFrames with formats as shown in
-    | :ref:`df_reservoir`
-    | :ref:`df_well`
+        Matplotlib figure.
     """
     figure = visualization.create_figure()
     laterals = df_well[Headers.LATERAL].unique()
