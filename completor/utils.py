@@ -9,6 +9,7 @@ from typing import Any, overload
 import numpy as np
 import pandas as pd
 
+from completor.constants import Headers
 from completor.logger import logger
 
 try:
@@ -53,13 +54,13 @@ def sort_by_midpoint(df: pd.DataFrame, end_md: np.ndarray, start_md: np.ndarray)
     Returns:
         Sorted DataFrame
     """
-    df["STARTMD"] = start_md
-    df["ENDMD"] = end_md
+    df[Headers.START_MD] = start_md
+    df[Headers.END_MEASURED_DEPTH] = end_md
     # sort the data frame based on the mid point
-    df["MID"] = (df["STARTMD"] + df["ENDMD"]) * 0.5
-    df.sort_values(by=["MID"], inplace=True)
+    df[Headers.MID] = (df[Headers.START_MD] + df[Headers.END_MEASURED_DEPTH]) * 0.5
+    df.sort_values(by=[Headers.MID], inplace=True)
     # drop the MID column
-    df.drop(["MID"], axis=1, inplace=True)
+    df.drop([Headers.MID], axis=1, inplace=True)
     return df
 
 

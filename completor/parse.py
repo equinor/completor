@@ -10,6 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from completor.constants import Headers
 from completor.utils import abort
 
 
@@ -150,20 +151,20 @@ def unpack_records(record: list[str]) -> list[str]:
     """
     record = deepcopy(record)
     record_length = len(record)
-    idx = -1
-    while idx < record_length - 1:
+    i = -1
+    while i < record_length - 1:
         # Loop and find if default records are found
-        idx = idx + 1
-        if "*" in str(record[idx]):
+        i += 1
+        if "*" in str(record[i]):
             # default is found and get the number before the star *
-            ndefaults = re.search(r"\d+", record[idx])
-            record[idx] = "1*"
+            ndefaults = re.search(r"\d+", record[i])
+            record[i] = "1*"
             if ndefaults:
                 _ndefaults = int(ndefaults.group())
                 idef = 0
                 while idef < _ndefaults - 1:
-                    record.insert(idx, "1*")
-                    idef = idef + 1
+                    record.insert(i, "1*")
+                    idef += 1
             record_length = len(record)
     return record
 
@@ -375,36 +376,36 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
          - object
     """
     header_columns = [
-        "WELL",
-        "SEGMENTTVD",
-        "SEGMENTMD",
-        "WBVOLUME",
-        "INFOTYPE",
-        "PDROPCOMP",
-        "MPMODEL",
-        "ITEM8",
-        "ITEM9",
-        "ITEM10",
-        "ITEM11",
-        "ITEM12",
+        Headers.WELL,
+        Headers.SEGMENTTVD,
+        Headers.SEGMENTMD,
+        Headers.WBVOLUME,
+        Headers.INFOTYPE,
+        Headers.PDROPCOMP,
+        Headers.MPMODEL,
+        Headers.ITEM8,
+        Headers.ITEM9,
+        Headers.ITEM10,
+        Headers.ITEM11,
+        Headers.ITEM12,
     ]
     content_columns = [
-        "WELL",
-        "TUBINGSEGMENT",
-        "TUBINGSEGMENT2",
-        "TUBINGBRANCH",
-        "TUBINGOUTLET",
-        "TUBINGMD",
-        "TUBINGTVD",
-        "TUBINGID",
-        "TUBINGROUGHNESS",
-        "CROSS",
-        "VSEG",
-        "ITEM11",
-        "ITEM12",
-        "ITEM13",
-        "ITEM14",
-        "ITEM15",
+        Headers.WELL,
+        Headers.TUBINGSEGMENT,
+        Headers.TUBINGSEGMENT2,
+        Headers.TUBINGBRANCH,
+        Headers.TUBINGOUTLET,
+        Headers.TUBINGMD,
+        Headers.TUBINGTVD,
+        Headers.TUBINGID,
+        Headers.TUBINGROUGHNESS,
+        Headers.CROSS,
+        Headers.VSEG,
+        Headers.ITEM11,
+        Headers.ITEM12,
+        Headers.ITEM13,
+        Headers.ITEM14,
+        Headers.ITEM15,
     ]
     for collection in collections:
         if collection.name == "WELSEGS":
@@ -491,23 +492,23 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
          - object
     """
     columns = [
-        "WELL",
-        "GROUP",
-        "I",
-        "J",
-        "BHP_DEPTH",
-        "PHASE",
-        "DR",
-        "FLAG",
-        "SHUT",
-        "CROSS",
-        "PRESSURETABLE",
-        "DENSCAL",
-        "REGION",
-        "ITEM14",
-        "ITEM15",
-        "ITEM16",
-        "ITEM17",
+        Headers.WELL,
+        Headers.GROUP,
+        Headers.I,
+        Headers.J,
+        Headers.BHP_DEPTH,
+        Headers.PHASE,
+        Headers.DR,
+        Headers.FLAG,
+        Headers.SHUT,
+        Headers.CROSS,
+        Headers.PRESSURETABLE,
+        Headers.DENSCAL,
+        Headers.REGION,
+        Headers.ITEM14,
+        Headers.ITEM15,
+        Headers.ITEM16,
+        Headers.ITEM17,
     ]
     welspecs_table = None
     for collection in collections:
@@ -591,20 +592,20 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
     compdat_table = pd.DataFrame(
         compdat_table,
         columns=[
-            "WELL",
-            "I",
-            "J",
-            "K",
-            "K2",
-            "STATUS",
-            "SATNUM",
-            "CF",
-            "DIAM",
-            "KH",
-            "SKIN",
-            "DFACT",
-            "COMPDAT_DIRECTION",
-            "RO",
+            Headers.WELL,
+            Headers.I,
+            Headers.J,
+            Headers.K,
+            Headers.K2,
+            Headers.STATUS,
+            Headers.SATNUM,
+            Headers.CF,
+            Headers.DIAM,
+            Headers.KH,
+            Headers.SKIN,
+            Headers.DFACT,
+            Headers.COMPDAT_DIRECTION,
+            Headers.RO,
         ],
     )
     # replace string component " or ' in the columns
@@ -676,18 +677,18 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     compsegs_table = pd.DataFrame(
         compsegs_table,
         columns=[
-            "WELL",
-            "I",
-            "J",
-            "K",
-            "BRANCH",
-            "STARTMD",
-            "ENDMD",
-            "COMPSEGS_DIRECTION",
-            "ENDGRID",
-            "PERFDEPTH",
-            "THERM",
-            "SEGMENT",
+            Headers.WELL,
+            Headers.I,
+            Headers.J,
+            Headers.K,
+            Headers.BRANCH,
+            Headers.START_MD,
+            Headers.END_MEASURED_DEPTH,
+            Headers.COMPSEGS_DIRECTION,
+            Headers.ENDGRID,
+            Headers.PERFDEPTH,
+            Headers.THERM,
+            Headers.SEGMENT,
         ],
     )
     # replace string component " or ' in the columns
@@ -767,10 +768,7 @@ def remove_string_characters(df: pd.DataFrame | str, columns: list[str] | None =
         if len(columns) == 0:
             iterator: range | list[str] = range(df.shape[1])
         else:
-            if columns is None:
-                iterator = []  # Makes MyPy happy
-            else:
-                iterator = columns
+            iterator = [] if columns is None else columns
         for column in iterator:
             try:
                 df.iloc[:, column] = remove_quotes(df.iloc[:, column].str)

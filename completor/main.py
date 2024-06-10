@@ -156,8 +156,7 @@ class FileWriter:
                     if isinstance(line, list):
                         logger.warning(
                             "chunk is False, but content contains lists of lists, "
-                            "instead of a list of strings the lines will be "
-                            "concatenated"
+                            "instead of a list of strings the lines will be concatenated."
                         )
                         line = " ".join(line)
                     txt += line + "\n"

@@ -26,11 +26,11 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
     df_header = df_header.copy()
     df_content = df_content.copy()
 
-    if df_header["INFOTYPE"].iloc[0] == "ABS":
+    if df_header[Headers.INFOTYPE].iloc[0] == "ABS":
         return df_header, df_content
 
-    ref_tvd = df_header["SEGMENTTVD"].iloc[0]
-    ref_md = df_header["SEGMENTMD"].iloc[0]
+    ref_tvd = df_header[Headers.SEGMENTTVD].iloc[0]
+    ref_md = df_header[Headers.SEGMENTMD].iloc[0]
     inlet_segment = df_content[Headers.TUBING_SEGMENT].to_numpy()
     outlet_segment = df_content[Headers.TUBING_OUTLET].to_numpy()
     md_inc = df_content[Headers.TUBING_MD].to_numpy()
@@ -48,7 +48,7 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
             tvd_new[idx] = tvd_new[out_idx] + tvd_inc[idx]
 
     # update data frame
-    df_header["INFOTYPE"] = ["ABS"]
+    df_header[Headers.INFOTYPE] = ["ABS"]
     df_content[Headers.TUBING_MD] = md_new
     df_content[Headers.TUBING_TVD] = tvd_new
     return df_header, df_content
@@ -129,10 +129,7 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
                 start_md_new[idx] = start_md[idx]
                 end_md_new[idx] = end_md[idx]
             else:
-                logger.info(
-                    "Overlapping in COMPSEGS for %s. Sorts the depths accordingly",
-                    well_name,
-                )
+                logger.info("Overlapping in COMPSEGS for %s. Sorts the depths accordingly", well_name)
                 comb_depth = np.append(start_md, end_md)
                 comb_depth = np.sort(comb_depth)
                 start_md_new = np.copy(comb_depth[::2])
@@ -170,29 +167,31 @@ def fix_compsegs_by_priority(
 
     """
     # slicing two dataframe for user and cells segment length
-    start_md_comp = df_completion[(df_completion["DEVICETYPE"] == "ICV") & (df_completion["NVALVEPERJOINT"] > 0)][
-        "STARTMD"
-    ].reset_index(drop=True)
-    df_custom_compsegs = df_custom_compsegs[df_custom_compsegs["STARTMD"].isin(start_md_comp)]
+    start_md_comp = df_completion[
+        (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
+    ][Headers.START_MD].reset_index(drop=True)
+    df_custom_compsegs = df_custom_compsegs[df_custom_compsegs[Headers.START_MD].isin(start_md_comp)]
     df_compsegs["priority"] = 1
     df_custom_compsegs = df_custom_compsegs.copy(deep=True)
     df_custom_compsegs["priority"] = 2
-    start_end = df_custom_compsegs[["STARTMD", "ENDMD"]]
+    start_end = df_custom_compsegs[[Headers.START_MD, Headers.END_MEASURED_DEPTH]]
     # Remove the rows that are between the STARTMD and ENDMD
     # values of the custom composition segments.
     for start, end in start_end.values:
-        between_lower_upper = (df_compsegs["STARTMD"] >= start) & (df_compsegs["ENDMD"] <= end)
+        between_lower_upper = (df_compsegs[Headers.START_MD] >= start) & (
+            df_compsegs[Headers.END_MEASURED_DEPTH] <= end
+        )
         df_compsegs = df_compsegs[~between_lower_upper]
 
     # Concatenate the fixed df_compsegs dataframe and the df_custom_compsegs
     # dataframe and sort it by the STARTMD column.
-    df = pd.concat([df_compsegs, df_custom_compsegs]).sort_values(by=["STARTMD"]).reset_index(drop=True)
+    df = pd.concat([df_compsegs, df_custom_compsegs]).sort_values(by=[Headers.START_MD]).reset_index(drop=True)
     # Filter the dataframe to get only rows where the "priority" column has a value of 2
     for idx in df[df["priority"] == 2].index:
         # Set previous row's ENDMD to correct value.
-        df.loc[idx - 1, "ENDMD"] = df.loc[idx, "STARTMD"]
+        df.loc[idx - 1, Headers.END_MEASURED_DEPTH] = df.loc[idx, Headers.START_MD]
         # Set next row's STARTMD to correct value.
-        df.loc[idx + 1, "STARTMD"] = df.loc[idx, "ENDMD"]
+        df.loc[idx + 1, Headers.START_MD] = df.loc[idx, Headers.END_MEASURED_DEPTH]
     df = fix_compsegs(df, "Fix compseg after prioriry")
     df = df.dropna()
 

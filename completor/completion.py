@@ -83,13 +83,13 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
         Measured depth versus true vertical depth.
 
     """
-    measured_depth = df_well_segments_content["TUBINGMD"].to_numpy()
-    measured_depth = np.insert(measured_depth, 0, df_well_segments_header["SEGMENTMD"].iloc[0])
-    true_vertical_depth = df_well_segments_content["TUBINGTVD"].to_numpy()
-    true_vertical_depth = np.insert(true_vertical_depth, 0, df_well_segments_header["SEGMENTTVD"].iloc[0])
-    df_measured_true_vertical_depth = as_data_frame({"MD": measured_depth, "TVD": true_vertical_depth})
+    measured_depth = df_well_segments_content[Headers.TUBINGMD].to_numpy()
+    measured_depth = np.insert(measured_depth, 0, df_well_segments_header[Headers.SEGMENTMD].iloc[0])
+    true_vertical_depth = df_well_segments_content[Headers.TUBINGTVD].to_numpy()
+    true_vertical_depth = np.insert(true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENTTVD].iloc[0])
+    df_measured_true_vertical_depth = as_data_frame({Headers.MD: measured_depth, Headers.TVD: true_vertical_depth})
     # sort based on md
-    df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(by=["MD", "TVD"])
+    df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(by=[Headers.MD, Headers.TVD])
     # reset index after sorting
     return df_measured_true_vertical_depth.reset_index(drop=True)
 
@@ -112,8 +112,12 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     # define annular zone
     start_measured_depth = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
     end_measured_depth = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
-    gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][["STARTMD", "ENDMD"]].to_numpy()
-    packer_location = df_completion[df_completion[Headers.ANNULUS] == "PA"][["STARTMD", "ENDMD"]].to_numpy()
+    gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][
+        [Headers.START_MD, Headers.END_MEASURED_DEPTH]
+    ].to_numpy()
+    packer_location = df_completion[df_completion[Headers.ANNULUS] == "PA"][
+        [Headers.START_MD, Headers.END_MEASURED_DEPTH]
+    ].to_numpy()
     # update df_completion by removing PA rows
     df_completion = df_completion[df_completion[Headers.ANNULUS] != "PA"].copy()
     # reset index after filter
@@ -149,14 +153,14 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
 
         annulus_zone = np.full(df_completion.shape[0], 0)
         for idx in range(df_completion.shape[0]):
-            start_measured_depth = df_completion["STARTMD"].iloc[idx]
-            end_measured_depth = df_completion["ENDMD"].iloc[idx]
+            start_measured_depth = df_completion[Headers.START_MD].iloc[idx]
+            end_measured_depth = df_completion[Headers.END_MEASURED_DEPTH].iloc[idx]
             idx0, idx1 = completion_index(df_annulus, start_measured_depth, end_measured_depth)
             if idx0 != idx1 or idx0 == -1:
                 raise ValueError("Check Define Annulus Zone")
-            annulus_zone[idx] = df_annulus["ANNULUS_ZONE"].iloc[idx0]
-        df_completion["ANNULUS_ZONE"] = annulus_zone
-    df_completion["ANNULUS_ZONE"] = df_completion["ANNULUS_ZONE"].astype(np.int64)
+            annulus_zone[idx] = df_annulus[Headers.ANNULUS_ZONE].iloc[idx0]
+        df_completion[Headers.ANNULUS_ZONE] = annulus_zone
+    df_completion[Headers.ANNULUS_ZONE] = df_completion[Headers.ANNULUS_ZONE].astype(np.int64)
     return df_completion
 
 
@@ -218,21 +222,21 @@ def create_tubing_segments(
     start_measured_depth: npt.NDArray[np.float64]
     end_measured_depth: npt.NDArray[np.float64]
     if method == Method.CELLS:
-        # Create the tubing layer one cell one segment while honoring df_reservoir["SEGMENT"]
-        start_measured_depth = df_reservoir["STARTMD"].to_numpy()
-        end_measured_depth = df_reservoir["ENDMD"].to_numpy()
-        if "SEGMENT" in df_reservoir.columns:
-            if not df_reservoir["SEGMENT"].isin(["1*"]).any():
+        # Create the tubing layer one cell one segment while honoring df_reservoir[Headers.SEGMENT]
+        start_measured_depth = df_reservoir[Headers.START_MD].to_numpy()
+        end_measured_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
+        if Headers.SEGMENT in df_reservoir.columns:
+            if not df_reservoir[Headers.SEGMENT].isin(["1*"]).any():
                 create_start_measured_depths = []
                 create_end_measured_depths = []
-                create_start_measured_depths.append(df_reservoir["STARTMD"].iloc[0])
-                current_segment = df_reservoir["SEGMENT"].iloc[0]
-                for i in range(1, len(df_reservoir["SEGMENT"])):
-                    if df_reservoir["SEGMENT"].iloc[i] != current_segment:
-                        create_end_measured_depths.append(df_reservoir["ENDMD"].iloc[i - 1])
-                        create_start_measured_depths.append(df_reservoir["STARTMD"].iloc[i])
-                        current_segment = df_reservoir["SEGMENT"].iloc[i]
-                create_end_measured_depths.append(df_reservoir["ENDMD"].iloc[-1])
+                create_start_measured_depths.append(df_reservoir[Headers.START_MD].iloc[0])
+                current_segment = df_reservoir[Headers.SEGMENT].iloc[0]
+                for i in range(1, len(df_reservoir[Headers.SEGMENT])):
+                    if df_reservoir[Headers.SEGMENT].iloc[i] != current_segment:
+                        create_end_measured_depths.append(df_reservoir[Headers.END_MEASURED_DEPTH].iloc[i - 1])
+                        create_start_measured_depths.append(df_reservoir[Headers.START_MD].iloc[i])
+                        current_segment = df_reservoir[Headers.SEGMENT].iloc[i]
+                create_end_measured_depths.append(df_reservoir[Headers.END_MEASURED_DEPTH].iloc[-1])
                 start_measured_depth = np.array(create_start_measured_depths)
                 end_measured_depth = np.array(create_end_measured_depths)
 
@@ -261,11 +265,11 @@ def create_tubing_segments(
         # Create tubing layer based on the definition of COMPLETION keyword in the case file.
         # Read all segments except PA (which has no segment length).
         df_temp = df_completion.copy(deep=True)
-        start_measured_depth = df_temp["STARTMD"].to_numpy()
-        end_measured_depth = df_temp["ENDMD"].to_numpy()
+        start_measured_depth = df_temp[Headers.START_MD].to_numpy()
+        end_measured_depth = df_temp[Headers.END_MEASURED_DEPTH].to_numpy()
         # Fix the start and end.
-        start_measured_depth[0] = max(df_reservoir["STARTMD"].iloc[0], float(start_measured_depth[0]))
-        end_measured_depth[-1] = min(df_reservoir["ENDMD"].iloc[-1], float(end_measured_depth[-1]))
+        start_measured_depth[0] = max(df_reservoir[Headers.START_MD].iloc[0], float(start_measured_depth[0]))
+        end_measured_depth[-1] = min(df_reservoir[Headers.END_MEASURED_DEPTH].iloc[-1], float(end_measured_depth[-1]))
         if start_measured_depth[0] >= end_measured_depth[0]:
             start_measured_depth = np.delete(start_measured_depth, 0)
             end_measured_depth = np.delete(end_measured_depth, 0)
@@ -274,8 +278,8 @@ def create_tubing_segments(
             end_measured_depth = np.delete(end_measured_depth, -1)
     elif method == Method.FIX:
         # Create tubing layer with fix interval according to the user input in the case file keyword SEGMENTLENGTH.
-        min_measured_depth = df_reservoir["STARTMD"].min()
-        max_measured_depth = df_reservoir["ENDMD"].max()
+        min_measured_depth = df_reservoir[Headers.START_MD].min()
+        max_measured_depth = df_reservoir[Headers.END_MEASURED_DEPTH].max()
         if not isinstance(segment_length, (float, int)):
             raise ValueError(f"Segment length must be a number, when using method fix (was {segment_length}).")
         start_measured_depth = np.arange(min_measured_depth, max_measured_depth, segment_length)
@@ -287,12 +291,12 @@ def create_tubing_segments(
         # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
         # Completor interprets WELSEGS depths as segment midpoint depths.
         # Obtain the well_segments segment midpoint depth.
-        well_segments = df_measured_depth_true_vertical_depth["MD"].to_numpy()
+        well_segments = df_measured_depth_true_vertical_depth[Headers.MD].to_numpy()
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
-        start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir["STARTMD"].to_numpy()
-        end_compsegs_depth = df_reservoir["ENDMD"].to_numpy()
+        start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir[Headers.START_MD].to_numpy()
+        end_compsegs_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
         # If there are gaps in compsegs and there are well_segments segments that fit in the gaps,
         # insert well_segments segments into the compsegs gaps.
         gaps_compsegs = start_compsegs_depth[1:] - end_compsegs_depth[:-1]
@@ -335,16 +339,16 @@ def create_tubing_segments(
     # estimate TVD
     true_vertical_depth = np.interp(
         measured_depth_,
-        df_measured_depth_true_vertical_depth["MD"].to_numpy(),
-        df_measured_depth_true_vertical_depth["TVD"].to_numpy(),
+        df_measured_depth_true_vertical_depth[Headers.MD].to_numpy(),
+        df_measured_depth_true_vertical_depth[Headers.TVD].to_numpy(),
     )
     # create data frame
     return as_data_frame(
         {
-            "STARTMD": start_measured_depth,
-            "ENDMD": end_measured_depth,
-            "TUB_MD": measured_depth_,
-            "TUB_TVD": true_vertical_depth,
+            Headers.START_MD: start_measured_depth,
+            Headers.END_MEASURED_DEPTH: end_measured_depth,
+            Headers.TUB_MD: measured_depth_,
+            Headers.TUB_TVD: true_vertical_depth,
         }
     )
 
@@ -374,12 +378,12 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
             f"case file. Please check the data for Well {well_name}."
         )
     # sort the data frame based on STARTMD
-    df_tubing_segments.sort_values(by=["STARTMD"], inplace=True)
+    df_tubing_segments.sort_values(by=[Headers.START_MD], inplace=True)
     # add column to indicate original segment
-    df_tubing_segments["SEGMENT_DESC"] = ["OriginalSegment"] * df_tubing_segments.shape[0]
-    end_measured_depth = df_tubing_segments["ENDMD"].to_numpy()
+    df_tubing_segments[Headers.SEGMENT_DESC] = [Headers.ORIGINALSEGMENT] * df_tubing_segments.shape[0]
+    end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
     # get start_measured_depth and start from segment 2 and add the last item to be the last end_measured_depth
-    start_measured_depth = np.append(df_tubing_segments["STARTMD"].to_numpy()[1:], end_measured_depth[-1])
+    start_measured_depth = np.append(df_tubing_segments[Headers.START_MD].to_numpy()[1:], end_measured_depth[-1])
     # find rows where start_measured_depth > end_measured_depth
     missing_index = np.argwhere(start_measured_depth > end_measured_depth).flatten()
     # proceed only if there are missing index
@@ -389,12 +393,12 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     missing_index += 1
     df_copy = df_tubing_segments.iloc[missing_index, :].copy(deep=True)
     # new start measured depth is the previous segment end measured depth
-    df_copy["STARTMD"] = df_tubing_segments["ENDMD"].to_numpy()[missing_index - 1]
-    df_copy["ENDMD"] = df_tubing_segments["STARTMD"].to_numpy()[missing_index]
-    df_copy["SEGMENT_DESC"] = ["AdditionalSegment"] * df_copy.shape[0]
+    df_copy[Headers.START_MD] = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()[missing_index - 1]
+    df_copy[Headers.END_MEASURED_DEPTH] = df_tubing_segments[Headers.START_MD].to_numpy()[missing_index]
+    df_copy[Headers.SEGMENT_DESC] = [Headers.ADDITIONALSEGMENT] * df_copy.shape[0]
     # combine the two data frame
     df_tubing_segments = pd.concat([df_tubing_segments, df_copy])
-    df_tubing_segments.sort_values(by=["STARTMD"], inplace=True)
+    df_tubing_segments.sort_values(by=[Headers.START_MD], inplace=True)
     df_tubing_segments.reset_index(drop=True, inplace=True)
     return df_tubing_segments
 
@@ -456,7 +460,7 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
     idx0, idx1 = completion_index(df_completion, start, end)
 
     if idx0 == -1 or idx1 == -1:
-        well_name = df_completion["WELL"].iloc[0]
+        well_name = df_completion[Headers.WELL].iloc[0]
         log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
 
     # previous length start with 0
@@ -537,17 +541,17 @@ def complete_the_well(
 
     df_well = as_data_frame(
         {
-            "TUB_MD": df_tubing_segments["TUB_MD"].to_numpy(),
-            "TUB_TVD": df_tubing_segments["TUB_TVD"].to_numpy(),
-            "LENGTH": end - start,
-            "SEGMENT_DESC": df_tubing_segments["SEGMENT_DESC"].to_numpy(),
-            "NDEVICES": information.number_of_devices,
-            "DEVICENUMBER": information.device_number,
-            "DEVICETYPE": information.device_type,
-            "INNER_DIAMETER": information.inner_diameter,
-            "OUTER_DIAMETER": information.outer_diameter,
-            "ROUGHNESS": information.roughness,
-            "ANNULUS_ZONE": information.annulus_zone,
+            Headers.TUB_MD: df_tubing_segments[Headers.TUB_MD].to_numpy(),
+            Headers.TUB_TVD: df_tubing_segments[Headers.TUB_TVD].to_numpy(),
+            Headers.LENGTH: end - start,
+            Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
+            Headers.NDEVICES: information.number_of_devices,
+            Headers.DEVICE_NUMBER: information.device_number,
+            Headers.DEVICE_TYPE: information.device_type,
+            Headers.INNER_DIAMETER: information.inner_diameter,
+            Headers.OUTER_DIAMETER: information.outer_diameter,
+            Headers.ROUGHNESS: information.roughness,
+            Headers.ANNULUS_ZONE: information.annulus_zone,
         }
     )
 
@@ -555,7 +559,7 @@ def complete_the_well(
     df_well = lumping_segments(df_well)
 
     # create scaling factor
-    df_well["SCALINGFACTOR"] = np.where(df_well["NDEVICES"] > 0.0, -1.0 / df_well["NDEVICES"], 0.0)
+    df_well[Headers.SCALINGFACTOR] = np.where(df_well[Headers.NDEVICES] > 0.0, -1.0 / df_well[Headers.NDEVICES], 0.0)
     return df_well
 
 
@@ -571,12 +575,12 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
         Updated well information.
 
     """
-    number_of_devices = df_well["NDEVICES"].to_numpy()
-    annulus_zone = df_well["ANNULUS_ZONE"].to_numpy()
-    segments_descending = df_well["SEGMENT_DESC"].to_numpy()
+    number_of_devices = df_well[Headers.NDEVICES].to_numpy()
+    annulus_zone = df_well[Headers.ANNULUS_ZONE].to_numpy()
+    segments_descending = df_well[Headers.SEGMENT_DESC].to_numpy()
     number_of_rows = df_well.shape[0]
     for i in range(number_of_rows):
-        if segments_descending[i] != "AdditionalSegment":
+        if segments_descending[i] != Headers.ADDITIONALSEGMENT:
             continue
 
         # only additional segments
@@ -595,9 +599,9 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
         # because it is lumped to others
         # and it is 0 if it has no annulus zone
         number_of_devices[i] = 0.0
-    df_well["NDEVICES"] = number_of_devices
+    df_well[Headers.NDEVICES] = number_of_devices
     # from now on it is only original segment
-    df_well = df_well[df_well["SEGMENT_DESC"] == "OriginalSegment"].copy()
+    df_well = df_well[df_well[Headers.SEGMENT_DESC] == Headers.ORIGINALSEGMENT].copy()
     # reset index after filter
     return df_well.reset_index(drop=True, inplace=False)
 
@@ -617,7 +621,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
         ValueError: If `DEVICETYPE` keyword is missing in input files.
 
     """
-    columns = ["DEVICETYPE", "DEVICENUMBER"]
+    columns = [Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER]
     try:
         df_well = pd.merge(df_well, df_device, how="left", on=columns)
     except KeyError as err:
@@ -627,11 +631,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     if device_type == "VALVE":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well["CV"] = -df_well["CV"] / df_well["SCALINGFACTOR"]
+        df_well[Headers.CV] = -df_well[Headers.CV] / df_well[Headers.SCALINGFACTOR]
     elif device_type == "DAR":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well["CV_DAR"] = -df_well["CV_DAR"] / df_well["SCALINGFACTOR"]
+        df_well[Headers.CV_DAR] = -df_well[Headers.CV_DAR] / df_well[Headers.SCALINGFACTOR]
     return df_well
 
 
@@ -647,14 +651,16 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
         Updated DataFrame with corrected annulus zone.
 
     """
-    zones = df_well["ANNULUS_ZONE"].unique()
+    zones = df_well[Headers.ANNULUS_ZONE].unique()
     for zone in zones:
         if zone == 0:
             continue
-        df_zone = df_well[df_well["ANNULUS_ZONE"] == zone]
-        df_zone_device = df_zone[(df_zone["NDEVICES"].to_numpy() > 0) | (df_zone["DEVICETYPE"].to_numpy() == "PERF")]
+        df_zone = df_well[df_well[Headers.ANNULUS_ZONE] == zone]
+        df_zone_device = df_zone[
+            (df_zone[Headers.NDEVICES].to_numpy() > 0) | (df_zone[Headers.DEVICE_TYPE].to_numpy() == "PERF")
+        ]
         if df_zone_device.shape[0] == 0:
-            df_well["ANNULUS_ZONE"].replace(zone, 0, inplace=True)
+            df_well[Headers.ANNULUS_ZONE].replace(zone, 0, inplace=True)
     return df_well
 
 
@@ -675,25 +681,27 @@ def connect_cells_to_segments(
 
     """
     # Calculate mid cell measured depth
-    df_reservoir["MD"] = (df_reservoir["STARTMD"] + df_reservoir["ENDMD"]) * 0.5
+    df_reservoir[Headers.MD] = (df_reservoir[Headers.START_MD] + df_reservoir[Headers.END_MEASURED_DEPTH]) * 0.5
     if method == Method.USER:
         df_res = df_reservoir.copy(deep=True)
         df_wel = df_well.copy(deep=True)
         # Ensure that tubing segment boundaries as described in the case file are honored.
         # Associate reservoir cells with tubing segment midpoints using markers
         marker = 1
-        df_res["MARKER"] = np.full(df_reservoir.shape[0], 0)
-        df_wel["MARKER"] = np.arange(df_well.shape[0]) + 1
-        for idx in df_wel["TUB_MD"].index:
-            start_measured_depth = df_tubing_segments["STARTMD"].iloc[idx]
-            end_measured_depth = df_tubing_segments["ENDMD"].iloc[idx]
-            df_res.loc[df_res["MD"].between(start_measured_depth, end_measured_depth), "MARKER"] = marker
+        df_res[Headers.MARKER] = np.full(df_reservoir.shape[0], 0)
+        df_wel[Headers.MARKER] = np.arange(df_well.shape[0]) + 1
+        for idx in df_wel[Headers.TUB_MD].index:
+            start_measured_depth = df_tubing_segments[Headers.START_MD].iloc[idx]
+            end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].iloc[idx]
+            df_res.loc[df_res[Headers.MD].between(start_measured_depth, end_measured_depth), Headers.MARKER] = marker
             marker += 1
         # Merge
-        tmp = df_res.merge(df_wel, on=["MARKER"])
-        return tmp.drop(["MARKER"], axis=1, inplace=False)
+        tmp = df_res.merge(df_wel, on=[Headers.MARKER])
+        return tmp.drop([Headers.MARKER], axis=1, inplace=False)
 
-    return pd.merge_asof(left=df_reservoir, right=df_well, left_on=["MD"], right_on=["TUB_MD"], direction="nearest")
+    return pd.merge_asof(
+        left=df_reservoir, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+    )
 
 
 class WellSchedule:
@@ -728,23 +736,23 @@ class WellSchedule:
 
         """
         columns = [
-            "WELL",
-            "GROUP",
-            "I",
-            "J",
-            "BHP_DEPTH",
-            "PHASE",
-            "DR",
-            "FLAG",
-            "SHUT",
-            "CROSS",
-            "PRESSURETABLE",
-            "DENSCAL",
-            "REGION",
-            "ITEM14",
-            "ITEM15",
-            "ITEM16",
-            "ITEM17",
+            Headers.WELL,
+            Headers.GROUP,
+            Headers.I,
+            Headers.J,
+            Headers.BHP_DEPTH,
+            Headers.PHASE,
+            Headers.DR,
+            Headers.FLAG,
+            Headers.SHUT,
+            Headers.CROSS,
+            Headers.PRESSURETABLE,
+            Headers.DENSCAL,
+            Headers.REGION,
+            Headers.ITEM14,
+            Headers.ITEM15,
+            Headers.ITEM16,
+            Headers.ITEM17,
         ]
         _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
         df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
@@ -755,10 +763,10 @@ class WellSchedule:
         except ValueError:
             pass
         # welspecs could be for multiple wells - split it
-        for well_name in df["WELL"].unique():
+        for well_name in df[Headers.WELL].unique():
             if well_name not in self.msws:
                 self.msws[well_name] = {}
-            self.msws[well_name]["welspecs"] = df[df["WELL"] == well_name]
+            self.msws[well_name]["welspecs"] = df[df[Headers.WELL] == well_name]
             logger.debug("set_welspecs for %s", well_name)
 
     def handle_compdat(self, records: list[list[str]]) -> list[list[str]]:
@@ -786,49 +794,49 @@ class WellSchedule:
             else:
                 remains.append(rec)
         columns = [
-            "WELL",
-            "I",
-            "J",
-            "K",
-            "K2",
-            "STATUS",
-            "SATNUM",
-            "CF",
-            "DIAM",
-            "KH",
-            "SKIN",
-            "DFACT",
-            "COMPDAT_DIRECTION",
-            "RO",
+            Headers.WELL,
+            Headers.I,
+            Headers.J,
+            Headers.K,
+            Headers.K2,
+            Headers.STATUS,
+            Headers.SATNUM,
+            Headers.CF,
+            Headers.DIAM,
+            Headers.KH,
+            Headers.SKIN,
+            Headers.DFACT,
+            Headers.COMPDAT_DIRECTION,
+            Headers.RO,
         ]
         df = pd.DataFrame(records, columns=columns[0 : len(records[0])])
-        if "RO" in df.columns:
-            df["RO"] = df["RO"].fillna("1*")
+        if Headers.RO in df.columns:
+            df[Headers.RO] = df[Headers.RO].fillna("1*")
         for i in range(len(records[0]), len(columns)):
             df[columns[i]] = ["1*"] * len(records)
         # data types
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
         df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
-        df[["DIAM", "SKIN"]] = df[["DIAM", "SKIN"]].astype(np.float64)
+        df[[Headers.DIAM, Headers.SKIN]] = df[[Headers.DIAM, Headers.SKIN]].astype(np.float64)
         # check if CF, KH, and RO are defaulted by the users
         try:
-            df[["CF"]] = df[["CF"]].astype(np.float64)
+            df[[Headers.CF]] = df[[Headers.CF]].astype(np.float64)
         except ValueError:
             pass
         try:
-            df[["KH"]] = df[["KH"]].astype(np.float64)
+            df[[Headers.KH]] = df[[Headers.KH]].astype(np.float64)
         except ValueError:
             pass
         try:
-            df[["RO"]] = df[["RO"]].astype(np.float64)
+            df[[Headers.RO]] = df[[Headers.RO]].astype(np.float64)
         except ValueError:
             pass
         # compdat could be for multiple wells - split it
         for well_name in well_names:
             if well_name not in self.msws:
                 self.msws[well_name] = {}
-            self.msws[well_name]["compdat"] = df[df["WELL"] == well_name]
+            self.msws[well_name]["compdat"] = df[df[Headers.WELL] == well_name]
             logger.debug("handle_compdat for %s", well_name)
         return remains
 
@@ -856,18 +864,18 @@ class WellSchedule:
 
         # make df for header record
         columns = [
-            "WELL",
-            "SEGMENTTVD",
-            "SEGMENTMD",
-            "WBVOLUME",
-            "INFOTYPE",
-            "PDROPCOMP",
-            "MPMODEL",
-            "ITEM8",
-            "ITEM9",
-            "ITEM10",
-            "ITEM11",
-            "ITEM12",
+            Headers.WELL,
+            Headers.SEGMENTTVD,
+            Headers.SEGMENTMD,
+            Headers.WBVOLUME,
+            Headers.INFOTYPE,
+            Headers.PDROPCOMP,
+            Headers.MPMODEL,
+            Headers.ITEM8,
+            Headers.ITEM9,
+            Headers.ITEM10,
+            Headers.ITEM11,
+            Headers.ITEM12,
         ]
         # pad header with default values (1*)
         header = recs[0] + ["1*"] * (len(columns) - len(recs[0]))
@@ -876,21 +884,21 @@ class WellSchedule:
 
         # make df for data records
         columns = [
-            "TUBINGSEGMENT",
-            "TUBINGSEGMENT2",
-            "TUBINGBRANCH",
-            "TUBINGOUTLET",
-            "TUBINGMD",
-            "TUBINGTVD",
-            "TUBINGID",
-            "TUBINGROUGHNESS",
-            "CROSS",
-            "VSEG",
-            "ITEM11",
-            "ITEM12",
-            "ITEM13",
-            "ITEM14",
-            "ITEM15",
+            Headers.TUBINGSEGMENT,
+            Headers.TUBINGSEGMENT2,
+            Headers.TUBINGBRANCH,
+            Headers.TUBINGOUTLET,
+            Headers.TUBINGMD,
+            Headers.TUBINGTVD,
+            Headers.TUBINGID,
+            Headers.TUBINGROUGHNESS,
+            Headers.CROSS,
+            Headers.VSEG,
+            Headers.ITEM11,
+            Headers.ITEM12,
+            Headers.ITEM13,
+            Headers.ITEM14,
+            Headers.ITEM15,
         ]
         # pad with default values (1*)
         recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]
@@ -903,8 +911,12 @@ class WellSchedule:
 
         # Warn user if the tubing segments' measured depth for a branch
         # is not sorted in ascending order (monotonic)
-        for branch_num in df_records["TUBINGBRANCH"].unique():
-            if not df_records["TUBINGMD"].loc[df_records["TUBINGBRANCH"] == branch_num].is_monotonic_increasing:
+        for branch_num in df_records[Headers.TUBINGBRANCH].unique():
+            if (
+                not df_records[Headers.TUBINGMD]
+                .loc[df_records[Headers.TUBINGBRANCH] == branch_num]
+                .is_monotonic_increasing
+            ):
                 logger.warning(
                     "The branch %s in well %s contains negative length segments. "
                     "Check the input schedulefile WELSEGS keyword for inconsistencies "
@@ -936,17 +948,17 @@ class WellSchedule:
         if well_name not in self.active_wells:
             return None
         columns = [
-            "I",
-            "J",
-            "K",
-            "BRANCH",
-            "STARTMD",
-            "ENDMD",
-            "COMPSEGS_DIRECTION",
-            "ENDGRID",
-            "PERFDEPTH",
-            "THERM",
-            "SEGMENT",
+            Headers.I,
+            Headers.J,
+            Headers.K,
+            Headers.BRANCH,
+            Headers.START_MD,
+            Headers.END_MEASURED_DEPTH,
+            Headers.COMPSEGS_DIRECTION,
+            Headers.ENDGRID,
+            Headers.PERFDEPTH,
+            Headers.THERM,
+            Headers.SEGMENT,
         ]
         recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
         df = pd.DataFrame(recs, columns=columns)
@@ -1004,7 +1016,7 @@ class WellSchedule:
         """
         df = self.msws[well_name]["compsegs"].copy()
         if branch is not None:
-            df = df[df["BRANCH"] == branch]
+            df = df[df[Headers.BRANCH] == branch]
         df.reset_index(drop=True, inplace=True)  # reset index after filtering
         # (why??)
         return fix_compsegs(df, well_name)
@@ -1030,7 +1042,7 @@ class WellSchedule:
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
             raise err
         if branch is not None:
-            content = content[content["TUBINGBRANCH"] == branch]
+            content = content[content[Headers.TUBINGBRANCH] == branch]
         content.reset_index(drop=True, inplace=True)
         return columns, content
 

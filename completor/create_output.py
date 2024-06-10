@@ -9,6 +9,7 @@ import matplotlib  # type: ignore
 
 from completor import prepare_outputs as po
 from completor.completion import WellSchedule
+from completor.constants import Headers
 from completor.create_wells import CreateWells
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
@@ -440,7 +441,7 @@ class CreateOutput:
         self.print_udq = False
         self.udq_correlation = ""
         self.udq_parameter: dict[str, str] = {}
-        if self.case.completion_table["DEVICETYPE"].isin(["AICV"]).any():
+        if self.case.completion_table[Headers.DEVICE_TYPE].isin(["AICV"]).any():
             self.print_udq = True
             self.udq_correlation = CORRELATION_UDQ
 
@@ -450,9 +451,9 @@ class CreateOutput:
         if self.print_udq:
             self.finalprint += self.udq_correlation
 
-        self.df_reservoir = wells.df_reservoir_all[wells.df_reservoir_all["WELL"] == self.well_name]
-        self.df_well = wells.df_well_all[wells.df_well_all["WELL"] == self.well_name]
-        self.laterals = self.df_well[self.df_well["WELL"] == self.well_name]["LATERAL"].unique()
+        self.df_reservoir = wells.df_reservoir_all[wells.df_reservoir_all[Headers.WELL] == self.well_name]
+        self.df_well = wells.df_well_all[wells.df_well_all[Headers.WELL] == self.well_name]
+        self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
         """Start printing per well."""
         self.welsegs_header, _ = self.schedule.get_well_segments(self.well_name, branch=1)
@@ -522,8 +523,8 @@ class CreateOutput:
 
             self.branch_revision(lateral)
 
-            completion_table_well = case.completion_table[case.completion_table["WELL"] == self.well_name]
-            completion_table_lateral = completion_table_well[completion_table_well["BRANCH"] == lateral]
+            completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == self.well_name]
+            completion_table_lateral = completion_table_well[completion_table_well[Headers.BRANCH] == lateral]
             self.df_compsegs = po.prepare_compsegs(
                 self.well_name,
                 lateral,
@@ -597,9 +598,9 @@ class CreateOutput:
 
         Uses DataFrame df_reservoir with format shown in ``CreateOutput``.
         """
-        start_md = self.df_reservoir["STARTMD"].iloc[0]
-        if self.welsegs_header["SEGMENTMD"].iloc[0] > start_md:
-            self.welsegs_header["SEGMENTMD"] = start_md - 1.0
+        start_md = self.df_reservoir[Headers.START_MD].iloc[0]
+        if self.welsegs_header[Headers.SEGMENTMD].iloc[0] > start_md:
+            self.welsegs_header[Headers.SEGMENTMD] = start_md - 1.0
 
     def check_segments(self, lateral: int) -> None:
         """
@@ -626,11 +627,11 @@ class CreateOutput:
         with formats shown in ``CreateOutput``.
         """
         if self.df_annulus.shape[0] == 0 and self.df_device.shape[0] > 0:
-            self.start_segment = max(self.df_device["SEG"].to_numpy()) + 1
-            self.start_branch = max(self.df_device["BRANCH"].to_numpy()) + 1
+            self.start_segment = max(self.df_device[Headers.SEG].to_numpy()) + 1
+            self.start_branch = max(self.df_device[Headers.BRANCH].to_numpy()) + 1
         elif self.df_annulus.shape[0] > 0:
-            self.start_segment = max(self.df_annulus["SEG"].to_numpy()) + 1
-            self.start_branch = max(self.df_annulus["BRANCH"].to_numpy()) + 1
+            self.start_segment = max(self.df_annulus[Headers.SEG].to_numpy()) + 1
+            self.start_branch = max(self.df_annulus[Headers.BRANCH].to_numpy()) + 1
 
     def make_compdat(self, lateral: int) -> None:
         """
@@ -861,8 +862,8 @@ class CreateOutput:
         Args:
             lateral: The lateral number being worked on."""
         correction = max(self.laterals) - lateral
-        self.df_tubing["BRANCH"] = lateral
+        self.df_tubing[Headers.BRANCH] = lateral
         if self.df_device.shape[0] > 0:
-            self.df_device["BRANCH"] += correction
+            self.df_device[Headers.BRANCH] += correction
         if self.df_annulus.shape[0] > 0:
-            self.df_annulus["BRANCH"] += correction
+            self.df_annulus[Headers.BRANCH] += correction
