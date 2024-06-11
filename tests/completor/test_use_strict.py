@@ -1,4 +1,4 @@
-"""Test the Completor USE_STRICT keyword"""
+"""Test the Completor USE_STRICT keyword."""
 
 from pathlib import Path
 
@@ -30,14 +30,12 @@ WSEGAICD
 
 
 def test_use_strict_true(tmpdir):
-    """
-    Test case file with USE_STRICT keyword set to True.
+    """Test case file with USE_STRICT keyword set to True.
 
-    Uses a two-branch well, A1, and both branches are defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, and both branches are defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -68,14 +66,12 @@ TRUE
 
 
 def test_use_strict_true_false_default(tmpdir):
-    """
-    Test case file with USE_STRICT keyword set to True, False, and undefined.
+    """Test case file with USE_STRICT keyword set to True, False, and undefined.
 
-    Uses a two-branch well, A1, and both branches are defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, and both branches are defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     completion_keyword = """
@@ -126,14 +122,12 @@ USE_STRICT
 
 
 def test_use_strict_true_missing_branch(tmpdir, caplog):
-    """
-    Test case with USE_STRICT set to True, with a missing branch.
+    """Test case with USE_STRICT set to True, with a missing branch.
 
-    Uses a two-branch well, A1, where only one branch is defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -166,14 +160,12 @@ USE_STRICT
 
 
 def test_use_strict_default_missing_branch(tmpdir, caplog):
-    """
-    Test case with with USE_STRICT set to True, with the default branch missing.
+    """Test case with with USE_STRICT set to True, with the default branch missing.
 
-    Uses a two-branch well, A1, where only one branch is defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -198,14 +190,12 @@ COMPLETION
 
 
 def test_use_strict_false_missing_branch(tmpdir):
-    """
-    Test case with USE_STRICT set to False, with a missing branch.
+    """Test case with USE_STRICT set to False, with a missing branch.
 
-    Uses a two-branch well, A1, where only one branch is defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
