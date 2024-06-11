@@ -9,8 +9,7 @@ _TEST_FILE = "test.sch"
 
 
 def test_perf(tmpdir):
-    """
-    Test case where the case and schedule files have differing overburden values.
+    """Test case where the case and schedule files have differing overburden values.
 
     The roughness and ID of the overburden segment do not match between the files.
     """
@@ -112,6 +111,5 @@ WSEGAICD
 /
 
     """
-
     utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
     utils.assert_results(true_file, _TEST_FILE)
