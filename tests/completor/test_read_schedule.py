@@ -1,4 +1,4 @@
-"""Test functions for the Completor read_schedule module"""
+"""Test functions for the Completor read_schedule module."""
 
 from io import StringIO
 from pathlib import Path
@@ -69,10 +69,9 @@ COMPORD
 
 
 def test_reading_compdat():
-    """
-    Test the functions which read COMPDAT keywords.
+    """Test the functions which read COMPDAT keywords.
 
-    Test the whole COMPDAT and spesific on WELL10
+    Test the whole COMPDAT and specific on WELL10.
     """
     true_compdat = Path(_TESTDIR / "compdat.true")
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
@@ -88,10 +87,9 @@ def test_reading_compdat():
 
 
 def test_reading_compsegs():
-    """
-    Test the functions which read the COMPSEGS keywords.
+    """Test the functions which read the COMPSEGS keywords.
 
-    Test it on WELL12 branch 1
+    Test it on WELL12 branch 1.
     """
     true_compsegs = Path(_TESTDIR / "compsegs_well12.true")
     df_true = pd.read_csv(true_compsegs, sep=",", dtype=object)
@@ -103,11 +101,10 @@ def test_reading_compsegs():
 
 
 def test_reading_welsegs():
-    """
-    Test the functions which read WELSEGS keywords.
+    """Test the functions which read WELSEGS keywords.
 
-    Both the first and the second record
-    check WELL4 for the second record
+    Both the first and the second record.
+    Check WELL4 for the second record.
     """
     true_welsegs1 = StringIO(
         """
@@ -186,11 +183,9 @@ WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN,6E-03
 
 
 def test_fix_compsegs():
-    """
-    Test that fix_compsegs correctly assigns start and end measured depths.
+    """Test that fix_compsegs correctly assigns start and end measured depths.
 
-    In cases where there are overlapping segments in compsegs, also test zero
-    length segments.
+    In cases where there are overlapping segments in compsegs, also test zero length segments.
     """
     df_test = pd.DataFrame(
         [
@@ -222,8 +217,7 @@ def test_fix_compsegs():
 
 
 def test_fix_welsegs():
-    """
-    Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
+    """Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
 
     Completor works with ABS in the WELSEGS.
     So if the users have WELSEGS defined in INC then it must be converted first.
