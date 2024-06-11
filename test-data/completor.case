@@ -1,7 +1,7 @@
 COMPLETION
 --Well       	Branch   StartMD   EndMD    Screen     Well/     Roughness   Annulus   		Nvalve/Joint  ValveType  DeviceNumber
---           	Number                      Tubing     Casing    Roughness   Content 
---                                       Diameter   Diameter  
+--           	Number                      Tubing     Casing    Roughness   Content
+--                                       Diameter   Diameter
 A1         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
 A2         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
 A3         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
