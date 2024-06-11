@@ -17,12 +17,10 @@ from completor.utils import clean_file_lines  # type: ignore
 def open_files_run_create(
     case: Path | str, schedule: Path | str, output: Path | str, show_figure: bool = False
 ) -> None:
-    """
-    Open files supplied as a path and convert the data to a string.
+    """Open files supplied as a path and convert the data to a string.
 
     Then run main.py's create function with the data.
     """
-
     if isinstance(case, Path):
         with open(case, encoding="utf-8") as file:
             case = file.read()
@@ -41,21 +39,20 @@ def open_files_run_create(
 
 
 def assert_results(true_file: str | Path, test_file: str | Path, check_exact=False, relative_tolerance=0.0001) -> None:
-    """
-    Assert the final Completor output.
+    """Assert the final Completor output.
 
-    Arguments:
-        true_file: True solution file
-        test_file: Completor output file
-        check_exact: Whether to compare number exactly
-        relative_tolerance: Relative tolerance, only used when check_exact is False
+    Args:
+        true_file: True solution file.
+        test_file: Completor output file.
+        check_exact: Whether to compare number exactly.
+        relative_tolerance: Relative tolerance, only used when check_exact is False.
 
-    Note1: The df's are sorted so that the order of input is *not* important.
-        Also, the index is set to well so that the original order is not used as index.
-    Note2: We do the comparison numerically, so we dont care about 4th decimal place.
-        Use global variables CHECK_EXACT and N_DIGITS for this purpose.
-    Note3: WELSPECS is not included in the comparison since this keyword is left
-        untouched by completor.
+    Notes:
+        1. The dfs are sorted so that the order of input is *not* important.
+           Also, the index is set to well so that the original order is not used as index.
+        2. We do the comparison numerically, so we dont care about 4th decimal place.
+           Use global variables CHECK_EXACT and N_DIGITS for this purpose.
+        3. WELSPECS is not included in the comparison since this keyword is left untouched by completor.
     """
 
     if isinstance(true_file, Path):
@@ -98,30 +95,19 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
 
 
 class ReadSchedule:
-    """
-    Class for reading and processing of schedule/well files.
+    """Class for reading and processing of schedule/well files.
 
     This class reads the schedule/well file.
     It reads the following keywords WELSPECS, COMPDAT, WELSEGS, COMPSEGS.
-    The program also reads other keywords, but the unrelated keywords
-    will just be printed in the output file.
+    The program also reads other keywords, but the unrelated keywords will just be printed in the output file.
 
     Attributes:
-        content (List[str]): List of strings
-        collections (List[completor.parser.ContentCollection]):
-            Content collection of keywords in schedule file
-        unused_keywords (np.ndarray[str]): Array of strings of unused keywords
-            in the schedule file
-        welspecs (pd.DataFrame): Table of WELSPECS keyword
-        compdat (pd.DataFrame): Table of COMPDAT keyword
-        compsegs (pd.DataFrame): Table of COMPSEGS keyword
-
-    See the following functions for a description of DataFrame formats:
-        :ref:`welspecs <welspecs_format>`.
-        :ref:`compdat <compdat_table>` (See: ref:`update_connection_factor <update_connection_factor>` for more details).
-        :ref:`welsegs_header <df_well_segments_header>`.
-        :ref:`welsegs_content <df_well_segments_content>`.
-        compsegs `get_compsegs_table`.
+        content (List[str]): The data.
+        collections (List[completor.parser.ContentCollection]): Content collection of keywords in schedule file.
+        unused_keywords (np.ndarray[str]): Array of strings of unused keywords in the schedule file.
+        welspecs (pd.DataFrame): Table of WELSPECS keyword.
+        compdat (pd.DataFrame): Table of COMPDAT keyword.
+        compsegs (pd.DataFrame): Table of COMPSEGS keyword.
     """
 
     def __init__(
@@ -129,12 +115,10 @@ class ReadSchedule:
         schedule_file: str,
         optional_keywords: list[str] = ["WSEGVALV"],
     ):
-        """
-        Initialize the class.
+        """Initialize the class.
 
         Args:
-            schedule_file: Schedule/well file which contains at least
-                      ``COMPDAT``, ``COMPSEGS`` and ``WELSEGS``
+            schedule_file: Schedule/well file which contains at least `COMPDAT`, `COMPSEGS` and `WELSEGS`.
             optional_keywords: List of optional keywords to find tables for.
         """
         # read the file
@@ -154,11 +138,9 @@ class ReadSchedule:
         self._welsegs_content: pd.DataFrame | None = None
 
         # extract tables
-        """
-        This procedures gets tables of the listed keywords.
+        """This procedures gets tables of the listed keywords.
 
-        It also formats the data type of the columns, which will be used
-        in the completor program.
+        It also formats the data type of the columns, which will be used in the completor program.
         """
         # get dataframe table
         self.welspecs = parse.get_welspecs_table(self.collections)
@@ -225,14 +207,13 @@ class ReadSchedule:
         return self._welsegs_header, self._welsegs_content  # type: ignore
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:
-        """
-        Return the WELSPECS table of the selected well.
+        """Return the WELSPECS table of the selected well.
 
         Args:
-            well_name: Name of the well
+            well_name: Name of the well.
 
         Returns:
-            WELSPECS table for that well
+            WELSPECS table for that well.
         """
         df_temp = self.welspecs[self.welspecs[Headers.WELL] == well_name]
         # reset index after filtering
@@ -240,14 +221,13 @@ class ReadSchedule:
         return df_temp
 
     def get_compdat(self, well_name: str) -> pd.DataFrame:
-        """
-        Return the COMPDAT table for that well.
+        """Return the COMPDAT table for that well.
 
         Args:
-            well_name: Name of the well
+            well_name: Name of the well.
 
         Returns:
-            COMPDAT table for that well
+            COMPDAT table for that well.
         """
         df_temp = self.compdat[self.compdat[Headers.WELL] == well_name]
         # reset index after filtering
@@ -255,16 +235,15 @@ class ReadSchedule:
         return df_temp
 
     def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """
-        Return WELSEGS table for both header and content for the selected well.
+        """Return WELSEGS table for both header and content for the selected well.
 
         Args:
-            well_name: Name of the well
-            branch: Branch/lateral number
+            well_name: Name of the well.
+            branch: Branch/lateral number.
 
         Returns:
-            | WELSEGS first record (df_header)
-            | WELSEGS second record (df_content)
+            WELSEGS first record (df_header).
+            WELSEGS second record (df_content).
         """
         df1_welsegs = self.welsegs_header[self.welsegs_header[Headers.WELL] == well_name]
         df2_welsegs = self.welsegs_content[self.welsegs_content[Headers.WELL] == well_name].copy()
@@ -280,15 +259,14 @@ class ReadSchedule:
         return df_header, df_content
 
     def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
-        """
-        Return COMPSEGS table for the selected well.
+        """Return COMPSEGS table for the selected well.
 
         Args:
-            well_name: Name of the well
-            branch: Branch/lateral number
+            well_name: Name of the well.
+            branch: Branch/lateral number.
 
         Returns:
-            COMPSEGS table
+            COMPSEGS table.
         """
         df_temp = self.compsegs[self.compsegs[Headers.WELL] == well_name].copy()
         if branch is not None:
@@ -321,14 +299,12 @@ def _mock_parse_args(**kwargs):
 
 
 def completor_runner(**kwargs) -> None:
-    """
-    Helper function to run completor as if it was launched as a CLI program.
+    """Helper function to run completor as if it was launched as a CLI program.
 
     Function mocks args_parser and makes it return the values specified in **kwargs.
 
     Args:
         kwargs: Keyword arguments to run completor with.
-
     """
     _mock_parse_args(**kwargs)
     main.main()
