@@ -1,0 +1,19 @@
+COMPLETION
+--Well       	Branch   StartMD   EndMD    Screen     Well/     Roughness   Annulus   		Nvalve/Joint  ValveType  DeviceNumber
+--           	Number                      Tubing     Casing    Roughness   Content 
+--                                       Diameter   Diameter  
+A1         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A2         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A3         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A4         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A5         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A6         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+OP5        1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+OP5        2          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+/
+
+
+WSEGICV
+-- DEVICE   CV      AC      AC_MAX
+1           1    0.004703    0.004703
+/
