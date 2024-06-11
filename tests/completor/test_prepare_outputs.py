@@ -83,9 +83,7 @@ def test_dataframe_to_string():
 
 
 def test_outlet_segment_1():
-    """
-    Test outlet_segment find the outlet segments closest to target measured depths.
-    """
+    """Test outlet_segment find the outlet segments closest to target measured depths."""
     target_md = [1, 2, 3, 4.0]
     reference_md = [0.5, 1.0, 2.0, 4.0, 5.0]
     reference_segment_number = [1, 2, 3, 4, 5]
@@ -95,9 +93,7 @@ def test_outlet_segment_1():
 
 
 def test_outlet_segment_2():
-    """
-    Test outlet_segment find the outlet segments closest to target measured depths.
-    """
+    """Test outlet_segment find the outlet segments closest to target measured depths."""
     target_md = [1, 2, 4.0, 5.0]
     reference_md = [0.5, 1.0, 2.0, 4.0, 5.0]
     reference_segement = [1, 2, 3, 4, 5]
@@ -561,7 +557,6 @@ def test_connect_lateral_logs_warning(caplog):
     Segments with negative lengths can occur when trying to connect a lateral to its main bore/mother branch.
     They are caused by an error in the input, so the user must be warned about this.
     """
-
     df_tubing_lat_1 = pd.DataFrame(
         [
             [2, 2, 1, 1, 2219.76749],
@@ -613,8 +608,8 @@ GP_PERF_DEVICELAYER
 
 
 def test_user_segment_lumping_oa(tmpdir):
-    """
-    Test completor case with user defined segment lumping.
+    """Test completor case with user defined segment lumping.
+
     The keyword SEGMENTLENGTH is set to -1 in the case file.
     The completion has an open annulus interspersed with packers.
     """
@@ -627,8 +622,8 @@ def test_user_segment_lumping_oa(tmpdir):
 
 
 def test_user_segment_lumping_gp(tmpdir):
-    """
-    Test completor case with user defined segment lumping.
+    """Test completor case with user defined segment lumping.
+
     The keyword SEGMENTLENGTH is set to -1 in the case file.
     The completion has a gravel packed annulus interspersed with packers.
     """
@@ -799,7 +794,8 @@ def test_prepare_wsegvalv():
 
 def test_prepare_compdat(tmpdir):
     """Test function for prepare_compdat including change of well/casing ID from
-    input schedule values to completion table values."""
+    input schedule values to completion table values.
+    """
     tmpdir.chdir()
     well_name = Headers.WELL
     lateral = 1
@@ -891,9 +887,9 @@ def test_prepare_compdat(tmpdir):
 
 
 def test_prepare_wsegicv(tmpdir):
-    """Test function for prepare_wsegicv including use of tubing layer
-    as ICV placement in tubing, and ICV placement in device,
-    going as a fully lumped segment."""
+    """Test function for prepare_wsegicv including use of tubing layer as ICV placement in tubing,
+    and ICV placement in device, going as a fully lumped segment.
+    """
     tmpdir.chdir()
     well_name = "'WELL'"
     lateral = 1
@@ -991,8 +987,7 @@ def test_prepare_wsegicv(tmpdir):
 
 
 def test_prepare_icv_compseg(tmpdir):
-    """Test function for compseg preparation
-    in accordance with ICV placement in well segmentation"""
+    """Test function for compseg preparation in accordance with ICV placement in well segmentation."""
     df_reservoir = pd.DataFrame(
         [
             [33, 42, 29, 3778.0, 3932, "1*", 29, 100.0, 0.2159, 3855.0, 3855.0, 10, "AICD", 1, "OP5", 1],
@@ -1144,8 +1139,8 @@ def test_prepare_icv_compseg(tmpdir):
 
 
 def test_user_segment_lumping_oa_overlap(tmpdir):
-    """
-    Test completor case with user defined segment lumping and overlapping case.
+    """Test completor case with user defined segment lumping and overlapping case.
+
     The keyword SEGMENTLENGTH is set to -1 in the case file.
     The completion has an open annulus interspersed with packers.
     """
