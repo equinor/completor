@@ -1,4 +1,4 @@
-"""Test functions for the Completor completion module."""
+"""Test functions for the completion module."""
 
 from __future__ import annotations
 
@@ -379,9 +379,8 @@ def test_define_annulus_zone_continuous_annulus_1():
     pd.testing.assert_frame_equal(df_test, df_true)
 
 
-def test_define_annulus_zone_continious_annulus_2():
-    """
-    Test define_annulus_zone gives one continious open annulus segment
+def test_define_annulus_zone_continuous_annulus_2():
+    """Test define_annulus_zone gives one continuous open annulus segment
     when they are not interrupted by packers or gravel packs.
     """
     df_completion = pd.DataFrame(
@@ -412,10 +411,7 @@ def test_define_annulus_zone_continious_annulus_2():
 
 
 def test_define_annulus_zone_no_open_annulus():
-    """
-    Test define_annulus_zone gives no open annulus segments
-    when all segments are gravel packs.
-    """
+    """Test define_annulus_zone gives no open annulus segments when all segments are gravel packs."""
     df_completion = pd.DataFrame(
         [
             [1.0, 2.0, "GP"],
@@ -873,10 +869,7 @@ def test_lumping_segment_1():
 
 
 def test_lumping_segment_2():
-    """
-    Test lumping_segment lumps the additional segment only with
-    original segment containing an annulus zone.
-    """
+    """Test lumping_segment lumps the additional segment only with original segment containing an annulus zone."""
     df_well = pd.DataFrame(
         [
             [1.0, 0, Headers.ORIGINALSEGMENT],

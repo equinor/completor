@@ -18,374 +18,22 @@ from completor.visualize_well import visualize_well
 
 
 class CreateOutput:
-    """
-    Create output files from completor.
+    """Create output files from completor.
 
     There are two output files from completor:
         1. Well schedule file (text file) for input to reservoir simulator.
         2. Well diagram (pdf file), i.e. a well completion schematic.
 
     Args:
-        case: ReadCasefile object
-        schedule: ReadSchedule object
-        wells: CreateWells object
-        well_name: Well name
-        iwell: Well number used in creating WSEGAICV and WSEGDAR output
-        version: Completor version information
-        show_figure: Flag for pdf export of well completion schematic
-        figure_no: Figure number
-        write_welsegs: Flag to write WELSEGS
-
-    | The class uses DataFrames with formats described in the following
-      functions:
-    | :ref:`df_reservoir`
-    | :ref:`df_well`
-
-    The class creates property DataFrames with the following formats:
-
-    .. _df_tubing:
-    .. list-table:: df_tubing
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - SEG
-         - int
-       * - SEG2
-         - int
-       * - BRANCH
-         - int
-       * - OUT
-         - int
-       * - MD
-         - float
-       * - TVD
-         - float
-       * - DIAM
-         - float
-       * - ROUGHNESS
-         - float
-
-    .. _df_device:
-    .. list-table:: df_device
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - SEG
-         - int
-       * - SEG2
-         - int
-       * - BRANCH
-         - int
-       * - OUT
-         - int
-       * - MD
-         - float
-       * - TVD
-         - float
-       * - DIAM
-         - float
-       * - ROUGHNESS
-         - float
-
-    .. _df_annulus:
-    .. list-table:: df_annulus
-       :widths: 10 10
-       :header-rows: 1
-
-       * - SEG
-         - int
-       * - SEG2
-         - int
-       * - BRANCH
-         - int
-       * - OUT
-         - int
-       * - MD
-         - float
-       * - TVD
-         - float
-       * - DIAM
-         - float
-       * - ROUGHNESS
-         - float
-
-    .. list-table:: df_wseglink
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - ANNULUS
-         - int
-       * - DEVICE
-         - int
-
-    .. _df_compsegs:
-    .. list-table:: df_compsegs
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - I
-         - int
-       * - J
-         - int
-       * - K
-         - int
-       * - BRANCH
-         - int
-       * - STARTMD
-         - float
-       * - ENDMD
-         - float
-       * - DIR
-         - str
-       * - DEF
-         - object
-       * - SEG
-         - int
-
-    .. list-table:: df_compdat
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - I
-         - int
-       * - J
-         - int
-       * - K
-         - int
-       * - K2
-         - int
-       * - FLAG
-         - str
-       * - SAT
-         - object
-       * - CF
-         - float
-       * - DIAM
-         - float
-       * - KH
-         - float
-       * - SKIN
-         - float
-       * - DFACT
-         - float
-       * - DIR
-         - object
-       * - RO
-         - float
-
-    .. _df_wsegvalv:
-    .. list-table:: df_wsegvalv
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - SEG
-         - int
-       * - CV
-         - float
-       * - AC
-         - float
-       * - L
-         - str
-       * - AC_MAX
-         - float
-
-    .. _df_wsegsicd:
-    .. list-table:: df_wsegsicd
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - SEG
-         - int
-       * - SEG2
-         - int
-       * - ALPHA
-         - float
-       * - SF
-         - float
-       * - RHO
-         - float
-       * - VIS
-         - float
-       * - WCT
-         - float
-
-    .. _df_wsegaicd:
-    .. list-table:: df_wsegaicd
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - SEG
-         - int
-       * - SEG2
-         - int
-       * - ALPHA
-         - float
-       * - SF
-         - float
-       * - RHO
-         - float
-       * - VIS
-         - float
-       * - DEF
-         - object
-       * - X
-         - float
-       * - Y
-         - float
-       * - FLAG
-         - object
-       * - A
-         - float
-       * - B
-         - float
-       * - C
-         - float
-       * - D
-         - float
-       * - E
-         - float
-       * - F
-         - float
-
-    .. _df_wsegdar:
-    .. list-table:: df_wsegdar
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - SEG
-         - int
-       * - CV_DAR
-         - float
-       * - AC_OIL
-         - float
-       * - AC_GAS
-         - float
-       * - AC_WATER
-         - float
-       * - AC_MAX
-         - float
-       * - WVF_LCF_DAR
-         - float
-       * - WVF_HCF_DAR
-         - float
-       * - GVF_LCF_DAR
-         - float
-       * - GVF_HCF_DAR
-         - float
-
-    .. _df_wsegaicv:
-    .. list-table:: df_wsegaicv
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - SEG
-         - int
-       * - SEG2
-         - int
-       * - ALPHA_MAIN
-         - float
-       * - SF
-         - float
-       * - RHO
-         - float
-       * - VIS
-         - float
-       * - DEF
-         - object
-       * - X_MAIN
-         - float
-       * - Y_MAIN
-         - float
-       * - FLAG
-         - object
-       * - A_MAIN
-         - float
-       * - B_MAIN
-         - float
-       * - C_MAIN
-         - float
-       * - D_MAIN
-         - float
-       * - E_MAIN
-         - float
-       * - F_MAIN
-         - float
-       * - ALPHA_PILOT
-         - float
-       * - X_PILOT
-         - float
-       * - Y_PILOT
-         - float
-       * - A_PILOT
-         - float
-       * - B_PILOT
-         - float
-       * - C_PILOT
-         - float
-       * - D_PILOT
-         - float
-       * - E_PILOT
-         - float
-       * - F_PILOT
-         - float
-       * - WCT_AICV
-         - float
-       * - GVF_AICV
-         - float
-
-    .. _df_wsegicv:
-    .. list-table:: df_wsegicv
-       :widths: 10 10
-       :header-rows: 1
-
-       * - COLUMNS
-         - TYPE
-       * - WELL
-         - str
-       * - SEG
-         - int
-       * - CV
-         - float
-       * - AC
-         - float
-       * - DEFAULTS
-         - str
-       * - AC_MAX
-         - float
+        case: ReadCasefile object.
+        schedule: ReadSchedule object.
+        wells: CreateWells object.
+        well_name: Well name.
+        iwell: Well number used in creating WSEGAICV and WSEGDAR output.
+        version: Completor version information.
+        show_figure: Flag for pdf export of well completion schematic.
+        figure_no: Figure number.
+        write_welsegs: Flag to write WELSEGS.
     """
 
     def __init__(
@@ -401,16 +49,15 @@ class CreateOutput:
         write_welsegs: bool = True,
         paths: tuple[str, str] | None = None,
     ):
-        """
-        Initialize CreateOutput class.
+        """Initialize CreateOutput class.
 
         Args:
-            case: ReadCasefile object
-            schedule: ReadSchedule object
-            wells: CreateWells object
-            completor_version: Completor version information
-            figure_no: Must be set if show_figure
-            show_figure: True if the user wants to create well diagram file
+            case: ReadCasefile object.
+            schedule: ReadSchedule object.
+            wells: CreateWells object.
+            completor_version: Completor version information.
+            figure_no: Must be set if show_figure.
+            show_figure: True if the user wants to create well diagram file.
         """
         self.case = case
         self.schedule = schedule
@@ -591,41 +238,27 @@ class CreateOutput:
         return header
 
     def check_welsegs1(self) -> None:
-        """
-        Check whether the MD of the first segment is deeper than first cell STARTMD.
+        """Check whether the measured depth of the first segment is deeper than the first cells start measured depth.
 
-        If this is the case, adjust SEGMENTMD to be 1 meter shallower.
-
-        Uses DataFrame df_reservoir with format shown in ``CreateOutput``.
+        In this case, adjust segments measured depth to be 1 meter shallower.
         """
         start_md = self.df_reservoir[Headers.START_MD].iloc[0]
         if self.welsegs_header[Headers.SEGMENTMD].iloc[0] > start_md:
             self.welsegs_header[Headers.SEGMENTMD] = start_md - 1.0
 
     def check_segments(self, lateral: int) -> None:
-        """
-        Check whether there is annular flow in the well.
+        """Check whether there is annular flow in the well.
 
-        Also checks if there are any connections from the reservoir to the tubing
-        in a well.
-
-        Uses DataFrame :ref:`df_annulus` and :ref:`df_device`
-        with formats shown in ``CreateOutput``.
+        Also check if there are any connections from the reservoir to the tubing in a well.
         """
         if self.df_annulus.shape[0] == 0:
             logger.info("No annular flow in Well : %s Lateral : %d", self.well_name, lateral)
         if self.df_device.shape[0] == 0:
-            logger.warning(
-                "No connection from reservoir to tubing in " "Well : %s Lateral : %d", self.well_name, lateral
-            )
+            logger.warning("No connection from reservoir to tubing in Well : %s Lateral : %d", self.well_name, lateral)
 
     def update_segmentbranch(self) -> None:
-        """
-        Update the numbering of the tubing segment and branch.
+        """Update the numbering of the tubing segment and branch."""
 
-        Uses DataFrame :ref:`df_annulus` and :ref:`df_device`
-        with formats shown in ``CreateOutput``.
-        """
         if self.df_annulus.shape[0] == 0 and self.df_device.shape[0] > 0:
             self.start_segment = max(self.df_device[Headers.SEG].to_numpy()) + 1
             self.start_branch = max(self.df_device[Headers.BRANCH].to_numpy()) + 1
@@ -634,11 +267,7 @@ class CreateOutput:
             self.start_branch = max(self.df_annulus[Headers.BRANCH].to_numpy()) + 1
 
     def make_compdat(self, lateral: int) -> None:
-        """
-        Print COMPDAT to file.
-
-        Uses DataFrame df_compdat with format shown in ``CreateOutput``.
-        """
+        """Print completion data to file."""
         nchar = po.get_number_of_characters(self.df_compdat)
         if self.df_compdat.shape[0] > 0:
             self.print_compdat += (
@@ -648,12 +277,7 @@ class CreateOutput:
             )
 
     def make_welsegs(self, lateral: int) -> None:
-        """
-        Print WELSEGS to file.
-
-        Uses DataFrame :ref:`df_tubing` and :ref:`df_device`
-        with formats shown in ``CreateOutput``.
-        """
+        """Print well segments to file."""
         nchar = po.get_number_of_characters(self.df_tubing)
         if self.df_device.shape[0] > 0:
             self.print_welsegs += (
@@ -677,11 +301,7 @@ class CreateOutput:
             )
 
     def make_wseglink(self, lateral: int) -> None:
-        """
-        Print WSEGLINK to file.
-
-        Uses DataFrame df_wseglink with format shown in ``CreateOutput``.
-        """
+        """Print WSEGLINK to file."""
         if self.df_wseglink.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wseglink)
             self.print_wseglink += (
@@ -691,11 +311,7 @@ class CreateOutput:
             )
 
     def make_compsegs(self, lateral: int) -> None:
-        """
-        Print COMPSEGS to file.
-
-        Uses DataFrame :ref:`df_compsegs` with format shown in ``CreateOutput``.
-        """
+        """Print completion segments to file."""
         nchar = po.get_number_of_characters(self.df_compsegs)
         if self.df_compsegs.shape[0] > 0:
             self.print_compsegs += (
@@ -705,11 +321,7 @@ class CreateOutput:
             )
 
     def make_wsegaicd(self, lateral: int) -> None:
-        """
-        Print WSEGAICD to file.
-
-        Uses DataFrame :ref:`df_wsegaicd` with format shown in ``CreateOutput``.
-        """
+        """Print WSEGAICD to file."""
         if self.df_wsegaicd.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegaicd)
             self.print_wsegaicd += (
@@ -719,11 +331,7 @@ class CreateOutput:
             )
 
     def make_wsegsicd(self, lateral: int) -> None:
-        """
-        Print WSEGSICD to file.
-
-        Uses DataFrame :ref:`df_wsegsicd` with format shown in ``CreateOutput``.
-        """
+        """Print WSEGSICD to file."""
         if self.df_wsegsicd.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegsicd)
             self.print_wsegsicd += (
@@ -733,11 +341,7 @@ class CreateOutput:
             )
 
     def make_wsegvalv(self, lateral: int) -> None:
-        """
-        Print WSEGVALV to file.
-
-        Uses DataFrame :ref:`df_wsegvalv` with format shown in ``CreateOutput``.
-        """
+        """Print WSEGVALV to file."""
         if self.df_wsegvalv.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegvalv)
             self.print_wsegvalv += (
@@ -747,11 +351,7 @@ class CreateOutput:
             )
 
     def make_wsegicv(self, lateral: int) -> None:
-        """
-        Print WSEGICV to file.
-
-        Uses DataFrame :ref:`df_wsegicv` with format shown in ``CreateOutput``.
-        """
+        """Print WSEGICV to file."""
         if self.df_wsegicv.shape[0] > 0:
             nchar = po.get_number_of_characters(self.df_wsegicv)
             self.print_wsegicv += (
@@ -761,20 +361,12 @@ class CreateOutput:
             )
 
     def make_wsegdar(self) -> None:
-        """
-        Print WSEGDAR to file.
-
-        Uses DataFrame :ref:`df_wsegdar` with format shown in ``CreateOutput``.
-        """
+        """Print WSEGDAR to file."""
         if self.df_wsegdar.shape[0] > 0:
             self.print_wsegdar += po.print_wsegdar(self.df_wsegdar, self.iwell + 1) + "\n"
 
     def make_wsegaicv(self) -> None:
-        """
-        Print WSEGAICV to file.
-
-        Uses DataFrame :ref:`df_wsegaicv` with format shown in ``CreateOutput``.
-        """
+        """Print WSEGAICV to file."""
         if self.df_wsegaicv.shape[0] > 0:
             self.print_wsegaicv += po.print_wsegaicv(self.df_wsegaicv, self.iwell + 1) + "\n"
 
@@ -854,13 +446,14 @@ class CreateOutput:
         self.finalprint = finalprint
 
     def branch_revision(self, lateral: int) -> None:
-        """Revises the order of branch numbers to be in
-        agreement with common practice. This means that tubing layers will get
-        branch numbers from 1 to number of laterals. Device and lateral branch numbers
-        are changed accordingly if they exists.
+        """Revises the order of branch numbers to be in agreement with common practice.
+
+        This means that tubing layers will get branch numbers from 1 to the number of laterals.
+        Device and lateral branch numbers are changed accordingly if they exist.
 
         Args:
-            lateral: The lateral number being worked on."""
+            lateral: The lateral number being worked on.
+        """
         correction = max(self.laterals) - lateral
         self.df_tubing[Headers.BRANCH] = lateral
         if self.df_device.shape[0] > 0:

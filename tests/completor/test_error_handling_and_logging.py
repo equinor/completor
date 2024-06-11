@@ -29,6 +29,7 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, caplog):
     assert "USE_STRICT True: Define all branches in case file." in caplog.messages
 
     # Check the content of the debug information
+    file_name = ""
     for file in files:
         match = _debug_information_file_name_pattern.match(file.basename)
         if match:
@@ -54,6 +55,7 @@ def test_debug_information_is_written_to_disk_on_failure(tmpdir, caplog):
         assert expected_arguments == actual_arguments
 
         def compare_file_content(expected: str, actual: str):
+            """Compare the contents of files."""
             with open(expected, encoding="utf-8") as expected_file:
                 with debug_information.open(f"{base_directory}/{actual}", "r") as actual_file:
                     assert expected_file.read() == actual_file.read().decode("utf-8")

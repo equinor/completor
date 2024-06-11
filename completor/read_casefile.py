@@ -17,16 +17,15 @@ from completor.utils import abort, clean_file_lines
 
 
 def _mapper(map_file: str) -> dict[str, str]:
-    """
-    Read two-column file and store data as values and keys in a dictionary.
+    """Read two-column file and store data as values and keys in a dictionary.
 
     Used to map between pre-processing tools and reservoir simulator file names.
 
     Args:
-        map_file: Two-column text file
+        map_file: Two-column text file.
 
     Returns:
-        Dictionary of key and values taken from the mapfile
+        Dictionary of key and values taken from the mapfile.
     """
     mapper = {}
     with open(map_file, encoding="utf-8") as lines:
@@ -43,8 +42,7 @@ def _mapper(map_file: str) -> dict[str, str]:
 
 
 class ReadCasefile:
-    """
-    Class for reading Completor case files.
+    """Class for reading Completor case files.
 
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
@@ -53,45 +51,33 @@ class ReadCasefile:
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
-        content (List[str]): List of strings
-        n_content (int): Dimension of content
-        joint_length (float): JOINTLENGTH keyword. Default: 12.0
-        segment_length (float): SEGMENTLENGTH keyword. Default: 0.0
-        pvt_file (str): The pvt file content
-        pvt_file_name (str): The pvt file name
-        completion_table (pd.DataFrame): ...
-        wsegaicd_table (pd.DataFrame): WSEGAICD
-        wsegsicd_table (pd.DataFrame): WSEGSICD
-        wsegvalv_table (pd.DataFrame): WSEGVALV
-        wsegicv_table (pd.DataFrame): WSEGICV
-        wsegdar_table (pd.DataFrame): WSEGDAR
-        wsegaicv_table (pd.DataFrame): WSEGAICV
-        strict (bool): USE_STRICT. If TRUE it will exit if
-            any lateral is not defined in the case-file. Default: TRUE
-        lat2device (pd.DataFrame): LATERAL_TO_DEVICE
+        content (List[str]): List of strings.
+        n_content (int): Dimension of content.
+        joint_length (float): JOINTLENGTH keyword. Default to 12.0.
+        segment_length (float): SEGMENTLENGTH keyword. Default to 0.0.
+        pvt_file (str): The pvt file content.
+        pvt_file_name (str): The pvt file name.
+        completion_table (pd.DataFrame): ....
+        wsegaicd_table (pd.DataFrame): WSEGAICD.
+        wsegsicd_table (pd.DataFrame): WSEGSICD.
+        wsegvalv_table (pd.DataFrame): WSEGVALV.
+        wsegicv_table (pd.DataFrame): WSEGICV.
+        wsegdar_table (pd.DataFrame): WSEGDAR.
+        wsegaicv_table (pd.DataFrame): WSEGAICV.
+        strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
+        lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
         gp_perf_devicelayer (bool): GP_PERF_DEVICELAYER. If TRUE all wells with
-            gravel pack and perforation completion are given a device layer. If FALSE
-            (default) all wells with this type of completions are untouched by Completor
-
-
-    See the following functions for a description of the DataFrame formats:
-    * `wsegvalv_table <wsegvalv_table>`
-    * `wsegsicd_table <wsegsicd_table>`
-    * `wsegaicd_table <wsegaicd_table>`
-    * `wsegdar_table <wsegdar_table>`
-    * `wsegaicv_table <wsegaicv_table>`
-    * `lat2device <lat2device>`
-
+            gravel pack and perforation completion are given a device layer.
+            If FALSE (default) all wells with this type of completions are untouched by Completor.
     """
 
     def __init__(self, case_file: str, schedule_file: str | None = None, output_file: str | None = None):
-        """
-        Initialize ReadCasefile.
+        """Initialize ReadCasefile.
 
         Args:
-            case_file: Case/input file name
-            user_schedule_file: Schedule/well file if not defined in case file
-            user_pvt: PVT file if not defined in case file
+            case_file: Case/input file name.
+            schedule_file: Schedule/well file if not defined in case file.
+            output_file: File to write output to.
 
         """
         self.case_file = case_file.splitlines()
@@ -136,44 +122,10 @@ class ReadCasefile:
         self.read_minimum_segment_length()
 
     def read_completion(self) -> None:
-        """
-        Read the COMPLETION keyword in the case file.
+        """Read the COMPLETION keyword in the case file.
 
         Raises:
             ValueError: If COMPLETION keyword is not defined in the case.
-
-        The COMPLETION keyword information is stored in a class property
-        DataFrame ``self.completion_table`` with the following format:
-
-        .. list-table:: completion_table
-          :widths: 10 10
-          :header-rows: 1
-
-          * - COLUMN
-            - TYPE
-          * - WELL
-            - str
-          * - BRANCH
-            - int
-          * - STARTMD
-            - float
-          * - ENDMD
-            - float
-          * - INNER_DIAMETER
-            - float
-          * - OUTER_DIAMETER
-            - float
-          * - ROUGHNESS
-            - float
-          * - ANNULUS
-            - str
-          * - NVALVEPERJOINT
-            - float
-          * - DEVICETYPE
-            - str
-          * - DEVICENUMBER
-            - int
-
         """
         start_index, end_index = self.locate_keyword(Keywords.COMPLETION)
         if start_index == end_index:
@@ -208,15 +160,13 @@ class ReadCasefile:
         self.completion_table = df_temp.copy(deep=True)
 
     def read_icv_tubing(self, df_temp: pd.DataFrame) -> pd.DataFrame:
-        """
-        Split the ICV Tubing definition from the completion table
+        """Split the ICV Tubing definition from the completion table.
 
         Args:
-            df_temp: COMPLETION table
+            df_temp: COMPLETION table.
 
         Returns:
-            Updated COMPLETION table
-
+            Updated COMPLETION table.
         """
         if not df_temp.loc[
             (df_temp[Headers.START_MD] == df_temp[Headers.END_MEASURED_DEPTH]) & (df_temp[Headers.DEVICE_TYPE] == "ICV")
@@ -236,8 +186,7 @@ class ReadCasefile:
         return df_temp
 
     def read_lat2device(self) -> None:
-        """
-        Read the LATERAL_TO_DEVICE keyword in the case file.
+        """Read the LATERAL_TO_DEVICE keyword in the case file.
 
         The keyword takes two arguments, a well name and a branch number.
         The branch will be connected to the device layer in the mother branch.
@@ -251,24 +200,7 @@ class ReadCasefile:
         --WELL    BRANCH
         A-1       3
         /
-
-        The LATERAL_TO_DEVICE keyword information is stored in a class property
-        DataFrame ``lat2device`` with the following format:
-
-        .. _lat2device:
-        .. list-table:: lat2device
-           :widths: 10 10
-           :header-rows: 1
-
-           * - COLUMN
-             - TYPE
-           * - WELL
-             - str
-           * - BRANCH
-             - int
-
         """
-        # Table headers
         header = [Headers.WELL, Headers.BRANCH]
         start_index, end_index = self.locate_keyword("LATERAL_TO_DEVICE")
 
@@ -277,7 +209,7 @@ class ReadCasefile:
             self.lat2device = pd.DataFrame([], columns=header)  # empty df
             return
         self.lat2device = self._create_dataframe_with_columns(header, start_index, end_index)
-        val.validate_lateral2device(self.lat2device, self.completion_table)
+        val.validate_lateral_to_device(self.lat2device, self.completion_table)
         self.lat2device[Headers.BRANCH] = self.lat2device[Headers.BRANCH].astype(np.int64)
 
     def read_joint_length(self) -> None:
@@ -292,12 +224,10 @@ class ReadCasefile:
             logger.info("No joint length is defined. It is set to default 12.0 m")
 
     def read_segment_length(self) -> None:
-        """
-        Read the SEGMENTLENGTH keyword in the case file.
+        """Read the SEGMENTLENGTH keyword in the case file.
 
         Raises:
             SystemExit: If SEGMENTLENGTH is not float or string.
-
         """
         start_index, end_index = self.locate_keyword("SEGMENTLENGTH")
         if end_index == start_index + 2:
@@ -341,18 +271,15 @@ class ReadCasefile:
             logger.info("No segment length is defined. " "Segments are created based on the grid dimension.")
 
     def read_strictness(self) -> None:
-        """
-        Read the USE_STRICT keyword in the case file.
+        """Read the USE_STRICT keyword in the case file.
 
-        If USE_STRICT = True the program exits if a branch in the schedule file
-        is not defined in the case file. The default value is True, meaning that
-        to allow for Completor to ignore missing branches in the case file it
-        has to be set to False. This feature was introduced when comparing
-        Completor with a different advanced well modelling tool using a complex
-        simulation model.
+        If USE_STRICT = True the program exits if a branch in the schedule file is not defined in the case file.
+        The default value is True, meaning that to allow for Completor to ignore missing branches in the case file,
+        it has to be set to False.
+        This feature was introduced when comparing Completor with a different advanced well modelling
+        tool using a complex simulation model.
 
         Best practice: All branches in all wells should be defined in the case file.
-
         """
         start_index, end_index = self.locate_keyword("USE_STRICT")
         if end_index == start_index + 2:
@@ -362,14 +289,12 @@ class ReadCasefile:
         logger.info("case-strictness is set to %d", self.strict)
 
     def read_gp_perf_devicelayer(self) -> None:
-        """
-        Read the GP_PERF_DEVICELAYER keyword in the case file.
+        """Read the GP_PERF_DEVICELAYER keyword in the case file.
 
         If GP_PERF_DEVICELAYER = True the program assigns a device layer to
         wells with GP PERF type completions. If GP_PERF_DEVICELAYER = False, the
         program does not add a device layer to the well. I.e. the well is
         untouched by the program. The default value is False.
-
         """
         start_index, end_index = self.locate_keyword("GP_PERF_DEVICELAYER")
         if end_index == start_index + 2:
@@ -378,11 +303,10 @@ class ReadCasefile:
         logger.info("gp_perf_devicelayer is set to %s", self.gp_perf_devicelayer)
 
     def read_minimum_segment_length(self) -> None:
-        """
-        Read the MINIMUM_SEGMENT_LENGTH keyword in the case file.
-        The default value is 0.0, meaning that no segments are lumped by this
-        keyword. The program will continue to coalesce segments until all
-        segments are longer than the given minimum.
+        """Read the MINIMUM_SEGMENT_LENGTH keyword in the case file.
+
+        The default value is 0.0, meaning that no segments are lumped by this keyword.
+        The program will continue to coalesce segments until all segments are longer than the given minimum.
         """
         start_index, end_index = self.locate_keyword("MINIMUM_SEGMENT_LENGTH")
         if end_index == start_index + 2:
@@ -402,37 +326,10 @@ class ReadCasefile:
             self.mapper = None
 
     def read_wsegvalv(self) -> None:
-        """
-        Read the WSEGVALV keyword in the case file.
+        """Read the WSEGVALV keyword in the case file.
 
         Raises:
-            SystemExit: If WESEGVALV is not defined and VALVE is used in COMPLETION. \
-                If the device number is not found. \
-
-        The function uses the class property DataFrame completion_table defined
-        in ``read_completion``.  The function sets the class property DataFrame
-        vsegvalv_table with the following format:
-
-        .. _wsegvalv_table:
-        .. list-table:: wsegvalv_table
-            :widths: 10 10
-            :header-rows: 1
-
-            * - COLUMN
-              - TYPE
-            * - DEVICETYPE
-              - str
-            * - DEVICENUMBER
-              - int
-            * - CV
-              - float
-            * - AC
-              - float
-            * - L
-              - float
-            * - Ac_Max (optional)
-              - float
-
+            SystemExit: If WESEGVALV is not defined and VALVE is used in COMPLETION. If the device number is not found.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGVALV)
         if start_index == end_index:
@@ -456,38 +353,11 @@ class ReadCasefile:
                 raise abort("Not all device in COMPLETION is specified in WSEGVALV")
 
     def read_wsegsicd(self) -> None:
-        """
-        Read the WSEGSICD keyword in the case file.
+        """Read the WSEGSICD keyword in the case file.
 
         Raises:
-            SystemExit: If WSEGSICD is not defined and ICD is used in COMPLETION, \
-                Or if the device number is not found. \
-                If not all device in COMPLETION is specified in WSEGSICD.
-
-        The function uses the class property DataFrame completion_table defined
-        in ``read_completion``. The function generates a class property
-        DataFrame wsegsicd_table with the following format:
-
-        .. _wsegsicd_table:
-        .. list-table:: wsegsicd_table
-            :widths: 10 10
-            :header-rows: 1
-
-            * - COLUMN
-              - TYPE
-            * - DEVICETYPE
-              - str
-            * - DEVICENUMBER
-              - int
-            * - STRENGTH
-              - float
-            * - RHOCAL_ICD
-              - float
-            * - VISCAL_ICD
-              - float
-            * - WCUT
-              - float
-
+            SystemExit: If WSEGSICD is not defined and ICD is used in COMPLETION, or if the device number is not found.
+                If not all devices in COMPLETION are specified in WSEGSICD.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGSICD)
         if start_index == end_index:
@@ -507,53 +377,12 @@ class ReadCasefile:
                 raise abort("Not all device in COMPLETION is specified in WSEGSICD")
 
     def read_wsegaicd(self) -> None:
-        """
-        Read the WSEGAICD keyword in the case file.
+        """Read the WSEGAICD keyword in the case file.
 
         Raises:
             ValueError: If invalid entries in WSEGAICD.
-            SystemExit: If WSEGAICD is not defined and AICD is used in COMPLETION, \
-                or if the device number is not found. \
-                If not all device in COMPLETION is specified in WSEGAICD.
-
-        The function uses the class property DataFrame completion_table defined
-        in ``read_completion``. It generates a class property DataFrame
-        wsegaicd_table with the following format:
-
-        .. _wsegaicd_table:
-        .. list-table:: wsegaicd_table
-            :widths: 10 10
-            :header-rows: 1
-
-            * - COLUMN
-              - TYPE
-            * - DEVICETYPE
-              - str
-            * - DEVICENUMBER
-              - int
-            * - ALPHA
-              - float
-            * - X
-              - float
-            * - Y
-              - float
-            * - A
-              - float
-            * - B
-              - float
-            * - C
-              - float
-            * - D
-              - float
-            * - E
-              - float
-            * - F
-              - float
-            * - RHOCAL_AICD
-              - float
-            * - VISCAL_AICD
-              - float
-
+            SystemExit: If WSEGAICD is not defined and AICD is used in COMPLETION, or if the device number is not found.
+                If all devices in COMPLETION are not specified in WSEGAICD.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICD)
         if start_index == end_index:
@@ -575,7 +404,6 @@ class ReadCasefile:
                 Headers.RHOCAL_AICD,
                 Headers.VISCAL_AICD,
             ]
-            # Fix table format
             self.wsegaicd_table = val.set_format_wsegaicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
@@ -586,46 +414,12 @@ class ReadCasefile:
                 raise abort("Not all device in COMPLETION is specified in WSEGAICD")
 
     def read_wsegdar(self) -> None:
-        """
-        Read the WSEGDAR keyword in the case file.
+        """Read the WSEGDAR keyword in the case file.
 
         Raises:
-            ValueError: If there are invalid entries in WSEGDAR
-            SystemExit: If not all device in COMPLETION is specified in WSEGDAR. \
-                If WSEGDAR keyword not defined, when DAR is used in the completion.
-
-        The function uses the class property DataFrame completion_table defined
-        in ``read_completion``. It generates a class property
-        DataFrame wsegdar_table with the following format:
-
-        .. _wsegdar_table:
-        .. list-table:: wsegdar_table
-            :widths: 10 10
-            :header-rows: 1
-
-            * - COLUMN
-              - TYPE
-            * - DEVICETYPE
-              - str
-            * - DEVICENUMBER
-              - int
-            * - CV_DAR
-              - float
-            * - AC_OIL
-              - float
-            * - AC_GAS
-              - float
-            * - AC_WATER
-              - float
-            * - WHF_LCF_DAR
-              - float
-            * - WHF_HCF_DAR
-              - float
-            * - GHF_LCF_DAR
-              - float
-            * - GHF_HCF_DAR
-              - float
-
+            ValueError: If there are invalid entries in WSEGDAR.
+            SystemExit: If not all device in COMPLETION is specified in WSEGDAR.
+            If WSEGDAR keyword not defined, when DAR is used in the completion.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGDAR)
         if start_index == end_index:
@@ -657,76 +451,12 @@ class ReadCasefile:
                     raise abort("Not all device in COMPLETION is specified in WSEGDAR")
 
     def read_wsegaicv(self) -> None:
-        """
-        Read the WSEGAICV keyword in the case file.
+        """Read the WSEGAICV keyword in the case file.
 
         Raises:
             ValueError: If invalid entries in WSEGAICV.
-            SystemExit: WSEGAICV keyword not defined when AICV is used in completion.\
-                If not all devices in COMPLETION are specified in WSEGAICV.
-
-
-        The function uses the class property DataFrame completion_table defined
-        in ``read_completion``. It generates a class property
-        DataFrame wsegaicv_table with the following format:
-
-        .. _wsegaicv_table:
-        .. list-table:: wsegaicv_table
-            :widths: 10 10
-            :header-rows: 1
-
-            * - COLUMN
-              - TYPE
-            * - DEVICETYPE
-              - str
-            * - DEVICENUMBER
-              - int
-            * - WCT_AICV
-              - float
-            * - GHF_AICV
-              - float
-            * - RHOCAL_AICV
-              - float
-            * - VISCAL_AICV
-              - float
-            * - ALPHA_MAIN
-              - float
-            * - X_MAIN
-              - float
-            * - Y_MAIN
-              - float
-            * - A_MAIN
-              - float
-            * - B_MAIN
-              - float
-            * - C_MAIN
-              - float
-            * - D_MAIN
-              - float
-            * - E_MAIN
-              - float
-            * - F_MAIN
-              - float
-            * - ALPHA_PILOT
-              - float
-            * - X_PILOT
-              - float
-            * - Y_PILOT
-              - float
-            * - A_PILOT
-              - float
-            * - B_PILOT
-              - float
-            * - C_PILOT
-              - float
-            * - D_PILOT
-              - float
-            * - E_PILOT
-              - float
-            * - F_PILOT
-              - float
-
-
+            SystemExit: WSEGAICV keyword not defined when AICV is used in completion.
+                If all devices in COMPLETION are not specified in WSEGAICV.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICV)
         if start_index == end_index:
@@ -771,35 +501,11 @@ class ReadCasefile:
                 raise abort("Not all devices in COMPLETION are specified in WSEGAICV")
 
     def read_wsegicv(self) -> None:
-        """
-        Read WSEGICV keyword in the case file.
+        """Read WSEGICV keyword in the case file.
 
         Raises:
             ValueError: If invalid entries in WSEGICV.
             SystemExit: WSEGICV keyword not defined when ICV is used in completion.
-
-        The function uses the class property DataFrame completion_table defined
-        in ``read_completion``. It generates a class property
-        DataFrame wsegicv_table with the following format:
-        .. _wsegicv_table:
-        .. list-table:: wsegicv_table
-            :widths: 10 10
-            :header-rows: 1
-
-            * - COLUMN
-              - TYPE
-            * - DEVICETYPE
-              - str
-            * - DEVICENUMBER
-              - int
-            * - CV
-              - float
-            * - AC
-              - float
-            * - DEFAULTS
-              - float
-            * - AC_MAX
-              - float
         """
 
         start_index, end_index = self.locate_keyword(Keywords.WSEGICV)
@@ -825,44 +531,33 @@ class ReadCasefile:
                 raise abort("Not all device in COMPLETION is specified in WSEGICV")
 
     def get_completion(self, well_name: str | None, branch: int) -> pd.DataFrame:
-        """
-        Create the COMPLETION table for the selected well and branch.
+        """Create the COMPLETION table for the selected well and branch.
 
         Args:
-            well_name: Well name
-            branch: Branch/lateral number
+            well_name: Well name.
+            branch: Branch/lateral number.
 
         Returns:
-            COMPLETION for that well and branch
-
-        The function uses the class property DataFrame completion_table defined
-        in ``read_completion``.
-
+            COMPLETION for that well and branch.
         """
         df_temp = self.completion_table[self.completion_table[Headers.WELL] == well_name]
         df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
     def check_input(self, well_name: str, schedule: WellSchedule) -> None:
-        """
-        Ensure that the completion table (given in the case-file) is complete.
+        """Ensure that the completion table (given in the case-file) is complete.
 
-        If one branch is completed, all branches must be completed,
-        unless not 'strict'. This function relates to the USE_STRICT <bool> keyword
-        used in the case file. When a branch is undefined in the case file,
-        but appears in the schedule file, the completion selected by Completor is gravel
-        packed perforations if USE_STRICT is set to False.
+        If one branch is completed, all branches must be completed, unless not 'strict'.
+        This function relates to the USE_STRICT <bool> keyword used in the case file.
+        When a branch is undefined in the case file, but appears in the schedule file,
+        the completion selected by Completor is gravel packed perforations if USE_STRICT is set to False.
 
         Args:
-            well_name: Well name
-            schedule: Schedule object
+            well_name: Well name.
+            schedule: Schedule object.
 
         Returns:
-            COMPLETION for that well and branch
-
-        The function updates the class property DataFrame completion_table defined
-        in ``read_completion``.
-
+            COMPLETION for that well and branch.
         """
         msw = schedule.msws[well_name]
         compl = self.completion_table[self.completion_table.WELL == well_name]
@@ -890,20 +585,15 @@ class ReadCasefile:
                     self.completion_table = pd.concat([self.completion_table, lateral])
 
     def connect_to_tubing(self, well_name: str, lateral: int) -> bool:
-        """
-        Connect a branch to the tubing- or device-layer.
+        """Connect a branch to the tubing- or device-layer.
 
         Args:
-            well_name: Well name
-            lateral: Lateral number
+            well_name: Well name.
+            lateral: Lateral number.
 
         Returns:
             TRUE if lateral is connected to tubing layer.
             FALSE if lateral is connected to device layer.
-
-        The function uses the class property DataFrame lat2device defined in
-        ``read_lat2device``.
-
         """
         laterals = self.lat2device[self.lat2device.WELL == well_name].BRANCH
         if lateral in laterals.to_numpy():
@@ -916,21 +606,18 @@ class ReadCasefile:
     def _create_dataframe_with_columns(
         self, header: list[str], start_index: int, end_index: int, keyword: str | None = None
     ) -> pd.DataFrame:
-        """
-        Helper method to create a dataframe with given columns' header and content.
+        """Helper method to create a dataframe with given columns' header and content.
 
         Args:
-            header: List of column names
-            start_index: From (but not including) where in ``self.content``
-            end_index: to where to include in the body of the table
+            header: List of column names.
+            start_index: From (but not including) where in `self.content`.
+            end_index: to where to include in the body of the table.
 
         Returns:
             Combined DataFrame.
 
         Raises:
-            CaseReaderFormatError: If keyword is malformed,
-                or has different amount of data than the header.
-
+            CaseReaderFormatError: If keyword is malformed, or has different amount of data than the header.
         """
         if keyword is None:
             keyword = self.content[start_index]
@@ -971,15 +658,13 @@ class ReadCasefile:
 
 
 def check_contents(values: np.ndarray, reference: np.ndarray) -> bool:
-    """
-    Check if all members of a list is in another list.
+    """Check if all members of a list is in another list.
 
     Args:
-        val_array: Array to be evaluated
-        ref_array: Reference array
+        val_array: Array to be evaluated.
+        ref_array: Reference array.
 
     Returns:
-        True if members of val_array are present in ref_array, false otherwise
-
+        True if members of val_array are present in ref_array, false otherwise.
     """
     return all(comp in reference for comp in values)

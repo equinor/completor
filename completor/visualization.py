@@ -9,31 +9,28 @@ from matplotlib.figure import Figure  # type: ignore
 
 
 def update_fonts(family: str = "DejaVu Serif", size: float = 12) -> None:
-    """
-    Update the font and size in the plot.
+    """Update the font and size in the plot.
 
     Args:
-        family: Font family name
-        size: Font sizes
+        family: Font family name.
+        size: Font sizes.
     """
     rcParams["font.family"] = family
     rcParams.update({"font.size": size})
 
 
 def format_axis(subplot: Axes, title: str, xlabel: str, ylabel: str, categorical: bool = False) -> Axes:
-    """
-    Format axis of the subplot.
+    """Format axis of the subplot.
 
     Args:
-        subplot: Plt subplot
-        title: Title of the subplot
-        xlabel: Name of the x axis
-        ylabel: Name of the y axis
-        categorical: If the x axis is not int or float set to True,
-                     otherwise False
+        subplot: Plt subplot.
+        title: Title of the subplot.
+        xlabel: Name of the x axis.
+        ylabel: Name of the y axis.
+        categorical: If the x axis is not int or float set to True, otherwise False.
 
     Returns:
-        Formatted matplotlib subplot
+        Formatted matplotlib subplot.
     """
     min_val, max_val = subplot.get_ylim()
     subplot.set_xlabel(xlabel)
@@ -74,18 +71,17 @@ def format_scale(
     xlim: tuple[float, float] | None = None,
     ylim: tuple[float, float] | None = None,
 ) -> Axes:
-    """
-    Format axis scale.
+    """Format axis scale.
 
     Args:
-        subplot: matplotlib subplot
-        xscale: Scale type for x axis. Permitted value log/linear
-        yscale: Scale type for y axis. Permitted value log/linear
-        xlim: [Min, max] limit of the x axis, default=None
-        ylim: [Min, max] limit of the y axis, default=None
+        subplot: matplotlib subplot.
+        xscale: Scale type for x axis. Permitted value log/linear.
+        yscale: Scale type for y axis. Permitted value log/linear.
+        xlim: [Min, max] limit of the x axis, default=None.
+        ylim: [Min, max] limit of the y axis, default=None.
 
     Returns:
-        Reformatted matplotlib subplot
+        Reformatted matplotlib subplot.
     """
     subplot.set_xscale(xscale)
     subplot.set_yscale(yscale)
@@ -97,16 +93,15 @@ def format_scale(
 
 
 def format_legend(subplot: Axes, legend: bool = True, location: str = "right") -> Axes:
-    """
-    Format legend of subplot.
+    """Format legend of subplot.
 
     Args:
-        subplot: Matplotlib subplot
-        legend: True for on and False for off
-        location: Legend location
+        subplot: Matplotlib subplot.
+        legend: True for on and False for off.
+        location: Legend location.
 
     Returns:
-        Reformatted matplotlib subplot
+        Reformatted matplotlib subplot.
     """
     if legend:
         if location == "top":
@@ -125,14 +120,13 @@ def format_legend(subplot: Axes, legend: bool = True, location: str = "right") -
 
 
 def subplot_position(num_plots: int) -> tuple[int, int]:
-    """
-    Return the row and index of subplot position.
+    """Return the row and index of subplot position.
 
     Args:
-        num_plots: Number of subplots in the figure
+        num_plots: Number of subplots in the figure.
 
     Returns:
-        Row, column
+        Row, column.
     """
     list_rows = [1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 5]
     list_cols = [1, 2, 3, 2, 3, 3, 4, 4, 3, 4, 5]
@@ -140,27 +134,25 @@ def subplot_position(num_plots: int) -> tuple[int, int]:
 
 
 def create_pdfpages(file_name: str) -> PdfPages:
-    """
-    Create a pdf file.
+    """Create a pdf file.
 
     Args:
-        file_name: Full name of the file without extension .pdf
+        file_name: Full name of the file without extension .pdf.
 
     Returns:
-        PdfPages instance
+        PdfPages instance.
     """
     return PdfPages(file_name)
 
 
 def create_figure(figsize: list[int] | tuple[int, int] | None = (18, 12)) -> Figure:
-    """
-    Create a matplotlib figure.
+    """Create a matplotlib figure.
 
     Args:
-        figsize: [Width, height]
+        figsize: [Width, height].
 
     Returns:
-        Matplotlib figure
+        Matplotlib figure.
     """
     if figsize is None:
         return plt.figure()

@@ -10,7 +10,12 @@ from pathlib import Path
 import completor
 
 
-def getLogger(module_name="completor"):
+def get_logger(module_name="completor"):
+    """Configure logger.
+
+    Args:
+        module_name: The name for logger.
+    """
     logger_ = logging.getLogger(module_name)
 
     formatter = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
@@ -29,28 +34,26 @@ def getLogger(module_name="completor"):
     return logger_
 
 
-logger = getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def handle_error_messages(func):
-    """
-    Decorator to catch any exceptions it might throw
-    (with some exceptions, such as KeyboardInterrupt)
+    """Decorator to catch any exceptions it might throw (with some exceptions, such as KeyboardInterrupt).
+
     If there are any error messages from the exception, they are logged.
     If completor fails, the decorator will write a zip file to disk;
     Completor-<year><month><day>-<hour><minute><second>-<letter><5 numbers>.zip
     The last letter and numbers are chosen at random.
 
-    The zip file contains
-
-    * traceback.txt - a trace back
-    * machine.txt - which machine it happened on
-    * arguments.json - all input arguments
-    * The content of any files passed
-      For the main method of Completor, these are (if provided)
-      * input_file.txt - The case file
-      * schedule_file.txt  - The schedule file
-      * new_file.txt - The output file
+    The zip file contains:
+    * traceback.txt - a trace back.
+    * machine.txt - which machine it happened on.
+    * arguments.json - all input arguments.
+    * The content of any files passed.
+      For the main method of Completor, these are (if provided).
+      * input_file.txt - The case file.
+      * schedule_file.txt  - The schedule file.
+      * new_file.txt - The output file.
     """
 
     @wraps(func)
@@ -107,8 +110,7 @@ def dump_debug_information(**kwargs) -> None:
         "Please submit issue for questions and include said file.\n"
         "Do not submit internal or restricted files to the issue,"
         "please contact Equinor internal support to handle internal files.\n"
-        "NOTE: the file includes all input you gave to "
-        "Completor including the content of the input files",
+        "NOTE: the file includes all input you gave to Completor including the content of the input files",
         name,
     )
     logger.debug(traceback.format_exc())

@@ -35,14 +35,12 @@ def test_fix_inner_diam_roughness_default_parameters():
 
 
 def test_overburden_md_at_boundary():
-    """
-    Test fix_id_roughness with overburden depth at boundary.
+    """Test fix_id_roughness with overburden depth at boundary.
 
     The boundary is specified as between two depths in the case COMPLETION keyword.
 
-    Always select ID and roughness from completion table where starting depth is equal
-    to or greater than overburden md and the ending depth is less than or equal to
-    the overburden md.
+    Always select ID and roughness from the completion table where the starting depth is equal to or greater
+    than overburden md and the ending depth is less than or equal to the overburden md.
     """
     well_name = "A1"
     overburden = pd.DataFrame(
@@ -72,8 +70,7 @@ def test_overburden_md_at_boundary():
 
 
 def test_overburden_md_above_completion_table():
-    """
-    Test case with an incomplete completion table.
+    """Test case with an incomplete completion table.
 
     The overburden segment md is above the first start and end md in the table.
     """
@@ -101,8 +98,7 @@ def test_overburden_md_above_completion_table():
 
 
 def test_overburden_md_outside_completion_table():
-    """
-    Test case with an incomplete completion table.
+    """Test case with an incomplete completion table.
 
     The overburden segment md is below the last start and end md in the table.
     """

@@ -536,10 +536,7 @@ JOINTLENGTH
 
 
 def test_gp_cells(tmpdir):
-    """
-       Test completor case with cells based segmentation and
-    gravel packed annulus."""
-
+    """Test case with cells based segmentation and gravel packed annulus."""
     tmpdir.chdir()
     case_file = CASE_GP_CELLS
     true_file = Path(_TESTDIR / "gp_cells.true")
@@ -548,10 +545,7 @@ def test_gp_cells(tmpdir):
 
 
 def test_oa_cells(tmpdir):
-    """
-       Test completor case with cells based segmentation and
-    open annulus."""
-
+    """Test case with cells based segmentation and open annulus."""
     tmpdir.chdir()
     case_file = CASE_OA_CELLS
     true_file = Path(_TESTDIR / "oa_cells.true")
@@ -560,10 +554,7 @@ def test_oa_cells(tmpdir):
 
 
 def test_gp_user(tmpdir):
-    """
-       Test completor case with user defined segmentation and
-    gravel packed annulus."""
-
+    """Test case with user defined segmentation and gravel packed annulus."""
     tmpdir.chdir()
     case_file = CASE_GP_USER
     true_file = Path(_TESTDIR / "gp_user.true")
@@ -572,11 +563,10 @@ def test_gp_user(tmpdir):
 
 
 def test_gp_user_top_overlap(tmpdir):
-    """
-       Test completor case with user defined segmentation and
-    gravel packed annulus. The top 0 VPJ user specified interval
-    (0 - x) overlaps with the reservoir."""
+    """Test case with user defined segmentation and gravel packed annulus.
 
+    The top 0 VPJ user specified interval (0 - x) overlaps with the reservoir.
+    """
     tmpdir.chdir()
     case_file = CASE_GP_USER_TOP_OVERLAP
     true_file = Path(_TESTDIR / "gp_user_top_overlap.true")
@@ -585,11 +575,10 @@ def test_gp_user_top_overlap(tmpdir):
 
 
 def test_gp_user_bottom_overlap(tmpdir):
-    """
-       Test completor case with user defined segmentation and
-    gravel packed annulus. The bottom 0 VPJ user specified interval
-    (y - 99999) overlaps with the reservoir."""
+    """Test case with user defined segmentation and gravel packed annulus.
 
+    The bottom 0 VPJ user specified interval (y - 99999) overlaps with the reservoir.
+    """
     tmpdir.chdir()
     case_file = CASE_GP_USER_BOTTOM_OVERLAP
     true_file = Path(_TESTDIR / "gp_user_bottom_overlap.true")
@@ -598,11 +587,9 @@ def test_gp_user_bottom_overlap(tmpdir):
 
 
 def test_gp_user_1vpj(tmpdir):
+    """Test case with user-defined segmentation,
+    gravel packed annulus and a multi-segment 1 vpj part in the lower 0 vpj Section.
     """
-       Test completor case with user-defined segmentation,
-    gravel packed annulus and a multi-segment 1 vpj part in the lower
-    0 vpj Section."""
-
     tmpdir.chdir()
     case_file = CASE_GP_USER_1VPJ
     true_file = Path(_TESTDIR / "gp_user_1vpj.true")
@@ -611,11 +598,9 @@ def test_gp_user_1vpj(tmpdir):
 
 
 def test_gp_user_0vpj(tmpdir):
+    """Test case with user-defined segmentation,
+    gravel packed annulus and a multi-segment 0 vpj part in the upper 1 vpj Section.
     """
-       Test completor case with user-defined segmentation,
-    gravel packed annulus and a multi-segment 0 vpj part in the upper
-    1 vpj Section."""
-
     tmpdir.chdir()
     case_file = CASE_GP_USER_0VPJ
     true_file = Path(_TESTDIR / "gp_user_0vpj.true")
@@ -624,11 +609,10 @@ def test_gp_user_0vpj(tmpdir):
 
 
 def test_gp_oneliner(tmpdir):
-    """
-       Test completor case with user-defined segmentation,
-    gravel packed annulus given in one line, i.e. one segment. Include 0-x and y
-    -99999."""
+    """Test case with user-defined segmentation, gravel packed annulus given in one line, i.e. one segment.
 
+    Include 0-x and y -99999.
+    """
     tmpdir.chdir()
     print(tmpdir)
     case_file = CASE_GP_ONELINER
@@ -638,10 +622,7 @@ def test_gp_oneliner(tmpdir):
 
 
 def test_oa_user(tmpdir):
-    """
-       Test completor case with user defined segmentation and
-    open annulus."""
-
+    """Test case with user defined segmentation and open annulus."""
     tmpdir.chdir()
     case_file = CASE_OA_USER
     true_file = Path(_TESTDIR / "oa_user.true")
@@ -650,10 +631,10 @@ def test_oa_user(tmpdir):
 
 
 def test_oa_user_top_overlap(tmpdir):
-    """
-       Test completor case with user defined segmentation and
-    open annulus. Overlapping top user specified interval with reservoir."""
+    """Test case with user defined segmentation and open annulus.
 
+    Overlapping top user specified interval with reservoir.
+    """
     tmpdir.chdir()
     case_file = CASE_OA_USER_TOP_OVERLAP
     true_file = Path(_TESTDIR / "oa_user_top_overlap.true")
@@ -662,10 +643,10 @@ def test_oa_user_top_overlap(tmpdir):
 
 
 def test_oa_user_bottom_overlap(tmpdir):
-    """
-       Test completor case with user defined segmentation and
-    open annulus. Overlapping bottom user specified interval with reservoir."""
+    """Test case with user defined segmentation and open annulus.
 
+    Overlapping bottom user specified interval with reservoir.
+    """
     tmpdir.chdir()
     case_file = CASE_OA_USER_BOTTOM_OVERLAP
     true_file = Path(_TESTDIR / "oa_user_bottom_overlap.true")
@@ -674,10 +655,9 @@ def test_oa_user_bottom_overlap(tmpdir):
 
 
 def test_oa_user_1vpj(tmpdir):
+    """Test case with user defined segmentation and open annulus,
+    with a 1 VPJ interval in the 0 VPJ lower parts of the well.
     """
-       Test completor case with user defined segmentation and
-    open annulus with a 1 VPJ interval in the 0 VPJ lower part of the well."""
-
     tmpdir.chdir()
     case_file = CASE_OA_USER_1VPJ
     true_file = Path(_TESTDIR / "oa_user_1vpj.true")
@@ -686,10 +666,9 @@ def test_oa_user_1vpj(tmpdir):
 
 
 def test_oa_user_user(tmpdir):
+    """Test case with user defined segmentation and open annulus with a 1 VPJ
+    interval in the 0 VPJ lower part of the well.
     """
-       Test completor case with user defined segmentation and
-    open annulus with a 1 VPJ interval in the 0 VPJ lower part of the well."""
-
     tmpdir.chdir()
     case_file = CASE_OA_USER_USER
     true_file = Path(_TESTDIR / "oa_user_1vpj.true")
@@ -698,11 +677,11 @@ def test_oa_user_user(tmpdir):
 
 
 def test_oa_user_1vpj_pa(tmpdir):
-    """
-       Test completor case with user defined segmentation and
-    open annulus with a 1 VPJ interval in the 0 VPJ lower part of the
-    well. Install a packer above in 1 VPJ interval in the lower part of the well."""
+    """Test completor case with user defined segmentation and open annulus with a
+    1 VPJ interval in the 0 VPJ lower part of the well.
 
+    Install a packer above in 1 VPJ interval in the lower part of the well.
+    """
     tmpdir.chdir()
     case_file = CASE_OA_USER_1VPJ_PA
     true_file = Path(_TESTDIR / "oa_user_1vpj_pa.true")
@@ -711,11 +690,9 @@ def test_oa_user_1vpj_pa(tmpdir):
 
 
 def test_oa_user_0vpj(tmpdir):
+    """Test completor case with user defined segmentation and open annulus with a
+    0 VPJ interval in the 1 VPJ upper part of the well.
     """
-       Test completor case with user defined segmentation and
-    open annulus with a 0 VPJ interval in the 1 VPJ upper part of the
-    well."""
-
     tmpdir.chdir()
     case_file = CASE_OA_USER_0VPJ
     true_file = Path(_TESTDIR / "oa_user_0vpj.true")
@@ -724,11 +701,10 @@ def test_oa_user_0vpj(tmpdir):
 
 
 def test_oa_oneliner(tmpdir):
-    """
-       Test completor case with user-defined segmentation,
-    open annulus given in one line, i.e. one segment. Include 0 - x and
-    y - 99999."""
+    """Test case with user-defined segmentation, open annulus given in one line, i.e. one segment.
 
+    Include 0 - x and y - 99999.
+    """
     tmpdir.chdir()
     print(tmpdir)
     case_file = CASE_OA_ONELINER

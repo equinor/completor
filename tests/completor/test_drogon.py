@@ -68,7 +68,6 @@ _TEST_FILE = "test.sch"
 )
 def test_drogon_cases(drogon_case: str, tmpdir):
     """Test Completor with Drogon cases."""
-
     # Copy pvt file to tmpdir before creating schedule files
     tmpdir.chdir()
     case_path = Path(_TESTDIR_DROGON / drogon_case)

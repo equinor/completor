@@ -92,7 +92,9 @@ SEGMENTLENGTH
 
 def test_tubing_segment_icv(tmpdir):
     """Test completor case with ICV to create a special tubing segmentation.
-    Completor will produce mixes of tubing segmentation between lumped and default."""
+
+    Completor will produce mixes of tubing segmentation between lumped and default.
+    """
     tmpdir.chdir()
     case_file = Path(_TESTDIR / "icv_tubing.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")

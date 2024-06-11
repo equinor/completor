@@ -11,8 +11,7 @@ _TESTDIR = Path(__file__).absolute().parent / "data"
 
 
 def test_unpack_record():
-    """
-    Test unpack_records handles multiple values correctly.
+    """Test unpack_records handles multiple values correctly.
 
     E.g. 3* should be unpacked to 1*, 1*, 1*, and 2*10 unpacked to 10, 10.
     """
