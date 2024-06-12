@@ -48,4 +48,4 @@ jobs:
     - name: Test completor on ERT
       run: |
         cd tests/completor/data/ert/
-        ert ensemble_experiment ert_test.ert
+        poetry run ert ensemble_experiment ert_test.ert
