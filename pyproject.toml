@@ -76,6 +76,7 @@ line_length = 120
 [tool.flake8]
 max_line_length="132"
 ignore="E203, W503, E704"
+per-file-ignores="__init__.py:F401, F821"
 
 [tool.pytest.ini_options]
 markers = ["integration: mark a test as an integration test."]

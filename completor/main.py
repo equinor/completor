@@ -18,6 +18,7 @@ from completor.completion import WellSchedule
 from completor.constants import Keywords
 from completor.create_output import CreateOutput
 from completor.create_wells import CreateWells
+from completor.exceptions import CompletorError
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
@@ -258,15 +259,15 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
             # OUTFILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
             if keyword == "OUTFILE":
                 return None, None
-            raise abort(f"The keyword {keyword} is not defined correctly in the casefile")
+            raise CompletorError(f"The keyword {keyword} is not defined correctly in the casefile")
     if keyword != "OUTFILE":
         try:
             with open(file_path, encoding="utf-8") as file:
                 file_content = file.read()
         except FileNotFoundError as e:
-            raise abort(f"Could not find the file: '{file_path}'!") from e
+            raise CompletorError(f"Could not find the file: '{file_path}'!") from e
         except (PermissionError, IsADirectoryError) as e:
-            raise abort("Could not read SCHFILE, this is likely because the path is missing quotes.") from e
+            raise CompletorError("Could not read SCHFILE, this is likely because the path is missing quotes.") from e
         return file_content, file_path
     return None, file_path
 
@@ -527,7 +528,7 @@ def main() -> None:
         with open(inputs.inputfile, encoding="utf-8") as file:
             case_file_content = file.read()
     else:
-        raise abort("Need input case file to run Completor")
+        raise CompletorError("Need input case file to run Completor")
 
     schedule_file_content, inputs.schedulefile = get_content_and_path(
         case_file_content, inputs.schedulefile, Keywords.SCHFILE
@@ -558,4 +559,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except CompletorError as e:
+        raise abort(str(e))

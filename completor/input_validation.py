@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from completor.constants import Headers
-from completor.utils import abort
+from completor.exceptions import CompletorError
 
 
 def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:
@@ -74,7 +74,7 @@ def check_default_non_packer(df_comp: pd.DataFrame) -> pd.DataFrame:
     df_columns = df_nonpa.columns.to_numpy()
     for column in df_columns:
         if "1*" in df_nonpa[column]:
-            raise abort(f"No default value 1* is allowed in {column} entry.")
+            raise CompletorError(f"No default value 1* is allowed in {column} entry.")
     return df_comp
 
 
@@ -139,36 +139,38 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
     if df_comp[Headers.ANNULUS].iloc[idx] == "PA" and (
         df_comp[Headers.START_MD].iloc[idx] != df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
-        raise abort("Packer segments must not have length")
+        raise CompletorError("Packer segments must not have length")
 
     if (
         df_comp[Headers.ANNULUS].iloc[idx] != "PA"
         and df_comp[Headers.DEVICE_TYPE].iloc[idx] != "ICV"
         and df_comp[Headers.START_MD].iloc[idx] == df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
-        raise abort("Non packer segments must have length")
+        raise CompletorError("Non packer segments must have length")
 
     if idx > 0:
         if df_comp[Headers.START_MD].iloc[idx] > df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
-            raise abort(
+            raise CompletorError(
                 f"Incomplete completion description in well {well_name} from depth "
                 f"{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
                 f"to depth {df_comp[Headers.START_MEASURED_DEPTH].iloc[idx]}"
             )
 
         if df_comp[Headers.START_MD].iloc[idx] < df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
-            raise abort(
+            raise CompletorError(
                 f"Overlapping completion description in well '{well_name}' from depth "
                 f"t{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
                 f"to depth {(df_comp[Headers.START_MEASURED_DEPTH].iloc[idx])}"
             )
     if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in ["PERF", "AICD", "ICD", "VALVE", "DAR", "AICV", "ICV"]:
-        raise abort(
+        raise CompletorError(
             f"{df_comp[Headers.DEVICE_TYPE].iloc[idx]} not a valid device type. "
             "Valid types are PERF, AICD, ICD, VALVE, DAR, AICV, and ICV."
         )
     if df_comp[Headers.ANNULUS].iloc[idx] not in ["GP", "OA", "PA"]:
-        raise abort(f"{df_comp[Headers.ANNULUS].iloc[idx]} not a valid annulus type. Valid types are GP, OA, and PA")
+        raise CompletorError(
+            f"{df_comp[Headers.ANNULUS].iloc[idx]} not a valid annulus type. Valid types are GP, OA, and PA"
+        )
 
 
 def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
@@ -301,7 +303,7 @@ def validate_lateral_to_device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame) 
     try:
         df_lat2dev[Headers.BRANCH].astype(np.int64)
     except ValueError:
-        raise abort(
+        raise CompletorError(
             f"Could not convert BRANCH {df_lat2dev[Headers.BRANCH].values} "
             "to integer. Make sure that BRANCH is an integer."
         )
@@ -310,7 +312,7 @@ def validate_lateral_to_device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame) 
     for idx in range(0, nrow):
         l2d_well = df_lat2dev[Headers.WELL].iloc[idx]
         if (df_comp[df_comp[Headers.WELL] == l2d_well][Headers.ANNULUS] == "OA").any():
-            raise abort(
+            raise CompletorError(
                 f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
                 "This may trigger an error in reservoir simulator."
             )
@@ -334,7 +336,7 @@ def validate_minimum_segment_length(minimum_segment_length: str | float) -> floa
     try:
         minimum_segment_length = float(minimum_segment_length)
     except ValueError:
-        raise abort(f"The MINIMUM_SEGMENT_LENGTH {minimum_segment_length} has to be a float.")
+        raise CompletorError(f"The MINIMUM_SEGMENT_LENGTH {minimum_segment_length} has to be a float.")
     if minimum_segment_length < 0.0:
-        raise abort(f"The MINIMUM_SEGMENT_LENGTH {minimum_segment_length} cannot be less than 0.0.")
+        raise CompletorError(f"The MINIMUM_SEGMENT_LENGTH {minimum_segment_length} cannot be less than 0.0.")
     return minimum_segment_length

@@ -11,9 +11,9 @@ from completor import input_validation as val
 from completor import parse
 from completor.completion import WellSchedule
 from completor.constants import Headers, Keywords
-from completor.exceptions import CaseReaderFormatError
+from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
-from completor.utils import abort, clean_file_lines
+from completor.utils import clean_file_lines
 
 
 def _mapper(map_file: str) -> dict[str, str]:
@@ -265,7 +265,7 @@ class ReadCasefile:
                     elif "cell" in self.segment_length.lower():
                         logger.info("Segment lengths are created based on the grid dimensions.")
                 except ValueError as err:
-                    raise abort("SEGMENTLENGTH takes number or string") from err
+                    raise CompletorError("SEGMENTLENGTH takes number or string") from err
         else:
             # 'Cells' method if value is 0.0 or undefined
             logger.info("No segment length is defined. " "Segments are created based on the grid dimension.")
@@ -334,7 +334,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGVALV)
         if start_index == end_index:
             if "VALVE" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
+                raise CompletorError("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
@@ -350,7 +350,7 @@ class ReadCasefile:
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegvalv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise abort("Not all device in COMPLETION is specified in WSEGVALV")
+                raise CompletorError("Not all device in COMPLETION is specified in WSEGVALV")
 
     def read_wsegsicd(self) -> None:
         """Read the WSEGSICD keyword in the case file.
@@ -362,7 +362,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGSICD)
         if start_index == end_index:
             if "ICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGSICD keyword must be defined, if ICD is used in the completion.")
+                raise CompletorError("WSEGSICD keyword must be defined, if ICD is used in the completion.")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.STRENGTH, Headers.RHOCAL_ICD, Headers.VISCAL_ICD, Headers.WCUT]
@@ -374,7 +374,7 @@ class ReadCasefile:
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegsicd_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise abort("Not all device in COMPLETION is specified in WSEGSICD")
+                raise CompletorError("Not all device in COMPLETION is specified in WSEGSICD")
 
     def read_wsegaicd(self) -> None:
         """Read the WSEGAICD keyword in the case file.
@@ -387,7 +387,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICD)
         if start_index == end_index:
             if "AICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGAICD keyword must be defined, if AICD is used in the completion.")
+                raise CompletorError("WSEGAICD keyword must be defined, if AICD is used in the completion.")
         else:
             # Table headers
             header = [
@@ -411,7 +411,7 @@ class ReadCasefile:
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegaicd_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise abort("Not all device in COMPLETION is specified in WSEGAICD")
+                raise CompletorError("Not all device in COMPLETION is specified in WSEGAICD")
 
     def read_wsegdar(self) -> None:
         """Read the WSEGDAR keyword in the case file.
@@ -424,7 +424,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGDAR)
         if start_index == end_index:
             if "DAR" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGDAR keyword must be defined, if DAR is used in the completion")
+                raise CompletorError("WSEGDAR keyword must be defined, if DAR is used in the completion")
         else:
             # Table headers
             header = [
@@ -448,7 +448,7 @@ class ReadCasefile:
                     Headers.DEVICE_NUMBER
                 ].to_numpy()
                 if not check_contents(device_checks, self.wsegdar_table[Headers.DEVICE_NUMBER].to_numpy()):
-                    raise abort("Not all device in COMPLETION is specified in WSEGDAR")
+                    raise CompletorError("Not all device in COMPLETION is specified in WSEGDAR")
 
     def read_wsegaicv(self) -> None:
         """Read the WSEGAICV keyword in the case file.
@@ -461,7 +461,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICV)
         if start_index == end_index:
             if "AICV" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGAICV keyword must be defined, if AICV is used in the completion.")
+                raise CompletorError("WSEGAICV keyword must be defined, if AICV is used in the completion.")
         else:
             # Table headers
             header = [
@@ -498,7 +498,7 @@ class ReadCasefile:
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegaicv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise abort("Not all devices in COMPLETION are specified in WSEGAICV")
+                raise CompletorError("Not all devices in COMPLETION are specified in WSEGAICV")
 
     def read_wsegicv(self) -> None:
         """Read WSEGICV keyword in the case file.
@@ -511,7 +511,7 @@ class ReadCasefile:
         start_index, end_index = self.locate_keyword(Keywords.WSEGICV)
         if start_index == end_index:
             if "ICV" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise abort("WSEGICV keyword must be defined, if ICV is used in the completion")
+                raise CompletorError("WSEGICV keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC]
@@ -528,7 +528,7 @@ class ReadCasefile:
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegicv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise abort("Not all device in COMPLETION is specified in WSEGICV")
+                raise CompletorError("Not all device in COMPLETION is specified in WSEGICV")
 
     def get_completion(self, well_name: str | None, branch: int) -> pd.DataFrame:
         """Create the COMPLETION table for the selected well and branch.
@@ -567,7 +567,7 @@ class ReadCasefile:
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:
-                raise abort("USE_STRICT True: Define all branches in case file.")
+                raise CompletorError("USE_STRICT True: Define all branches in case file.")
             else:
                 for branch_no in branch_nos:
                     logger.warning("Adding branch %s for Well %s", branch_no, well_name)
