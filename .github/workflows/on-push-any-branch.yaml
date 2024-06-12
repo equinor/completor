@@ -11,7 +11,7 @@ jobs:
     uses: ./.github/workflows/lint.yaml
 
   test:
-    name: 🕵️ Run tests
+    name: Run tests
     uses: ./.github/workflows/tests.yaml
 
   todo-check:
