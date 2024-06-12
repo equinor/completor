@@ -45,13 +45,7 @@ jobs:
     - name: List all installed packages
       run: poetry show
 
-    - name: Run tests in multiprocess
-      run: poetry run pytest tests/ -n auto
-
-    - name: Install ERT and dependencies
-      run: pip install ert
-
     - name: Test completor on ERT
       run: |
-        cd test-data/
+        cd tests/completor/data/ert/
         ert ensemble_experiment ert_test.ert
