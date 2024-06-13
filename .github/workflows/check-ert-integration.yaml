@@ -45,7 +45,7 @@ jobs:
     - name: List all installed packages
       run: poetry show
 
-    - name: Test completor on ERT
+    - name: Test completor in ERT
       run: |
         cd tests/completor/data/ert/
         poetry run ert ensemble_experiment ert_test.ert
