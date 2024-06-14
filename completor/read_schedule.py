@@ -21,7 +21,7 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
     df_header = df_header.copy()
     df_content = df_content.copy()
 
-    if df_header[Headers.INFOTYPE].iloc[0] == "ABS":
+    if df_header[Headers.INFO_TYPE].iloc[0] == "ABS":
         return df_header, df_content
 
     ref_tvd = df_header[Headers.SEGMENTTVD].iloc[0]
@@ -43,7 +43,7 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
             tvd_new[idx] = tvd_new[out_idx] + tvd_inc[idx]
 
     # update data frame
-    df_header[Headers.INFOTYPE] = ["ABS"]
+    df_header[Headers.INFO_TYPE] = ["ABS"]
     df_content[Headers.TUBING_MD] = md_new
     df_content[Headers.TUBING_TVD] = tvd_new
     return df_header, df_content

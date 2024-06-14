@@ -226,7 +226,7 @@ def prepare_tubing_layer(
         Headers.TUBINGMD: Headers.MD,
         Headers.TUBINGTVD: Headers.TVD,
         Headers.TUBING_INNER_DIAMETER: Headers.DIAM,
-        Headers.TUBINGROUGHNESS: Headers.ROUGHNESS,
+        Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
     df_well = df_well[df_well[Headers.WELL] == well_name]
@@ -262,7 +262,7 @@ def prepare_tubing_layer(
     df_tubing_with_overburden[Headers.EMPTY] = "/"  # for printing
     # locate where it attached to (the top segment)
     wsa = schedule.get_well_segments(well_name)[1]  # all laterals
-    top = wsa[wsa.TUBINGSEGMENT == well_segments.iloc[0].TUBINGOUTLET]  # could be empty
+    top = wsa[wsa.TUBINGSEGMENT == well_segments.iloc[0][Headers.TUBING_OUTLET]]  # could be empty
 
     return df_tubing_with_overburden, top
 
@@ -746,7 +746,7 @@ def prepare_compsegs(
         compseg[Headers.BRANCH] = df_compseg_device[Headers.BRANCH].to_numpy()
         compseg[Headers.START_MEASURED_DEPTH] = df_compseg_device[Headers.START_MEASURED_DEPTH].to_numpy()
         compseg[Headers.END_MEASURED_DEPTH] = df_compseg_device[Headers.END_MEASURED_DEPTH].to_numpy()
-        compseg[Headers.DIR] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
+        compseg[Headers.DIRECTION] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
         compseg[Headers.DEF] = "3*"
         compseg[Headers.SEG] = df_compseg_device[Headers.SEG].to_numpy()
     else:
@@ -956,7 +956,7 @@ def prepare_compdat(
     compdat[Headers.KH] = df_reservoir[Headers.KH].to_numpy()
     compdat[Headers.SKIN] = df_reservoir[Headers.SKIN].to_numpy()
     compdat[Headers.DFACT] = df_reservoir[Headers.DFACT].to_numpy()
-    compdat[Headers.DIR] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
+    compdat[Headers.DIRECTION] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
     compdat[Headers.RO] = df_reservoir[Headers.RO].to_numpy()
     # remove default columns
     compdat = trim_pandas(compdat)

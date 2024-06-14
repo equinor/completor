@@ -129,13 +129,13 @@ WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10
     true_well4 = fr.remove_string_characters(true_well4)
     true_well4 = true_well4.astype(
         {
-            Headers.TUBINGSEGMENT: np.int64,
-            Headers.TUBINGSEGMENT2: np.int64,
+            Headers.TUBING_SEGMENT: np.int64,
+            Headers.TUBING_SEGMENT_2: np.int64,
             Headers.TUBINGBRANCH: np.int64,
-            Headers.TUBINGOUTLET: np.int64,
+            Headers.TUBING_OUTLET: np.int64,
             Headers.TUBINGMD: np.float64,
             Headers.TUBINGTVD: np.float64,
-            Headers.TUBINGROUGHNESS: np.float64,
+            Headers.TUBING_ROUGHNESS: np.float64,
         }
     )
     true_welsegs1_well4 = true_welsegs1[true_welsegs1[Headers.WELL] == "WELL4"]
@@ -224,7 +224,7 @@ def test_fix_welsegs():
     """
     df_header = pd.DataFrame(
         [[1000.0, 1500.0, "INC"]],
-        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFOTYPE],
+        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFO_TYPE],
     )
     df_content = pd.DataFrame(
         [
@@ -233,12 +233,12 @@ def test_fix_welsegs():
             [4, 3, 30.0, 30.0],
             [5, 4, 40.0, 40.0],
         ],
-        columns=[Headers.TUBINGSEGMENT, Headers.TUBINGOUTLET, Headers.TUBINGTVD, Headers.TUBINGMD],
+        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBINGTVD, Headers.TUBINGMD],
     )
 
     df_header_true = pd.DataFrame(
         [[1000.0, 1500.0, "ABS"]],
-        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFOTYPE],
+        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFO_TYPE],
     )
     df_content_true = pd.DataFrame(
         [
@@ -247,7 +247,7 @@ def test_fix_welsegs():
             [4, 3, 1060.0, 1600.0],
             [5, 4, 1100.0, 1640.0],
         ],
-        columns=[Headers.TUBINGSEGMENT, Headers.TUBINGOUTLET, Headers.TUBING_TVD, Headers.TUBING_MD],
+        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBING_TVD, Headers.TUBING_MD],
     )
 
     df_header, df_content = fix_welsegs(df_header, df_content)

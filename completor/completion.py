@@ -854,7 +854,7 @@ class WellSchedule:
             Headers.SEGMENTTVD,
             Headers.SEGMENTMD,
             Headers.WBVOLUME,
-            Headers.INFOTYPE,
+            Headers.INFO_TYPE,
             Headers.PDROPCOMP,
             Headers.MPMODEL,
             Headers.ITEM_8,
@@ -870,14 +870,14 @@ class WellSchedule:
 
         # make df for data records
         columns_data = [
-            Headers.TUBINGSEGMENT,
-            Headers.TUBINGSEGMENT2,
+            Headers.TUBING_SEGMENT,
+            Headers.TUBING_SEGMENT_2,
             Headers.TUBINGBRANCH,
-            Headers.TUBINGOUTLET,
+            Headers.TUBING_OUTLET,
             Headers.TUBINGMD,
             Headers.TUBINGTVD,
             Headers.TUBING_INNER_DIAMETER,
-            Headers.TUBINGROUGHNESS,
+            Headers.TUBING_ROUGHNESS,
             Headers.CROSS,
             Headers.VSEG,
             Headers.ITEM_11,

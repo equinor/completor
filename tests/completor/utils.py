@@ -193,13 +193,13 @@ class ReadSchedule:
         welsegs_header, welsegs_content = parse.get_welsegs_table(self.collections)
         self._welsegs_content = welsegs_content.astype(
             {
-                Headers.TUBINGSEGMENT: np.int64,
-                Headers.TUBINGSEGMENT2: np.int64,
+                Headers.TUBING_SEGMENT: np.int64,
+                Headers.TUBING_SEGMENT_2: np.int64,
                 Headers.TUBINGBRANCH: np.int64,
-                Headers.TUBINGOUTLET: np.int64,
+                Headers.TUBING_OUTLET: np.int64,
                 Headers.TUBINGMD: np.float64,
                 Headers.TUBINGTVD: np.float64,
-                Headers.TUBINGROUGHNESS: np.float64,
+                Headers.TUBING_ROUGHNESS: np.float64,
             }
         )
 
