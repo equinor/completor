@@ -108,7 +108,7 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
                 start_md_new[idx] = end_md_new[idx - 1]
             else:
                 logger.error("Cannot construct COMPSEGS segments based on current input")
-    return sort_by_midpoint(df_compsegs, end_md_new, start_md_new)
+    return sort_by_midpoint(df_compsegs, start_md_new, end_md_new)
 
 
 def fix_compsegs_by_priority(

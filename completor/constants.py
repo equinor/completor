@@ -9,9 +9,6 @@ from enum import Enum, auto
 class Headers:
     """Headers for DataFrames."""
 
-    # Autoadded / To be triaged.
-
-    MID = "MID"
     WCT = "WCT"  # Though used once, meaning Water cut.
     OPEN = "OPEN"
     RHO = "RHO"
