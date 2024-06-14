@@ -9,9 +9,10 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor.constants import Headers, Keywords, Method
+from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
-from completor.utils import abort, as_data_frame, log_and_raise_exception
+from completor.utils import as_data_frame, log_and_raise_exception
 
 try:
     from typing import Literal, TypeAlias  # type: ignore
@@ -368,10 +369,10 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
         DataFrame with the gaps filled.
 
     Raises:
-        SystemExit: If the Schedule file is missing data for one or more branches in the case file.
+        CompletorError: If the Schedule file is missing data for one or more branches in the case file.
     """
     if df_tubing_segments.empty:
-        raise abort(
+        raise CompletorError(
             "Schedule file is missing data for one or more branches defined in the case file. "
             f"Please check the data for well {well_name}."
         )
