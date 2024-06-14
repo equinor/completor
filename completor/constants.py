@@ -9,10 +9,10 @@ from enum import Enum, auto
 class Headers:
     """Headers for DataFrames."""
 
-    WCT = "WCT"  # Though used once, meaning Water cut.
+    WATER_CUT = "WCT"  # Though used once, meaning Water cut.
     OPEN = "OPEN"
     RHO = "RHO"
-    VIS = "VIS"
+    VISCOSITY = "VIS"
     MD_MARKER = "MD_MARKER"
     DEVICE = "DEVICE"
     SF = "SF"

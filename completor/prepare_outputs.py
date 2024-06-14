@@ -989,7 +989,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicd[Headers.ALPHA] = df_merge[Headers.ALPHA].to_numpy()
         wsegaicd[Headers.SF] = df_merge[Headers.SCALINGFACTOR].to_numpy()
         wsegaicd[Headers.RHO] = df_merge[Headers.RHOCAL_AICD].to_numpy()
-        wsegaicd[Headers.VIS] = df_merge[Headers.VISCAL_AICD].to_numpy()
+        wsegaicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_AICD].to_numpy()
         wsegaicd[Headers.DEF] = ["5*"] * df_merge.shape[0]
         wsegaicd[Headers.X] = df_merge[Headers.X].to_numpy()
         wsegaicd[Headers.Y] = df_merge[Headers.Y].to_numpy()
@@ -1032,8 +1032,8 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd[Headers.ALPHA] = df_merge[Headers.STRENGTH].to_numpy()
         wsegsicd[Headers.SF] = df_merge[Headers.SCALINGFACTOR].to_numpy()
         wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
-        wsegsicd[Headers.VIS] = df_merge[Headers.VISCAL_ICD].to_numpy()
-        wsegsicd[Headers.WCT] = df_merge[Headers.WCUT].to_numpy()
+        wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
+        wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WCUT].to_numpy()
         wsegsicd[Headers.EMPTY] = "/"
     return wsegsicd
 
@@ -1204,7 +1204,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv[Headers.ALPHA_MAIN] = df_merge[Headers.ALPHA_MAIN].to_numpy()
         wsegaicv[Headers.SF] = df_merge[Headers.SCALINGFACTOR].to_numpy()
         wsegaicv[Headers.RHO] = df_merge[Headers.RHOCAL_AICV].to_numpy()
-        wsegaicv[Headers.VIS] = df_merge[Headers.VISCAL_AICV].to_numpy()
+        wsegaicv[Headers.VISCOSITY] = df_merge[Headers.VISCAL_AICV].to_numpy()
         wsegaicv[Headers.DEF] = ["5*"] * df_merge.shape[0]
         wsegaicv[Headers.X_MAIN] = df_merge[Headers.X_MAIN].to_numpy()
         wsegaicv[Headers.Y_MAIN] = df_merge[Headers.Y_MAIN].to_numpy()
@@ -1375,7 +1375,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             Headers.ALPHA_MAIN,
             Headers.SF,
             Headers.RHO,
-            Headers.VIS,
+            Headers.VISCOSITY,
             Headers.DEF,
             Headers.X_MAIN,
             Headers.Y_MAIN,
@@ -1395,7 +1395,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             Headers.ALPHA_PILOT,
             Headers.SF,
             Headers.RHO,
-            Headers.VIS,
+            Headers.VISCOSITY,
             Headers.DEF,
             Headers.X_PILOT,
             Headers.Y_PILOT,
@@ -1416,7 +1416,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
         Headers.ALPHA,
         Headers.SF,
         Headers.RHO,
-        Headers.VIS,
+        Headers.VISCOSITY,
         Headers.DEF,
         Headers.X,
         Headers.Y,
