@@ -10,9 +10,10 @@ import pandas as pd
 
 from completor.completion import WellSchedule
 from completor.constants import Headers, Keywords
+from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
-from completor.utils import abort, as_data_frame
+from completor.utils import as_data_frame
 
 
 def trim_pandas(df_temp: pd.DataFrame) -> pd.DataFrame:
@@ -342,7 +343,7 @@ def connect_lateral(
         case: ReadCasefile object.
 
     Raises:
-        SystemExit: If there is no device layer at junction of lateral.
+        CompletorError: If there is no device layer at junction of lateral.
     """
     df_tubing, _, _, _, top = data[lateral]
     if not top.empty:
@@ -376,7 +377,7 @@ def connect_lateral(
                 # tubing layer.
                 idx = np.where(df_segm0.MD <= md_junct + 0.1)[0][-1]
         except IndexError as err:
-            raise abort(f"Cannot find a device layer at junction of lateral {lateral} in {well_name}") from err
+            raise CompletorError(f"Cannot find a device layer at junction of lateral {lateral} in {well_name}") from err
         outsegm = df_segm0.at[idx, Headers.SEG]
     else:
         outsegm = 1  # default
@@ -465,6 +466,10 @@ def prepare_annulus_layer(
 
     Returns:
         Annulus DataFrame, wseglink DataFrame.
+
+    Raises:
+          CompletorError: If splitting annulus fails.
+
     """
     # filter for this lateral
     df_well = df_well[df_well[Headers.WELL] == well_name]
@@ -508,7 +513,7 @@ def prepare_annulus_layer(
                 df_branch_downstream = df_branch.iloc[0 : idx_connection[0], :]
                 df_branch_upstream = df_branch.iloc[idx_connection[0] :,]
             except TypeError:
-                raise abort(
+                raise CompletorError(
                     "Most likely error is that Completor cannot have open annulus above top reservoir with"
                     " zero valves pr joint. Please contact user support if this is not the case."
                 )
@@ -694,9 +699,6 @@ def prepare_compsegs(
 
     Returns:
         COMPSEGS DataFrame.
-
-    Raises:
-        SystemExit: If dataframes are unable to merge correctly.
     """
     df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
@@ -856,7 +858,7 @@ def connect_compseg_usersegment(
                 left=df_res.sort_values(Headers.MARKER), right=df_ann, on=[Headers.MARKER], direction="nearest"
             )
         except ValueError as err:
-            raise abort(
+            raise CompletorError(
                 "Unexpected error when merging data frames. Please contact the "
                 "dev-team with the stack trace above and the files that caused this error."
             ) from err
@@ -865,7 +867,7 @@ def connect_compseg_usersegment(
             left=df_res.sort_values(Headers.MARKER), right=df_dev, on=[Headers.MARKER], direction="nearest"
         )
     except ValueError as err:
-        raise abort(
+        raise CompletorError(
             "Unexpected error when merging data frames. Please contact the "
             "dev-team with the stack trace above and the files that caused this error."
         ) from err
@@ -1253,7 +1255,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         Formatted actions to be included in the output file.
 
     Raises:
-        SystemExit: If there are to many wells and/or segments with DAR.
+        CompletorError: If there are to many wells and/or segments with DAR.
     """
     header = [
         [Headers.WELL, Headers.SEG, Headers.CV_DAR, Headers.AC_GAS, Headers.DEFAULTS, Headers.AC_MAX],
@@ -1294,7 +1296,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             act_number = iaction + 1
             act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
             if len(act_name) > 8:
-                raise abort("Too many wells and/or too many segments with DAR")
+                raise CompletorError("Too many wells and/or too many segments with DAR")
             action += (
                 f"ACTIONX\n{act_name} 1000000 /\n"
                 f"SWHF '{well_name}' {segment_number} "
@@ -1322,7 +1324,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         act_number = iaction + 1
         act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
         if len(act_name) > 8:
-            raise abort("Too many wells and/or too many segments with DAR")
+            raise CompletorError("Too many wells and/or too many segments with DAR")
         action += (
             f"ACTIONX\n{act_name} 1000000 /\n"
             f"SGHF '{well_name}' {segment_number} "
@@ -1345,7 +1347,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         act_number = iaction + 1
         act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
         if len(act_name) > 8:
-            raise abort("Too many wells and/or too many segments with DAR")
+            raise CompletorError("Too many wells and/or too many segments with DAR")
         action += (
             f"ACTIONX\n{act_name} 1000000 /\n"
             f"SWHF '{well_name}' {segment_number} "
@@ -1377,7 +1379,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
         Formatted actions to be included in the output file.
 
     Raises:
-        SystemExit: If there are too many wells and/or segments with AICV.
+        CompletorError: If there are too many wells and/or segments with AICV.
     """
     header = [
         [
@@ -1455,7 +1457,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             act_number = iaction + 1
             act_name = f"V{well_number:03d}{segment_number:03d}{act_number:1d}"
             if len(act_name) > 8:
-                raise abort("Too many wells and/or too many segments with AICV")
+                raise CompletorError("Too many wells and/or too many segments with AICV")
             action += (
                 f"ACTIONX\n{act_name} 1000000 /\n"
                 f"SUWCT '{well_name}' {segment_number} {sign_water[iaction]} "

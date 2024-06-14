@@ -11,7 +11,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor.constants import Headers, Keywords
-from completor.utils import abort
+from completor.exceptions.clean_exceptions import CompletorError
 
 
 class ContentCollection(list):
@@ -73,7 +73,7 @@ def locate_keyword(
         end_index - array that locates the end of the keyword (or its first element).
 
     Raises:
-        SystemExit: If keyword had no end record.
+        CompletorError: If keyword had no end record.
         ValueError: If keyword cannot be found in case file.
     """
     content_length = len(content)
@@ -92,7 +92,7 @@ def locate_keyword(
                     break
             if (idx == content_length - 1) and content[idx] != end_char:
                 # error if until the last line the end char is not found
-                raise abort(f"Keyword {keyword} has no end record")
+                raise CompletorError(f"Keyword {keyword} has no end record")
         else:
             # if there is no end character is specified, then the end of a record is the next keyword or end of line
             for idx in range(istart + 1, content_length):
@@ -239,7 +239,7 @@ def read_schedule_keywords(
         remaining_content - List of strings of un-listed keywords.
 
     Raises:
-        SystemExit: If keyword is not found.
+        CompletorError: If keyword is not found.
     """
     content = deepcopy(content)
     used_index = np.asarray([-1])
@@ -248,7 +248,7 @@ def read_schedule_keywords(
     for keyword in keywords + optional_keywords:
         start_index, end_index = locate_keyword(content, keyword, take_first=False)
         if start_index[0] == end_index[0] and keyword not in optional_keywords:
-            raise abort(f"Keyword {keyword} is not found")
+            raise CompletorError(f"Keyword {keyword} is not found")
         for idx, start in enumerate(start_index):
             end = end_index[idx]
             used_index = np.append(used_index, np.arange(start, end + 1))

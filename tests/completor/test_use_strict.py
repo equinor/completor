@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 import utils
 
+from completor.exceptions import CompletorError
+
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "ml_well.sch"
 
@@ -121,7 +123,7 @@ USE_STRICT
     utils.assert_results(true_file_strict_default, _TEST_FILE)
 
 
-def test_use_strict_true_missing_branch(tmpdir, caplog):
+def test_use_strict_true_missing_branch(tmpdir):
     """Test case with USE_STRICT set to True, with a missing branch.
 
     Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
@@ -152,14 +154,12 @@ USE_STRICT
 {JOINT_LENGTH_AND_WSEGAICD}
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
+    with pytest.raises(CompletorError) as e:
         utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    assert pytest_wrapped_e.type == SystemExit
-    assert pytest_wrapped_e.value.code == 1
-    assert "USE_STRICT True: Define all branches in case file." in caplog.text
+    assert "USE_STRICT True: Define all branches in case file." in str(e)
 
 
-def test_use_strict_default_missing_branch(tmpdir, caplog):
+def test_use_strict_default_missing_branch(tmpdir):
     """Test case with with USE_STRICT set to True, with the default branch missing.
 
     Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
@@ -183,10 +183,9 @@ COMPLETION
 {JOINT_LENGTH_AND_WSEGAICD}
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
-    with pytest.raises(SystemExit) as exception_info:
+    with pytest.raises(CompletorError) as e:
         utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    assert exception_info.value.code == 1
-    assert "USE_STRICT True: Define all branches in case file." in caplog.text
+    assert "USE_STRICT True: Define all branches in case file." in str(e)
 
 
 def test_use_strict_false_missing_branch(tmpdir):

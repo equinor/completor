@@ -10,8 +10,9 @@ import pandas as pd
 
 from completor import main, parse  # type: ignore
 from completor.constants import Headers, Keywords
+from completor.exceptions import CompletorError
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
-from completor.utils import clean_file_lines  # type: ignore
+from completor.utils import abort, clean_file_lines  # type: ignore
 
 
 def open_files_run_create(
@@ -310,4 +311,7 @@ def completor_runner(**kwargs) -> None:
         kwargs: Keyword arguments to run completor with.
     """
     _mock_parse_args(**kwargs)
-    main.main()
+    try:
+        main.main()
+    except CompletorError as e:
+        raise abort(str(e))

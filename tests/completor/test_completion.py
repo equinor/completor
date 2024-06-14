@@ -9,6 +9,7 @@ import pytest
 
 from completor import completion  # type: ignore
 from completor.constants import Headers, Keywords, Method
+from completor.exceptions import CompletorError
 
 
 def test_completion_index():
@@ -215,7 +216,7 @@ def test_insert_missing_segments_raise_error():
     """Test that an error is raised when there is no data in df_tubing_segments."""
     df_tubing_segments = pd.DataFrame([], columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CompletorError):
         completion.insert_missing_segments(df_tubing_segments, "A1")
 
 

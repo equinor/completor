@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 import utils
 
+from completor.exceptions import CompletorError
+
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "ml_well.sch"
 
@@ -146,11 +148,9 @@ LATERAL_TO_DEVICE
 /
     """
     schedule_file = Path(_TESTDIR / "ml_well_l2d_nodevicetest.sch")
-    with pytest.raises(SystemExit) as pytest_wrapped_exc:
+    with pytest.raises(CompletorError) as e:
         utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    assert pytest_wrapped_exc.type == SystemExit
-    assert pytest_wrapped_exc.value.code == 1
-    assert "Cannot find a device layer at junction of lateral 2 in A1" in caplog.text
+    assert "Cannot find a device layer at junction of lateral 2 in A1" in str(e)
 
 
 def test_lat2tubing(tmpdir):

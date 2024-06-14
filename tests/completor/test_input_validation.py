@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from completor.exceptions import CompletorError
 from completor.input_validation import validate_minimum_segment_length
 from completor.read_casefile import ReadCasefile
 
@@ -17,10 +18,9 @@ def test_lat2dev_with_annulus(tmpdir):
 
     """
     tmpdir.chdir()
-    with pytest.raises(SystemExit) as e:
+    with pytest.raises(CompletorError):
         with open(Path(_TESTDIR / "case_lat2dev.testfile"), encoding="utf-8") as case_file:
             ReadCasefile(case_file.read())
-    assert e.type == SystemExit
 
 
 def test_validate_minimum_segment_length():
@@ -28,8 +28,8 @@ def test_validate_minimum_segment_length():
     Test the validate_minimum_segment_length function.
     """
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CompletorError):
         validate_minimum_segment_length("DUMMY")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CompletorError):
         validate_minimum_segment_length(-5.0)

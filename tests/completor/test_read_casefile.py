@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from completor.constants import Headers
-from completor.exceptions import CaseReaderFormatError  # type: ignore
+from completor.exceptions import CaseReaderFormatError, CompletorError  # type: ignore
 from completor.main import get_content_and_path  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
 
@@ -360,7 +360,7 @@ def test_read_minimum_segment_length():
     assert _THECASE.minimum_segment_length == 0.0, "Failed reading" " MINIMUM_SEGMENTLENGTH keyword"
 
 
-def test_error_wrong_format_keyword(caplog):
+def test_error_wrong_format_keyword():
     """Test keywords in the wrong format fails."""
     case_content = """COMPLETION
 --Well Branch StartMD EndmD Screen   Well/Casing Roughness Annulus Nvalve/Joint ValveType DeviceNumber BlankPortion
@@ -376,9 +376,9 @@ WSEGSICD
 
 """  # noqa: more human readable at this width.
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CompletorError) as e:
         ReadCasefile(case_content)
-    assert "Keyword WSEGSICD has no end record" in caplog.text
+    assert "Keyword WSEGSICD has no end record" in str(e)
 
     case_content += """
 WSEGVALV
