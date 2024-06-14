@@ -7,6 +7,7 @@ import sys
 from typing import Any, overload
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from completor.constants import Headers
@@ -37,25 +38,26 @@ def abort(message: str, status: int = 1) -> SystemExit:
     return sys.exit(status)
 
 
-def sort_by_midpoint(df: pd.DataFrame, end_md: np.ndarray, start_md: np.ndarray) -> pd.DataFrame:
+def sort_by_midpoint(
+    df: pd.DataFrame, start_measured_depths: npt.NDArray[np.float64], end_measured_depths: npt.NDArray[np.float64]
+) -> pd.DataFrame:
     """Sort DataFrame on midpoint calculated from the new start and end measured depths.
 
     Arguments:
         df: DataFrame to be sorted.
-        end_md: End measured depth.
-        start_md: Start measured depth.
+        start_measured_depths: Start measured depths.
+        end_measured_depths: End measured depths.
 
     Returns:
         Sorted DataFrame.
     """
-    df[Headers.START_MD] = start_md
-    df[Headers.END_MEASURED_DEPTH] = end_md
-    # sort the data frame based on the mid point
-    df[Headers.MID] = (df[Headers.START_MD] + df[Headers.END_MEASURED_DEPTH]) * 0.5
-    df.sort_values(by=[Headers.MID], inplace=True)
-    # drop the MID column
-    df.drop([Headers.MID], axis=1, inplace=True)
-    return df
+    _temp_column = "TEMPORARY_MIDPOINT"
+    df[Headers.START_MEASURED_DEPTH] = start_measured_depths
+    df[Headers.END_MEASURED_DEPTH] = end_measured_depths
+    # Sort the data frame based on the mid-point.
+    df[_temp_column] = df[[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]].mean(axis=1)
+    df = df.sort_values(by=[_temp_column])
+    return df.drop([_temp_column], axis=1)
 
 
 def as_data_frame(args: dict[str, Any] | None = None, **kwargs) -> pd.DataFrame:

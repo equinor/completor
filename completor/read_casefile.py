@@ -135,7 +135,7 @@ class ReadCasefile:
         header = [
             Headers.WELL,
             Headers.BRANCH,
-            Headers.START_MD,
+            Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.INNER_DIAMETER,
             Headers.OUTER_DIAMETER,
@@ -169,17 +169,18 @@ class ReadCasefile:
             Updated COMPLETION table.
         """
         if not df_temp.loc[
-            (df_temp[Headers.START_MD] == df_temp[Headers.END_MEASURED_DEPTH]) & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+            (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
+            & (df_temp[Headers.DEVICE_TYPE] == "ICV")
         ].empty:
             # take ICV tubing table
             self.completion_icv_tubing = df_temp.loc[
-                (df_temp[Headers.START_MD] == df_temp[Headers.END_MEASURED_DEPTH])
+                (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
                 & (df_temp[Headers.DEVICE_TYPE] == "ICV")
             ].reset_index(drop=True)
             # drop its line
             df_temp = df_temp.drop(
                 df_temp.loc[
-                    (df_temp[Headers.START_MD] == df_temp[Headers.END_MEASURED_DEPTH])
+                    (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
                     & (df_temp[Headers.DEVICE_TYPE] == "ICV")
                 ].index[:]
             ).reset_index(drop=True)
@@ -365,7 +366,13 @@ class ReadCasefile:
                 raise CompletorError("WSEGSICD keyword must be defined, if ICD is used in the completion.")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.STRENGTH, Headers.RHOCAL_ICD, Headers.VISCAL_ICD, Headers.WCUT]
+            header = [
+                Headers.DEVICE_NUMBER,
+                Headers.STRENGTH,
+                Headers.RHOCAL_ICD,
+                Headers.VISCAL_ICD,
+                Headers.WATER_CUT,
+            ]
             self.wsegsicd_table = val.set_format_wsegsicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )

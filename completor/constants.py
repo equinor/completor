@@ -9,74 +9,75 @@ from enum import Enum, auto
 class Headers:
     """Headers for DataFrames."""
 
-    # Autoadded / To be triaged.
-
-    MID = "MID"
-    WCT = "WCT"  # Though used once, meaning Water cut.
+    WATER_CUT = "WCT"
     OPEN = "OPEN"
     RHO = "RHO"
-    VIS = "VIS"
-    MD_MARKER = "MD_MARKER"
+    VISCOSITY = "VIS"
     DEVICE = "DEVICE"
-    SF = "SF"
+    SF = "SF"  # Saturation functions?
     THERM = "THERM"
-    PERFDEPTH = "PERFDEPTH"
+    PERFDEPTH = "PERFDEPTH"  # Perforation depth?
     ENDGRID = "ENDGRID"
-    ITEM13 = "ITEM13"
-    VSEG = "VSEG"
-    TUBINGID = "TUBINGID"
+    VSEG = "VSEG"  # Vertical Segments?
+    TUBING_INNER_DIAMETER = "TUBINGID"
     MPMODEL = "MPMODEL"
-    PDROPCOMP = "PDROPCOMP"
-    WBVOLUME = "WBVOLUME"
-    ITEM8 = "ITEM8"
-    ITEM9 = "ITEM9"
-    ITEM10 = "ITEM10"
-    ITEM11 = "ITEM11"
-    ITEM12 = "ITEM12"
-    ITEM14 = "ITEM14"
-    ITEM15 = "ITEM15"
-    ITEM16 = "ITEM16"
-    ITEM17 = "ITEM17"
+    PDROPCOMP = "PDROPCOMP"  # Pressure drop completion?
+    WBVOLUME = "WBVOLUME"  # Well bore volume?
+    ITEM_8 = "ITEM8"
+    ITEM_9 = "ITEM9"
+    ITEM_10 = "ITEM10"
+    ITEM_11 = "ITEM11"
+    ITEM_12 = "ITEM12"
+    ITEM_13 = "ITEM13"
+    ITEM_14 = "ITEM14"
+    ITEM_15 = "ITEM15"
+    ITEM_16 = "ITEM16"
+    ITEM_17 = "ITEM17"
     REGION = "REGION"
-    DENSCAL = "DENSCAL"
-    PRESSURETABLE = "PRESSURETABLE"
+    DENSCAL = "DENSCAL"  # Calculated density / Density calculated?
+    PRESSURE_TABLE = "PRESSURETABLE"
     CROSS = "CROSS"
     SHUT = "SHUT"
     DR = "DR"
     PHASE = "PHASE"
-    BHP_DEPTH = "BHP_DEPTH"
+    BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
     GROUP = "GROUP"
     MARKER = "MARKER"
-    SCALINGFACTOR = "SCALINGFACTOR"
+    SCALING_FACTOR = "SCALINGFACTOR"
     LENGTH = "LENGTH"
-    ADDITIONALSEGMENT = "AdditionalSegment"
-    ORIGINALSEGMENT = "OriginalSegment"
-    START_MD = "STARTMD"
-    TUBINGROUGHNESS = "TUBINGROUGHNESS"
-    TUBINGSEGMENT2 = "TUBINGSEGMENT2"
-    INFOTYPE = "INFOTYPE"
-    TUBINGSEGMENT = "TUBINGSEGMENT"
-    TUBINGOUTLET = "TUBINGOUTLET"
-    SAT = "SAT"
-    FLAG = "FLAG"
+    ADDITIONAL_SEGMENT = "AdditionalSegment"
+    ORIGINAL_SEGMENT = "OriginalSegment"
+    TUBING_SEGMENT_2 = "TUBINGSEGMENT2"
+    INFO_TYPE = "INFOTYPE"
+    TUBING_OUTLET = "TUBINGOUTLET"
+    SAT = "SAT"  # Saturation?
+    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
     DEF = "DEF"
-    DIR = "DIR"  # Only used in COMPSEGS, in prepare_outputs.py
-    SEG = "SEG"
+    DIRECTION = "DIR"
+    SEG = "SEG"  # Duplicate, ish
     SEG2 = "SEG2"
     OUT = "OUT"
     COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"
     LATERAL = "LATERAL"
-    NDEVICES = "NDEVICES"
+    NUMBER_OF_DEVICES = "NDEVICES"
     I = "I"  # noqa: E741
     J = "J"
     K = "K"
     K2 = "K2"
     STATUS = "STATUS"
-    SATNUM = "SATNUM"
-    CF = "CF"
-    DIAM = "DIAM"
-    KH = "KH"
-    SKIN = "SKIN"
+    SATURATION_FUNCTION_REGION_NUMBERS = "SATNUM"
+    CONNECTION_FACTOR = "CF"  # Transmissibility factor for the connection. If defaulted or set to zero,
+    # the connection transmissibility factor is calculated using the remaining items of data in this record. See "The
+    # connection transmissibility factor" in the ECLIPSE Technical Description for an account of the methods used in
+    # Cartesian and radial geometries. The well bore diameter must be set in item 9.
+
+    DIAMETER = "DIAM"
+    FORAMTION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
+    # thickness, h, in a producing well, referred to as kh.
+    SKIN = "SKIN"  # A dimensionless factor calculated to determine the production efficiency of a well by comparing
+    # actual conditions with theoretical or ideal conditions. A positive skin value indicates some damage or
+    # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
+    # typically resulting from stimulation.
     DFACT = "DFACT"
     COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
     RO = "RO"
@@ -89,7 +90,6 @@ class Headers:
     SEGMENTMD = "SEGMENTMD"
     SEGMENT_DESC = "SEGMENT_DESC"
     SEGMENT = "SEGMENT"
-    WCUT = "WCUT"
     VISCAL_ICD = "VISCAL_ICD"
     RHOCAL_ICD = "RHOCAL_ICD"
     STRENGTH = "STRENGTH"
@@ -149,7 +149,6 @@ class Headers:
 
     TUBINGBRANCH = "TUBINGBRANCH"
     MD = "MD"
-    DIAM = "DIAM"
 
     # from `test_completion.py`
     TUB_MD = "TUB_MD"
@@ -172,11 +171,9 @@ class Headers:
     TUBING_TVD = "TUBINGTVD"
     SEGMENT_MD = "SEGMENTMD"
     SEGMENT_TVD = "SEGMENTTVD"
-    TUBING_OUTLET = "TUBINGOUTLET"
     TUBING_SEGMENT = "TUBINGSEGMENT"
     TUBING_SEGMENT2 = "TUBINGSEGMENT2"
     TUBING_BRANCH = "TUBINGBRANCH"
-    TUBING_ID = "TUBINGID"
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
 
     EMPTY = ""
@@ -257,18 +254,3 @@ class Method(Enum):
         elif isinstance(other, str):
             return self.name == other
         return False
-
-
-class WellSegment:
-    """Columns for WellSegments."""
-
-    TUBING_MD = "TUBINGMD"
-    TUBING_TVD = "TUBINGTVD"
-    SEGMENT_MD = "SEGMENTMD"
-    SEGMENT_TVD = "SEGMENTTVD"
-    TUBING_OUTLET = "TUBINGOUTLET"
-    TUBING_SEGMENT = "TUBINGSEGMENT"
-    TUBING_SEGMENT2 = "TUBINGSEGMENT2"
-    TUBING_BRANCH = "TUBINGBRANCH"
-    TUBING_ID = "TUBINGID"
-    TUBING_ROUGHNESS = "TUBINGROUGHNESS"

@@ -163,12 +163,12 @@ def test_prepare_tubing_layer():
             ["A1", 3471.062485, 2251.620480, 0.1, 0.1, 1],
             ["A1", 3516.044325, 2255.627560, 0.1, 0.1, 1],
         ],
-        columns=[Headers.WELL, Headers.MD, Headers.TVD, Headers.DIAM, Headers.ROUGHNESS, Headers.LATERAL],
+        columns=[Headers.WELL, Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS, Headers.LATERAL],
     )
 
     pd.testing.assert_frame_equal(
-        df_test[[Headers.MD, Headers.TVD, Headers.DIAM, Headers.ROUGHNESS]],
-        df_true[[Headers.MD, Headers.TVD, Headers.DIAM, Headers.ROUGHNESS]],
+        df_test[[Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS]],
+        df_true[[Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS]],
     )
 
 
@@ -191,11 +191,11 @@ def test_prepare_compsegs():
             Headers.END_MEASURED_DEPTH,
             Headers.COMPSEGS_DIRECTION,
             Headers.K2,
-            Headers.CF,
-            Headers.DIAM,
+            Headers.CONNECTION_FACTOR,
+            Headers.DIAMETER,
             Headers.MD,
             Headers.TUB_MD,
-            Headers.NDEVICES,
+            Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
             Headers.ANNULUS_ZONE,
             Headers.WELL,
@@ -214,15 +214,15 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
     df_annulus = pd.DataFrame([], columns=[])
     df_tubing_segments = pd.DataFrame(
         [
-            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINALSEGMENT, 1, "PERF", "GP"],
-            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINALSEGMENT, 1, "PERF", "GP"],
+            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
+            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -252,7 +252,7 @@ def test_prepare_compsegs():
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.DIR,
+            Headers.DIRECTION,
             Headers.DEF,
             Headers.SEG,
             Headers.EMPTY,
@@ -277,14 +277,14 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
     df_completion_table = pd.DataFrame(
         [
-            [1000.0, 1500.0, 1250.0, 1250.0, Headers.ORIGINALSEGMENT, "GP", 1, "PERF"],
-            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINALSEGMENT, "GP", 1, "PERF"],
+            [1000.0, 1500.0, 1250.0, 1250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
+            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -311,7 +311,7 @@ def test_prepare_compsegs():
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.DIR,
+            Headers.DIRECTION,
             Headers.DEF,
             Headers.SEG,
             Headers.EMPTY,
@@ -336,7 +336,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -352,15 +352,15 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
             Headers.EMPTY,
         ],
     )
     df_tubing_segments = pd.DataFrame(
         [
-            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINALSEGMENT, 1, "GP", "ICD"],
-            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINALSEGMENT, 1, "GP", "ICD"],
+            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
+            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -387,7 +387,7 @@ def test_prepare_compsegs():
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.DIR,
+            Headers.DIRECTION,
             Headers.DEF,
             Headers.SEG,
             Headers.EMPTY,
@@ -412,7 +412,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -428,15 +428,15 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
             Headers.EMPTY,
         ],
     )
     df_completion_table = pd.DataFrame(
         [
-            [1000.0, 1500.0, 1300.0, 1300.0, Headers.ORIGINALSEGMENT, "OA", 1, "PERF"],
-            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINALSEGMENT, "OA", 1, "PERF"],
+            [1000.0, 1500.0, 1300.0, 1300.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
+            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -463,7 +463,7 @@ def test_prepare_compsegs():
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.DIR,
+            Headers.DIRECTION,
             Headers.DEF,
             Headers.SEG,
             Headers.EMPTY,
@@ -488,7 +488,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -504,15 +504,15 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
             Headers.EMPTY,
         ],
     )
     df_tubing_segments = pd.DataFrame(
         [
-            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINALSEGMENT, "GP", 1, "ICD"],
-            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINALSEGMENT, "GP", 1, "ICD"],
+            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
+            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -539,7 +539,7 @@ def test_prepare_compsegs():
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.DIR,
+            Headers.DIRECTION,
             Headers.DEF,
             Headers.SEG,
             Headers.EMPTY,
@@ -761,7 +761,7 @@ def test_prepare_wsegvalv():
             Headers.L,
             Headers.AC_MAX,
             Headers.DEVICE_TYPE,
-            Headers.NDEVICES,
+            Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_NUMBER,
         ],
     )
@@ -777,7 +777,7 @@ def test_prepare_wsegvalv():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -831,23 +831,23 @@ def test_prepare_compdat(tmpdir):
             Headers.K,
             Headers.K2,
             Headers.STATUS,
-            Headers.SATNUM,
-            Headers.CF,
-            Headers.DIAM,
-            Headers.KH,
+            Headers.SATURATION_FUNCTION_REGION_NUMBERS,
+            Headers.CONNECTION_FACTOR,
+            Headers.DIAMETER,
+            Headers.FORAMTION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
             Headers.MD,
             Headers.ANNULUS_ZONE,
-            Headers.NDEVICES,
+            Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
         ],
     )
 
     df_completion_table = pd.DataFrame(
-        [[500.0, 1500.0, 500.0, 1500.0, Headers.ORIGINALSEGMENT, "OA", 1, "ICD", 0.15, 0.311]],
+        [[500.0, 1500.0, 500.0, 1500.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "ICD", 0.15, 0.311]],
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
@@ -873,12 +873,12 @@ def test_prepare_compdat(tmpdir):
             Headers.K2,
             Headers.FLAG,
             Headers.SAT,
-            Headers.CF,
-            Headers.DIAM,
-            Headers.KH,
+            Headers.CONNECTION_FACTOR,
+            Headers.DIAMETER,
+            Headers.FORAMTION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
-            Headers.DIR,
+            Headers.DIRECTION,
             Headers.RO,
             Headers.EMPTY,
         ],
@@ -911,7 +911,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.L,
             Headers.AC_MAX,
             Headers.DEVICE_TYPE,
-            Headers.NDEVICES,
+            Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_NUMBER,
         ],
     )
@@ -927,7 +927,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -944,7 +944,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -1005,11 +1005,11 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.END_MEASURED_DEPTH,
             Headers.COMPSEGS_DIRECTION,
             Headers.K2,
-            Headers.CF,
-            Headers.DIAM,
+            Headers.CONNECTION_FACTOR,
+            Headers.DIAMETER,
             Headers.MD,
             Headers.TUB_MD,
-            Headers.NDEVICES,
+            Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
             Headers.ANNULUS_ZONE,
             Headers.WELL,
@@ -1029,7 +1029,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -1046,7 +1046,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAM,
+            Headers.DIAMETER,
             Headers.ROUGHNESS,
         ],
     )

@@ -91,7 +91,7 @@ def set_format_completion(df_comp: pd.DataFrame) -> pd.DataFrame:
         {
             Headers.WELL: str,
             Headers.BRANCH: np.int64,
-            Headers.START_MD: np.float64,
+            Headers.START_MEASURED_DEPTH: np.float64,
             Headers.END_MEASURED_DEPTH: np.float64,
             Headers.INNER_DIAMETER: np.float64,
             Headers.OUTER_DIAMETER: np.float64,
@@ -137,26 +137,26 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
             If the completion description is overlapping for some range of depth.
     """
     if df_comp[Headers.ANNULUS].iloc[idx] == "PA" and (
-        df_comp[Headers.START_MD].iloc[idx] != df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
+        df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] != df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
         raise CompletorError("Packer segments must not have length")
 
     if (
         df_comp[Headers.ANNULUS].iloc[idx] != "PA"
         and df_comp[Headers.DEVICE_TYPE].iloc[idx] != "ICV"
-        and df_comp[Headers.START_MD].iloc[idx] == df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
+        and df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] == df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
         raise CompletorError("Non packer segments must have length")
 
     if idx > 0:
-        if df_comp[Headers.START_MD].iloc[idx] > df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
+        if df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] > df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
             raise CompletorError(
                 f"Incomplete completion description in well {well_name} from depth "
                 f"{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
                 f"to depth {df_comp[Headers.START_MEASURED_DEPTH].iloc[idx]}"
             )
 
-        if df_comp[Headers.START_MD].iloc[idx] < df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
+        if df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] < df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
             raise CompletorError(
                 f"Overlapping completion description in well '{well_name}' from depth "
                 f"t{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
@@ -202,7 +202,7 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
         Updated data.
     """
     # if WCUT is defaulted then set to 0.5, the same default value as in simulator
-    df_temp[Headers.WCUT] = df_temp[Headers.WCUT].replace("1*", 0.5).astype(np.float64)
+    df_temp[Headers.WATER_CUT] = df_temp[Headers.WATER_CUT].replace("1*", 0.5).astype(np.float64)
     # set data type
     df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
     # left out device number because it has been formatted as integer

@@ -152,9 +152,9 @@ def test_insert_missing_segments_no_gap():
     )
     df_true = pd.DataFrame(
         [
-            [1000, 2000, Headers.ORIGINALSEGMENT],
-            [2000, 3000, Headers.ORIGINALSEGMENT],
-            [3000, 4000, Headers.ORIGINALSEGMENT],
+            [1000, 2000, Headers.ORIGINAL_SEGMENT],
+            [2000, 3000, Headers.ORIGINAL_SEGMENT],
+            [3000, 4000, Headers.ORIGINAL_SEGMENT],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
@@ -175,10 +175,10 @@ def test_insert_missing_segments_one_gap():
     )
     df_true = pd.DataFrame(
         [
-            [1000, 2000, Headers.ORIGINALSEGMENT],
-            [2000, 2500, Headers.ADDITIONALSEGMENT],
-            [2500, 3000, Headers.ORIGINALSEGMENT],
-            [3000, 4000, Headers.ORIGINALSEGMENT],
+            [1000, 2000, Headers.ORIGINAL_SEGMENT],
+            [2000, 2500, Headers.ADDITIONAL_SEGMENT],
+            [2500, 3000, Headers.ORIGINAL_SEGMENT],
+            [3000, 4000, Headers.ORIGINAL_SEGMENT],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
@@ -199,11 +199,11 @@ def test_insert_missing_segments_two_gaps():
     )
     df_true = pd.DataFrame(
         [
-            [1000, 2000, Headers.ORIGINALSEGMENT],
-            [2000, 2500, Headers.ADDITIONALSEGMENT],
-            [2500, 3000, Headers.ORIGINALSEGMENT],
-            [3000, 3005, Headers.ADDITIONALSEGMENT],
-            [3005, 4000, Headers.ORIGINALSEGMENT],
+            [1000, 2000, Headers.ORIGINAL_SEGMENT],
+            [2000, 2500, Headers.ADDITIONAL_SEGMENT],
+            [2500, 3000, Headers.ORIGINAL_SEGMENT],
+            [3000, 3005, Headers.ADDITIONAL_SEGMENT],
+            [3005, 4000, Headers.ORIGINAL_SEGMENT],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.SEGMENT_DESC],
     )
@@ -849,20 +849,20 @@ def test_lumping_segment_1():
     """Test lumping_segment lumps the additional segment only with original segment containing an annulus zone."""
     df_well = pd.DataFrame(
         [
-            [1.0, 0, Headers.ORIGINALSEGMENT],
-            [2.0, 0, Headers.ORIGINALSEGMENT],
-            [3.0, 1, Headers.ADDITIONALSEGMENT],
-            [4.0, 1, Headers.ORIGINALSEGMENT],
+            [1.0, 0, Headers.ORIGINAL_SEGMENT],
+            [2.0, 0, Headers.ORIGINAL_SEGMENT],
+            [3.0, 1, Headers.ADDITIONAL_SEGMENT],
+            [4.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
-            [1.0, 0, Headers.ORIGINALSEGMENT],
-            [2.0, 0, Headers.ORIGINALSEGMENT],
-            [7.0, 1, Headers.ORIGINALSEGMENT],
+            [1.0, 0, Headers.ORIGINAL_SEGMENT],
+            [2.0, 0, Headers.ORIGINAL_SEGMENT],
+            [7.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.lumping_segments(df_well)
@@ -873,20 +873,20 @@ def test_lumping_segment_2():
     """Test lumping_segment lumps the additional segment only with original segment containing an annulus zone."""
     df_well = pd.DataFrame(
         [
-            [1.0, 0, Headers.ORIGINALSEGMENT],
-            [2.0, 1, Headers.ORIGINALSEGMENT],
-            [3.0, 1, Headers.ADDITIONALSEGMENT],
-            [4.0, 1, Headers.ORIGINALSEGMENT],
+            [1.0, 0, Headers.ORIGINAL_SEGMENT],
+            [2.0, 1, Headers.ORIGINAL_SEGMENT],
+            [3.0, 1, Headers.ADDITIONAL_SEGMENT],
+            [4.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
-            [1.0, 0, Headers.ORIGINALSEGMENT],
-            [5.0, 1, Headers.ORIGINALSEGMENT],
-            [4.0, 1, Headers.ORIGINALSEGMENT],
+            [1.0, 0, Headers.ORIGINAL_SEGMENT],
+            [5.0, 1, Headers.ORIGINAL_SEGMENT],
+            [4.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.lumping_segments(df_well)
@@ -920,10 +920,10 @@ def test_skin():
             Headers.K,
             Headers.K2,
             Headers.STATUS,
-            Headers.SATNUM,
-            Headers.CF,
-            Headers.DIAM,
-            Headers.KH,
+            Headers.SATURATION_FUNCTION_REGION_NUMBERS,
+            Headers.CONNECTION_FACTOR,
+            Headers.DIAMETER,
+            Headers.FORAMTION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
             Headers.COMPDAT_DIRECTION,

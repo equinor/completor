@@ -242,7 +242,7 @@ class CreateOutput:
 
         In this case, adjust segments measured depth to be 1 meter shallower.
         """
-        start_md = self.df_reservoir[Headers.START_MD].iloc[0]
+        start_md = self.df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0]
         if self.welsegs_header[Headers.SEGMENTMD].iloc[0] > start_md:
             self.welsegs_header[Headers.SEGMENTMD] = start_md - 1.0
 

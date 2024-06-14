@@ -184,7 +184,7 @@ class CreateWells:
         # Remove WELL column in the df_reservoir.
         self.df_reservoir.drop([Headers.WELL], inplace=True, axis=1)
         # If multiple occurrences of same IJK in compdat/compsegs --> keep the last one.
-        self.df_reservoir.drop_duplicates(subset=Headers.START_MD, keep="last", inplace=True)
+        self.df_reservoir.drop_duplicates(subset=Headers.START_MEASURED_DEPTH, keep="last", inplace=True)
         self.df_reservoir.reset_index(inplace=True)
 
     def well_trajectory(self) -> None:
@@ -287,11 +287,11 @@ class CreateWells:
         icv_device = (
             self.df_well[Headers.DEVICE_TYPE].nunique() > 1
             and (self.df_well[Headers.DEVICE_TYPE] == "ICV").any()
-            and not self.df_well[Headers.NDEVICES].empty
+            and not self.df_well[Headers.NUMBER_OF_DEVICES].empty
         )
         method = Method.USER if icv_device else self.method
         self.df_reservoir = completion.connect_cells_to_segments(
-            self.df_well[[Headers.TUB_MD, Headers.NDEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]],
+            self.df_well[[Headers.TUB_MD, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]],
             self.df_reservoir,
             self.df_tubing_segments,
             method,

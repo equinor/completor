@@ -89,9 +89,9 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
 
     # COMPSEGS
     cs_true = true_output.compsegs.set_index(Headers.WELL)
-    cs_true.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
+    cs_true.sort_values([Headers.WELL, Headers.START_MEASURED_DEPTH], inplace=True)
     cs_test = test_output.compsegs.set_index(Headers.WELL)
-    cs_test.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
+    cs_test.sort_values([Headers.WELL, Headers.START_MEASURED_DEPTH], inplace=True)
     pd.testing.assert_frame_equal(cs_true, cs_test, check_exact=check_exact, rtol=relative_tolerance)
 
 
@@ -155,7 +155,7 @@ class ReadSchedule:
                 Headers.J: np.int64,
                 Headers.K: np.int64,
                 Headers.BRANCH: np.int64,
-                Headers.START_MD: np.float64,
+                Headers.START_MEASURED_DEPTH: np.float64,
                 Headers.END_MEASURED_DEPTH: np.float64,
             }
         )
@@ -169,9 +169,12 @@ class ReadSchedule:
             }
         )
 
-        # If CF and KH are defaulted by users, type conversion fails and
+        # If CONNECTION_FACTOR and FORAMTION_PERMEABILITY_THICKNESS are defaulted by users, type conversion fails and
         # we deliberately ignore it:
-        self.compdat = self.compdat.astype({Headers.CF: np.float64, Headers.KH: np.float64}, errors="ignore")
+        self.compdat = self.compdat.astype(
+            {Headers.CONNECTION_FACTOR: np.float64, Headers.FORAMTION_PERMEABILITY_THICKNESS: np.float64},
+            errors="ignore",
+        )
 
     @property
     def welsegs_header(self) -> pd.DataFrame:
@@ -194,13 +197,13 @@ class ReadSchedule:
         welsegs_header, welsegs_content = parse.get_welsegs_table(self.collections)
         self._welsegs_content = welsegs_content.astype(
             {
-                Headers.TUBINGSEGMENT: np.int64,
-                Headers.TUBINGSEGMENT2: np.int64,
+                Headers.TUBING_SEGMENT: np.int64,
+                Headers.TUBING_SEGMENT_2: np.int64,
                 Headers.TUBINGBRANCH: np.int64,
-                Headers.TUBINGOUTLET: np.int64,
+                Headers.TUBING_OUTLET: np.int64,
                 Headers.TUBINGMD: np.float64,
                 Headers.TUBINGTVD: np.float64,
-                Headers.TUBINGROUGHNESS: np.float64,
+                Headers.TUBING_ROUGHNESS: np.float64,
             }
         )
 

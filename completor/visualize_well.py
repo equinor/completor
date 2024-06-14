@@ -18,7 +18,7 @@ def visualize_tubing(axs: Axes, df_well: pd.DataFrame) -> Axes:
     Returns:
         Pyplot axis.
     """
-    df_device = df_well[(df_well[Headers.NDEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
+    df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
     if df_device.shape[0] > 0:
         axs.plot(df_well[Headers.TUB_MD].to_numpy(), [1] * df_well.shape[0], "go-")
     return axs
@@ -34,7 +34,7 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
     Returns:
         Pyplot axis
     """
-    df_device = df_well[(df_well[Headers.NDEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
+    df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
     for idx in range(df_device.shape[0]):
         xpar = [df_device[Headers.TUB_MD].iloc[idx]] * 2
         ypar = [1.0, 2.0]
@@ -72,7 +72,7 @@ def visualize_annulus(axs: Axes, df_well: pd.DataFrame) -> Axes:
         axs.plot(xpar, ypar, "bo-")
         # find the first connection in branches
         df_annulus_with_connection_to_tubing = df_branch[
-            (df_branch[Headers.NDEVICES] > 0) | (df_branch[Headers.DEVICE_TYPE] == "PERF")
+            (df_branch[Headers.NUMBER_OF_DEVICES] > 0) | (df_branch[Headers.DEVICE_TYPE] == "PERF")
         ]
         for idx in range(df_annulus_with_connection_to_tubing.shape[0]):
             xpar = [df_annulus_with_connection_to_tubing[Headers.TUB_MD].iloc[idx]] * 2
@@ -96,7 +96,10 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
         Pyplot axis.
     """
     for idx in range(df_reservoir.shape[0]):
-        xpar = [df_reservoir[Headers.START_MD].iloc[idx], df_reservoir[Headers.END_MEASURED_DEPTH].iloc[idx]]
+        xpar = [
+            df_reservoir[Headers.START_MEASURED_DEPTH].iloc[idx],
+            df_reservoir[Headers.END_MEASURED_DEPTH].iloc[idx],
+        ]
         ypar = [4.0, 4.0]
         axs.plot(xpar, ypar, "k|-")
         if df_reservoir[Headers.ANNULUS_ZONE].iloc[idx] > 0:
@@ -107,7 +110,10 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
                 arrowprops=dict(facecolor="black", shrink=0.05, width=0.5, headwidth=4.0),
             )
         else:
-            if df_reservoir[Headers.NDEVICES].iloc[idx] > 0 or df_reservoir[Headers.DEVICE_TYPE].iloc[idx] == "PERF":
+            if (
+                df_reservoir[Headers.NUMBER_OF_DEVICES].iloc[idx] > 0
+                or df_reservoir[Headers.DEVICE_TYPE].iloc[idx] == "PERF"
+            ):
                 axs.annotate(
                     "",
                     xy=(df_reservoir[Headers.TUB_MD].iloc[idx], 2.0),
@@ -115,12 +121,12 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
                     arrowprops=dict(facecolor="black", shrink=0.05, width=0.5, headwidth=4.0),
                 )
     # get connection factor
-    if "1*" not in df_reservoir[Headers.CF].to_numpy().tolist():
-        max_cf = max(df_reservoir[Headers.CF].to_numpy())
-        ax_twinx.plot(df_reservoir[Headers.MD], df_reservoir[Headers.CF], "k-")
+    if "1*" not in df_reservoir[Headers.CONNECTION_FACTOR].to_numpy().tolist():
+        max_cf = max(df_reservoir[Headers.CONNECTION_FACTOR].to_numpy())
+        ax_twinx.plot(df_reservoir[Headers.MD], df_reservoir[Headers.CONNECTION_FACTOR], "k-")
         ax_twinx.invert_yaxis()
         ax_twinx.set_ylim([max_cf * 5.0 + 1e-5, 0])
-        ax_twinx.fill_between(df_reservoir[Headers.MD], 0, df_reservoir[Headers.CF], alpha=0.5)
+        ax_twinx.fill_between(df_reservoir[Headers.MD], 0, df_reservoir[Headers.CONNECTION_FACTOR], alpha=0.5)
 
     return axs, ax_twinx
 
@@ -154,7 +160,7 @@ def visualize_annotation(axs: Axes, ax_twinx: Axes, max_md: float, min_md: float
     axs.set_ylim([0, 5])
     axs.set_xlim([min_md - 0.1 * (max_md - min_md), max_md + 0.3 * (max_md - min_md)])
     axs.set_xlabel("mMD")
-    ax_twinx.set_ylabel(Headers.CF)
+    ax_twinx.set_ylabel(Headers.CONNECTION_FACTOR)
     axs.minorticks_on()
     return axs, ax_twinx
 
