@@ -225,7 +225,7 @@ def prepare_tubing_layer(
     rnm = {
         Headers.TUBINGMD: Headers.MD,
         Headers.TUBINGTVD: Headers.TVD,
-        Headers.TUBINGID: Headers.DIAM,
+        Headers.TUBING_INNER_DIAMETER: Headers.DIAM,
         Headers.TUBINGROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
@@ -987,7 +987,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicd[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
         wsegaicd[Headers.SEG2] = df_merge[Headers.SEG].to_numpy()
         wsegaicd[Headers.ALPHA] = df_merge[Headers.ALPHA].to_numpy()
-        wsegaicd[Headers.SF] = df_merge[Headers.SCALINGFACTOR].to_numpy()
+        wsegaicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
         wsegaicd[Headers.RHO] = df_merge[Headers.RHOCAL_AICD].to_numpy()
         wsegaicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_AICD].to_numpy()
         wsegaicd[Headers.DEF] = ["5*"] * df_merge.shape[0]
@@ -1030,7 +1030,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
         wsegsicd[Headers.SEG2] = df_merge[Headers.SEG].to_numpy()
         wsegsicd[Headers.ALPHA] = df_merge[Headers.STRENGTH].to_numpy()
-        wsegsicd[Headers.SF] = df_merge[Headers.SCALINGFACTOR].to_numpy()
+        wsegsicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
         wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
         wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
         wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WCUT].to_numpy()
@@ -1202,7 +1202,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
         wsegaicv[Headers.SEG2] = df_merge[Headers.SEG].to_numpy()
         wsegaicv[Headers.ALPHA_MAIN] = df_merge[Headers.ALPHA_MAIN].to_numpy()
-        wsegaicv[Headers.SF] = df_merge[Headers.SCALINGFACTOR].to_numpy()
+        wsegaicv[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
         wsegaicv[Headers.RHO] = df_merge[Headers.RHOCAL_AICV].to_numpy()
         wsegaicv[Headers.VISCOSITY] = df_merge[Headers.VISCAL_AICV].to_numpy()
         wsegaicv[Headers.DEF] = ["5*"] * df_merge.shape[0]

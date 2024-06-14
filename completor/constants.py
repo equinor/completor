@@ -9,44 +9,44 @@ from enum import Enum, auto
 class Headers:
     """Headers for DataFrames."""
 
-    WATER_CUT = "WCT"  # Though used once, meaning Water cut.
+    WATER_CUT = "WCT"
     OPEN = "OPEN"
     RHO = "RHO"
     VISCOSITY = "VIS"
     DEVICE = "DEVICE"
-    SF = "SF"
+    SF = "SF"  # Saturation functions?
     THERM = "THERM"
-    PERFDEPTH = "PERFDEPTH"
+    PERFDEPTH = "PERFDEPTH"  # Perforation depth?
     ENDGRID = "ENDGRID"
-    ITEM13 = "ITEM13"
-    VSEG = "VSEG"
-    TUBINGID = "TUBINGID"
+    VSEG = "VSEG"  # Vertical Segments?
+    TUBING_INNER_DIAMETER = "TUBINGID"
     MPMODEL = "MPMODEL"
-    PDROPCOMP = "PDROPCOMP"
-    WBVOLUME = "WBVOLUME"
-    ITEM8 = "ITEM8"
-    ITEM9 = "ITEM9"
-    ITEM10 = "ITEM10"
-    ITEM11 = "ITEM11"
-    ITEM12 = "ITEM12"
-    ITEM14 = "ITEM14"
-    ITEM15 = "ITEM15"
-    ITEM16 = "ITEM16"
-    ITEM17 = "ITEM17"
+    PDROPCOMP = "PDROPCOMP"  # Pressure drop completion?
+    WBVOLUME = "WBVOLUME"  # Well bore volume?
+    ITEM_8 = "ITEM8"
+    ITEM_9 = "ITEM9"
+    ITEM_10 = "ITEM10"
+    ITEM_11 = "ITEM11"
+    ITEM_12 = "ITEM12"
+    ITEM_13 = "ITEM13"
+    ITEM_14 = "ITEM14"
+    ITEM_15 = "ITEM15"
+    ITEM_16 = "ITEM16"
+    ITEM_17 = "ITEM17"
     REGION = "REGION"
-    DENSCAL = "DENSCAL"
-    PRESSURETABLE = "PRESSURETABLE"
+    DENSCAL = "DENSCAL"  # Calculated density / Density calculated?
+    PRESSURE_TABLE = "PRESSURETABLE"
     CROSS = "CROSS"
     SHUT = "SHUT"
     DR = "DR"
     PHASE = "PHASE"
-    BHP_DEPTH = "BHP_DEPTH"
+    BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
     GROUP = "GROUP"
     MARKER = "MARKER"
-    SCALINGFACTOR = "SCALINGFACTOR"
+    SCALING_FACTOR = "SCALINGFACTOR"
     LENGTH = "LENGTH"
-    ADDITIONALSEGMENT = "AdditionalSegment"
-    ORIGINALSEGMENT = "OriginalSegment"
+    ADDITIONAL_SEGMENT = "AdditionalSegment"
+    ORIGINAL_SEGMENT = "OriginalSegment"
     START_MD = "STARTMD"
     TUBINGROUGHNESS = "TUBINGROUGHNESS"
     TUBINGSEGMENT2 = "TUBINGSEGMENT2"
@@ -172,7 +172,6 @@ class Headers:
     TUBING_SEGMENT = "TUBINGSEGMENT"
     TUBING_SEGMENT2 = "TUBINGSEGMENT2"
     TUBING_BRANCH = "TUBINGBRANCH"
-    TUBING_ID = "TUBINGID"
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
 
     EMPTY = ""
@@ -253,18 +252,3 @@ class Method(Enum):
         elif isinstance(other, str):
             return self.name == other
         return False
-
-
-class WellSegment:
-    """Columns for WellSegments."""
-
-    TUBING_MD = "TUBINGMD"
-    TUBING_TVD = "TUBINGTVD"
-    SEGMENT_MD = "SEGMENTMD"
-    SEGMENT_TVD = "SEGMENTTVD"
-    TUBING_OUTLET = "TUBINGOUTLET"
-    TUBING_SEGMENT = "TUBINGSEGMENT"
-    TUBING_SEGMENT2 = "TUBINGSEGMENT2"
-    TUBING_BRANCH = "TUBINGBRANCH"
-    TUBING_ID = "TUBINGID"
-    TUBING_ROUGHNESS = "TUBINGROUGHNESS"

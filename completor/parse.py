@@ -302,11 +302,11 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.INFOTYPE,
         Headers.PDROPCOMP,
         Headers.MPMODEL,
-        Headers.ITEM8,
-        Headers.ITEM9,
-        Headers.ITEM10,
-        Headers.ITEM11,
-        Headers.ITEM12,
+        Headers.ITEM_8,
+        Headers.ITEM_9,
+        Headers.ITEM_10,
+        Headers.ITEM_11,
+        Headers.ITEM_12,
     ]
     content_columns = [
         Headers.WELL,
@@ -316,15 +316,15 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.TUBINGOUTLET,
         Headers.TUBINGMD,
         Headers.TUBINGTVD,
-        Headers.TUBINGID,
+        Headers.TUBING_INNER_DIAMETER,
         Headers.TUBINGROUGHNESS,
         Headers.CROSS,
         Headers.VSEG,
-        Headers.ITEM11,
-        Headers.ITEM12,
-        Headers.ITEM13,
-        Headers.ITEM14,
-        Headers.ITEM15,
+        Headers.ITEM_11,
+        Headers.ITEM_12,
+        Headers.ITEM_13,
+        Headers.ITEM_14,
+        Headers.ITEM_15,
     ]
     for collection in collections:
         if collection.name == Keywords.WELSEGS:
@@ -377,13 +377,13 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
         Headers.FLAG,
         Headers.SHUT,
         Headers.CROSS,
-        Headers.PRESSURETABLE,
+        Headers.PRESSURE_TABLE,
         Headers.DENSCAL,
         Headers.REGION,
-        Headers.ITEM14,
-        Headers.ITEM15,
-        Headers.ITEM16,
-        Headers.ITEM17,
+        Headers.ITEM_14,
+        Headers.ITEM_15,
+        Headers.ITEM_16,
+        Headers.ITEM_17,
     ]
     welspecs_table = None
     for collection in collections:

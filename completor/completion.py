@@ -378,7 +378,7 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     # sort the data frame based on STARTMD
     df_tubing_segments.sort_values(by=[Headers.START_MD], inplace=True)
     # add column to indicate original segment
-    df_tubing_segments[Headers.SEGMENT_DESC] = [Headers.ORIGINALSEGMENT] * df_tubing_segments.shape[0]
+    df_tubing_segments[Headers.SEGMENT_DESC] = [Headers.ORIGINAL_SEGMENT] * df_tubing_segments.shape[0]
     end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
     # get start_measured_depth and start from segment 2 and add the last item to be the last end_measured_depth
     start_measured_depth = np.append(df_tubing_segments[Headers.START_MD].to_numpy()[1:], end_measured_depth[-1])
@@ -393,7 +393,7 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     # new start measured depth is the previous segment end measured depth
     df_copy[Headers.START_MD] = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()[missing_index - 1]
     df_copy[Headers.END_MEASURED_DEPTH] = df_tubing_segments[Headers.START_MD].to_numpy()[missing_index]
-    df_copy[Headers.SEGMENT_DESC] = [Headers.ADDITIONALSEGMENT] * df_copy.shape[0]
+    df_copy[Headers.SEGMENT_DESC] = [Headers.ADDITIONAL_SEGMENT] * df_copy.shape[0]
     # combine the two data frame
     df_tubing_segments = pd.concat([df_tubing_segments, df_copy])
     df_tubing_segments.sort_values(by=[Headers.START_MD], inplace=True)
@@ -553,7 +553,7 @@ def complete_the_well(
     df_well = lumping_segments(df_well)
 
     # create scaling factor
-    df_well[Headers.SCALINGFACTOR] = np.where(df_well[Headers.NDEVICES] > 0.0, -1.0 / df_well[Headers.NDEVICES], 0.0)
+    df_well[Headers.SCALING_FACTOR] = np.where(df_well[Headers.NDEVICES] > 0.0, -1.0 / df_well[Headers.NDEVICES], 0.0)
     return df_well
 
 
@@ -573,7 +573,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     segments_descending = df_well[Headers.SEGMENT_DESC].to_numpy()
     number_of_rows = df_well.shape[0]
     for i in range(number_of_rows):
-        if segments_descending[i] != Headers.ADDITIONALSEGMENT:
+        if segments_descending[i] != Headers.ADDITIONAL_SEGMENT:
             continue
 
         # only additional segments
@@ -594,7 +594,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
         number_of_devices[i] = 0.0
     df_well[Headers.NDEVICES] = number_of_devices
     # from now on it is only original segment
-    df_well = df_well[df_well[Headers.SEGMENT_DESC] == Headers.ORIGINALSEGMENT].copy()
+    df_well = df_well[df_well[Headers.SEGMENT_DESC] == Headers.ORIGINAL_SEGMENT].copy()
     # reset index after filter
     return df_well.reset_index(drop=True, inplace=False)
 
@@ -623,11 +623,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     if device_type == "VALVE":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well[Headers.CV] = -df_well[Headers.CV] / df_well[Headers.SCALINGFACTOR]
+        df_well[Headers.CV] = -df_well[Headers.CV] / df_well[Headers.SCALING_FACTOR]
     elif device_type == "DAR":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well[Headers.CV_DAR] = -df_well[Headers.CV_DAR] / df_well[Headers.SCALINGFACTOR]
+        df_well[Headers.CV_DAR] = -df_well[Headers.CV_DAR] / df_well[Headers.SCALING_FACTOR]
     return df_well
 
 
@@ -733,13 +733,13 @@ class WellSchedule:
             Headers.FLAG,
             Headers.SHUT,
             Headers.CROSS,
-            Headers.PRESSURETABLE,
+            Headers.PRESSURE_TABLE,
             Headers.DENSCAL,
             Headers.REGION,
-            Headers.ITEM14,
-            Headers.ITEM15,
-            Headers.ITEM16,
-            Headers.ITEM17,
+            Headers.ITEM_14,
+            Headers.ITEM_15,
+            Headers.ITEM_16,
+            Headers.ITEM_17,
         ]
         _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
         df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
@@ -851,11 +851,11 @@ class WellSchedule:
             Headers.INFOTYPE,
             Headers.PDROPCOMP,
             Headers.MPMODEL,
-            Headers.ITEM8,
-            Headers.ITEM9,
-            Headers.ITEM10,
-            Headers.ITEM11,
-            Headers.ITEM12,
+            Headers.ITEM_8,
+            Headers.ITEM_9,
+            Headers.ITEM_10,
+            Headers.ITEM_11,
+            Headers.ITEM_12,
         ]
         # pad header with default values (1*)
         header = recs[0] + ["1*"] * (len(columns_header) - len(recs[0]))
@@ -870,15 +870,15 @@ class WellSchedule:
             Headers.TUBINGOUTLET,
             Headers.TUBINGMD,
             Headers.TUBINGTVD,
-            Headers.TUBINGID,
+            Headers.TUBING_INNER_DIAMETER,
             Headers.TUBINGROUGHNESS,
             Headers.CROSS,
             Headers.VSEG,
-            Headers.ITEM11,
-            Headers.ITEM12,
-            Headers.ITEM13,
-            Headers.ITEM14,
-            Headers.ITEM15,
+            Headers.ITEM_11,
+            Headers.ITEM_12,
+            Headers.ITEM_13,
+            Headers.ITEM_14,
+            Headers.ITEM_15,
         ]
         # pad with default values (1*)
         recs = [rec + ["1*"] * (len(columns_data) - len(rec)) for rec in recs[1:]]
