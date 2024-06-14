@@ -127,29 +127,33 @@ def fix_compsegs_by_priority(
     # slicing two dataframe for user and cells segment length
     start_md_comp = df_completion[
         (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
-    ][Headers.START_MD].reset_index(drop=True)
-    df_custom_compsegs = df_custom_compsegs[df_custom_compsegs[Headers.START_MD].isin(start_md_comp)]
+    ][Headers.START_MEASURED_DEPTH].reset_index(drop=True)
+    df_custom_compsegs = df_custom_compsegs[df_custom_compsegs[Headers.START_MEASURED_DEPTH].isin(start_md_comp)]
     df_compsegs["priority"] = 1
     df_custom_compsegs = df_custom_compsegs.copy(deep=True)
     df_custom_compsegs["priority"] = 2
-    start_end = df_custom_compsegs[[Headers.START_MD, Headers.END_MEASURED_DEPTH]]
+    start_end = df_custom_compsegs[[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]]
     # Remove the rows that are between the STARTMD and ENDMD
     # values of the custom composition segments.
     for start, end in start_end.values:
-        between_lower_upper = (df_compsegs[Headers.START_MD] >= start) & (
+        between_lower_upper = (df_compsegs[Headers.START_MEASURED_DEPTH] >= start) & (
             df_compsegs[Headers.END_MEASURED_DEPTH] <= end
         )
         df_compsegs = df_compsegs[~between_lower_upper]
 
     # Concatenate the fixed df_compsegs dataframe and the df_custom_compsegs
     # dataframe and sort it by the STARTMD column.
-    df = pd.concat([df_compsegs, df_custom_compsegs]).sort_values(by=[Headers.START_MD]).reset_index(drop=True)
+    df = (
+        pd.concat([df_compsegs, df_custom_compsegs])
+        .sort_values(by=[Headers.START_MEASURED_DEPTH])
+        .reset_index(drop=True)
+    )
     # Filter the dataframe to get only rows where the "priority" column has a value of 2
     for idx in df[df["priority"] == 2].index:
         # Set previous row's ENDMD to correct value.
-        df.loc[idx - 1, Headers.END_MEASURED_DEPTH] = df.loc[idx, Headers.START_MD]
+        df.loc[idx - 1, Headers.END_MEASURED_DEPTH] = df.loc[idx, Headers.START_MEASURED_DEPTH]
         # Set next row's STARTMD to correct value.
-        df.loc[idx + 1, Headers.START_MD] = df.loc[idx, Headers.END_MEASURED_DEPTH]
+        df.loc[idx + 1, Headers.START_MEASURED_DEPTH] = df.loc[idx, Headers.END_MEASURED_DEPTH]
     df = fix_compsegs(df, "Fix compseg after prioriry")
     df = df.dropna()
 

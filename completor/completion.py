@@ -114,10 +114,10 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     start_measured_depth = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
     end_measured_depth = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
     gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][
-        [Headers.START_MD, Headers.END_MEASURED_DEPTH]
+        [Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     ].to_numpy()
     packer_location = df_completion[df_completion[Headers.ANNULUS] == "PA"][
-        [Headers.START_MD, Headers.END_MEASURED_DEPTH]
+        [Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     ].to_numpy()
     # update df_completion by removing PA rows
     df_completion = df_completion[df_completion[Headers.ANNULUS] != "PA"].copy()
@@ -154,7 +154,7 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
 
         annulus_zone = np.full(df_completion.shape[0], 0)
         for idx in range(df_completion.shape[0]):
-            start_measured_depth = df_completion[Headers.START_MD].iloc[idx]
+            start_measured_depth = df_completion[Headers.START_MEASURED_DEPTH].iloc[idx]
             end_measured_depth = df_completion[Headers.END_MEASURED_DEPTH].iloc[idx]
             idx0, idx1 = completion_index(df_annulus, start_measured_depth, end_measured_depth)
             if idx0 != idx1 or idx0 == -1:
@@ -223,18 +223,18 @@ def create_tubing_segments(
     end_measured_depth: npt.NDArray[np.float64]
     if method == Method.CELLS:
         # Create the tubing layer one cell one segment while honoring df_reservoir[Headers.SEGMENT]
-        start_measured_depth = df_reservoir[Headers.START_MD].to_numpy()
+        start_measured_depth = df_reservoir[Headers.START_MEASURED_DEPTH].to_numpy()
         end_measured_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
         if Headers.SEGMENT in df_reservoir.columns:
             if not df_reservoir[Headers.SEGMENT].isin(["1*"]).any():
                 create_start_measured_depths = []
                 create_end_measured_depths = []
-                create_start_measured_depths.append(df_reservoir[Headers.START_MD].iloc[0])
+                create_start_measured_depths.append(df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
                 current_segment = df_reservoir[Headers.SEGMENT].iloc[0]
                 for i in range(1, len(df_reservoir[Headers.SEGMENT])):
                     if df_reservoir[Headers.SEGMENT].iloc[i] != current_segment:
                         create_end_measured_depths.append(df_reservoir[Headers.END_MEASURED_DEPTH].iloc[i - 1])
-                        create_start_measured_depths.append(df_reservoir[Headers.START_MD].iloc[i])
+                        create_start_measured_depths.append(df_reservoir[Headers.START_MEASURED_DEPTH].iloc[i])
                         current_segment = df_reservoir[Headers.SEGMENT].iloc[i]
                 create_end_measured_depths.append(df_reservoir[Headers.END_MEASURED_DEPTH].iloc[-1])
                 start_measured_depth = np.array(create_start_measured_depths)
@@ -265,10 +265,12 @@ def create_tubing_segments(
         # Create tubing layer based on the definition of COMPLETION keyword in the case file.
         # Read all segments except PA (which has no segment length).
         df_temp = df_completion.copy(deep=True)
-        start_measured_depth = df_temp[Headers.START_MD].to_numpy()
+        start_measured_depth = df_temp[Headers.START_MEASURED_DEPTH].to_numpy()
         end_measured_depth = df_temp[Headers.END_MEASURED_DEPTH].to_numpy()
         # Fix the start and end.
-        start_measured_depth[0] = max(df_reservoir[Headers.START_MD].iloc[0], float(start_measured_depth[0]))
+        start_measured_depth[0] = max(
+            df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0], float(start_measured_depth[0])
+        )
         end_measured_depth[-1] = min(df_reservoir[Headers.END_MEASURED_DEPTH].iloc[-1], float(end_measured_depth[-1]))
         if start_measured_depth[0] >= end_measured_depth[0]:
             start_measured_depth = np.delete(start_measured_depth, 0)
@@ -278,7 +280,7 @@ def create_tubing_segments(
             end_measured_depth = np.delete(end_measured_depth, -1)
     elif method == Method.FIX:
         # Create tubing layer with fix interval according to the user input in the case file keyword SEGMENTLENGTH.
-        min_measured_depth = df_reservoir[Headers.START_MD].min()
+        min_measured_depth = df_reservoir[Headers.START_MEASURED_DEPTH].min()
         max_measured_depth = df_reservoir[Headers.END_MEASURED_DEPTH].max()
         if not isinstance(segment_length, (float, int)):
             raise ValueError(f"Segment length must be a number, when using method fix (was {segment_length}).")
@@ -295,7 +297,7 @@ def create_tubing_segments(
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
-        start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir[Headers.START_MD].to_numpy()
+        start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir[Headers.START_MEASURED_DEPTH].to_numpy()
         end_compsegs_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
         # If there are gaps in compsegs and there are well_segments segments that fit in the gaps,
         # insert well_segments segments into the compsegs gaps.
@@ -345,7 +347,7 @@ def create_tubing_segments(
     # create data frame
     return as_data_frame(
         {
-            Headers.START_MD: start_measured_depth,
+            Headers.START_MEASURED_DEPTH: start_measured_depth,
             Headers.END_MEASURED_DEPTH: end_measured_depth,
             Headers.TUB_MD: measured_depth_,
             Headers.TUB_TVD: true_vertical_depth,
@@ -376,12 +378,14 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
             f"Please check the data for well {well_name}."
         )
     # sort the data frame based on STARTMD
-    df_tubing_segments.sort_values(by=[Headers.START_MD], inplace=True)
+    df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH], inplace=True)
     # add column to indicate original segment
     df_tubing_segments[Headers.SEGMENT_DESC] = [Headers.ORIGINAL_SEGMENT] * df_tubing_segments.shape[0]
     end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
     # get start_measured_depth and start from segment 2 and add the last item to be the last end_measured_depth
-    start_measured_depth = np.append(df_tubing_segments[Headers.START_MD].to_numpy()[1:], end_measured_depth[-1])
+    start_measured_depth = np.append(
+        df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()[1:], end_measured_depth[-1]
+    )
     # find rows where start_measured_depth > end_measured_depth
     missing_index = np.argwhere(start_measured_depth > end_measured_depth).flatten()
     # proceed only if there are missing index
@@ -391,12 +395,12 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     missing_index += 1
     df_copy = df_tubing_segments.iloc[missing_index, :].copy(deep=True)
     # new start measured depth is the previous segment end measured depth
-    df_copy[Headers.START_MD] = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()[missing_index - 1]
-    df_copy[Headers.END_MEASURED_DEPTH] = df_tubing_segments[Headers.START_MD].to_numpy()[missing_index]
+    df_copy[Headers.START_MEASURED_DEPTH] = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()[missing_index - 1]
+    df_copy[Headers.END_MEASURED_DEPTH] = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()[missing_index]
     df_copy[Headers.SEGMENT_DESC] = [Headers.ADDITIONAL_SEGMENT] * df_copy.shape[0]
     # combine the two data frame
     df_tubing_segments = pd.concat([df_tubing_segments, df_copy])
-    df_tubing_segments.sort_values(by=[Headers.START_MD], inplace=True)
+    df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH], inplace=True)
     df_tubing_segments.reset_index(drop=True, inplace=True)
     return df_tubing_segments
 
@@ -670,7 +674,9 @@ def connect_cells_to_segments(
         Merged DataFrame.
     """
     # Calculate mid cell measured depth
-    df_reservoir[Headers.MD] = (df_reservoir[Headers.START_MD] + df_reservoir[Headers.END_MEASURED_DEPTH]) * 0.5
+    df_reservoir[Headers.MD] = (
+        df_reservoir[Headers.START_MEASURED_DEPTH] + df_reservoir[Headers.END_MEASURED_DEPTH]
+    ) * 0.5
     if method == Method.USER:
         df_res = df_reservoir.copy(deep=True)
         df_wel = df_well.copy(deep=True)
@@ -680,7 +686,7 @@ def connect_cells_to_segments(
         df_res[Headers.MARKER] = np.full(df_reservoir.shape[0], 0)
         df_wel[Headers.MARKER] = np.arange(df_well.shape[0]) + 1
         for idx in df_wel[Headers.TUB_MD].index:
-            start_measured_depth = df_tubing_segments[Headers.START_MD].iloc[idx]
+            start_measured_depth = df_tubing_segments[Headers.START_MEASURED_DEPTH].iloc[idx]
             end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].iloc[idx]
             df_res.loc[df_res[Headers.MD].between(start_measured_depth, end_measured_depth), Headers.MARKER] = marker
             marker += 1
@@ -931,7 +937,7 @@ class WellSchedule:
             Headers.J,
             Headers.K,
             Headers.BRANCH,
-            Headers.START_MD,
+            Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.COMPSEGS_DIRECTION,
             Headers.ENDGRID,

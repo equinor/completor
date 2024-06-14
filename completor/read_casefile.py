@@ -135,7 +135,7 @@ class ReadCasefile:
         header = [
             Headers.WELL,
             Headers.BRANCH,
-            Headers.START_MD,
+            Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.INNER_DIAMETER,
             Headers.OUTER_DIAMETER,
@@ -169,17 +169,18 @@ class ReadCasefile:
             Updated COMPLETION table.
         """
         if not df_temp.loc[
-            (df_temp[Headers.START_MD] == df_temp[Headers.END_MEASURED_DEPTH]) & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+            (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
+            & (df_temp[Headers.DEVICE_TYPE] == "ICV")
         ].empty:
             # take ICV tubing table
             self.completion_icv_tubing = df_temp.loc[
-                (df_temp[Headers.START_MD] == df_temp[Headers.END_MEASURED_DEPTH])
+                (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
                 & (df_temp[Headers.DEVICE_TYPE] == "ICV")
             ].reset_index(drop=True)
             # drop its line
             df_temp = df_temp.drop(
                 df_temp.loc[
-                    (df_temp[Headers.START_MD] == df_temp[Headers.END_MEASURED_DEPTH])
+                    (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
                     & (df_temp[Headers.DEVICE_TYPE] == "ICV")
                 ].index[:]
             ).reset_index(drop=True)

@@ -54,10 +54,10 @@ def sort_by_midpoint(
         Sorted DataFrame.
     """
     _temp_column = "TEMPORARY_MIDPOINT"
-    df[Headers.START_MD] = start_measured_depths
+    df[Headers.START_MEASURED_DEPTH] = start_measured_depths
     df[Headers.END_MEASURED_DEPTH] = end_measured_depths
     # Sort the data frame based on the mid-point.
-    df[_temp_column] = df[[Headers.START_MD, Headers.END_MEASURED_DEPTH]].mean(axis=1)
+    df[_temp_column] = df[[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]].mean(axis=1)
     df = df.sort_values(by=[_temp_column])
     return df.drop([_temp_column], axis=1)
 

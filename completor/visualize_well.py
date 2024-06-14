@@ -96,7 +96,10 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
         Pyplot axis.
     """
     for idx in range(df_reservoir.shape[0]):
-        xpar = [df_reservoir[Headers.START_MD].iloc[idx], df_reservoir[Headers.END_MEASURED_DEPTH].iloc[idx]]
+        xpar = [
+            df_reservoir[Headers.START_MEASURED_DEPTH].iloc[idx],
+            df_reservoir[Headers.END_MEASURED_DEPTH].iloc[idx],
+        ]
         ypar = [4.0, 4.0]
         axs.plot(xpar, ypar, "k|-")
         if df_reservoir[Headers.ANNULUS_ZONE].iloc[idx] > 0:

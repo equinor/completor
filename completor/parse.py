@@ -485,7 +485,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
             Headers.J,
             Headers.K,
             Headers.BRANCH,
-            Headers.START_MD,
+            Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.COMPSEGS_DIRECTION,
             Headers.ENDGRID,

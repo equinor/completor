@@ -184,7 +184,7 @@ class CreateWells:
         # Remove WELL column in the df_reservoir.
         self.df_reservoir.drop([Headers.WELL], inplace=True, axis=1)
         # If multiple occurrences of same IJK in compdat/compsegs --> keep the last one.
-        self.df_reservoir.drop_duplicates(subset=Headers.START_MD, keep="last", inplace=True)
+        self.df_reservoir.drop_duplicates(subset=Headers.START_MEASURED_DEPTH, keep="last", inplace=True)
         self.df_reservoir.reset_index(inplace=True)
 
     def well_trajectory(self) -> None:

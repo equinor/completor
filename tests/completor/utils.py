@@ -88,9 +88,9 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
 
     # COMPSEGS
     cs_true = true_output.compsegs.set_index(Headers.WELL)
-    cs_true.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
+    cs_true.sort_values([Headers.WELL, Headers.START_MEASURED_DEPTH], inplace=True)
     cs_test = test_output.compsegs.set_index(Headers.WELL)
-    cs_test.sort_values([Headers.WELL, Headers.START_MD], inplace=True)
+    cs_test.sort_values([Headers.WELL, Headers.START_MEASURED_DEPTH], inplace=True)
     pd.testing.assert_frame_equal(cs_true, cs_test, check_exact=check_exact, rtol=relative_tolerance)
 
 
@@ -154,7 +154,7 @@ class ReadSchedule:
                 Headers.J: np.int64,
                 Headers.K: np.int64,
                 Headers.BRANCH: np.int64,
-                Headers.START_MD: np.float64,
+                Headers.START_MEASURED_DEPTH: np.float64,
                 Headers.END_MEASURED_DEPTH: np.float64,
             }
         )

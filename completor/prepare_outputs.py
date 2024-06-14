@@ -107,7 +107,7 @@ def dataframe_tostring(
                 Headers.KH: "{:.10g}".format,
                 Headers.MD: "{:.3f}".format,
                 Headers.TVD: "{:.3f}".format,
-                Headers.START_MD: "{:.3f}".format,
+                Headers.START_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.CV_DAR: "{:.10g}".format,
                 Headers.CV: "{:.10g}".format,
@@ -297,7 +297,7 @@ def fix_tubing_inner_diam_roughness(
         overburden_md = overburden_out[Headers.MD].iloc[idx_overburden]
         overburden_found_in_completion = False
         for idx_completion_table_well in range(completion_table_well.shape[0]):
-            completion_table_start = completion_table_well[Headers.START_MD].iloc[idx_completion_table_well]
+            completion_table_start = completion_table_well[Headers.START_MEASURED_DEPTH].iloc[idx_completion_table_well]
             completion_table_end = completion_table_well[Headers.END_MEASURED_DEPTH].iloc[idx_completion_table_well]
             if (completion_table_end >= overburden_md >= completion_table_start) and not overburden_found_in_completion:
                 overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.DIAM)] = (
@@ -647,7 +647,9 @@ def connect_compseg_icv(
     df_res = df_reservoir.copy(deep=True)
 
     df_res[_MARKER_MEASURED_DEPTH] = df_res[Headers.MD]
-    starts = df_completion_table_clean[Headers.START_MD].apply(lambda x: max(x, df_res[Headers.START_MD].iloc[0]))
+    starts = df_completion_table_clean[Headers.START_MEASURED_DEPTH].apply(
+        lambda x: max(x, df_res[Headers.START_MEASURED_DEPTH].iloc[0])
+    )
     ends = df_completion_table_clean[Headers.END_MEASURED_DEPTH].apply(
         lambda x: min(x, df_res[Headers.END_MEASURED_DEPTH].iloc[-1])
     )
@@ -742,7 +744,7 @@ def prepare_compsegs(
         compseg[Headers.K] = df_compseg_device[Headers.K].to_numpy()
         # take the BRANCH column from df_device
         compseg[Headers.BRANCH] = df_compseg_device[Headers.BRANCH].to_numpy()
-        compseg[Headers.START_MD] = df_compseg_device[Headers.START_MD].to_numpy()
+        compseg[Headers.START_MEASURED_DEPTH] = df_compseg_device[Headers.START_MEASURED_DEPTH].to_numpy()
         compseg[Headers.END_MEASURED_DEPTH] = df_compseg_device[Headers.END_MEASURED_DEPTH].to_numpy()
         compseg[Headers.DIR] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
         compseg[Headers.DEF] = "3*"
@@ -768,8 +770,8 @@ def prepare_compsegs(
                     df_reservoir, df_device, df_annulus, df_completion_table
                 )
                 # Restore original sorting of DataFrames
-                df_compseg_annulus.sort_values(by=[Headers.START_MD], inplace=True)
-                df_compseg_device.sort_values(by=[Headers.START_MD], inplace=True)
+                df_compseg_annulus.sort_values(by=[Headers.START_MEASURED_DEPTH], inplace=True)
+                df_compseg_device.sort_values(by=[Headers.START_MEASURED_DEPTH], inplace=True)
                 df_compseg_device.drop([Headers.MARKER], axis=1, inplace=True)
                 df_compseg_annulus.drop([Headers.MARKER], axis=1, inplace=True)
         else:
@@ -790,7 +792,7 @@ def prepare_compsegs(
             J=_choose(Headers.J),
             K=_choose(Headers.K),
             BRANCH=_choose(Headers.BRANCH),
-            STARTMD=_choose(Headers.START_MD),
+            STARTMD=_choose(Headers.START_MEASURED_DEPTH),
             ENDMD=_choose(Headers.END_MEASURED_DEPTH),
             DIR=_choose(Headers.COMPSEGS_DIRECTION),
             DEF="3*",
@@ -825,13 +827,15 @@ def connect_compseg_usersegment(
     if not df_annulus.empty:
         df_completion_table_clean = df_completion_table[df_completion_table[Headers.ANNULUS] == "OA"]
     df_completion_table_clean = df_completion_table_clean[
-        (df_completion_table_clean[Headers.END_MEASURED_DEPTH] > df_reservoir[Headers.START_MD].iloc[0])
+        (df_completion_table_clean[Headers.END_MEASURED_DEPTH] > df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
     ]
     df_annulus.reset_index(drop=True, inplace=True)
     df_res = df_reservoir.assign(MARKER=[0 for _ in range(df_reservoir.shape[0])])
     df_dev = df_device.assign(MARKER=[x + 1 for x in range(df_device.shape[0])])
     df_ann = df_annulus.assign(MARKER=[x + 1 for x in range(df_annulus.shape[0])])
-    starts = df_completion_table_clean[Headers.START_MD].apply(lambda x: max(x, df_res[Headers.START_MD].iloc[0]))
+    starts = df_completion_table_clean[Headers.START_MEASURED_DEPTH].apply(
+        lambda x: max(x, df_res[Headers.START_MEASURED_DEPTH].iloc[0])
+    )
     ends = df_completion_table_clean[Headers.END_MEASURED_DEPTH].apply(
         lambda x: min(x, df_res[Headers.END_MEASURED_DEPTH].iloc[-1])
     )
@@ -906,7 +910,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
     completion_diameters = []
     for md_reservoir in df_reservoir[Headers.MD]:
         for start_completion, outer_inner_diameter_completion, end_completion in zip(
-            df_completion[Headers.START_MD],
+            df_completion[Headers.START_MEASURED_DEPTH],
             df_completion[Headers.OUTER_DIAMETER],
             df_completion[Headers.END_MEASURED_DEPTH],
         ):
@@ -1122,7 +1126,11 @@ def prepare_wsegicv(
         df_icv_tubing = df_icv_tubing.loc[mask]
         df_merge_tubing = pd.merge_asof(left=df_icv_tubing, right=df_icv, on=Headers.DEVICE_NUMBER, direction="nearest")
         df_merge_tubing = pd.merge_asof(
-            left=df_merge_tubing, right=df_tubing, left_on=Headers.START_MD, right_on=Headers.MD, direction="nearest"
+            left=df_merge_tubing,
+            right=df_tubing,
+            left_on=Headers.START_MEASURED_DEPTH,
+            right_on=Headers.MD,
+            direction="nearest",
         )
         df_temp = df_merge_tubing.copy()
         df_temp = df_temp[[Headers.SEG, Headers.CV, Headers.AC, Headers.AC_MAX]]
