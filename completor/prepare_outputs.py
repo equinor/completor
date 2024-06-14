@@ -639,13 +639,14 @@ def connect_compseg_icv(
     Returns:
         df_compseg_device, df_compseg_annulus.
     """
+    _MARKER_MEASURED_DEPTH = "TEMPORARY_MARKER_MEASURED_DEPTH"
     df_temp = df_completion_table[
         (df_completion_table[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
     ]
     df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
     df_res = df_reservoir.copy(deep=True)
 
-    df_res[Headers.MD_MARKER] = df_res[Headers.MD]
+    df_res[_MARKER_MEASURED_DEPTH] = df_res[Headers.MD]
     starts = df_completion_table_clean[Headers.START_MD].apply(lambda x: max(x, df_res[Headers.START_MD].iloc[0]))
     ends = df_completion_table_clean[Headers.END_MEASURED_DEPTH].apply(
         lambda x: min(x, df_res[Headers.END_MEASURED_DEPTH].iloc[-1])
@@ -653,19 +654,18 @@ def connect_compseg_icv(
     for start, end in zip(starts, ends):
         condition = f"@df_res.MD >= {start} and @df_res.MD <= {end} and @df_res.DEVICETYPE == 'ICV'"
         func = float(start + end) / 2
-        column_to_modify = Headers.MD_MARKER
         column_index = df_res.query(condition).index
-        df_res.loc[column_index, column_to_modify] = func
+        df_res.loc[column_index, _MARKER_MEASURED_DEPTH] = func
 
     df_compseg_device = pd.merge_asof(
-        left=df_res, right=df_device, left_on=Headers.MD_MARKER, right_on=Headers.MD, direction="nearest"
+        left=df_res, right=df_device, left_on=_MARKER_MEASURED_DEPTH, right_on=Headers.MD, direction="nearest"
     )
     df_compseg_annulus = pd.DataFrame()
     if (df_completion_table[Headers.ANNULUS] == "OA").any():
         df_compseg_annulus = pd.merge_asof(
-            left=df_res, right=df_annulus, left_on=Headers.MD_MARKER, right_on=Headers.MD, direction="nearest"
-        )
-    return df_compseg_device, df_compseg_annulus
+            left=df_res, right=df_annulus, left_on=_MARKER_MEASURED_DEPTH, right_on=Headers.MD, direction="nearest"
+        ).drop(_MARKER_MEASURED_DEPTH, axis=1)
+    return df_compseg_device.drop(_MARKER_MEASURED_DEPTH, axis=1), df_compseg_annulus
 
 
 def prepare_compsegs(

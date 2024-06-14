@@ -13,7 +13,6 @@ class Headers:
     OPEN = "OPEN"
     RHO = "RHO"
     VISCOSITY = "VIS"
-    MD_MARKER = "MD_MARKER"
     DEVICE = "DEVICE"
     SF = "SF"
     THERM = "THERM"
