@@ -1028,4 +1028,4 @@ class WellSchedule:
         Returns:
             Well number.
         """
-        return (self.active_wells == well_name).nonzero()[0][0]
+        return int(np.where(self.active_wells == well_name)[0][0])
