@@ -55,7 +55,7 @@ class Headers:
     DEF = "DEF"
     DIRECTION = "DIR"
     SEG = "SEG"  # Duplicate, ish
-    SEG2 = "SEG2"  # TODO: Decide what to do with these.
+    SEG2 = "SEG2"
     OUT = "OUT"
     COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"
     LATERAL = "LATERAL"
