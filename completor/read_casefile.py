@@ -227,7 +227,7 @@ class ReadCasefile:
         """Read the SEGMENTLENGTH keyword in the case file.
 
         Raises:
-            SystemExit: If SEGMENTLENGTH is not float or string.
+            CompletorError: If SEGMENTLENGTH is not float or string.
         """
         start_index, end_index = self.locate_keyword("SEGMENTLENGTH")
         if end_index == start_index + 2:
@@ -329,7 +329,7 @@ class ReadCasefile:
         """Read the WSEGVALV keyword in the case file.
 
         Raises:
-            SystemExit: If WESEGVALV is not defined and VALVE is used in COMPLETION. If the device number is not found.
+            CompletorError: If WESEGVALV is not defined and VALVE is used in COMPLETION. If the device number is not found.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGVALV)
         if start_index == end_index:
@@ -356,7 +356,7 @@ class ReadCasefile:
         """Read the WSEGSICD keyword in the case file.
 
         Raises:
-            SystemExit: If WSEGSICD is not defined and ICD is used in COMPLETION, or if the device number is not found.
+            CompletorError: If WSEGSICD is not defined and ICD is used in COMPLETION, or if the device number is not found.
                 If not all devices in COMPLETION are specified in WSEGSICD.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGSICD)
@@ -381,7 +381,7 @@ class ReadCasefile:
 
         Raises:
             ValueError: If invalid entries in WSEGAICD.
-            SystemExit: If WSEGAICD is not defined and AICD is used in COMPLETION, or if the device number is not found.
+            CompletorError: If WSEGAICD is not defined and AICD is used in COMPLETION, or if the device number is not found.
                 If all devices in COMPLETION are not specified in WSEGAICD.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICD)
@@ -418,7 +418,7 @@ class ReadCasefile:
 
         Raises:
             ValueError: If there are invalid entries in WSEGDAR.
-            SystemExit: If not all device in COMPLETION is specified in WSEGDAR.
+            CompletorError: If not all device in COMPLETION is specified in WSEGDAR.
             If WSEGDAR keyword not defined, when DAR is used in the completion.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGDAR)
@@ -455,7 +455,7 @@ class ReadCasefile:
 
         Raises:
             ValueError: If invalid entries in WSEGAICV.
-            SystemExit: WSEGAICV keyword not defined when AICV is used in completion.
+            CompletorError: WSEGAICV keyword not defined when AICV is used in completion.
                 If all devices in COMPLETION are not specified in WSEGAICV.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGAICV)
@@ -505,7 +505,7 @@ class ReadCasefile:
 
         Raises:
             ValueError: If invalid entries in WSEGICV.
-            SystemExit: WSEGICV keyword not defined when ICV is used in completion.
+            CompletorError: WSEGICV keyword not defined when ICV is used in completion.
         """
 
         start_index, end_index = self.locate_keyword(Keywords.WSEGICV)

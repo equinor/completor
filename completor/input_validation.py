@@ -62,7 +62,7 @@ def check_default_non_packer(df_comp: pd.DataFrame) -> pd.DataFrame:
         Updated completion with replaced roughness.
 
     Raises:
-        SystemExit: If default value '1*' in non-packer columns
+        CompletorError: If default value '1*' in non-packer columns
 
     """
     df_comp = df_comp.copy(True)
@@ -130,7 +130,7 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
         idx: Index.
 
     Raises:
-        SystemExit:
+        CompletorError:
             If packer segments are missing length.
             If non-packer segments are missing length.
             If the completion description is incomplete for some range of depth.
@@ -297,8 +297,7 @@ def validate_lateral_to_device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame) 
         df_comp: Completion data.
 
     Raises:
-        SystemExit:
-            If the LATERAL_TO_DEVICE keyword is set for a multisegmented well with open annulus.
+        Completor: If the LATERAL_TO_DEVICE keyword is set for a multisegmented well with open annulus.
     """
     try:
         df_lat2dev[Headers.BRANCH].astype(np.int64)
@@ -326,12 +325,11 @@ def validate_minimum_segment_length(minimum_segment_length: str | float) -> floa
     Args:
         minimum_segment_length: Possible user input.
 
-    Raises:
-        SystemExit:
-            If the minimum_segment_length is not greater or equals to 0.0.
-
     Returns:
         Minimum segment length if no errors occurred.
+
+    Raises:
+        CompletorError: If the minimum_segment_length is not greater or equals to 0.0.
     """
     try:
         minimum_segment_length = float(minimum_segment_length)

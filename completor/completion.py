@@ -369,7 +369,7 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
         DataFrame with the gaps filled.
 
     Raises:
-        SystemExit: If the Schedule file is missing data for one or more branches in the case file.
+        CompletorError: If the Schedule file is missing data for one or more branches in the case file.
     """
     if df_tubing_segments.empty:
         raise CompletorError(

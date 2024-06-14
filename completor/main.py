@@ -242,8 +242,8 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
         File content, file path.
 
     Raises:
-        SystemExit: If the keyword cannot be found.
-        SystemExit: If the file cannot be found.
+        CompletorError: If the keyword cannot be found.
+        CompletorError: If the file cannot be found.
     """
     if file_path is None:
         # Find the path/name of file from case file
@@ -509,7 +509,7 @@ def main() -> None:
     Also set the correct loglevel based on user input. Defaults to WARNING if not set.
 
     Raises:
-        SystemExit: If input schedule file is not defined as input or in case file.
+        CompletorError: If input schedule file is not defined as input or in case file.
     """
     parser = get_parser()
     inputs = parser.parse_args()
@@ -562,4 +562,4 @@ if __name__ == "__main__":
     try:
         main()
     except CompletorError as e:
-        raise abort(str(e))
+        raise abort(str(e)) from e

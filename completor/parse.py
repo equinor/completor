@@ -73,7 +73,7 @@ def locate_keyword(
         end_index - array that locates the end of the keyword (or its first element).
 
     Raises:
-        SystemExit: If keyword had no end record.
+        CompletorError: If keyword had no end record.
         ValueError: If keyword cannot be found in case file.
     """
     content_length = len(content)
@@ -239,7 +239,7 @@ def read_schedule_keywords(
         remaining_content - List of strings of un-listed keywords.
 
     Raises:
-        SystemExit: If keyword is not found.
+        CompletorError: If keyword is not found.
     """
     content = deepcopy(content)
     used_index = np.asarray([-1])

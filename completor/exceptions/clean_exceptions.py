@@ -3,6 +3,7 @@
 
 class CompletorError(Exception):
     """Custom error for completor, if anything goes critically wrong in completor this error will be raised.
+
     This error is caught in main initiating the abort function and will terminate the program.
     """
 

@@ -343,7 +343,7 @@ def connect_lateral(
         case: ReadCasefile object.
 
     Raises:
-        SystemExit: If there is no device layer at junction of lateral.
+        CompletorError: If there is no device layer at junction of lateral.
     """
     df_tubing, _, _, _, top = data[lateral]
     if not top.empty:
@@ -466,6 +466,10 @@ def prepare_annulus_layer(
 
     Returns:
         Annulus DataFrame, wseglink DataFrame.
+
+    Raises:
+          CompletorError: If splitting annulus fails.
+
     """
     # filter for this lateral
     df_well = df_well[df_well[Headers.WELL] == well_name]
@@ -691,9 +695,6 @@ def prepare_compsegs(
 
     Returns:
         COMPSEGS DataFrame.
-
-    Raises:
-        SystemExit: If dataframes are unable to merge correctly.
     """
     df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
@@ -1242,7 +1243,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         Formatted actions to be included in the output file.
 
     Raises:
-        SystemExit: If there are to many wells and/or segments with DAR.
+        CompletorError: If there are to many wells and/or segments with DAR.
     """
     header = [
         [Headers.WELL, Headers.SEG, Headers.CV_DAR, Headers.AC_GAS, Headers.DEFAULTS, Headers.AC_MAX],
@@ -1366,7 +1367,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
         Formatted actions to be included in the output file.
 
     Raises:
-        SystemExit: If there are too many wells and/or segments with AICV.
+        CompletorError: If there are too many wells and/or segments with AICV.
     """
     header = [
         [
