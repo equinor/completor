@@ -543,7 +543,7 @@ def complete_the_well(
             Headers.TUB_TVD: df_tubing_segments[Headers.TUB_TVD].to_numpy(),
             Headers.LENGTH: end - start,
             Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
-            Headers.NDEVICES: information.number_of_devices,
+            Headers.NUMBER_OF_DEVICES: information.number_of_devices,
             Headers.DEVICE_NUMBER: information.device_number,
             Headers.DEVICE_TYPE: information.device_type,
             Headers.INNER_DIAMETER: information.inner_diameter,
@@ -557,7 +557,9 @@ def complete_the_well(
     df_well = lumping_segments(df_well)
 
     # create scaling factor
-    df_well[Headers.SCALING_FACTOR] = np.where(df_well[Headers.NDEVICES] > 0.0, -1.0 / df_well[Headers.NDEVICES], 0.0)
+    df_well[Headers.SCALING_FACTOR] = np.where(
+        df_well[Headers.NUMBER_OF_DEVICES] > 0.0, -1.0 / df_well[Headers.NUMBER_OF_DEVICES], 0.0
+    )
     return df_well
 
 
@@ -572,7 +574,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     Returns:
         Updated well information.
     """
-    number_of_devices = df_well[Headers.NDEVICES].to_numpy()
+    number_of_devices = df_well[Headers.NUMBER_OF_DEVICES].to_numpy()
     annulus_zone = df_well[Headers.ANNULUS_ZONE].to_numpy()
     segments_descending = df_well[Headers.SEGMENT_DESC].to_numpy()
     number_of_rows = df_well.shape[0]
@@ -596,7 +598,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
         # because it is lumped to others
         # and it is 0 if it has no annulus zone
         number_of_devices[i] = 0.0
-    df_well[Headers.NDEVICES] = number_of_devices
+    df_well[Headers.NUMBER_OF_DEVICES] = number_of_devices
     # from now on it is only original segment
     df_well = df_well[df_well[Headers.SEGMENT_DESC] == Headers.ORIGINAL_SEGMENT].copy()
     # reset index after filter
@@ -652,7 +654,7 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
             continue
         df_zone = df_well[df_well[Headers.ANNULUS_ZONE] == zone]
         df_zone_device = df_zone[
-            (df_zone[Headers.NDEVICES].to_numpy() > 0) | (df_zone[Headers.DEVICE_TYPE].to_numpy() == "PERF")
+            (df_zone[Headers.NUMBER_OF_DEVICES].to_numpy() > 0) | (df_zone[Headers.DEVICE_TYPE].to_numpy() == "PERF")
         ]
         if df_zone_device.shape[0] == 0:
             df_well[Headers.ANNULUS_ZONE].replace(zone, 0, inplace=True)
@@ -790,10 +792,10 @@ class WellSchedule:
             Headers.K,
             Headers.K2,
             Headers.STATUS,
-            Headers.SATNUM,
-            Headers.CF,
-            Headers.DIAM,
-            Headers.KH,
+            Headers.SATURATION_FUNCTION_REGION_NUMBERS,
+            Headers.CONNECTION_FACTOR,
+            Headers.DIAMETER,
+            Headers.FORAMTION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
             Headers.COMPDAT_DIRECTION,
@@ -808,14 +810,16 @@ class WellSchedule:
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
         df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
-        df[[Headers.DIAM, Headers.SKIN]] = df[[Headers.DIAM, Headers.SKIN]].astype(np.float64)
-        # check if CF, KH, and RO are defaulted by the users
+        df[[Headers.DIAMETER, Headers.SKIN]] = df[[Headers.DIAMETER, Headers.SKIN]].astype(np.float64)
+        # check if CONNECTION_FACTOR, FORAMTION_PERMEABILITY_THICKNESS, and RO are defaulted by the users
         try:
-            df[[Headers.CF]] = df[[Headers.CF]].astype(np.float64)
+            df[[Headers.CONNECTION_FACTOR]] = df[[Headers.CONNECTION_FACTOR]].astype(np.float64)
         except ValueError:
             pass
         try:
-            df[[Headers.KH]] = df[[Headers.KH]].astype(np.float64)
+            df[[Headers.FORAMTION_PERMEABILITY_THICKNESS]] = df[[Headers.FORAMTION_PERMEABILITY_THICKNESS]].astype(
+                np.float64
+            )
         except ValueError:
             pass
         try:

@@ -125,7 +125,7 @@ def test_read_case_wsegsicd():
             Headers.STRENGTH,
             Headers.RHOCAL_ICD,
             Headers.VISCAL_ICD,
-            Headers.WCUT,
+            Headers.WATER_CUT,
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
@@ -348,7 +348,7 @@ WSEGAICD
             Headers.STRENGTH,
             Headers.RHOCAL_ICD,
             Headers.VISCAL_ICD,
-            Headers.WCUT,
+            Headers.WATER_CUT,
         ],
     )
 

@@ -168,9 +168,12 @@ class ReadSchedule:
             }
         )
 
-        # If CF and KH are defaulted by users, type conversion fails and
+        # If CONNECTION_FACTOR and FORAMTION_PERMEABILITY_THICKNESS are defaulted by users, type conversion fails and
         # we deliberately ignore it:
-        self.compdat = self.compdat.astype({Headers.CF: np.float64, Headers.KH: np.float64}, errors="ignore")
+        self.compdat = self.compdat.astype(
+            {Headers.CONNECTION_FACTOR: np.float64, Headers.FORAMTION_PERMEABILITY_THICKNESS: np.float64},
+            errors="ignore",
+        )
 
     @property
     def welsegs_header(self) -> pd.DataFrame:

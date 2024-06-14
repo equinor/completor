@@ -386,7 +386,7 @@ COMPLETION
 
 def test_nocf(tmpdir):
     """
-    Test completor case with CF and KH are not explicitly defined.
+    Test completor case with CF and FORAMTION_PERMEABILITY_THICKNESS are not explicitly defined.
 
     1. 1 passive well & 1 active well
     2. Single lateral well

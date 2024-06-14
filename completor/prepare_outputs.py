@@ -103,8 +103,8 @@ def dataframe_tostring(
                 Headers.ALPHA: "{:.10g}".format,
                 Headers.SF: "{:.10g}".format,
                 Headers.ROUGHNESS: "{:.10g}".format,
-                Headers.CF: "{:.10g}".format,
-                Headers.KH: "{:.10g}".format,
+                Headers.CONNECTION_FACTOR: "{:.10g}".format,
+                Headers.FORAMTION_PERMEABILITY_THICKNESS: "{:.10g}".format,
                 Headers.MD: "{:.3f}".format,
                 Headers.TVD: "{:.3f}".format,
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
@@ -225,7 +225,7 @@ def prepare_tubing_layer(
     rnm = {
         Headers.TUBINGMD: Headers.MD,
         Headers.TUBINGTVD: Headers.TVD,
-        Headers.TUBING_INNER_DIAMETER: Headers.DIAM,
+        Headers.TUBING_INNER_DIAMETER: Headers.DIAMETER,
         Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
@@ -300,7 +300,7 @@ def fix_tubing_inner_diam_roughness(
             completion_table_start = completion_table_well[Headers.START_MEASURED_DEPTH].iloc[idx_completion_table_well]
             completion_table_end = completion_table_well[Headers.END_MEASURED_DEPTH].iloc[idx_completion_table_well]
             if (completion_table_end >= overburden_md >= completion_table_start) and not overburden_found_in_completion:
-                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.DIAM)] = (
+                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.DIAMETER)] = (
                     completion_table_well[Headers.INNER_DIAMETER].iloc[idx_completion_table_well]
                 )
                 overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.ROUGHNESS)] = (
@@ -405,7 +405,7 @@ def prepare_device_layer(
     # device segments are only created if:
     # 1. the device type is PERF
     # 2. if it is not PERF then it must have number of device > 0
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.empty:
         # return blank dataframe
         return pd.DataFrame()
@@ -419,7 +419,7 @@ def prepare_device_layer(
     )
     df_device[Headers.MD] = df_well[Headers.TUB_MD].to_numpy() + device_length
     df_device[Headers.TVD] = df_well[Headers.TUB_TVD].to_numpy()
-    df_device[Headers.DIAM] = df_well[Headers.INNER_DIAMETER].to_numpy()
+    df_device[Headers.DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
     df_device[Headers.ROUGHNESS] = df_well[Headers.ROUGHNESS].to_numpy()
     device_comment = np.where(
         df_well[Headers.DEVICE_TYPE] == "PERF",
@@ -479,7 +479,8 @@ def prepare_annulus_layer(
         # filter only that annular zone
         df_branch = df_well[df_well[Headers.ANNULUS_ZONE] == zone]
         df_active = df_branch[
-            (df_branch[Headers.NDEVICES].to_numpy() > 0) | (df_branch[Headers.DEVICE_TYPE].to_numpy() == "PERF")
+            (df_branch[Headers.NUMBER_OF_DEVICES].to_numpy() > 0)
+            | (df_branch[Headers.DEVICE_TYPE].to_numpy() == "PERF")
         ]
         # setting the start segment number and start branch number
         if izone == 0:
@@ -490,7 +491,8 @@ def prepare_annulus_layer(
             start_branch = max(df_annulus[Headers.BRANCH]) + 1
         # now find the most downstream connection of the annulus zone
         idx_connection = np.argwhere(
-            (df_branch[Headers.NDEVICES].to_numpy() > 0) | (df_branch[Headers.DEVICE_TYPE].to_numpy() == "PERF")
+            (df_branch[Headers.NUMBER_OF_DEVICES].to_numpy() > 0)
+            | (df_branch[Headers.DEVICE_TYPE].to_numpy() == "PERF")
         )
         if idx_connection[0] == 0:
             # If the first connection then everything is easy
@@ -518,7 +520,7 @@ def prepare_annulus_layer(
             df_annulus_downstream[Headers.OUT] = df_annulus_downstream[Headers.SEG] + 1
             df_annulus_downstream[Headers.MD] = df_branch_downstream[Headers.TUB_MD].to_numpy() + annulus_length
             df_annulus_downstream[Headers.TVD] = df_branch_downstream[Headers.TUB_TVD].to_numpy()
-            df_annulus_downstream[Headers.DIAM] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
+            df_annulus_downstream[Headers.DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
             df_annulus_downstream[Headers.ROUGHNESS] = df_branch_downstream[Headers.ROUGHNESS].to_numpy()
 
             # no WSEGLINK in the downstream part because
@@ -598,7 +600,7 @@ def calculate_upstream(
     df_annulus_upstream[Headers.OUT] = out_segment
     df_annulus_upstream[Headers.MD] = md_
     df_annulus_upstream[Headers.TVD] = df_branch[Headers.TUB_TVD].to_numpy()
-    df_annulus_upstream[Headers.DIAM] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
+    df_annulus_upstream[Headers.DIAMETER] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
     df_annulus_upstream[Headers.ROUGHNESS] = df_branch[Headers.ROUGHNESS].to_numpy()
     device_segment = get_outlet_segment(
         df_active[Headers.TUB_MD].to_numpy(), df_device[Headers.MD].to_numpy(), df_device[Headers.SEG].to_numpy()
@@ -704,7 +706,7 @@ def prepare_compsegs(
     # 3. it is connected in the annular zone
     df_reservoir = df_reservoir[
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
-        | (df_reservoir[Headers.NDEVICES] > 0)
+        | (df_reservoir[Headers.NUMBER_OF_DEVICES] > 0)
         | (df_reservoir[Headers.DEVICE_TYPE] == "PERF")
     ]
     # sort device dataframe by MD to be used for pd.merge_asof
@@ -717,7 +719,7 @@ def prepare_compsegs(
     icv_segmenting = (
         df_reservoir[Headers.DEVICE_TYPE].nunique() > 1
         and (df_reservoir[Headers.DEVICE_TYPE] == "ICV").any()
-        and not df_reservoir[Headers.NDEVICES].empty
+        and not df_reservoir[Headers.NUMBER_OF_DEVICES].empty
     )
     if df_annulus.empty:
         # There are no annular zones then all cells in this lateral and this well is connected to the device segment.
@@ -886,7 +888,7 @@ def choose_layer(
         Relevant parameters.
     """
     branch_num = df_reservoir[Headers.ANNULUS_ZONE].to_numpy()
-    ndevice = df_reservoir[Headers.NDEVICES].to_numpy()
+    ndevice = df_reservoir[Headers.NUMBER_OF_DEVICES].to_numpy()
     dev_type = df_reservoir[Headers.DEVICE_TYPE].to_numpy()
     return np.where(
         branch_num > 0,
@@ -917,7 +919,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
             if start_completion <= md_reservoir <= end_completion:
                 completion_diameters.append(outer_inner_diameter_completion)
                 break
-    df_reservoir[Headers.DIAM] = completion_diameters
+    df_reservoir[Headers.DIAMETER] = completion_diameters
     return df_reservoir
 
 
@@ -939,7 +941,7 @@ def prepare_compdat(
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
     df_reservoir = df_reservoir[
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
-        | ((df_reservoir[Headers.NDEVICES] > 0) | (df_reservoir[Headers.DEVICE_TYPE] == "PERF"))
+        | ((df_reservoir[Headers.NUMBER_OF_DEVICES] > 0) | (df_reservoir[Headers.DEVICE_TYPE] == "PERF"))
     ]
     if df_reservoir.shape[0] == 0:
         return pd.DataFrame()
@@ -950,10 +952,12 @@ def prepare_compdat(
     compdat[Headers.K] = df_reservoir[Headers.K].to_numpy()
     compdat[Headers.K2] = df_reservoir[Headers.K2].to_numpy()
     compdat[Headers.FLAG] = df_reservoir[Headers.STATUS].to_numpy()
-    compdat[Headers.SAT] = df_reservoir[Headers.SATNUM].to_numpy()
-    compdat[Headers.CF] = df_reservoir[Headers.CF].to_numpy()
-    compdat[Headers.DIAM] = fix_well_id(df_reservoir, df_completion_table)[Headers.DIAM].to_numpy()
-    compdat[Headers.KH] = df_reservoir[Headers.KH].to_numpy()
+    compdat[Headers.SAT] = df_reservoir[Headers.SATURATION_FUNCTION_REGION_NUMBERS].to_numpy()
+    compdat[Headers.CONNECTION_FACTOR] = df_reservoir[Headers.CONNECTION_FACTOR].to_numpy()
+    compdat[Headers.DIAMETER] = fix_well_id(df_reservoir, df_completion_table)[Headers.DIAMETER].to_numpy()
+    compdat[Headers.FORAMTION_PERMEABILITY_THICKNESS] = df_reservoir[
+        Headers.FORAMTION_PERMEABILITY_THICKNESS
+    ].to_numpy()
     compdat[Headers.SKIN] = df_reservoir[Headers.SKIN].to_numpy()
     compdat[Headers.DFACT] = df_reservoir[Headers.DFACT].to_numpy()
     compdat[Headers.DIRECTION] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
@@ -978,7 +982,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     """
     df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1021,7 +1025,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         WSEGSICD.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1037,7 +1041,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
         wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
         wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
-        wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WCUT].to_numpy()
+        wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WATER_CUT].to_numpy()
         wsegsicd[Headers.EMPTY] = "/"
     return wsegsicd
 
@@ -1055,7 +1059,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         WSEGVALV.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1101,7 +1105,7 @@ def prepare_wsegicv(
     """
     df_well = df_well[
         (df_well[Headers.LATERAL] == lateral)
-        & ((df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0))
+        & ((df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0))
     ]
     if df_well.empty:
         return df_well
@@ -1136,7 +1140,7 @@ def prepare_wsegicv(
         df_temp = df_temp[[Headers.SEG, Headers.CV, Headers.AC, Headers.AC_MAX]]
         df_temp[Headers.WELL] = [well_name] * df_merge_tubing.shape[0]
         df_temp[Headers.DEFAULTS] = "5*"
-        df_temp[Headers.AC_MAX] = df_temp[Headers.AC_MAX].fillna(math.pi * 0.5 * df_tubing[Headers.DIAM] ** 2)
+        df_temp[Headers.AC_MAX] = df_temp[Headers.AC_MAX].fillna(math.pi * 0.5 * df_tubing[Headers.DIAMETER] ** 2)
         df_temp = df_temp.reindex(
             columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX]
         )
@@ -1158,7 +1162,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         DataFrame for DAR.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1197,7 +1201,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         DataFrame for AICV.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NDEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(

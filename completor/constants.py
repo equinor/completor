@@ -51,25 +51,33 @@ class Headers:
     INFO_TYPE = "INFOTYPE"
     TUBING_OUTLET = "TUBINGOUTLET"
     SAT = "SAT"  # Saturation?
-    FLAG = "FLAG"
+    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
     DEF = "DEF"
     DIRECTION = "DIR"
     SEG = "SEG"  # Duplicate, ish
-    SEG2 = "SEG2"
+    SEG2 = "SEG2"  # TODO: Decide what to do with these.
     OUT = "OUT"
     COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"
     LATERAL = "LATERAL"
-    NDEVICES = "NDEVICES"
+    NUMBER_OF_DEVICES = "NDEVICES"
     I = "I"  # noqa: E741
     J = "J"
     K = "K"
     K2 = "K2"
     STATUS = "STATUS"
-    SATNUM = "SATNUM"
-    CF = "CF"
-    DIAM = "DIAM"
-    KH = "KH"
-    SKIN = "SKIN"
+    SATURATION_FUNCTION_REGION_NUMBERS = "SATNUM"
+    CONNECTION_FACTOR = "CF"  # Transmissibility factor for the connection. If defaulted or set to zero,
+    # the connection transmissibility factor is calculated using the remaining items of data in this record. See "The
+    # connection transmissibility factor" in the ECLIPSE Technical Description for an account of the methods used in
+    # Cartesian and radial geometries. The well bore diameter must be set in item 9.
+
+    DIAMETER = "DIAM"
+    FORAMTION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
+    # thickness, h, in a producing well, referred to as kh.
+    SKIN = "SKIN"  # A dimensionless factor calculated to determine the production efficiency of a well by comparing
+    # actual conditions with theoretical or ideal conditions. A positive skin value indicates some damage or
+    # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
+    # typically resulting from stimulation.
     DFACT = "DFACT"
     COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
     RO = "RO"
@@ -82,7 +90,6 @@ class Headers:
     SEGMENTMD = "SEGMENTMD"
     SEGMENT_DESC = "SEGMENT_DESC"
     SEGMENT = "SEGMENT"
-    WCUT = "WCUT"
     VISCAL_ICD = "VISCAL_ICD"
     RHOCAL_ICD = "RHOCAL_ICD"
     STRENGTH = "STRENGTH"
@@ -142,7 +149,6 @@ class Headers:
 
     TUBINGBRANCH = "TUBINGBRANCH"
     MD = "MD"
-    DIAM = "DIAM"
 
     # from `test_completion.py`
     TUB_MD = "TUB_MD"

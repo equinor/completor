@@ -853,7 +853,7 @@ def test_lumping_segment_1():
             [3.0, 1, Headers.ADDITIONAL_SEGMENT],
             [4.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
@@ -861,7 +861,7 @@ def test_lumping_segment_1():
             [2.0, 0, Headers.ORIGINAL_SEGMENT],
             [7.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.lumping_segments(df_well)
@@ -877,7 +877,7 @@ def test_lumping_segment_2():
             [3.0, 1, Headers.ADDITIONAL_SEGMENT],
             [4.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
     df_true = pd.DataFrame(
         [
@@ -885,7 +885,7 @@ def test_lumping_segment_2():
             [5.0, 1, Headers.ORIGINAL_SEGMENT],
             [4.0, 1, Headers.ORIGINAL_SEGMENT],
         ],
-        columns=[Headers.NDEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
+        columns=[Headers.NUMBER_OF_DEVICES, Headers.ANNULUS_ZONE, Headers.SEGMENT_DESC],
     )
 
     df_test = completion.lumping_segments(df_well)
@@ -919,10 +919,10 @@ def test_skin():
             Headers.K,
             Headers.K2,
             Headers.STATUS,
-            Headers.SATNUM,
-            Headers.CF,
-            Headers.DIAM,
-            Headers.KH,
+            Headers.SATURATION_FUNCTION_REGION_NUMBERS,
+            Headers.CONNECTION_FACTOR,
+            Headers.DIAMETER,
+            Headers.FORAMTION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
             Headers.COMPDAT_DIRECTION,

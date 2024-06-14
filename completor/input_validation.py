@@ -200,7 +200,7 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
         Updated data.
     """
     # if WCUT is defaulted then set to 0.5, the same default value as in simulator
-    df_temp[Headers.WCUT] = df_temp[Headers.WCUT].replace("1*", 0.5).astype(np.float64)
+    df_temp[Headers.WATER_CUT] = df_temp[Headers.WATER_CUT].replace("1*", 0.5).astype(np.float64)
     # set data type
     df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
     # left out device number because it has been formatted as integer

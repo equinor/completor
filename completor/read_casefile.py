@@ -366,7 +366,13 @@ class ReadCasefile:
                 raise abort("WSEGSICD keyword must be defined, if ICD is used in the completion.")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.STRENGTH, Headers.RHOCAL_ICD, Headers.VISCAL_ICD, Headers.WCUT]
+            header = [
+                Headers.DEVICE_NUMBER,
+                Headers.STRENGTH,
+                Headers.RHOCAL_ICD,
+                Headers.VISCAL_ICD,
+                Headers.WATER_CUT,
+            ]
             self.wsegsicd_table = val.set_format_wsegsicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )

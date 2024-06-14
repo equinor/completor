@@ -77,7 +77,7 @@ def test_reading_compdat():
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
     df_true = fr.remove_string_characters(df_true)
     columns1 = [Headers.I, Headers.J, Headers.K, Headers.K2]
-    columns2 = [Headers.CF, Headers.KH, Headers.SKIN]
+    columns2 = [Headers.CONNECTION_FACTOR, Headers.FORAMTION_PERMEABILITY_THICKNESS, Headers.SKIN]
     df_true[columns1] = df_true[columns1].astype(np.int64)
     df_true[columns2] = df_true[columns2].astype(np.float64)
     df_well10 = df_true[df_true[Headers.WELL] == "WELL10"]
