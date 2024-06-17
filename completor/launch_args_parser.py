@@ -29,7 +29,7 @@ def get_parser() -> argparse.ArgumentParser:
         "-f", "--figure", action="store_true", help="(Optional) to generate well completion diagrams in pdf format"
     )
     parser.add_argument(
-        "-l", "--loglevel", action="store", type=int, help="(Optional) log-level. Lower values gives more info"
+        "-l", "--loglevel", action="store", type=int, help="(Optional) log-level. Lower values gives more info (0-50)"
     )
     parser.add_argument(
         "-v",
