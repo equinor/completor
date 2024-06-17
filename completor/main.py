@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import argparse
 import logging
 import os
 import re
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from typing import overload
 
 import numpy as np
@@ -19,6 +18,7 @@ from completor.constants import Keywords
 from completor.create_output import CreateOutput
 from completor.create_wells import CreateWells
 from completor.exceptions import CompletorError
+from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
@@ -28,67 +28,6 @@ try:
     from typing import Literal
 except ImportError:
     pass
-
-
-def create_get_well_name(schedule_lines: dict[int, str]) -> Callable[[int], str]:
-    """Create a function to get the well name from line number.
-
-    Args:
-        schedule_lines: All lines in schedule file.
-
-    Returns:
-        get_well_name (Function).
-    """
-    keys = np.array(sorted(list(schedule_lines.keys())))
-
-    def get_well_name(line_number: int) -> str:
-        """Get well name for WELSEGS or COMPSEGS.
-
-        Assumes that line_number points to one of these keywords.
-
-        Args:
-            line_number: Line number.
-
-        Returns:
-            Well name.
-
-        """
-        i = (keys == line_number).nonzero()[0][0]
-        next_line = schedule_lines[keys[i + 1]]
-        return next_line.split()[0]
-
-    return get_well_name
-
-
-def format_chunk(chunk_str: str) -> list[list[str]]:
-    """Format the data-records and resolve the repeat-mechanism.
-
-    E.g. 3* == 1* 1* 1*, 3*250 == 250 250 250.
-
-    Args:
-        chunk_str: A chunk data-record.
-
-    Returns:
-        Expanded values.
-    """
-    chunk = re.split(r"\s+/", chunk_str)[:-1]
-    expanded_data = []
-    for line in chunk:
-        new_record = ""
-        for record in line.split():
-            if not record[0].isdigit():
-                new_record += record + " "
-                continue
-            if "*" not in record:
-                new_record += record + " "
-                continue
-
-            # need to handle things like 3* or 3*250
-            multiplier, number = record.split("*")
-            new_record += f"{number if number else '1*'} " * int(multiplier)
-        if new_record:
-            expanded_data.append(new_record.split())
-    return expanded_data
 
 
 class FileWriter:
@@ -319,8 +258,6 @@ def create(
     line_number = 0
     progress_status = ProgressStatus(len(lines), percent)
 
-    get_well_name = create_get_well_name(clean_lines_map)
-
     pdf_file = None
     if show_fig:
         figure_no = 1
@@ -342,7 +279,7 @@ def create(
             # This is a (potential) MSW keyword.
             logger.debug(keyword)
 
-            well_name = get_well_name(line_number)
+            well_name = _get_well_name(clean_lines_map, line_number)
             if keyword in Keywords.segments:  # check if it is an active well
                 logger.debug(well_name)
                 if well_name not in list(schedule.active_wells):
@@ -359,7 +296,7 @@ def create(
                 raw.append(lines[line_number])
                 if line_number in clean_lines_map:
                     chunk_str += clean_lines_map[line_number]
-            chunk = format_chunk(chunk_str)
+            chunk = _format_chunk(chunk_str)
             chunks.append((keyword, chunk))  # for debug ...
 
             # use data to update our schedule
@@ -411,7 +348,7 @@ def create(
                     wells,
                     well_name,
                     schedule.get_well_number(well_name),
-                    COMPLETOR_VERSION,
+                    completor.__version__,
                     show_fig,
                     pdf_file,
                     write_welsegs,
@@ -438,69 +375,6 @@ def create(
                 "Inconsistent case and input schedule files. "
                 "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
             )
-
-
-COMPLETOR_DESCRIPTION = """Completor models advanced well completions for reservoir simulators.
-It generates all necessary keywords for reservoir simulation
-according to a completion description. See the Completor Wiki
-for modeling details.
-"""
-
-COMPLETOR_HELP = """
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Execute completor with the following command
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-completor -help -about -i input.case -s input.wells -p pvt.inc -o output.wells --figure
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Required:
----------
--i      : followed by full definition of a completor case file (with extension)
--s      : followed by full definition of a schedule file (which contains basic
-          COMPDAT, COMPSEGS and WELSEGS) (required if it is not specified in
-          the case file)
-
-Optional:
----------
---help   : how to run the program
---about  : about completor
--o      : followed by full definition of completor output file
---figure : ask the program to generate a pdf file which contains the well's
-          schematic diagram
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-COMPLETOR_VERSION = completor.__version__
-
-
-def get_parser() -> argparse.ArgumentParser:
-    """Parse user input from the command line.
-
-    Returns:
-        argparse.ArgumentParser.
-    """
-    parser = argparse.ArgumentParser(description=COMPLETOR_DESCRIPTION)
-    parser.add_argument("-i", "--inputfile", required=True, type=str, help="(Compulsory) Completor case file")
-    parser.add_argument("-s", "--schedulefile", type=str, help="(Optional) if it is specified in the case file")
-    parser.add_argument(
-        "-o", "--outputfile", type=str, help="(Optional) name of output file. Defaults to <schedule>_advanced.wells"
-    )
-    parser.add_argument(
-        "-f", "--figure", action="store_true", help="(Optional) to generate well completion diagrams in pdf format"
-    )
-    parser.add_argument(
-        "-l", "--loglevel", action="store", type=int, help="(Optional) log-level. Lower values gives more info"
-    )
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version="%(prog)s (completor version " + completor.__version__ + ")",
-    )
-
-    return parser
 
 
 def main() -> None:
@@ -546,7 +420,7 @@ def main() -> None:
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
 
-    logger.debug("Running Completor %s. An advanced well modelling tool.", COMPLETOR_VERSION)
+    logger.debug("Running Completor %s. An advanced well modelling tool.", completor.__version__)
     logger.debug("-" * 60)
     start_a = time.time()
 
@@ -556,6 +430,53 @@ def main() -> None:
 
     logger.debug("Total runtime: %d", (time.time() - start_a))
     logger.debug("-" * 60)
+
+
+def _get_well_name(schedule_lines: dict[int, str], i: int) -> str:
+    """Get the well name from line number
+
+    Args:
+        schedule_lines: Dictionary of lines in schedule file.
+        i: Line index.
+
+    Returns:
+        Well name.
+    """
+    keys = np.array(sorted(list(schedule_lines.keys())))
+    j = np.where(keys == i)[0][0]
+    next_line = schedule_lines[int(keys[j + 1])]
+    return next_line.split()[0]
+
+
+def _format_chunk(chunk_str: str) -> list[list[str]]:
+    """Format the data-records and resolve the repeat-mechanism.
+
+    E.g. 3* == 1* 1* 1*, 3*250 == 250 250 250.
+
+    Args:
+        chunk_str: A chunk data-record.
+
+    Returns:
+        Expanded values.
+    """
+    chunk = re.split(r"\s+/", chunk_str)[:-1]
+    expanded_data = []
+    for line in chunk:
+        new_record = ""
+        for record in line.split():
+            if not record[0].isdigit():
+                new_record += record + " "
+                continue
+            if "*" not in record:
+                new_record += record + " "
+                continue
+
+            # need to handle things like 3* or 3*250
+            multiplier, number = record.split("*")
+            new_record += f"{number if number else '1*'} " * int(multiplier)
+        if new_record:
+            expanded_data.append(new_record.split())
+    return expanded_data
 
 
 if __name__ == "__main__":
