@@ -8,7 +8,7 @@ import completor
 
 COMPLETOR_DESCRIPTION = """Completor models advanced well completions for reservoir simulators.
 It generates all necessary keywords for reservoir simulation
-according to a completion description. See the Completor Wiki
+according to a completion description. See the Completor Documentations
 for modeling details.
 """
 
