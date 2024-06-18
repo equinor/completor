@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/equinor/completor/compare/v0.1.1...v0.1.2) (2024-06-18)
+
+
+### Bug Fixes
+
+* Fix mypy in `pre-commit-config.yaml` ([#102](https://github.com/equinor/completor/issues/102)) ([7432aca](https://github.com/equinor/completor/commit/7432aca0556289a16d0426331b350b99bc9c4239))
+
+
+### Documentation
+
+* Fix URL ([#105](https://github.com/equinor/completor/issues/105)) ([d72df4b](https://github.com/equinor/completor/commit/d72df4b513b60ee805f5a8148bee04789d465cf6))
+
 ## [0.1.1](https://github.com/equinor/completor/compare/v0.1.0...v0.1.1) (2024-06-18)
 
 
