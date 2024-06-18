@@ -3,6 +3,8 @@ name: Publish Python 🐍 distributions 📦 to PyPI
 on:
   release: # Trigger when a new release is made.
     types: [published]
+  push:
+    tags: [ "v*" ]
 
   workflow_dispatch: # Trigger manually.
 
@@ -41,7 +43,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     environment:
-      name: pypi
+      name: release
       url: https://pypi.org/p/completor
     permissions:
       id-token: write  # IMPORTANT: Mandatory for trusted publishing.
