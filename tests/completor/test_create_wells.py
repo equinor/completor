@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import common
 import pytest
+import utils
 
 from completor.constants import Method  # type: ignore
 from completor.create_wells import CreateWells  # type: ignore
@@ -17,13 +17,15 @@ _TEST_FILE = "test.sch"
 
 def test_duplicates(tmpdir):
     """Test completor case with duplicated entries in COMPDAT and COMPSEGS.
-    Completor produces a number for the second COMPDAT entry, but it is a mistake."""
+
+    Completor produces a number for the second COMPDAT entry, but it is a mistake.
+    """
     tmpdir.chdir()
     case_file = Path(_TESTDIR / "duplicate.case")
     schedule_file = Path(_TESTDIR / "duplicate.sch")
     true_file = Path(_TESTDIR / "duplicate.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_segment_creation_method():
@@ -90,10 +92,12 @@ SEGMENTLENGTH
 
 def test_tubing_segment_icv(tmpdir):
     """Test completor case with ICV to create a special tubing segmentation.
-    Completor will produce mixes of tubing segmentation between lumped and default."""
+
+    Completor will produce mixes of tubing segmentation between lumped and default.
+    """
     tmpdir.chdir()
     case_file = Path(_TESTDIR / "icv_tubing.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")
     true_file = Path(_TESTDIR / "icv_tubing.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)

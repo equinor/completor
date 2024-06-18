@@ -1,14 +1,15 @@
-"""Test functions for the Completor read_schedule module"""
+"""Test functions for the Completor read_schedule module."""
 
 from io import StringIO
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from common import ReadSchedule
+from utils import ReadSchedule
 
 import completor.parse as fr
 from completor import utils
+from completor.constants import Headers
 from completor.read_schedule import fix_compsegs, fix_welsegs
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -20,8 +21,7 @@ def test_reading_welspecs():
     """Test the functions which read the WELSPECS keyword."""
     true_welspecs = StringIO(
         """
-WELL,GROUP,I,J,BHP_DEPTH,PHASE,DR,FLAG,SHUT,CROSS,PRESSURETABLE,DENSCAL,REGION,ITEM14,\
-ITEM15,ITEM16,ITEM17
+WELL,GROUP,I,J,BHP_DEPTH,PHASE,DR,FLAG,SHUT,CROSS,PRESSURETABLE,DENSCAL,REGION,ITEM14,ITEM15,ITEM16,ITEM17
 'WELL1','GROUP1',13,75,1200,GAS,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
 'WELL2','GROUP1',18,37,1200,GAS,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
 'WELL3','GROUP1',23,40,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
@@ -69,50 +69,46 @@ COMPORD
 
 
 def test_reading_compdat():
-    """
-    Test the functions which read COMPDAT keywords.
+    """Test the functions which read COMPDAT keywords.
 
-    Test the whole COMPDAT and spesific on WELL10
+    Test the whole COMPDAT and specific on WELL10.
     """
     true_compdat = Path(_TESTDIR / "compdat.true")
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
     df_true = fr.remove_string_characters(df_true)
-    columns1 = ["I", "J", "K", "K2"]
-    columns2 = ["CF", "KH", "SKIN"]
+    columns1 = [Headers.I, Headers.J, Headers.K, Headers.K2]
+    columns2 = [Headers.CONNECTION_FACTOR, Headers.FORAMTION_PERMEABILITY_THICKNESS, Headers.SKIN]
     df_true[columns1] = df_true[columns1].astype(np.int64)
     df_true[columns2] = df_true[columns2].astype(np.float64)
-    df_well10 = df_true[df_true["WELL"] == "WELL10"]
+    df_well10 = df_true[df_true[Headers.WELL] == "WELL10"]
     df_well10.reset_index(drop=True, inplace=True)
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.compdat)
     pd.testing.assert_frame_equal(df_well10, _SCHEDULE.get_compdat("WELL10"))
 
 
 def test_reading_compsegs():
-    """
-    Test the functions which read the COMPSEGS keywords.
+    """Test the functions which read the COMPSEGS keywords.
 
-    Test it on WELL12 branch 1
+    Test it on WELL12 branch 1.
     """
     true_compsegs = Path(_TESTDIR / "compsegs_well12.true")
     df_true = pd.read_csv(true_compsegs, sep=",", dtype=object)
-    columns1 = ["I", "J", "K", "BRANCH"]
-    columns2 = ["STARTMD", "ENDMD"]
+    columns1 = [Headers.I, Headers.J, Headers.K, Headers.BRANCH]
+    columns2 = [Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     df_true[columns1] = df_true[columns1].astype(np.int64)
     df_true[columns2] = df_true[columns2].astype(np.float64)
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.get_compsegs("WELL12", 1))
 
 
 def test_reading_welsegs():
-    """
-    Test the functions which read WELSEGS keywords.
+    """Test the functions which read WELSEGS keywords.
 
-    Both the first and the second record
-    check WELL4 for the second record
+    Both the first and the second record.
+    Check WELL4 for the second record.
     """
     true_welsegs1 = StringIO(
         """
-WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10,\
-ITEM11,ITEM12
+WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10,ITEM11,ITEM12
 'WELL3',1328,1328,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
 'WELL4',1316,1316,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
 'WELL5',1326.8,1326.8,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
@@ -125,25 +121,24 @@ ITEM11,ITEM12
 'WELL12',1335,1335,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
     """
     )
-    true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_welsegs1 = pd.read_csv(true_welsegs1, sep=",", dtype=object)
     true_welsegs1 = fr.remove_string_characters(true_welsegs1)
-    true_welsegs1 = true_welsegs1.astype({"SEGMENTTVD": np.float64, "SEGMENTMD": np.float64})
-    true_well4 = str(_TESTDIR / "welsegs_well4.true")
+    true_welsegs1 = true_welsegs1.astype({Headers.SEGMENTTVD: np.float64, Headers.SEGMENTMD: np.float64})
+    true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_well4 = pd.read_csv(true_well4, sep=",", dtype=object)
     true_well4 = fr.remove_string_characters(true_well4)
     true_well4 = true_well4.astype(
         {
-            "TUBINGSEGMENT": np.int64,
-            "TUBINGSEGMENT2": np.int64,
-            "TUBINGBRANCH": np.int64,
-            "TUBINGOUTLET": np.int64,
-            "TUBINGMD": np.float64,
-            "TUBINGTVD": np.float64,
-            "TUBINGROUGHNESS": np.float64,
+            Headers.TUBING_SEGMENT: np.int64,
+            Headers.TUBING_SEGMENT_2: np.int64,
+            Headers.TUBINGBRANCH: np.int64,
+            Headers.TUBING_OUTLET: np.int64,
+            Headers.TUBINGMD: np.float64,
+            Headers.TUBINGTVD: np.float64,
+            Headers.TUBING_ROUGHNESS: np.float64,
         }
     )
-    true_welsegs1_well4 = true_welsegs1[true_welsegs1["WELL"] == "WELL4"]
+    true_welsegs1_well4 = true_welsegs1[true_welsegs1[Headers.WELL] == "WELL4"]
     true_welsegs1_well4.reset_index(drop=True, inplace=True)
 
     # get the program reading
@@ -188,11 +183,9 @@ WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN,6E-03
 
 
 def test_fix_compsegs():
-    """
-    Test that fix_compsegs correctly assigns start and end measured depths.
+    """Test that fix_compsegs correctly assigns start and end measured depths.
 
-    In cases where there are overlapping segments in compsegs, also test zero
-    length segments.
+    In cases where there are overlapping segments in compsegs, also test zero length segments.
     """
     df_test = pd.DataFrame(
         [
@@ -204,7 +197,7 @@ def test_fix_compsegs():
             [3019.764, 3039.297],
             [3039.297, 3041.915],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
 
     df_true = pd.DataFrame(
@@ -217,22 +210,21 @@ def test_fix_compsegs():
             [3026.67405, 3039.297],
             [3039.297, 3041.915],
         ],
-        columns=["STARTMD", "ENDMD"],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
     )
     df_test = fix_compsegs(df_test, "")
     pd.testing.assert_frame_equal(df_true, df_test)
 
 
 def test_fix_welsegs():
-    """
-    Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
+    """Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
 
     Completor works with ABS in the WELSEGS.
     So if the users have WELSEGS defined in INC then it must be converted first.
     """
     df_header = pd.DataFrame(
         [[1000.0, 1500.0, "INC"]],
-        columns=["SEGMENTTVD", "SEGMENTMD", "INFOTYPE"],
+        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFO_TYPE],
     )
     df_content = pd.DataFrame(
         [
@@ -241,12 +233,12 @@ def test_fix_welsegs():
             [4, 3, 30.0, 30.0],
             [5, 4, 40.0, 40.0],
         ],
-        columns=["TUBINGSEGMENT", "TUBINGOUTLET", "TUBINGTVD", "TUBINGMD"],
+        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBINGTVD, Headers.TUBINGMD],
     )
 
     df_header_true = pd.DataFrame(
         [[1000.0, 1500.0, "ABS"]],
-        columns=["SEGMENTTVD", "SEGMENTMD", "INFOTYPE"],
+        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFO_TYPE],
     )
     df_content_true = pd.DataFrame(
         [
@@ -255,7 +247,7 @@ def test_fix_welsegs():
             [4, 3, 1060.0, 1600.0],
             [5, 4, 1100.0, 1640.0],
         ],
-        columns=["TUBINGSEGMENT", "TUBINGOUTLET", "TUBINGTVD", "TUBINGMD"],
+        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBING_TVD, Headers.TUBING_MD],
     )
 
     df_header, df_content = fix_welsegs(df_header, df_content)

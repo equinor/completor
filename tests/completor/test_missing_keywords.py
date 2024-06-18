@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-import common
 import pytest
+import utils
 
 COMPLETION = """
 COMPLETION
@@ -64,7 +64,7 @@ WELSPECS
 """
 COMPDAT = """
 COMPDAT
--- WELL I J K K2 FLAG SAT CF  DIAM  KH  SKIN DFACT DIR  RO
+-- WELL I J K K2 FLAG SAT CF  DIAM  FORAMTION_PERMEABILITY_THICKNESS  SKIN DFACT DIR  RO
     A1  1 1 1  1 OPEN 1* 1.27 0.31 114.9 0.0   1*   X  19.7 /
 /
 """
@@ -130,7 +130,7 @@ def test_minimum_input(tmpdir, capsys):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    common.open_files_run_create(case_file, schedule_file, _outfile)
+    utils.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
@@ -142,7 +142,7 @@ def test_missing_welspecs(tmpdir, capsys):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case("PERF", ["completion"], case_file)
     set_schedule(["compdat", "welsegs", "compsegs"], schedule_file)
-    common.open_files_run_create(case_file, schedule_file, _outfile)
+    utils.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
@@ -156,7 +156,7 @@ def test_missing_compdat(tmpdir):
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=outputmessage):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_welsegs(tmpdir):
@@ -167,7 +167,7 @@ def test_missing_welsegs(tmpdir):
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=outputmessage):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_inconsistent_files(tmpdir):
@@ -180,7 +180,7 @@ def test_inconsistent_files(tmpdir):
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)
     with pytest.raises(ValueError, match=outputmessage):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_completion(tmpdir):
@@ -191,7 +191,7 @@ def test_missing_completion(tmpdir):
     set_case("PERF", ["wsegaicd"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=outputmessage):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_wsegaicd(tmpdir):
@@ -202,7 +202,7 @@ def test_missing_wsegaicd(tmpdir):
     set_case("AICD", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_wsegsicd(tmpdir):
@@ -213,7 +213,7 @@ def test_missing_wsegsicd(tmpdir):
     set_case("ICD", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_wsegvalv(tmpdir):
@@ -224,7 +224,7 @@ def test_missing_wsegvalv(tmpdir):
     set_case("VALVE", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_full_wsegdar(tmpdir, capsys):
@@ -238,7 +238,7 @@ def test_full_wsegdar(tmpdir, capsys):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case("DAR", ["completion", "wsegdar"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    common.open_files_run_create(case_file, schedule_file, _outfile)
+    utils.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
@@ -252,7 +252,7 @@ def test_missing_wsegdar(tmpdir):
     set_case("DAR", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_full_wsegaicv(tmpdir, capsys):
@@ -266,7 +266,7 @@ def test_full_wsegaicv(tmpdir, capsys):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case("AICV", ["completion", "wsegaicv"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    common.open_files_run_create(case_file, schedule_file, _outfile)
+    utils.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
@@ -280,4 +280,4 @@ def test_missing_wsegaicv(tmpdir):
     set_case("AICV", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        common.open_files_run_create(case_file, schedule_file, _outfile)
+        utils.open_files_run_create(case_file, schedule_file, _outfile)

@@ -14,8 +14,7 @@ from completor.utils import clean_file_line, clean_file_lines
     ],
 )
 def test_clean_file_line_with_file_path(test_input: str, expected: str) -> None:
-    """
-    Test that the file path is preserved.
+    """Test that the file path is preserved.
 
     Leading and trailing white space should be removed.
     File path should remain untouched, but trailing comments removed.
@@ -30,8 +29,7 @@ def test_clean_file_line_comment():
 
 
 def test_clean_file_line_with_well_name_quotes():
-    """
-    Test clean_file_line with well name in quotes.
+    """Test clean_file_line with well name in quotes.
 
     Should keep trailing comment by default.
     Should remove quotes and trailing comment if remove set to true.
@@ -48,8 +46,7 @@ def test_clean_file_line_with_well_name_quotes():
 
 
 def test_clean_file_lines():
-    """
-    Test the clean_file_lines function.
+    """Test the clean_file_lines function.
 
     Should remove all comments and empty lines.
     Should remove trailing comments, but preserve file paths and quoted well names.

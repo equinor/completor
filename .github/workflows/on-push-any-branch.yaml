@@ -17,3 +17,7 @@ jobs:
   todo-check:
     name: 🧐 Check TODOs
     uses: ./.github/workflows/todo-check.yaml
+
+  ert-check:
+    name: 🔍 Check ERT
+    uses: ./.github/workflows/check-ert-integration.yaml

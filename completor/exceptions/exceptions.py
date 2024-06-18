@@ -23,7 +23,6 @@ class _BaseCaseException(Exception):
         the line the error happened at. Then add the error message.
 
         Format example:
-        .. code-block:: console
             Error at line 7:
             Could not parse "KEYWORD".
                 5: KEYWORD
@@ -42,7 +41,6 @@ class _BaseCaseException(Exception):
         Returns:
             Error message formatted with lines from file where error occurred,
             arrow pointing at error line and error message.
-
         """
         # From 0 indexed to 1 indexed (like the actual file)
         start = self._clamp((error_line - windows_size), 0, len(original_lines))
@@ -121,7 +119,6 @@ class CaseReaderFormatError(_BaseCaseException):
 
         Returns:
             Line number and whether there are too many/few data entries vs header.
-
         """
         stripped_content = [x.strip() for x in lines]
         start, end = parse.locate_keyword(stripped_content, keyword)

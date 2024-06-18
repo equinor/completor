@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from completor.exceptions import CaseReaderFormatError  # type: ignore
+from completor.constants import Headers
+from completor.exceptions import CaseReaderFormatError, CompletorError  # type: ignore
 from completor.main import get_content_and_path  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
 
@@ -32,17 +33,17 @@ def test_read_case_completion():
             ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, "OA", 3, "AICV", 2],
         ],
         columns=[
-            "WELL",
-            "BRANCH",
-            "STARTMD",
-            "ENDMD",
-            "INNER_ID",
-            "OUTER_ID",
-            "ROUGHNESS",
-            "ANNULUS",
-            "NVALVEPERJOINT",
-            "DEVICETYPE",
-            "DEVICENUMBER",
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.OUTER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.ANNULUS,
+            Headers.VALVES_PER_JOINT,
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
         ],
     )
 
@@ -66,7 +67,7 @@ def test_read_case_wsegvalv():
             ["VALVE", 1, 0.85, 0.01, "5*", 0.04],
             ["VALVE", 2, 0.95, 0.02, "5*", 0.04],
         ],
-        columns=["DEVICETYPE", "DEVICENUMBER", "CV", "AC", "L", "AC_MAX"],
+        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX],
     )
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegvalv_table)
 
@@ -78,7 +79,7 @@ def test_read_case_wsegicv():
             ["ICV", 1, 1.0, 2.0, 2.0],
             ["ICV", 2, 3, 4, 1.0],
         ],
-        columns=["DEVICETYPE", "DEVICENUMBER", "CV", "AC", "AC_MAX"],
+        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.AC_MAX],
     )
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegicv_table)
 
@@ -91,22 +92,22 @@ def test_read_case_wsegaicd():
             ["AICD", 2, 0.00042, 0.1, 1.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1001.25, 1.55],
         ],
         columns=[
-            "DEVICETYPE",
-            "DEVICENUMBER",
-            "ALPHA",
-            "X",
-            "Y",
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "RHOCAL_AICD",
-            "VISCAL_AICD",
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.ALPHA,
+            Headers.X,
+            Headers.Y,
+            Headers.A,
+            Headers.B,
+            Headers.C,
+            Headers.D,
+            Headers.E,
+            Headers.F,
+            Headers.RHOCAL_AICD,
+            Headers.VISCAL_AICD,
         ],
     )
-    df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
+    df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicd_table)
 
@@ -118,9 +119,16 @@ def test_read_case_wsegsicd():
             ["ICD", 1, 0.001, 1000.0, 1.0, 0.1],
             ["ICD", 2, 0.002, 1000.0, 0.9, 0.2],
         ],
-        columns=["DEVICETYPE", "DEVICENUMBER", "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", "WCUT"],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.STRENGTH,
+            Headers.RHOCAL_ICD,
+            Headers.VISCAL_ICD,
+            Headers.WATER_CUT,
+        ],
     )
-    df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
+    df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegsicd_table)
 
 
@@ -132,19 +140,19 @@ def test_read_case_wsegdar():
             ["DAR", 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
         ],
         columns=[
-            "DEVICETYPE",
-            "DEVICENUMBER",
-            "CV_DAR",
-            "AC_OIL",
-            "AC_GAS",
-            "AC_WATER",
-            "WHF_LCF_DAR",
-            "WHF_HCF_DAR",
-            "GHF_LCF_DAR",
-            "GHF_HCF_DAR",
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.CV_DAR,
+            Headers.AC_OIL,
+            Headers.AC_GAS,
+            Headers.AC_WATER,
+            Headers.WHF_LCF_DAR,
+            Headers.WHF_HCF_DAR,
+            Headers.GHF_LCF_DAR,
+            Headers.GHF_HCF_DAR,
         ],
     )
-    df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
+    df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegdar_table)
 
@@ -219,33 +227,33 @@ def test_read_case_wsegaicv():
             ],
         ],
         columns=[
-            "DEVICETYPE",
-            "DEVICENUMBER",
-            "WCT_AICV",
-            "GHF_AICV",
-            "RHOCAL_AICV",
-            "VISCAL_AICV",
-            "ALPHA_MAIN",
-            "X_MAIN",
-            "Y_MAIN",
-            "A_MAIN",
-            "B_MAIN",
-            "C_MAIN",
-            "D_MAIN",
-            "E_MAIN",
-            "F_MAIN",
-            "ALPHA_PILOT",
-            "X_PILOT",
-            "Y_PILOT",
-            "A_PILOT",
-            "B_PILOT",
-            "C_PILOT",
-            "D_PILOT",
-            "E_PILOT",
-            "F_PILOT",
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.WCT_AICV,
+            Headers.GHF_AICV,
+            Headers.RHOCAL_AICV,
+            Headers.VISCAL_AICV,
+            Headers.ALPHA_MAIN,
+            Headers.X_MAIN,
+            Headers.Y_MAIN,
+            Headers.A_MAIN,
+            Headers.B_MAIN,
+            Headers.C_MAIN,
+            Headers.D_MAIN,
+            Headers.E_MAIN,
+            Headers.F_MAIN,
+            Headers.ALPHA_PILOT,
+            Headers.X_PILOT,
+            Headers.Y_PILOT,
+            Headers.A_PILOT,
+            Headers.B_PILOT,
+            Headers.C_PILOT,
+            Headers.D_PILOT,
+            Headers.E_PILOT,
+            Headers.F_PILOT,
         ],
     )
-    df_true["DEVICENUMBER"] = df_true["DEVICENUMBER"].astype(np.int64)
+    df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicv_table)
 
 
@@ -334,7 +342,14 @@ WSEGAICD
             ["ICD", 1, 0.001, 1000.0, 1.0, 0.1],
             ["ICD", 2, 0.002, 1000.0, 0.9, 0.2],
         ],
-        columns=["DEVICETYPE", "DEVICENUMBER", "STRENGTH", "RHOCAL_ICD", "VISCAL_ICD", "WCUT"],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.STRENGTH,
+            Headers.RHOCAL_ICD,
+            Headers.VISCAL_ICD,
+            Headers.WATER_CUT,
+        ],
     )
 
     pd.testing.assert_frame_equal(df_true, case.wsegsicd_table)
@@ -345,8 +360,8 @@ def test_read_minimum_segment_length():
     assert _THECASE.minimum_segment_length == 0.0, "Failed reading" " MINIMUM_SEGMENTLENGTH keyword"
 
 
-def test_error_wrong_format_keyword(caplog):
-    """Test keywords in wrong format fails."""
+def test_error_wrong_format_keyword():
+    """Test keywords in the wrong format fails."""
     case_content = """COMPLETION
 --Well Branch StartMD EndmD Screen   Well/Casing Roughness Annulus Nvalve/Joint ValveType DeviceNumber BlankPortion
 --     Number               Tubing   Casing      Roughness Content
@@ -361,9 +376,9 @@ WSEGSICD
 
 """  # noqa: more human readable at this width.
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CompletorError) as e:
         ReadCasefile(case_content)
-    assert "Keyword WSEGSICD has no end record" in caplog.text
+    assert "Keyword WSEGSICD has no end record" in str(e)
 
     case_content += """
 WSEGVALV
@@ -413,17 +428,17 @@ def test_read_case_completion_icv():
             ["A2", 1, 0.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 2],
         ],
         columns=[
-            "WELL",
-            "BRANCH",
-            "STARTMD",
-            "ENDMD",
-            "INNER_ID",
-            "OUTER_ID",
-            "ROUGHNESS",
-            "ANNULUS",
-            "NVALVEPERJOINT",
-            "DEVICETYPE",
-            "DEVICENUMBER",
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.OUTER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.ANNULUS,
+            Headers.VALVES_PER_JOINT,
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
         ],
     )
 
@@ -440,17 +455,17 @@ def test_read_case_completion_icv_tubing():
             ["A1", 1, 2030.0, 2030.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 1],
         ],
         columns=[
-            "WELL",
-            "BRANCH",
-            "STARTMD",
-            "ENDMD",
-            "INNER_ID",
-            "OUTER_ID",
-            "ROUGHNESS",
-            "ANNULUS",
-            "NVALVEPERJOINT",
-            "DEVICETYPE",
-            "DEVICENUMBER",
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.OUTER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.ANNULUS,
+            Headers.VALVES_PER_JOINT,
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
         ],
     )
     pd.testing.assert_frame_equal(df_true, case.completion_icv_tubing, check_exact=False)

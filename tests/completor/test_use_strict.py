@@ -1,9 +1,11 @@
-"""Test the Completor USE_STRICT keyword"""
+"""Test the Completor USE_STRICT keyword."""
 
 from pathlib import Path
 
-import common
 import pytest
+import utils
+
+from completor.exceptions import CompletorError
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "ml_well.sch"
@@ -30,14 +32,12 @@ WSEGAICD
 
 
 def test_use_strict_true(tmpdir):
-    """
-    Test case file with USE_STRICT keyword set to True.
+    """Test case file with USE_STRICT keyword set to True.
 
-    Uses a two-branch well, A1, and both branches are defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, and both branches are defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -63,19 +63,17 @@ TRUE
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
     true_file = Path(_TESTDIR / "usestrict_true.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
 
 
 def test_use_strict_true_false_default(tmpdir):
-    """
-    Test case file with USE_STRICT keyword set to True, False, and undefined.
+    """Test case file with USE_STRICT keyword set to True, False, and undefined.
 
-    Uses a two-branch well, A1, and both branches are defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, and both branches are defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     completion_keyword = """
@@ -100,8 +98,8 @@ USE_STRICT
     schedule_file = Path(_TESTDIR / "ml_well.sch")
 
     true_file_strict_true = Path(_TESTDIR / "usestrict_true.true")
-    common.open_files_run_create(case_use_strict_true, schedule_file, _TEST_FILE)
-    common.assert_results(true_file_strict_true, _TEST_FILE)
+    utils.open_files_run_create(case_use_strict_true, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file_strict_true, _TEST_FILE)
 
     # Test with USESTRICT set to False
     case_use_strict_false = f"""
@@ -112,8 +110,8 @@ USE_STRICT
 {JOINT_LENGTH_AND_WSEGAICD}
 """
     true_file_strict_false = Path(_TESTDIR / "usestrict_false.true")
-    common.open_files_run_create(case_use_strict_false, schedule_file, _TEST_FILE)
-    common.assert_results(true_file_strict_false, _TEST_FILE)
+    utils.open_files_run_create(case_use_strict_false, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file_strict_false, _TEST_FILE)
 
     # USESTRICT keyword not defined
     case_use_strict_default = f"""
@@ -121,19 +119,17 @@ USE_STRICT
 {JOINT_LENGTH_AND_WSEGAICD}
 """
     true_file_strict_default = Path(_TESTDIR / "usestrict_default.true")
-    common.open_files_run_create(case_use_strict_default, schedule_file, _TEST_FILE)
-    common.assert_results(true_file_strict_default, _TEST_FILE)
+    utils.open_files_run_create(case_use_strict_default, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file_strict_default, _TEST_FILE)
 
 
-def test_use_strict_true_missing_branch(tmpdir, caplog):
-    """
-    Test case with USE_STRICT set to True, with a missing branch.
+def test_use_strict_true_missing_branch(tmpdir):
+    """Test case with USE_STRICT set to True, with a missing branch.
 
-    Uses a two-branch well, A1, where only one branch is defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -158,22 +154,18 @@ USE_STRICT
 {JOINT_LENGTH_AND_WSEGAICD}
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
-        common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    assert pytest_wrapped_e.type == SystemExit
-    assert pytest_wrapped_e.value.code == 1
-    assert "USE_STRICT True: Define all branches in case file." in caplog.text
+    with pytest.raises(CompletorError) as e:
+        utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    assert "USE_STRICT True: Define all branches in case file." in str(e)
 
 
-def test_use_strict_default_missing_branch(tmpdir, caplog):
-    """
-    Test case with with USE_STRICT set to True, with the default branch missing.
+def test_use_strict_default_missing_branch(tmpdir):
+    """Test case with with USE_STRICT set to True, with the default branch missing.
 
-    Uses a two-branch well, A1, where only one branch is defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -191,21 +183,18 @@ COMPLETION
 {JOINT_LENGTH_AND_WSEGAICD}
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
-    with pytest.raises(SystemExit) as exception_info:
-        common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    assert exception_info.value.code == 1
-    assert "USE_STRICT True: Define all branches in case file." in caplog.text
+    with pytest.raises(CompletorError) as e:
+        utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    assert "USE_STRICT True: Define all branches in case file." in str(e)
 
 
 def test_use_strict_false_missing_branch(tmpdir):
-    """
-    Test case with USE_STRICT set to False, with a missing branch.
+    """Test case with USE_STRICT set to False, with a missing branch.
 
-    Uses a two-branch well, A1, where only one branch is defined in the case file
-    COMPLETION keyword.
+    Uses a two-branch well, A1, where only one branch is defined in the case file COMPLETION keyword.
 
-    1. One active well
-    2. Multi-lateral well with two branches
+    1. One active well.
+    2. Multi-lateral well with two branches.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -226,5 +215,5 @@ USE_STRICT
     """
     schedule_file = Path(_TESTDIR / "ml_well.sch")
     true_file = Path(_TESTDIR / "usestrict_false_missingbranch.true")
-    common.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    common.assert_results(true_file, _TEST_FILE)
+    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
