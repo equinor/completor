@@ -3,6 +3,8 @@ name: "📚 Publish Docs"
 on:
   release: # Trigger when a new release is made.
     types: [published]
+  push:
+    tags: [ "v*" ]
 
   workflow_dispatch: # Enable manual triggers.
   workflow_call: # Enables workflow to be called from another workflow.
