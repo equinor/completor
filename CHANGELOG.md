@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/equinor/completor/compare/v0.1.0...v0.1.1) (2024-06-18)
+
+
+### Bug Fixes
+
+* Header variable names ([#98](https://github.com/equinor/completor/issues/98)) ([fdf41cd](https://github.com/equinor/completor/commit/fdf41cd05758ee5a8b8d68339ffa4b6af3b5ff44))
+
 ## [0.1.0](https://github.com/equinor/completor/compare/v0.0.1...v0.1.0) (2024-06-13)
 
 
