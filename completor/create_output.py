@@ -29,7 +29,7 @@ class CreateOutput:
         schedule: ReadSchedule object.
         wells: CreateWells object.
         well_name: Well name.
-        iwell: Well number used in creating WSEGAICV and WSEGDAR output.
+        iwell: Well number used in creating WSEGAICV, WSEGDAR, and WSEGINJV output.
         version: Completor version information.
         show_figure: Flag for pdf export of well completion schematic.
         figure_no: Figure number.
@@ -132,6 +132,17 @@ class CreateOutput:
 {"-" * 100}{self.newline1}"""
 
         self.print_wsegdarinit = self.print_wsegdar
+        self.print_wseginjv = f"""\
+{'-' * 100}
+-- This is how we model Injection Valve technology using sets of ACTIONX keywords.
+-- The segment dP curves changes according to the segment water-
+-- rate and segment pressure drop at downhole condition.
+-- The value of Cv is adjusted according to the segment length and the number of
+-- devices per joint. The constriction area varies according to values of
+-- volume fractions.
+{"-" * 100}{self.newline1}"""
+
+        self.print_wseginjvinit = self.print_wseginjv
         self.print_wsegaicv = f"""\
 {"-" * 100}
 -- This is how we model AICV technology using sets of ACTIONX keyword
@@ -186,6 +197,7 @@ class CreateOutput:
             self.df_wsegsicd = po.prepare_wsegsicd(self.well_name, lateral, self.df_well, self.df_device)
             self.df_wsegaicd = po.prepare_wsegaicd(self.well_name, lateral, self.df_well, self.df_device)
             self.df_wsegdar = po.prepare_wsegdar(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wseginjv = po.prepare_wseginjv(self.well_name, lateral, self.df_well, self.df_device)
             self.df_wsegaicv = po.prepare_wsegaicv(self.well_name, lateral, self.df_well, self.df_device)
             self.df_wsegicv = po.prepare_wsegicv(
                 self.well_name,
@@ -205,6 +217,7 @@ class CreateOutput:
             self.make_wsegaicd(lateral)
             self.make_wsegicv(lateral)
             self.make_wsegdar()
+            self.make_wseginjv()
             self.make_wsegaicv()
 
             if show_figure and figure_name is not None:
@@ -365,6 +378,11 @@ class CreateOutput:
         if self.df_wsegdar.shape[0] > 0:
             self.print_wsegdar += po.print_wsegdar(self.df_wsegdar, self.iwell + 1) + "\n"
 
+    def make_wseginjv(self) -> None:
+        """Print WSEGINJV to file."""
+        if self.df_wseginjv.shape[0] > 0:
+            self.print_wseginjv += po.print_wseginjv(self.df_wseginjv, self.iwell + 1) + "\n"
+
     def make_wsegaicv(self) -> None:
         """Print WSEGAICV to file."""
         if self.df_wsegaicv.shape[0] > 0:
@@ -412,7 +430,12 @@ class CreateOutput:
             self.print_wsegdar = ""
         else:
             self.print_wsegdar += self.newline1
-        # if no DAR then dont print
+        # if no Injection Valve then dont print
+        if self.print_wseginjv == self.print_wseginjvinit:
+            self.print_wseginjv = ""
+        else:
+            self.print_wseginjv += self.newline1           
+        # if no AICV then dont print
         if self.print_wsegaicv == self.print_wsegaicvinit:
             self.print_wsegaicv = ""
         else:
@@ -440,6 +463,7 @@ class CreateOutput:
             + self.print_wsegsicd
             + self.print_wsegaicd
             + self.print_wsegdar
+            + self.print_wseginjv
             + self.print_wsegaicv
             + self.print_wsegicv
         )

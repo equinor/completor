@@ -103,7 +103,7 @@ class CreateWells:
                 Headers.DEVICE_TYPE
             ]
             gp_check = not ann_series.isin(["OA"]).any()
-            perf_check = not type_series.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"]).any()
+            perf_check = not type_series.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV", "INJV"]).any()
             if gp_check and perf_check and not self.case.gp_perf_devicelayer:
                 # De-activate wells with GP_PERF if instructed to do so:
                 active_wells.remove(well_name)
@@ -266,6 +266,8 @@ class CreateWells:
             self.df_well = completion.get_device(self.df_well, self.case.wsegaicd_table, "AICD")
         if "DAR" in active_devices:
             self.df_well = completion.get_device(self.df_well, self.case.wsegdar_table, "DAR")
+        if "INJV" in active_devices:
+            self.df_well = completion.get_device(self.df_well, self.case.wseginjv_table, "INJV")            
         if "AICV" in active_devices:
             self.df_well = completion.get_device(self.df_well, self.case.wsegaicv_table, "AICV")
         if "ICV" in active_devices:

@@ -162,10 +162,10 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
                 f"t{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
                 f"to depth {(df_comp[Headers.START_MEASURED_DEPTH].iloc[idx])}"
             )
-    if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in ["PERF", "AICD", "ICD", "VALVE", "DAR", "AICV", "ICV"]:
+    if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in ["PERF", "AICD", "ICD", "VALVE", "DAR", "INJV", "AICV", "ICV"]:
         raise CompletorError(
             f"{df_comp[Headers.DEVICE_TYPE].iloc[idx]} not a valid device type. "
-            "Valid types are PERF, AICD, ICD, VALVE, DAR, AICV, and ICV."
+            "Valid types are PERF, AICD, ICD, VALVE, DAR, INJV, AICV, and ICV."
         )
     if df_comp[Headers.ANNULUS].iloc[idx] not in ["GP", "OA", "PA"]:
         raise CompletorError(
@@ -249,6 +249,22 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
     df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "DAR"))
     return df_temp
 
+def set_format_wseginjv(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """Format the well segments Injection Valve (WSEGINJV) data.
+
+    Args:
+        df_temp: Well segments Injection Valve device data.
+
+    Returns:
+        Updated data.
+    """
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
+    # left out devicenumber because it has been formatted as integer
+    columns = df_temp.columns.to_numpy()[1:]
+    df_temp[columns] = df_temp[columns].astype(np.float64)
+    # Create ID device column
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "INJV"))
+    return df_temp
 
 def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     """Format the well segments automatic inflow control valve (WSEGAICV) table.

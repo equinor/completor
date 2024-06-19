@@ -47,7 +47,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH
-    WSEGAICD, WSEGVALV, WSEGSICD, WSEGDAR, WSEGAICV, WSEGICV, PVTFILE, PVTTABLE.
+    WSEGAICD, WSEGVALV, WSEGSICD, WSEGDAR, WSEGINJV, WSEGAICV, WSEGICV, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -63,6 +63,7 @@ class ReadCasefile:
         wsegvalv_table (pd.DataFrame): WSEGVALV.
         wsegicv_table (pd.DataFrame): WSEGICV.
         wsegdar_table (pd.DataFrame): WSEGDAR.
+        wseginjv_table (pd.DataFrame): WSEGINJV.
         wsegaicv_table (pd.DataFrame): WSEGAICV.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
@@ -99,6 +100,7 @@ class ReadCasefile:
         self.wsegsicd_table = pd.DataFrame()
         self.wsegvalv_table = pd.DataFrame()
         self.wsegdar_table = pd.DataFrame()
+        self.wseginjv_table = pd.DataFrame()
         self.wsegaicv_table = pd.DataFrame()
         self.wsegicv_table = pd.DataFrame()
         self.lat2device = pd.DataFrame()
@@ -116,6 +118,7 @@ class ReadCasefile:
         self.read_wsegvalv()
         self.read_wsegsicd()
         self.read_wsegdar()
+        self.read_wseginjv()
         self.read_wsegaicv()
         self.read_wsegicv()
         self.read_lat2device()
@@ -457,6 +460,40 @@ class ReadCasefile:
                 if not check_contents(device_checks, self.wsegdar_table[Headers.DEVICE_NUMBER].to_numpy()):
                     raise CompletorError("Not all device in COMPLETION is specified in WSEGDAR")
 
+    def read_wseginjv(self) -> None:
+        """Read the WSEGINJV keyword in the case file.
+
+        Raises:
+            ValueError: If there are invalid entries in WSEGINJV.
+            CompletorError: If not all device in COMPLETION is specified in WSEGINJV.
+            If WSEGINJV keyword not defined, when Injection Valve is used in the completion.
+        """
+        start_index, end_index = self.locate_keyword(Keywords.WSEGINJV)
+        if start_index == end_index:
+            if "INJV" in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError("WSEGINJV keyword must be defined, if Injection Valve is used in the completion")
+        else:
+            # Table headers
+            header = [
+                Headers.DEVICE_NUMBER,
+                Headers.CV_INJV,
+                Headers.AC_PRIMARY,
+                Headers.AC_SECONDARY,
+                Headers.WR_CF_INJV,
+                Headers.PRD_CF_INJV,
+            ]
+
+            # Fix table format
+            if self.completion_table[Headers.DEVICE_TYPE].str.contains("INJV").any():
+                self.wseginjv_table = val.set_format_wseginjv(
+                    self._create_dataframe_with_columns(header, start_index, end_index)
+                )
+                device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "INJV"][
+                    Headers.DEVICE_NUMBER
+                ].to_numpy()
+                if not check_contents(device_checks, self.wseginjv_table[Headers.DEVICE_NUMBER].to_numpy()):
+                    raise CompletorError("Not all device in COMPLETION is specified in WSEGINJV")
+                
     def read_wsegaicv(self) -> None:
         """Read the WSEGAICV keyword in the case file.
 
