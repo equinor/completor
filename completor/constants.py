@@ -126,6 +126,12 @@ class Headers:
     GHF_LCF_DAR = "GHF_LCF_DAR"
     GHF_HCF_DAR = "GHF_HCF_DAR"
 
+    CV_INJV = "CV_INJV"
+    AC_PRIMARY = "AC_PRIMARY"
+    AC_SECONDARY = "AC_SECONDARY"
+    WR_CF_INJV = "WR_CF_INJV"
+    PRD_CF_INJV = "PRD_CF_INJV"
+
     ALPHA = "ALPHA"
     X = "X"
     Y = "Y"
@@ -207,6 +213,7 @@ class _Keywords:
     WSEGICV = "WSEGICV"
     WSEGSICD = "WSEGSICD"
     WSEGDAR = "WSEGDAR"
+    WSEGINJV = "WSEGINJV"
 
     SCHFILE = "SCHFILE"
     OUTFILE = "OUTFILE"

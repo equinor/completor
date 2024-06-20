@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 # Use more precise type information, if possible
-DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
+DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV", "INJV"]'
 
 
 class Information:
@@ -612,7 +612,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     Args:
         df_well: Must contain device type, device number, and the scaling factor.
         df_device: Device table.
-        device_type: Device type. `AICD`, `ICD`, `DAR`, `VALVE`, `AICV`, `ICV`.
+        device_type: Device type. `AICD`, `ICD`, `DAR`, `VALVE`, `AICV`, `ICV`, `INJV`.
 
     Returns:
         Updated well information with device characteristics.
@@ -635,6 +635,10 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
         # rescale the Cv
         # because no scaling factor in WSEGVALV
         df_well[Headers.CV_DAR] = -df_well[Headers.CV_DAR] / df_well[Headers.SCALING_FACTOR]
+    elif device_type == "INJV":
+        # rescale the Cv
+        # because no scaling factor in WSEGVALV
+        df_well[Headers.CV_INJV] = -df_well[Headers.CV_INJV] / df_well[Headers.SCALING_FACTOR]
     return df_well
 
 

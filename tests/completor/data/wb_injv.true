@@ -1,0 +1,231 @@
+WELSPECS
+--	WELL	GROUP	I	J	BHP_DEPTH	PHASE	DR	FLAG	SHUT	CROSS	
+	A1	FIELD	1	1	2000	OIL	1*	SHUT	YES	1*	/
+	A2	FIELD	1	1	2000	OIL	1*	SHUT	YES	1*	/
+/											
+
+WELOPEN
+A1 /
+A2 /
+/
+
+COMPDAT
+ 'A2' 1 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
+ 'A2' 2 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
+ 'A2' 3 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
+ 'A2' 4 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
+/
+
+
+COMPDAT
+-------------------------------------------------
+-- Well : A1 : Lateral : 1
+-------------------------------------------------
+-- WELL  I  J  K  K2 FLAG SAT CF  DIAM KH  SKIN  
+   'A1'  1  1  1   1 OPEN   0 10  0.25  2   0.0 /
+   'A1'  2  1  1   1 OPEN   0 10  0.25  2   0.0 /
+   'A1'  3  1  1   1 OPEN   0 10  0.25  2   0.0 /
+   'A1'  4  1  1   1 OPEN   0 10  0.25  2   0.0 /
+/
+
+
+WELSEGS
+-- WELL  SEGMENTTVD  SEGMENTMD WBVOLUME INFOTYPE  
+   'A1'      2000.0     2000.0       1*      ABS /
+--------------------------------------------------------------
+-- Well : A1 : Lateral : 1 : Tubing layer
+--------------------------------------------------------------
+--  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS  
+      2     2       1    1 2006.000 2000.000   0.2    0.0001 /
+      3     3       1    2 2018.000 2000.000   0.2    0.0001 /
+      4     4       1    3 2030.000 2000.000   0.2    0.0001 /
+      5     5       1    4 2042.000 2000.000   0.2    0.0001 /
+--------------------------------------------------------------
+-- Well : A1 : Lateral : 1 : Device layer
+--------------------------------------------------------------
+--  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS                    
+      6     6       2    2 2006.100 2000.000   0.2    0.0001 / -- Injection valves types     
+      7     7       3    3 2018.100 2000.000   0.2    0.0001 / -- Injection valves types     
+      8     8       4    4 2030.100 2000.000   0.2    0.0001 / -- Injection valves types     
+      9     9       5    5 2042.100 2000.000   0.2    0.0001 / -- Injection valves types     
+/
+
+
+COMPSEGS
+'A1' /
+----------------------------------------------------
+-- Well : A1 : Lateral : 1
+----------------------------------------------------
+--  I  J  K  BRANCH  STARTMD    ENDMD DIR DEF  SEG  
+    1  1  1       2 2000.000 2012.000  1*  3*    6 /
+    2  1  1       3 2012.000 2024.000  1*  3*    7 /
+    3  1  1       4 2024.000 2036.000  1*  3*    8 /
+    4  1  1       5 2036.000 2048.000  1*  3*    9 /
+/
+
+
+--------------------------------------------------------------------------------------
+-- the valves will react on both pressure drop and rate limit----
+-- it will move to smaller nozzle, and back again if certain criteria is fulfilled---
+-- the SUVTRIG is a marker flag to check if it is on big nozzle or small nozzle--
+-- small nozzle is marked as 1, and big nozzle is 0--
+--------------------------------------------------------------------------------------
+
+------INJV FOR SEGMENT 6-------
+
+ACTIONX
+ INJVOP6   1000000 /
+ SWFR 'A1' 6 <  -150 AND /
+ SUVTRIG 'A1' 6 = 0 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'A1' 6  1 /
+/
+
+WSEGVALV
+ 'WELL' 6   0.96   8e-5   5* 4.700e-04 /
+/
+
+ENDACTIO
+
+ACTIONX
+ INJVCL6    1000000 /
+ SPRD 'WELL' 6 >  -0.5 AND /
+ SUMARK 'WELL' 6 = 1 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'WELL' 6  0 /
+/
+
+WSEGVALV
+ 'WELL' 6 0.96 4.700e-04       5* 4.700e-04 /
+/
+
+ENDACTIO
+
+
+-----INJV FOR SEGMENT 7-------
+
+ACTIONX
+ INJVOP7   1000000 /
+ SWFR 'A1' 7 <  -150 AND /
+ SUVTRIG 'A1' 7 = 0 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'A1' 7  1 /
+/
+
+WSEGVALV
+ 'WELL' 7   0.96   8e-5   5* 4.700e-04 /
+/
+
+ENDACTIO
+
+ACTIONX
+ INJVCL7    1000000 /
+ SPRD 'WELL' 7 >  -0.5 AND /
+ SUMARK 'WELL' 7 = 1 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'WELL' 7  0 /
+/
+
+WSEGVALV
+ 'WELL' 7 0.96 4.700e-04       5* 4.700e-04 /
+/
+
+ENDACTIO
+
+
+-----INJV FOR SEGMENT 8-------
+
+ACTIONX
+ INJVOP8   100000 /
+ SWFR 'A1' 8 <  -150 AND /
+ SUVTRIG 'A1' 8 = 0 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'A1' 8  1 /
+/
+
+WSEGVALV
+ 'WELL' 8   0.96   8e-5   5* 4.700e-04 /
+/
+
+ENDACTIO
+
+ACTIONX
+ INJVCL8    100000 /
+ SPRD 'WELL' 8 >  -0.5 AND /
+ SUMARK 'WELL' 8 = 1 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'WELL' 8  0 /
+/
+
+WSEGVALV
+ 'WELL' 8 0.96 4.700e-04       5* 4.700e-04 /
+/
+
+ENDACTIO
+
+
+-----INJV FOR SEGMENT 9-------
+
+ACTIONX
+ INJVOP9   100000 /
+ SWFR 'A1' 9 <  -150 AND /
+ SUVTRIG 'A1' 9 = 0 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'A1' 9  1 /
+/
+
+WSEGVALV
+ 'WELL' 9   0.96   8e-5   5* 4.700e-04 /
+/
+
+ENDACTIO
+
+ACTIONX
+ INJVCL9    100000 /
+ SPRD 'WELL' 9 >  -0.5 AND /
+ SUMARK 'WELL' 9 = 1 /
+/
+
+UDQ
+ ASSIGN SUVTRIG 'WELL' 9  0 /
+/
+
+WSEGVALV
+ 'WELL' 9 0.96 4.700e-04       5* 4.700e-04 /
+/
+
+ENDACTIO
+
+
+WELSEGS
+--	WELL	TVD	MD	WBVOL	INF	CMP	MOD	
+	A2	2000	2000	1*	ABS	1*	1*	/
+--	SEG	SEG2	BRANCH	OUT	MD	TVD	DIAM	ROUGHNESS	
+	2	2	1	1	2012	2000	0.2	1.00E-04	/
+	3	3	1	2	2024	2000	0.2	1.00E-04	/
+	4	4	1	3	2036	2000	0.2	1.00E-04	/
+	5	5	1	4	2048	2000	0.2	1.00E-04	/
+/									
+
+COMPSEGS
+A2	/						
+--	I	J	K	BRANCH	STARTMD	ENDMD	
+	1	1	1	1	2000	2012	/
+	2	1	1	1	2012	2024	/
+	3	1	1	1	2024	2036	/
+	4	1	1	1	2036	2048	/
+/
