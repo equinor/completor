@@ -267,7 +267,7 @@ class CreateWells:
         if "DAR" in active_devices:
             self.df_well = completion.get_device(self.df_well, self.case.wsegdar_table, "DAR")
         if "INJV" in active_devices:
-            self.df_well = completion.get_device(self.df_well, self.case.wseginjv_table, "INJV")            
+            self.df_well = completion.get_device(self.df_well, self.case.wseginjv_table, "INJV")
         if "AICV" in active_devices:
             self.df_well = completion.get_device(self.df_well, self.case.wsegaicv_table, "AICV")
         if "ICV" in active_devices:

@@ -493,7 +493,7 @@ class ReadCasefile:
                 ].to_numpy()
                 if not check_contents(device_checks, self.wseginjv_table[Headers.DEVICE_NUMBER].to_numpy()):
                     raise CompletorError("Not all device in COMPLETION is specified in WSEGINJV")
-                
+
     def read_wsegaicv(self) -> None:
         """Read the WSEGAICV keyword in the case file.
 

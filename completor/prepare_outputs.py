@@ -1198,6 +1198,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         wsegdar[Headers.EMPTY] = "/"
     return wsegdar
 
+
 def prepare_wseginjv(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare data frame for Injection Valve.
 
@@ -1232,6 +1233,7 @@ def prepare_wseginjv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wseginjv[Headers.AC_MAX] = wseginjv[Headers.AC_PRIMARY].to_numpy()
         wseginjv[Headers.EMPTY] = "/"
     return wseginjv
+
 
 def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare data frame for AICV.
@@ -1412,7 +1414,6 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
 
 
 def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
-
     """Print Injection Valves devices.
 
     Args:
@@ -1425,7 +1426,7 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
     Raises:
         CompletorError: If there are to many wells and/or segments with Injection Valve.
     """
-    
+
     """Important Information
 
     -- the valves will react on both pressure drop and rate limit ----
@@ -1435,13 +1436,13 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
 
     """
 
-    header = [ 
+    header = [
         [Headers.WELL, Headers.SEG, Headers.CV_INJV, Headers.AC_PRIMARY, Headers.DEFAULTS, Headers.AC_MAX],
         [Headers.WELL, Headers.SEG, Headers.CV_INJV, Headers.AC_SECONDARY, Headers.DEFAULTS, Headers.AC_MAX],
     ]
-    sign_rate = ["<"] 
-    sign_pressure_drop = [">"]  
-    suvtrig = ["0", "1"]  
+    sign_rate = ["<"]
+    sign_pressure_drop = [">"]
+    suvtrig = ["0", "1"]
     action = "UDQ\n"
     for idx in range(df_wseginjv.shape[0]):
         segment_number = df_wseginjv[Headers.SEG].iloc[idx]
@@ -1458,13 +1459,13 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
         segment_number = df_wseginjv[Headers.SEG].iloc[idx]
         print_df = df_wseginjv[df_wseginjv[Headers.SEG] == segment_number]
         print_df = print_df[header[iaction]]
-        print_df = dataframe_tostring(print_df, True, False, False) + "\n" 
+        print_df = dataframe_tostring(print_df, True, False, False) + "\n"
         action += print_df
     action += "/\n\n"
     for idx in range(df_wseginjv.shape[0]):
         segment_number = df_wseginjv[Headers.SEG].iloc[idx]
         well_name = df_wseginjv[Headers.WELL].iloc[idx]
-        water_segment_rate_cutoff = df_wseginjv[Headers.WR_CF_INJV].iloc[idx] 
+        water_segment_rate_cutoff = df_wseginjv[Headers.WR_CF_INJV].iloc[idx]
         pressure_drop_cutoff = df_wseginjv[Headers.PRD_CF_INJV].iloc[idx]
 
         iaction = 0

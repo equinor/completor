@@ -316,6 +316,7 @@ COMPLETION
     utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils.assert_results(true_file, _TEST_FILE)
 
+
 def test_injv(tmpdir):
     """
     Test completor case with Injection valve.
@@ -333,6 +334,7 @@ COMPLETION
     true_file = Path(_TESTDIR / "wb_injv.true")
     utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils.assert_results(true_file, _TEST_FILE)
+
 
 def test_aicv(tmpdir):
     """

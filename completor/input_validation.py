@@ -249,6 +249,7 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
     df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "DAR"))
     return df_temp
 
+
 def set_format_wseginjv(df_temp: pd.DataFrame) -> pd.DataFrame:
     """Format the well segments Injection Valve (WSEGINJV) data.
 
@@ -265,6 +266,7 @@ def set_format_wseginjv(df_temp: pd.DataFrame) -> pd.DataFrame:
     # Create ID device column
     df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "INJV"))
     return df_temp
+
 
 def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     """Format the well segments automatic inflow control valve (WSEGAICV) table.

@@ -434,7 +434,7 @@ class CreateOutput:
         if self.print_wseginjv == self.print_wseginjvinit:
             self.print_wseginjv = ""
         else:
-            self.print_wseginjv += self.newline1           
+            self.print_wseginjv += self.newline1
         # if no AICV then dont print
         if self.print_wsegaicv == self.print_wsegaicvinit:
             self.print_wsegaicv = ""
