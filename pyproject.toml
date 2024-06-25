@@ -26,7 +26,7 @@ classifiers = [
 python = ">=3.8.1, <3.12"
 matplotlib = "^3.7"
 numpy = "^1.24"
-pandas = "^2.0"
+pandas = "1.5.3"
 scipy = "^1.10"
 
 docutils = {version="0.20.1", optional=true} # Pinned due to problems with OS spesific builds
