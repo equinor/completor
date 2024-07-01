@@ -1,10 +1,17 @@
 name: Publish Python 🐍 distributions 📦 to PyPI
-
 on:
-  push:
-    tags: [ "v*" ]
-
-  workflow_dispatch: # Trigger manually.
+  workflow_call:
+    inputs:
+      tag:
+        description: The tag to use for checkout
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The tag to use for checkout
+        required: true
+        type: string
 
 jobs:
   build:
@@ -12,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.tag }}
 
     - name: Install poetry
       run: pipx install poetry==1.8.3
@@ -36,7 +45,6 @@ jobs:
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
-    if: startsWith(github.ref, 'refs/tags/')  # Only publish to PyPI on tag pushes.
     needs:
       - build
     runs-on: ubuntu-latest

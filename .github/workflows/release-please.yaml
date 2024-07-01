@@ -10,10 +10,10 @@ on:
     outputs:
       release_created:
         description: "If true, a release PR has been merged"
-        value: ${{ jobs.release-please.outputs.release_created }}
+        value: ${{ jobs.release_please.outputs.release_created }}
       tag_name:
         description: "The release tag. Ex v1.4.0"
-        value: ${{ jobs.release-please.outputs.tag_name }}
+        value: ${{ jobs.release_please.outputs.tag_name }}
 
 permissions:
   contents: write
@@ -32,3 +32,13 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+
+  publish-pypi:
+    name: Publish to PyPi
+    needs: [release_please]
+    if: needs.release_please.outputs.release_created == 'true'
+    uses: ./.github/workflows/publish.yaml
+    with:
+      tag: ${{ needs.release_please.outputs.tag_name }}
+    permissions:
+      id-token: write
