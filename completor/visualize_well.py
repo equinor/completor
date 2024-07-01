@@ -48,6 +48,8 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
             axs.plot(xpar, ypar, "rv-", markevery=[1])
         elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "DAR":
             axs.plot(xpar, ypar, "rP-", markevery=[1])
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "INJV":
+            axs.plot(xpar, ypar, "rP-", markevery=[1])
         elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "AICV":
             axs.plot(xpar, ypar, "r*-", markevery=[1])
     return axs
