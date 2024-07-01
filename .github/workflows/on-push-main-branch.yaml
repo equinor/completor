@@ -5,7 +5,6 @@ on:
     branches:
       - main
 
-
 jobs:
   check-docs:
     name: Check documentation
@@ -15,3 +14,6 @@ jobs:
     name: Run release please
     uses: ./.github/workflows/release-please.yaml
     secrets: inherit
+    permissions:
+      contents: write
+      pull-requests: write
