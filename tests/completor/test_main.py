@@ -47,6 +47,13 @@ WSEGDAR
 /
 """
 
+WSEGINJV = """
+WSEGINJV
+-- Number    Cv_Inj      Primary_Ac      Secondary_Ac      Water_Rate_cutoff     Pressure_drop_cutoff
+    1        0.96        4.700e-04       8e-5              150                  0.5
+/
+"""
+
 WSEGAICD = """
 WSEGAICD
 --Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
@@ -306,6 +313,25 @@ COMPLETION
 {WSEGDAR}
     """
     true_file = Path(_TESTDIR / "wb_dar.true")
+    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils.assert_results(true_file, _TEST_FILE)
+
+
+def test_injv(tmpdir):
+    """
+    Test completor case with Injection valve.
+    """
+    tmpdir.chdir()
+    case_file = f"""
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    INJV      1
+/
+{WSEGINJV}
+    """
+    true_file = Path(_TESTDIR / "wb_injv.true")
     utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils.assert_results(true_file, _TEST_FILE)
 
