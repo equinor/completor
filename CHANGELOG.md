@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/equinor/completor/compare/v0.1.2...v0.1.3) (2024-07-03)
+
+
+### Miscellaneous Chores
+
+* Release 0.1.3 ([#123](https://github.com/equinor/completor/issues/123)) ([b97787e](https://github.com/equinor/completor/commit/b97787e074f43148f098ee10cca8709e1d12d5d7))
+
 ## [0.1.2](https://github.com/equinor/completor/compare/v0.1.1...v0.1.2) (2024-06-18)
 
 
