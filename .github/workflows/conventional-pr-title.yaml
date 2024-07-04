@@ -18,6 +18,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   pr-title-capitalization:
+    if: ${{ github.ref != 'refs/heads/release-please--branches--main' }}
     name: Is capitalised
     runs-on: ubuntu-latest
     steps:
