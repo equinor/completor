@@ -291,7 +291,9 @@ class CreateWells:
         )
         method = Method.USER if icv_device else self.method
         self.df_reservoir = completion.connect_cells_to_segments(
-            self.df_well[[Headers.TUB_MD, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]],
+            self.df_well[
+                [Headers.TUBING_MEASURED_DEPTH, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]
+            ],
             self.df_reservoir,
             self.df_tubing_segments,
             method,

@@ -127,7 +127,7 @@ def test_prepare_tubing_layer():
             ],
             columns=[
                 Headers.WELL,
-                Headers.TUB_MD,
+                Headers.TUBING_MEASURED_DEPTH,
                 Headers.TUB_TVD,
                 Headers.INNER_DIAMETER,
                 Headers.ROUGHNESS,
@@ -194,7 +194,7 @@ def test_prepare_compsegs():
             Headers.CONNECTION_FACTOR,
             Headers.DIAMETER,
             Headers.MD,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
             Headers.ANNULUS_ZONE,
@@ -227,7 +227,7 @@ def test_prepare_compsegs():
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.SEGMENT_DESC,
             Headers.VALVES_PER_JOINT,
@@ -289,7 +289,7 @@ def test_prepare_compsegs():
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.SEGMENT_DESC,
             Headers.ANNULUS,
@@ -365,7 +365,7 @@ def test_prepare_compsegs():
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.SEGMENT_DESC,
             Headers.VALVES_PER_JOINT,
@@ -441,7 +441,7 @@ def test_prepare_compsegs():
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.SEGMENT_DESC,
             Headers.ANNULUS,
@@ -517,7 +517,7 @@ def test_prepare_compsegs():
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.SEGMENT_DESC,
             Headers.ANNULUS,
@@ -750,7 +750,7 @@ def test_prepare_wsegvalv():
         ],
         columns=[
             Headers.WELL,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.INNER_DIAMETER,
             Headers.ROUGHNESS,
@@ -851,7 +851,7 @@ def test_prepare_compdat(tmpdir):
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.SEGMENT_DESC,
             Headers.ANNULUS,
@@ -900,7 +900,7 @@ def test_prepare_wsegicv(tmpdir):
         ],
         columns=[
             Headers.WELL,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.TUB_TVD,
             Headers.INNER_DIAMETER,
             Headers.ROUGHNESS,
@@ -1008,7 +1008,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.CONNECTION_FACTOR,
             Headers.DIAMETER,
             Headers.MD,
-            Headers.TUB_MD,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
             Headers.ANNULUS_ZONE,

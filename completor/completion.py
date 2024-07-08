@@ -350,7 +350,7 @@ def create_tubing_segments(
         {
             Headers.START_MEASURED_DEPTH: start_measured_depth,
             Headers.END_MEASURED_DEPTH: end_measured_depth,
-            Headers.TUB_MD: measured_depth_,
+            Headers.TUBING_MEASURED_DEPTH: measured_depth_,
             Headers.TUB_TVD: true_vertical_depth,
         }
     )
@@ -540,7 +540,7 @@ def complete_the_well(
 
     df_well = as_data_frame(
         {
-            Headers.TUB_MD: df_tubing_segments[Headers.TUB_MD].to_numpy(),
+            Headers.TUBING_MEASURED_DEPTH: df_tubing_segments[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
             Headers.TUB_TVD: df_tubing_segments[Headers.TUB_TVD].to_numpy(),
             Headers.LENGTH: end - start,
             Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
@@ -688,7 +688,7 @@ def connect_cells_to_segments(
         marker = 1
         df_res[Headers.MARKER] = np.full(df_reservoir.shape[0], 0)
         df_wel[Headers.MARKER] = np.arange(df_well.shape[0]) + 1
-        for idx in df_wel[Headers.TUB_MD].index:
+        for idx in df_wel[Headers.TUBING_MEASURED_DEPTH].index:
             start_measured_depth = df_tubing_segments[Headers.START_MEASURED_DEPTH].iloc[idx]
             end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].iloc[idx]
             df_res.loc[df_res[Headers.MD].between(start_measured_depth, end_measured_depth), Headers.MARKER] = marker
@@ -698,7 +698,11 @@ def connect_cells_to_segments(
         return tmp.drop([Headers.MARKER], axis=1, inplace=False)
 
     return pd.merge_asof(
-        left=df_reservoir, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+        left=df_reservoir,
+        right=df_well,
+        left_on=[Headers.MD],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
     )
 
 

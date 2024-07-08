@@ -150,7 +150,7 @@ class Headers:
     MD = "MD"
 
     # from `test_completion.py`
-    TUB_MD = "TUB_MD"
+    # TUBING_MEASURED_DEPTH = "TUBINGMD"
 
     # Completion
     START_MEASURED_DEPTH = "STARTMD"

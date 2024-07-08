@@ -34,7 +34,7 @@ def test_connect_cells_segment_cells():
             [5.0],
             [8.0],
         ],
-        columns=[Headers.TUB_MD],
+        columns=[Headers.TUBING_MEASURED_DEPTH],
     )
     df_tubing_segments = pd.DataFrame(
         [
@@ -54,7 +54,7 @@ def test_connect_cells_segment_cells():
             [3.0, 10.0, 6.5, 5.0],
             [10.0, 20.0, 15.0, 8.0],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUB_MD],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUBING_MEASURED_DEPTH],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="cells")
@@ -69,7 +69,7 @@ def test_connect_cells_segment_cells_2():
             [15.0],
             [18.0],
         ],
-        columns=[Headers.TUB_MD],
+        columns=[Headers.TUBING_MEASURED_DEPTH],
     )
     df_tubing_segments = pd.DataFrame(
         [
@@ -94,7 +94,7 @@ def test_connect_cells_segment_cells_2():
             [3.0, 10.0, 6.5, 1.0],
             [10.0, 20.0, 15.0, 15.0],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUB_MD],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUBING_MEASURED_DEPTH],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="cells")
@@ -109,7 +109,7 @@ def test_connect_cells_segment_user():
             [5.0],
             [10.0],
         ],
-        columns=[Headers.TUB_MD],
+        columns=[Headers.TUBING_MEASURED_DEPTH],
     )
     df_tubing_segments = pd.DataFrame(
         [
@@ -133,7 +133,7 @@ def test_connect_cells_segment_user():
             [3.0, 10.0, 6.5, 5.0],
             [10.0, 20.0, 15.0, 10.0],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUB_MD],
+        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUBING_MEASURED_DEPTH],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="user")
@@ -468,7 +468,12 @@ def test_create_tubing_segments_cells():
             [4.0, 5.0, 4.5, 4.5],
             [5.0, 6.0, 5.5, 5.5],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, method="CELLS")
@@ -509,7 +514,12 @@ def test_create_tubing_segments_cells_with_input_lumping():
             [1.0, 3.0, 2.0, 2.0],
             [3.0, 6.0, 4.5, 4.5],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, method="CELLS")
@@ -543,7 +553,12 @@ def test_minimum_segment_length_gt_zero():
             [12.0, 29.0, 20.5, 20.5],
             [29.0, 30.0, 29.5, 29.5],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(
@@ -585,7 +600,12 @@ def test_minimum_segment_length_eq_zero():
             [20.0, 29.0, 24.5, 24.5],
             [29.0, 30.0, 29.5, 29.5],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(
@@ -622,7 +642,12 @@ def test_minimum_segment_length_default():
             [20.0, 29.0, 24.5, 24.5],
             [29.0, 30.0, 29.5, 29.5],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
     df_test = completion.create_tubing_segments(
         df_reservoir,
@@ -661,7 +686,12 @@ def test_create_tubing_segments_user():
             [8.1, 8.7, 8.399999999999999, 8.399999999999999],
             [9.0, 9.5, 9.25, 9.25],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "USER")
@@ -695,7 +725,12 @@ def test_create_tubing_segments_fix_15():
             [4.0, 5.5, 4.75, 4.75],
             [5.5, 6.0, 5.75, 5.75],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "FIX", 1.5)
@@ -730,7 +765,12 @@ def test_create_tubing_segments_fix_1():
             [4.0, 5.0, 4.5, 4.5],
             [5.0, 6.0, 5.5, 5.5],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, "FIX", 1.0)
@@ -766,7 +806,12 @@ def test_create_tubing_segment_welsegs():
             [4.5, 5.0, 4.75, 4.75],
             [5.0, 6.0, 5.50, 5.50],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.TUB_MD, Headers.TUB_TVD],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUB_TVD,
+        ],
     )
 
     df_test = completion.create_tubing_segments(df_reservoir, df_completion, df_mdtvd, Method.WELSEGS)
@@ -777,8 +822,7 @@ def test_complete_the_well():
     """Test the complete_the_well function."""
     csv_completion = StringIO(
         """
-STARTMD;ENDMD;NVALVEPERJOINT;INNER_DIAMETER;OUTER_DIAMETER;ROUGHNESS;DEVICETYPE;\
-DEVICENUMBER;ANNULUS_ZONE
+STARTMD;ENDMD;NVALVEPERJOINT;INNER_DIAMETER;OUTER_DIAMETER;ROUGHNESS;DEVICETYPE;DEVICENUMBER;ANNULUS_ZONE
 0;20;1;1.2;2.1;1.10E+00;AICD;1;1
 20;30;2;1;5;2.00E+00;ICD;2;0
 30;40;3;2;3;3.00E+00;VALVE;3;2
@@ -788,7 +832,7 @@ DEVICENUMBER;ANNULUS_ZONE
 
     csv_tubing = StringIO(
         """
-STARTMD;ENDMD;TUB_MD;TUB_TVD;SEGMENT_DESC
+STARTMD;ENDMD;TUBINGMD;TUB_TVD;SEGMENT_DESC
 0;26;13;19.5;OriginalSegment
 26;35;30.5;32.75;AdditionalSegment
 35;50;42.5;46.25;OriginalSegment
@@ -796,8 +840,7 @@ STARTMD;ENDMD;TUB_MD;TUB_TVD;SEGMENT_DESC
     )
     csv_true = StringIO(
         """
-TUB_MD;TUB_TVD;LENGTH;SEGMENT_DESC;NDEVICES;DEVICENUMBER;DEVICETYPE;INNER_DIAMETER;\
-OUTER_DIAMETER;ROUGHNESS;ANNULUS_ZONE;SCALINGFACTOR
+TUBINGMD;TUB_TVD;LENGTH;SEGMENT_DESC;NDEVICES;DEVICENUMBER;DEVICETYPE;INNER_DIAMETER;OUTER_DIAMETER;ROUGHNESS;ANNULUS_ZONE;SCALINGFACTOR
 13;19.5;26;OriginalSegment;3.2;1;AICD;1.2;1.723368794;1.1;1;-0.3125
 42.5;46.25;15;OriginalSegment;5;4;DAR;3;2.645751311;4;3;-0.2
 """
