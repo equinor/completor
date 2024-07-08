@@ -247,7 +247,12 @@ def test_fix_welsegs():
             [4, 3, 1060.0, 1600.0],
             [5, 4, 1100.0, 1640.0],
         ],
-        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBING_TVD, Headers.TUBING_MEASURED_DEPTH],
+        columns=[
+            Headers.TUBING_SEGMENT,
+            Headers.TUBING_OUTLET,
+            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+        ],
     )
 
     df_header, df_content = fix_welsegs(df_header, df_content)
