@@ -312,7 +312,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.WELL,
         Headers.TUBING_SEGMENT,
         Headers.TUBING_SEGMENT_2,
-        Headers.TUBINGBRANCH,
+        Headers.TUBING_BRANCH,
         Headers.TUBING_OUTLET,
         Headers.TUBINGMD,
         Headers.TUBINGTVD,

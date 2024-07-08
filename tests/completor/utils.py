@@ -199,7 +199,7 @@ class ReadSchedule:
             {
                 Headers.TUBING_SEGMENT: np.int64,
                 Headers.TUBING_SEGMENT_2: np.int64,
-                Headers.TUBINGBRANCH: np.int64,
+                Headers.TUBING_BRANCH: np.int64,
                 Headers.TUBING_OUTLET: np.int64,
                 Headers.TUBINGMD: np.float64,
                 Headers.TUBINGTVD: np.float64,
@@ -252,7 +252,7 @@ class ReadSchedule:
         df1_welsegs = self.welsegs_header[self.welsegs_header[Headers.WELL] == well_name]
         df2_welsegs = self.welsegs_content[self.welsegs_content[Headers.WELL] == well_name].copy()
         if branch is not None:
-            df2_welsegs = df2_welsegs[df2_welsegs[Headers.TUBINGBRANCH] == branch]
+            df2_welsegs = df2_welsegs[df2_welsegs[Headers.TUBING_BRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
         df2_welsegs.drop([Headers.WELL], inplace=True, axis=1)

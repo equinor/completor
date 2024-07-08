@@ -877,7 +877,7 @@ class WellSchedule:
         columns_data = [
             Headers.TUBING_SEGMENT,
             Headers.TUBING_SEGMENT_2,
-            Headers.TUBINGBRANCH,
+            Headers.TUBING_BRANCH,
             Headers.TUBING_OUTLET,
             Headers.TUBINGMD,
             Headers.TUBINGTVD,
@@ -902,10 +902,10 @@ class WellSchedule:
 
         # Warn user if the tubing segments' measured depth for a branch
         # is not sorted in ascending order (monotonic)
-        for branch_num in df_records[Headers.TUBINGBRANCH].unique():
+        for branch_num in df_records[Headers.TUBING_BRANCH].unique():
             if (
                 not df_records[Headers.TUBINGMD]
-                .loc[df_records[Headers.TUBINGBRANCH] == branch_num]
+                .loc[df_records[Headers.TUBING_BRANCH] == branch_num]
                 .is_monotonic_increasing
             ):
                 logger.warning(
@@ -1026,7 +1026,7 @@ class WellSchedule:
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
             raise err
         if branch is not None:
-            content = content[content[Headers.TUBINGBRANCH] == branch]
+            content = content[content[Headers.TUBING_BRANCH] == branch]
         content.reset_index(drop=True, inplace=True)
         return columns, content
 

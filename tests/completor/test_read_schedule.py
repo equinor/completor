@@ -131,7 +131,7 @@ WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10
         {
             Headers.TUBING_SEGMENT: np.int64,
             Headers.TUBING_SEGMENT_2: np.int64,
-            Headers.TUBINGBRANCH: np.int64,
+            Headers.TUBING_BRANCH: np.int64,
             Headers.TUBING_OUTLET: np.int64,
             Headers.TUBINGMD: np.float64,
             Headers.TUBINGTVD: np.float64,

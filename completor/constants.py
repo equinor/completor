@@ -147,7 +147,6 @@ class Headers:
 
     BRANCH = "BRANCH"
 
-    TUBINGBRANCH = "TUBINGBRANCH"
     MD = "MD"
 
     # from `test_completion.py`

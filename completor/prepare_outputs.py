@@ -289,7 +289,7 @@ def fix_tubing_inner_diam_roughness(
     overburden_out = overburden.copy(deep=True)
     completion_table_well = completion_table.loc[completion_table[Headers.WELL] == well_name]
     completion_table_well = completion_table_well.loc[
-        completion_table_well[Headers.BRANCH] == overburden_out[Headers.TUBINGBRANCH].iloc[0]
+        completion_table_well[Headers.BRANCH] == overburden_out[Headers.TUBING_BRANCH].iloc[0]
     ]
     overburden_found_in_completion = False
     overburden_md = None

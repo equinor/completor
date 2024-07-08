@@ -574,7 +574,7 @@ def test_connect_lateral_logs_warning(caplog):
     )
     df_top = pd.DataFrame(
         [[1, 2188.76261]],
-        columns=[Headers.TUBINGBRANCH, Headers.TUBINGMD],
+        columns=[Headers.TUBING_BRANCH, Headers.TUBINGMD],
     )
     empty_df = pd.DataFrame()
 
