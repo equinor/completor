@@ -12,7 +12,7 @@ class Headers:
     # Well Segments Record 1 (WELSEGS)
     WELL = "WELL"
     SEGMENT_TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
-    SEGMENTMD = "SEGMENTMD"
+    SEGMENT_MEASURED_DEPTH = "SEGMENTMD"
     WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
     # This quantity is used to calculate wellbore storage effects in the top segment.
     INFO_TYPE = "INFOTYPE"

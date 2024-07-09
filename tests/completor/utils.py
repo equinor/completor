@@ -208,7 +208,7 @@ class ReadSchedule:
         )
 
         self._welsegs_header = welsegs_header.astype(
-            {Headers.SEGMENT_TRUE_VERTICAL_DEPTH: np.float64, Headers.SEGMENTMD: np.float64}
+            {Headers.SEGMENT_TRUE_VERTICAL_DEPTH: np.float64, Headers.SEGMENT_MEASURED_DEPTH: np.float64}
         )
         return self._welsegs_header, self._welsegs_content  # type: ignore
 

@@ -297,7 +297,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
     header_columns = [
         Headers.WELL,
         Headers.SEGMENT_TRUE_VERTICAL_DEPTH,
-        Headers.SEGMENTMD,
+        Headers.SEGMENT_MEASURED_DEPTH,
         Headers.WELLBORE_VOLUME,
         Headers.INFO_TYPE,
         Headers.PRESSURE_DROP_COMPLETION,

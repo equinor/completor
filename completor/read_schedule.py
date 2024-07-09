@@ -25,7 +25,7 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
         return df_header, df_content
 
     ref_tvd = df_header[Headers.SEGMENT_TRUE_VERTICAL_DEPTH].iloc[0]
-    ref_md = df_header[Headers.SEGMENTMD].iloc[0]
+    ref_md = df_header[Headers.SEGMENT_MEASURED_DEPTH].iloc[0]
     inlet_segment = df_content[Headers.TUBING_SEGMENT].to_numpy()
     outlet_segment = df_content[Headers.TUBING_OUTLET].to_numpy()
     md_inc = df_content[Headers.TUBING_MEASURED_DEPTH].to_numpy()
