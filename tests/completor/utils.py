@@ -81,10 +81,10 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     # WELSEGS content
     wsc_true = true_output.welsegs_content
     wsc_true.set_index(Headers.WELL, inplace=True)
-    wsc_true.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
+    wsc_true.sort_values([Headers.WELL, Headers.TUBING_MEASURED_DEPTH], inplace=True)
     wsc_test = test_output.welsegs_content
     wsc_test.set_index(Headers.WELL, inplace=True)
-    wsc_test.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
+    wsc_test.sort_values([Headers.WELL, Headers.TUBING_MEASURED_DEPTH], inplace=True)
     pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
 
     # COMPSEGS
@@ -201,8 +201,8 @@ class ReadSchedule:
                 Headers.TUBING_SEGMENT_2: np.int64,
                 Headers.TUBING_BRANCH: np.int64,
                 Headers.TUBING_OUTLET: np.int64,
-                Headers.TUBINGMD: np.float64,
-                Headers.TUBINGTVD: np.float64,
+                Headers.TUBING_MEASURED_DEPTH: np.float64,
+                Headers.TUBING_TRUE_VERTICAL_DEPTH: np.float64,
                 Headers.TUBING_ROUGHNESS: np.float64,
             }
         )

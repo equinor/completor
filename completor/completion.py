@@ -85,9 +85,9 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
         Measured depth versus true vertical depth.
 
     """
-    measured_depth = df_well_segments_content[Headers.TUBINGMD].to_numpy()
+    measured_depth = df_well_segments_content[Headers.TUBING_MEASURED_DEPTH].to_numpy()
     measured_depth = np.insert(measured_depth, 0, df_well_segments_header[Headers.SEGMENTMD].iloc[0])
-    true_vertical_depth = df_well_segments_content[Headers.TUBINGTVD].to_numpy()
+    true_vertical_depth = df_well_segments_content[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy()
     true_vertical_depth = np.insert(true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENTTVD].iloc[0])
     df_measured_true_vertical_depth = as_data_frame({Headers.MD: measured_depth, Headers.TVD: true_vertical_depth})
     # sort based on md
@@ -883,8 +883,8 @@ class WellSchedule:
             Headers.TUBING_SEGMENT_2,
             Headers.TUBING_BRANCH,
             Headers.TUBING_OUTLET,
-            Headers.TUBINGMD,
-            Headers.TUBINGTVD,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TUBING_TRUE_VERTICAL_DEPTH,
             Headers.TUBING_INNER_DIAMETER,
             Headers.TUBING_ROUGHNESS,
             Headers.CROSS,
@@ -908,7 +908,7 @@ class WellSchedule:
         # is not sorted in ascending order (monotonic)
         for branch_num in df_records[Headers.TUBING_BRANCH].unique():
             if (
-                not df_records[Headers.TUBINGMD]
+                not df_records[Headers.TUBING_MEASURED_DEPTH]
                 .loc[df_records[Headers.TUBING_BRANCH] == branch_num]
                 .is_monotonic_increasing
             ):
@@ -954,7 +954,8 @@ class WellSchedule:
             Headers.THERMAL_CONTACT_LENGTH,
             Headers.SEGMENT,
         ]
-        recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
+        recs = np.array(recs[1:])
+        recs = np.pad(recs, ((0, 0), (0, len(columns) - recs.shape[1])), "constant", constant_values="1*")
         df = pd.DataFrame(recs, columns=columns)
         df[columns[:4]] = df[columns[:4]].astype(np.int64)
         df[columns[4:6]] = df[columns[4:6]].astype(np.float64)

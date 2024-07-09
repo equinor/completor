@@ -133,8 +133,8 @@ WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10
             Headers.TUBING_SEGMENT_2: np.int64,
             Headers.TUBING_BRANCH: np.int64,
             Headers.TUBING_OUTLET: np.int64,
-            Headers.TUBINGMD: np.float64,
-            Headers.TUBINGTVD: np.float64,
+            Headers.TUBING_MEASURED_DEPTH: np.float64,
+            Headers.TUBING_TRUE_VERTICAL_DEPTH: np.float64,
             Headers.TUBING_ROUGHNESS: np.float64,
         }
     )
@@ -233,7 +233,12 @@ def test_fix_welsegs():
             [4, 3, 30.0, 30.0],
             [5, 4, 40.0, 40.0],
         ],
-        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBINGTVD, Headers.TUBINGMD],
+        columns=[
+            Headers.TUBING_SEGMENT,
+            Headers.TUBING_OUTLET,
+            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+        ],
     )
 
     df_header_true = pd.DataFrame(

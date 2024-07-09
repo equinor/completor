@@ -235,7 +235,7 @@ def test_well_trajectory():
             [5.0, 1.0],
             [4.0, 3.0],
         ],
-        columns=[Headers.TUBINGMD, Headers.TUBINGTVD],
+        columns=[Headers.TUBING_MEASURED_DEPTH, Headers.TUBING_TRUE_VERTICAL_DEPTH],
     )
     df_true = pd.DataFrame(
         [

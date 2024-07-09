@@ -224,8 +224,8 @@ def prepare_tubing_layer(
         DataFrame for tubing layer.
     """
     rnm = {
-        Headers.TUBINGMD: Headers.MD,
-        Headers.TUBINGTVD: Headers.TVD,
+        Headers.TUBING_MEASURED_DEPTH: Headers.MD,
+        Headers.TUBING_TRUE_VERTICAL_DEPTH: Headers.TVD,
         Headers.TUBING_INNER_DIAMETER: Headers.DIAMETER,
         Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
     }
@@ -240,7 +240,7 @@ def prepare_tubing_layer(
     )
     # handle overburden
     well_segments = schedule.get_well_segments(well_name, lateral)[1]
-    md_input_welsegs = well_segments[Headers.TUBINGMD]
+    md_input_welsegs = well_segments[Headers.TUBING_MEASURED_DEPTH]
     md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MD]
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
     if not overburden.empty:
@@ -363,7 +363,7 @@ def connect_lateral(
             df_segm0 = data[lateral0][1]  # df_device
         try:
             if case.connect_to_tubing(well_name, lateral):
-                # Since md_junct (top.TUBINGMD) has segment tops and
+                # Since md_junct (top.TUBING_MEASURED_DEPTH) has segment tops and
                 # segm0.MD has grid block midpoints, a junction at the top of the
                 # well may not be found. Therefore, we try the following:
                 if (~(df_segm0.MD <= md_junct)).all():

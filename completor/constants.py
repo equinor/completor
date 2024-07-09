@@ -9,30 +9,80 @@ from enum import Enum, auto
 class Headers:
     """Headers for DataFrames."""
 
+    # Well Segments (WELSEGS)
+    WELL = "WELL"
+    SEGMENTTVD = "SEGMENTTVD"
+    SEGMENTMD = "SEGMENTMD"
+    WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
+    # This quantity is used to calculate wellbore storage effects in the top segment.
+    INFO_TYPE = "INFOTYPE"
+    PRESSURE_DROP_COMPLETION = "PDROPCOMP"
+    MULTIPHASE_FLOW_MODEL = "MPMODEL"
+    ITEM_8 = "ITEM8"
+    ITEM_9 = "ITEM9"
+    ITEM_10 = "ITEM10"
+    ITEM_11 = "ITEM11"
+    ITEM_12 = "ITEM12"
+
+    # Well segments data (WELSEGS)
+    # Headers.TUBING_SEGMENT,
+    TUBING_SEGMENT = "TUBINGSEGMENT"
+    # Headers.TUBING_SEGMENT_2,
+    TUBING_SEGMENT_2 = "TUBINGSEGMENT2"
+    # Headers.TUBING_BRANCH,
+    TUBING_BRANCH = "TUBINGBRANCH"
+    # Headers.TUBING_OUTLET,
+    TUBING_OUTLET = "TUBINGOUTLET"
+    # Headers.TUBINGMD,
+    # Headers.TUBINGTVD,
+    TUBING_MEASURED_DEPTH = "TUBINGMD"
+    TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
+    # Headers.TUBING_INNER_DIAMETER,
+    # Headers.TUBING_ROUGHNESS,
+    # Headers.CROSS,
+    # Headers.SEGMENT_VOLUME,
+    # Headers.ITEM_11,
+    # Headers.ITEM_12,
+    # Headers.ITEM_13,
+    # Headers.ITEM_14,
+    # Headers.ITEM_15,
+    ITEM_13 = "ITEM13"
+    ITEM_14 = "ITEM14"
+    ITEM_15 = "ITEM15"
+
+    # Completion segments (COMPSEGS)
+    I = "I"  # noqa: E741
+    J = "J"
+    K = "K"
+    BRANCH = "BRANCH"
+    START_MEASURED_DEPTH = "STARTMD"
+    END_MEASURED_DEPTH = "ENDMD"
+    COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"  # Direction of penetration through the grid block or the range.
+    # X or I for horizontal penetration in the x-direction, Y or J for horizontal penetration in the y-direction,
+    # Z or K for vertical penetration.
+    ENDGRID = "ENDGRID"
+    PERFORATION_DEPTH = "PERFDEPTH"  # Depth of the well connections within the range,
+    # that is the depth of the center of the perforations within each grid block in the range.
+    THERMAL_CONTACT_LENGTH = "THERM"  # Thermal contact length, that is, the length of the well in the completion cell.
+    SEGMENT = "SEGMENT"
+
+    ANNULUS = "ANNULUS"
+    ANNULUS_ZONE = "ANNULUS_ZONE"
+    VALVES_PER_JOINT = "NVALVEPERJOINT"
+    INNER_DIAMETER = "INNER_DIAMETER"
+    OUTER_DIAMETER = "OUTER_DIAMETER"
+    ROUGHNESS = "ROUGHNESS"
+    DEVICE_TYPE = "DEVICETYPE"
+    DEVICE_NUMBER = "DEVICENUMBER"
     WATER_CUT = "WCT"
     OPEN = "OPEN"
     RHO = "RHO"
     VISCOSITY = "VIS"
     DEVICE = "DEVICE"
     SF = "SF"  # Saturation functions?
-    THERMAL_CONTACT_LENGTH = "THERM"  # Thermal contact length, that is, the length of the well in the completion cell.
-    PERFORATION_DEPTH = "PERFDEPTH"  # Perforation depth?
-    ENDGRID = "ENDGRID"
     SEGMENT_VOLUME = "VSEG"  # Vertical Segments?
     TUBING_INNER_DIAMETER = "TUBINGID"
-    MULTIPHASE_FLOW_MODEL = "MPMODEL"
-    PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Pressure drop completion?
-    WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
-    # This quantity is used to calculate wellbore storage effects in the top segment.
 
-    ITEM_8 = "ITEM8"
-    ITEM_9 = "ITEM9"
-    ITEM_10 = "ITEM10"
-    ITEM_11 = "ITEM11"
-    ITEM_12 = "ITEM12"
-    ITEM_13 = "ITEM13"
-    ITEM_14 = "ITEM14"
-    ITEM_15 = "ITEM15"
     ITEM_16 = "ITEM16"
     ITEM_17 = "ITEM17"
     REGION = "REGION"
@@ -49,9 +99,6 @@ class Headers:
     LENGTH = "LENGTH"
     ADDITIONAL_SEGMENT = "AdditionalSegment"
     ORIGINAL_SEGMENT = "OriginalSegment"
-    TUBING_SEGMENT_2 = "TUBINGSEGMENT2"
-    INFO_TYPE = "INFOTYPE"
-    TUBING_OUTLET = "TUBINGOUTLET"
     SAT = "SAT"  # Saturation?
     FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
     DEF = "DEF"
@@ -59,12 +106,11 @@ class Headers:
     SEG = "SEG"  # Duplicate, ish
     SEG2 = "SEG2"
     OUT = "OUT"
-    COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"
     LATERAL = "LATERAL"
     NUMBER_OF_DEVICES = "NDEVICES"
-    I = "I"  # noqa: E741
-    J = "J"
-    K = "K"
+    # I = "I"  # noqa: E741
+    # J = "J"
+    # K = "K"
     K2 = "K2"
     STATUS = "STATUS"
     SATURATION_FUNCTION_REGION_NUMBERS = "SATNUM"
@@ -86,12 +132,7 @@ class Headers:
 
     TUB_TVD = "TUB_TVD"  # Same as TUBINGTVD
     TVD = "TVD"
-    TUBINGMD = "TUBINGMD"
-    TUBINGTVD = "TUBINGTVD"
-    SEGMENTTVD = "SEGMENTTVD"
-    SEGMENTMD = "SEGMENTMD"
     SEGMENT_DESC = "SEGMENT_DESC"
-    SEGMENT = "SEGMENT"
     VISCAL_ICD = "VISCAL_ICD"
     RHOCAL_ICD = "RHOCAL_ICD"
     STRENGTH = "STRENGTH"
@@ -147,31 +188,14 @@ class Headers:
     AC = "AC"
     L = "L"
 
-    BRANCH = "BRANCH"
-
     MD = "MD"
 
     # Completion
-    START_MEASURED_DEPTH = "STARTMD"
-    END_MEASURED_DEPTH = "ENDMD"
-    ANNULUS = "ANNULUS"
-    ANNULUS_ZONE = "ANNULUS_ZONE"
-    VALVES_PER_JOINT = "NVALVEPERJOINT"
-    INNER_DIAMETER = "INNER_DIAMETER"
-    OUTER_DIAMETER = "OUTER_DIAMETER"
-    ROUGHNESS = "ROUGHNESS"
-    DEVICE_TYPE = "DEVICETYPE"
-    DEVICE_NUMBER = "DEVICENUMBER"
-    WELL = "WELL"
 
     # Well segments
-    TUBING_MEASURED_DEPTH = "TUBINGMD"
-    TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
     # SEGMENT_MEASURED_DEPTH = "SEGMENTMD"
     # SEGMENT_TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
-    TUBING_SEGMENT = "TUBINGSEGMENT"
     # TUBING_SEGMENT2 = "TUBINGSEGMENT2"
-    TUBING_BRANCH = "TUBINGBRANCH"
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
 
     EMPTY = ""
