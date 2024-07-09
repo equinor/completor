@@ -16,7 +16,7 @@ class Headers:
     DEVICE = "DEVICE"
     SF = "SF"  # Saturation functions?
     THERM = "THERM"
-    PERFDEPTH = "PERFDEPTH"  # Perforation depth?
+    PERFORATION_DEPTH = "PERFDEPTH"  # Perforation depth?
     ENDGRID = "ENDGRID"
     VSEG = "VSEG"  # Vertical Segments?
     TUBING_INNER_DIAMETER = "TUBINGID"
@@ -148,9 +148,6 @@ class Headers:
     BRANCH = "BRANCH"
 
     MD = "MD"
-
-    # from `test_completion.py`
-    # TUBING_MEASURED_DEPTH = "TUBINGMD"
 
     # Completion
     START_MEASURED_DEPTH = "STARTMD"

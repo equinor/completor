@@ -950,7 +950,7 @@ class WellSchedule:
             Headers.END_MEASURED_DEPTH,
             Headers.COMPSEGS_DIRECTION,
             Headers.ENDGRID,
-            Headers.PERFDEPTH,
+            Headers.PERFORATION_DEPTH,
             Headers.THERM,
             Headers.SEGMENT,
         ]
