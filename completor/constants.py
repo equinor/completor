@@ -20,7 +20,7 @@ class Headers:
     ENDGRID = "ENDGRID"
     VSEG = "VSEG"  # Vertical Segments?
     TUBING_INNER_DIAMETER = "TUBINGID"
-    MPMODEL = "MPMODEL"
+    MULTIPHASE_FLOW_MODEL = "MPMODEL"
     PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Pressure drop completion?
     WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
     # This quantity is used to calculate wellbore storage effects in the top segment.
