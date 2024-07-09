@@ -15,25 +15,26 @@ class Headers:
     SEGMENT_MEASURED_DEPTH = "SEGMENTMD"
     WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
     # This quantity is used to calculate wellbore storage effects in the top segment.
-    INFO_TYPE = "INFOTYPE"
-    PRESSURE_DROP_COMPLETION = "PDROPCOMP"
+    INFO_TYPE = "INFOTYPE"  # Either 'INC' for incremental values (not supported in completor) or 'ABS' absolute values.
+    PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Components of the pressure drop to be included in the calculation for
+    # each of the well’s segments, defaults to 'HFA' Hydrostatic + friction + acceleration.
     MULTIPHASE_FLOW_MODEL = "MPMODEL"
-    ITEM_8 = "ITEM8"
-    ITEM_9 = "ITEM9"
-    ITEM_10 = "ITEM10"
-    ITEM_11 = "ITEM11"
-    ITEM_12 = "ITEM12"
+    ITEM_8 = "ITEM8"  # X coordinate of the nodal point of the top segment, relative to the grid origin. Default 0.0.
+    ITEM_9 = "ITEM9"  # Y coordinate of the nodal point of the top segment, relative to the grid origin. Default 0.0.
+    ITEM_10 = "ITEM10"  # Cross-sectional area of the pipe wall used in thermal conductivity calculation. Default 0.0.
+    ITEM_11 = "ITEM11"  # Volumetric heat capacity of the pipe wall. Default 0.0.
+    ITEM_12 = "ITEM12"  # Thermal conductivity of the pipe wall. Default 0.0.
 
     # Well Segments Record 2 (WELSEGS)
-    TUBING_SEGMENT = "TUBINGSEGMENT"
-    TUBING_SEGMENT_2 = "TUBINGSEGMENT2"
-    TUBING_BRANCH = "TUBINGBRANCH"
+    TUBING_SEGMENT = "TUBINGSEGMENT"  # Segment number at the start of the range (nearest the top segment).
+    TUBING_SEGMENT_2 = "TUBINGSEGMENT2"  # Segment number at the far end of the range.
+    TUBING_BRANCH = "TUBINGBRANCH"  # Branch number.
     TUBING_OUTLET = "TUBINGOUTLET"
     TUBING_MEASURED_DEPTH = "TUBINGMD"
     TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
     TUBING_INNER_DIAMETER = "TUBINGID"
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
-    CROSS = "CROSS"
+    CROSS_SECTIONAL_AREA = "CROSS"  # Cross-sectional area for fluid flow.
     SEGMENT_VOLUME = "VSEG"
     # ITEM_11 = "ITEM11"
     # ITEM_12 = "ITEM12"
