@@ -22,7 +22,9 @@ class Headers:
     TUBING_INNER_DIAMETER = "TUBINGID"
     MPMODEL = "MPMODEL"
     PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Pressure drop completion?
-    WBVOLUME = "WBVOLUME"  # Well bore volume?
+    WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
+    # This quantity is used to calculate wellbore storage effects in the top segment.
+
     ITEM_8 = "ITEM8"
     ITEM_9 = "ITEM9"
     ITEM_10 = "ITEM10"
