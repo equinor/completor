@@ -21,7 +21,7 @@ class Headers:
     VSEG = "VSEG"  # Vertical Segments?
     TUBING_INNER_DIAMETER = "TUBINGID"
     MPMODEL = "MPMODEL"
-    PDROPCOMP = "PDROPCOMP"  # Pressure drop completion?
+    PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Pressure drop completion?
     WBVOLUME = "WBVOLUME"  # Well bore volume?
     ITEM_8 = "ITEM8"
     ITEM_9 = "ITEM9"
