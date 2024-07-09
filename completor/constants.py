@@ -18,7 +18,7 @@ class Headers:
     THERM = "THERM"
     PERFORATION_DEPTH = "PERFDEPTH"  # Perforation depth?
     ENDGRID = "ENDGRID"
-    VSEG = "VSEG"  # Vertical Segments?
+    SEGMENT_VOLUME = "VSEG"  # Vertical Segments?
     TUBING_INNER_DIAMETER = "TUBINGID"
     MULTIPHASE_FLOW_MODEL = "MPMODEL"
     PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Pressure drop completion?

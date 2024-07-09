@@ -319,7 +319,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.TUBING_INNER_DIAMETER,
         Headers.TUBING_ROUGHNESS,
         Headers.CROSS,
-        Headers.VSEG,
+        Headers.SEGMENT_VOLUME,
         Headers.ITEM_11,
         Headers.ITEM_12,
         Headers.ITEM_13,
