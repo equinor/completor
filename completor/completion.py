@@ -747,7 +747,7 @@ class WellSchedule:
             Headers.SHUT,
             Headers.CROSS,
             Headers.PRESSURE_TABLE,
-            Headers.DENSCAL,
+            Headers.DENSITY_CALCULATION,
             Headers.REGION,
             Headers.ITEM_14,
             Headers.ITEM_15,

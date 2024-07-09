@@ -36,7 +36,7 @@ class Headers:
     ITEM_16 = "ITEM16"
     ITEM_17 = "ITEM17"
     REGION = "REGION"
-    DENSCAL = "DENSCAL"  # Calculated density / Density calculated?
+    DENSITY_CALCULATION = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
     PRESSURE_TABLE = "PRESSURETABLE"
     CROSS = "CROSS"
     SHUT = "SHUT"
