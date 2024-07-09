@@ -951,7 +951,7 @@ class WellSchedule:
             Headers.COMPSEGS_DIRECTION,
             Headers.ENDGRID,
             Headers.PERFORATION_DEPTH,
-            Headers.THERM,
+            Headers.THERMAL_CONTACT_LENGTH,
             Headers.SEGMENT,
         ]
         recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]  # pad with default values (1*)

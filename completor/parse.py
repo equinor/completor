@@ -490,7 +490,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
             Headers.COMPSEGS_DIRECTION,
             Headers.ENDGRID,
             Headers.PERFORATION_DEPTH,
-            Headers.THERM,
+            Headers.THERMAL_CONTACT_LENGTH,
             Headers.SEGMENT,
         ],
     )

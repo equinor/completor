@@ -15,7 +15,7 @@ class Headers:
     VISCOSITY = "VIS"
     DEVICE = "DEVICE"
     SF = "SF"  # Saturation functions?
-    THERM = "THERM"
+    THERMAL_CONTACT_LENGTH = "THERM"  # Thermal contact length, that is, the length of the well in the completion cell.
     PERFORATION_DEPTH = "PERFDEPTH"  # Perforation depth?
     ENDGRID = "ENDGRID"
     SEGMENT_VOLUME = "VSEG"  # Vertical Segments?
