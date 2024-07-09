@@ -228,7 +228,7 @@ def test_well_trajectory():
         [
             [2.0, 1.0],
         ],
-        columns=[Headers.SEGMENTMD, Headers.SEGMENTTVD],
+        columns=[Headers.SEGMENTMD, Headers.SEGMENT_TRUE_VERTICAL_DEPTH],
     )
     df_welsegs_content = pd.DataFrame(
         [

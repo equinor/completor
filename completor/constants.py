@@ -9,9 +9,9 @@ from enum import Enum, auto
 class Headers:
     """Headers for DataFrames."""
 
-    # Well Segments (WELSEGS)
+    # Well Segments Record 1 (WELSEGS)
     WELL = "WELL"
-    SEGMENTTVD = "SEGMENTTVD"
+    SEGMENT_TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
     SEGMENTMD = "SEGMENTMD"
     WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
     # This quantity is used to calculate wellbore storage effects in the top segment.
@@ -24,28 +24,19 @@ class Headers:
     ITEM_11 = "ITEM11"
     ITEM_12 = "ITEM12"
 
-    # Well segments data (WELSEGS)
-    # Headers.TUBING_SEGMENT,
+    # Well Segments Record 2 (WELSEGS)
     TUBING_SEGMENT = "TUBINGSEGMENT"
-    # Headers.TUBING_SEGMENT_2,
     TUBING_SEGMENT_2 = "TUBINGSEGMENT2"
-    # Headers.TUBING_BRANCH,
     TUBING_BRANCH = "TUBINGBRANCH"
-    # Headers.TUBING_OUTLET,
     TUBING_OUTLET = "TUBINGOUTLET"
-    # Headers.TUBINGMD,
-    # Headers.TUBINGTVD,
     TUBING_MEASURED_DEPTH = "TUBINGMD"
     TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
-    # Headers.TUBING_INNER_DIAMETER,
-    # Headers.TUBING_ROUGHNESS,
-    # Headers.CROSS,
-    # Headers.SEGMENT_VOLUME,
-    # Headers.ITEM_11,
-    # Headers.ITEM_12,
-    # Headers.ITEM_13,
-    # Headers.ITEM_14,
-    # Headers.ITEM_15,
+    TUBING_INNER_DIAMETER = "TUBINGID"
+    TUBING_ROUGHNESS = "TUBINGROUGHNESS"
+    CROSS = "CROSS"
+    SEGMENT_VOLUME = "VSEG"
+    # ITEM_11 = "ITEM11"
+    # ITEM_12 = "ITEM12"
     ITEM_13 = "ITEM13"
     ITEM_14 = "ITEM14"
     ITEM_15 = "ITEM15"
@@ -66,6 +57,42 @@ class Headers:
     THERMAL_CONTACT_LENGTH = "THERM"  # Thermal contact length, that is, the length of the well in the completion cell.
     SEGMENT = "SEGMENT"
 
+    # Well specifications (WELSPECS)
+    # Headers.WELL,
+    WELL = "WELL"
+    # Headers.GROUP,
+    GROUP = "GROUP"
+    # Headers.I,
+    # Headers.J,
+    # I = "I"  # noqa: E741
+    # J = "J"
+    # Headers.BHP_DEPTH,
+    BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
+    # Headers.PHASE,
+    PHASE = "PHASE"
+    # Headers.DR,
+    DR = "DR"
+    # Headers.FLAG,
+    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
+    # Headers.SHUT,
+    SHUT = "SHUT"
+    # Headers.CROSS,
+    # CROSS = "CROSS"
+    # Headers.PRESSURE_TABLE,
+    PRESSURE_TABLE = "PRESSURETABLE"
+    # Headers.DENSITY_CALCULATION,
+    DENSITY_CALCULATION = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
+    # Headers.REGION,
+    REGION = "REGION"
+    # Headers.ITEM_14,
+    # Headers.ITEM_15,
+    # Headers.ITEM_16,
+    # Headers.ITEM_17,
+    ITEM_16 = "ITEM16"
+    ITEM_17 = "ITEM17"
+
+    # TBD
+
     ANNULUS = "ANNULUS"
     ANNULUS_ZONE = "ANNULUS_ZONE"
     VALVES_PER_JOINT = "NVALVEPERJOINT"
@@ -80,27 +107,13 @@ class Headers:
     VISCOSITY = "VIS"
     DEVICE = "DEVICE"
     SF = "SF"  # Saturation functions?
-    SEGMENT_VOLUME = "VSEG"  # Vertical Segments?
-    TUBING_INNER_DIAMETER = "TUBINGID"
 
-    ITEM_16 = "ITEM16"
-    ITEM_17 = "ITEM17"
-    REGION = "REGION"
-    DENSITY_CALCULATION = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
-    PRESSURE_TABLE = "PRESSURETABLE"
-    CROSS = "CROSS"
-    SHUT = "SHUT"
-    DR = "DR"
-    PHASE = "PHASE"
-    BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
-    GROUP = "GROUP"
     MARKER = "MARKER"
     SCALING_FACTOR = "SCALINGFACTOR"
     LENGTH = "LENGTH"
     ADDITIONAL_SEGMENT = "AdditionalSegment"
     ORIGINAL_SEGMENT = "OriginalSegment"
     SAT = "SAT"  # Saturation?
-    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
     DEF = "DEF"
     DIRECTION = "DIR"
     SEG = "SEG"  # Duplicate, ish
@@ -196,7 +209,6 @@ class Headers:
     # SEGMENT_MEASURED_DEPTH = "SEGMENTMD"
     # SEGMENT_TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
     # TUBING_SEGMENT2 = "TUBINGSEGMENT2"
-    TUBING_ROUGHNESS = "TUBINGROUGHNESS"
 
     EMPTY = ""
 

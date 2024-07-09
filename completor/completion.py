@@ -88,7 +88,9 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
     measured_depth = df_well_segments_content[Headers.TUBING_MEASURED_DEPTH].to_numpy()
     measured_depth = np.insert(measured_depth, 0, df_well_segments_header[Headers.SEGMENTMD].iloc[0])
     true_vertical_depth = df_well_segments_content[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy()
-    true_vertical_depth = np.insert(true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENTTVD].iloc[0])
+    true_vertical_depth = np.insert(
+        true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENT_TRUE_VERTICAL_DEPTH].iloc[0]
+    )
     df_measured_true_vertical_depth = as_data_frame({Headers.MD: measured_depth, Headers.TVD: true_vertical_depth})
     # sort based on md
     df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(by=[Headers.MD, Headers.TVD])
@@ -860,7 +862,7 @@ class WellSchedule:
         # make df for header record
         columns_header = [
             Headers.WELL,
-            Headers.SEGMENTTVD,
+            Headers.SEGMENT_TRUE_VERTICAL_DEPTH,
             Headers.SEGMENTMD,
             Headers.WELLBORE_VOLUME,
             Headers.INFO_TYPE,
