@@ -302,11 +302,11 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.INFO_TYPE,
         Headers.PRESSURE_DROP_COMPLETION,
         Headers.MULTIPHASE_FLOW_MODEL,
-        Headers.ITEM_8,
-        Headers.ITEM_9,
-        Headers.ITEM_10,
-        Headers.ITEM_11,
-        Headers.ITEM_12,
+        Headers.X_COORDINATE_TOP_SEGMENT,
+        Headers.Y_COORDINATE_TOP_SEGMENT,
+        Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+        Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+        Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
     ]
     content_columns = [
         Headers.WELL,
@@ -320,11 +320,11 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.TUBING_ROUGHNESS,
         Headers.CROSS_SECTIONAL_AREA,
         Headers.SEGMENT_VOLUME,
-        Headers.ITEM_11,
-        Headers.ITEM_12,
-        Headers.ITEM_13,
-        Headers.ITEM_14,
-        Headers.ITEM_15,
+        Headers.X_COORDINATE_LAST_SEGMENT,
+        Headers.Y_COORDINATE_LAST_SEGMENT,
+        Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+        Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+        Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
     ]
     for collection in collections:
         if collection.name == Keywords.WELSEGS:

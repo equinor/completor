@@ -19,11 +19,17 @@ class Headers:
     PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Components of the pressure drop to be included in the calculation for
     # each of the well’s segments, defaults to 'HFA' Hydrostatic + friction + acceleration.
     MULTIPHASE_FLOW_MODEL = "MPMODEL"
-    ITEM_8 = "ITEM8"  # X coordinate of the nodal point of the top segment, relative to the grid origin. Default 0.0.
-    ITEM_9 = "ITEM9"  # Y coordinate of the nodal point of the top segment, relative to the grid origin. Default 0.0.
-    ITEM_10 = "ITEM10"  # Cross-sectional area of the pipe wall used in thermal conductivity calculation. Default 0.0.
-    ITEM_11 = "ITEM11"  # Volumetric heat capacity of the pipe wall. Default 0.0.
-    ITEM_12 = "ITEM12"  # Thermal conductivity of the pipe wall. Default 0.0.
+    # How to handle these, they are just placeholders for real things, but are entirely unused?
+    X_COORDINATE_TOP_SEGMENT = (
+        "DEFAULT_1"  # X coordinate of the top nodal point, relative to the grid origin. Default 0.0.
+    )
+    Y_COORDINATE_TOP_SEGMENT = (
+        "DEFAULT_2"  # Y coordinate of the top nodal point, relative to the grid origin. Default 0.0.
+    )
+    THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA = "DEFAULT_3"  # Cross-sectional area of the pipe wall used in thermal
+    # conductivity calculation. Default 0.0.
+    VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL = "DEFAULT_4"  # Volumetric heat capacity of the pipe wall. Default 0.0.
+    THERMAL_CONDUCTIVITY_PIPE_WALL = "DEFAULT_5"  # Thermal conductivity of the pipe wall. Default 0.0.
 
     # Well Segments Record 2 (WELSEGS)
     TUBING_SEGMENT = "TUBINGSEGMENT"  # Segment number at the start of the range (nearest the top segment).
@@ -36,11 +42,8 @@ class Headers:
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
     CROSS_SECTIONAL_AREA = "CROSS"  # Cross-sectional area for fluid flow.
     SEGMENT_VOLUME = "VSEG"
-    # ITEM_11 = "ITEM11"
-    # ITEM_12 = "ITEM12"
-    ITEM_13 = "ITEM13"
-    ITEM_14 = "ITEM14"
-    ITEM_15 = "ITEM15"
+    X_COORDINATE_LAST_SEGMENT = "DEFAULT_6"  # X coordinate of the last nodal point in the range.
+    Y_COORDINATE_LAST_SEGMENT = "DEFAULT_7"  # Y coordinate of the last nodal point in the range.
 
     # Completion segments (COMPSEGS)
     I = "I"  # noqa: E741
@@ -93,6 +96,8 @@ class Headers:
     ITEM_17 = "ITEM17"
 
     # TBD
+    ITEM_14 = "ITEM14"
+    ITEM_15 = "ITEM15"
 
     ANNULUS = "ANNULUS"
     ANNULUS_ZONE = "ANNULUS_ZONE"
