@@ -751,10 +751,10 @@ class WellSchedule:
             Headers.PRESSURE_TABLE,
             Headers.DENSITY_CALCULATION,
             Headers.REGION,
-            Headers.ITEM_14,
-            Headers.ITEM_15,
-            Headers.ITEM_16,
-            Headers.ITEM_17,
+            Headers.RESERVED_HEADER_1,
+            Headers.RESERVED_HEADER_2,
+            Headers.WELL_MODEL_TYPE,
+            Headers.POLYMER_MIXING_TABLE_NUMBER,
         ]
         _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
         df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)

@@ -380,10 +380,10 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
         Headers.PRESSURE_TABLE,
         Headers.DENSITY_CALCULATION,
         Headers.REGION,
-        Headers.ITEM_14,
-        Headers.ITEM_15,
-        Headers.ITEM_16,
-        Headers.ITEM_17,
+        Headers.RESERVED_HEADER_1,
+        Headers.RESERVED_HEADER_2,
+        Headers.WELL_MODEL_TYPE,
+        Headers.POLYMER_MIXING_TABLE_NUMBER,
     ]
     welspecs_table = None
     for collection in collections:

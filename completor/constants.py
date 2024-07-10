@@ -62,42 +62,25 @@ class Headers:
     SEGMENT = "SEGMENT"
 
     # Well specifications (WELSPECS)
-    # Headers.WELL,
-    WELL = "WELL"
-    # Headers.GROUP,
+    # WELL = "WELL"
     GROUP = "GROUP"
-    # Headers.I,
-    # Headers.J,
     # I = "I"  # noqa: E741
     # J = "J"
-    # Headers.BHP_DEPTH,
     BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
-    # Headers.PHASE,
     PHASE = "PHASE"
-    # Headers.DR,
     DR = "DR"
-    # Headers.FLAG,
     FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
-    # Headers.SHUT,
     SHUT = "SHUT"
-    # Headers.CROSS,
     # CROSS = "CROSS"
-    # Headers.PRESSURE_TABLE,
     PRESSURE_TABLE = "PRESSURETABLE"
-    # Headers.DENSITY_CALCULATION,
     DENSITY_CALCULATION = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
-    # Headers.REGION,
     REGION = "REGION"
-    # Headers.ITEM_14,
-    # Headers.ITEM_15,
-    # Headers.ITEM_16,
-    # Headers.ITEM_17,
-    ITEM_16 = "ITEM16"
-    ITEM_17 = "ITEM17"
+    RESERVED_HEADER_1 = "RESERVED_1"
+    RESERVED_HEADER_2 = "RESERVED_2"
+    WELL_MODEL_TYPE = "WELL_MODEL_TYPE"
+    POLYMER_MIXING_TABLE_NUMBER = "POLYMER_MIXING_TABLE_NUMBER"
 
     # TBD
-    ITEM_14 = "ITEM14"
-    ITEM_15 = "ITEM15"
 
     ANNULUS = "ANNULUS"
     ANNULUS_ZONE = "ANNULUS_ZONE"
