@@ -968,7 +968,7 @@ def test_skin():
             Headers.WELL_BORE_DIAMETER,
             Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
-            Headers.NON_DARCY_FLOW_FACTOR,
+            Headers.D_FACTOR,
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
         ],

@@ -971,7 +971,7 @@ def prepare_compdat(
         Headers.FORMATION_PERMEABILITY_THICKNESS
     ].to_numpy()
     compdat[Headers.SKIN] = df_reservoir[Headers.SKIN].to_numpy()
-    compdat[Headers.NON_DARCY_FLOW_FACTOR] = df_reservoir[Headers.NON_DARCY_FLOW_FACTOR].to_numpy()
+    compdat[Headers.D_FACTOR] = df_reservoir[Headers.D_FACTOR].to_numpy()
     compdat[Headers.DIRECTION] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
     compdat[Headers.RO] = df_reservoir[Headers.RO].to_numpy()
     # remove default columns

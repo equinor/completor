@@ -104,8 +104,7 @@ class Headers:
     # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
     # typically resulting from stimulation.
 
-    # D-Factor non-darcy flow of free gas
-    NON_DARCY_FLOW_FACTOR = "DFACT"
+    D_FACTOR = "DFACT"  # Non-darcy flow of free gas.
     # DIRECTION
     # PRESSURE EQUIVALENT RADIUS
     COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
