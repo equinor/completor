@@ -439,7 +439,7 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
             Headers.WELL_BORE_DIAMETER,
             Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
-            Headers.DFACT,
+            Headers.NON_DARCY_FLOW_FACTOR,
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
         ],

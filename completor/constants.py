@@ -97,18 +97,17 @@ class Headers:
     # Cartesian and radial geometries. The well bore diameter must be set in item 9.
     # WELL BORE WELL_BORE_DIAMETER
     WELL_BORE_DIAMETER = "DIAM"
-    # EFFECTIVE Kh (permeability x thickness)
-    # SKIN Factor
-    # D-Factor non-darcy flow of free gas
-    # DIRECTION
-    # PRESSURE EQUIVALENT RADIUS
     FORMATION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
     # thickness, h, in a producing well, referred to as kh.
     SKIN = "SKIN"  # A dimensionless factor calculated to determine the production efficiency of a well by comparing
     # actual conditions with theoretical or ideal conditions. A positive skin value indicates some damage or
     # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
     # typically resulting from stimulation.
-    DFACT = "DFACT"
+
+    # D-Factor non-darcy flow of free gas
+    NON_DARCY_FLOW_FACTOR = "DFACT"
+    # DIRECTION
+    # PRESSURE EQUIVALENT RADIUS
     COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
     RO = "RO"
 
