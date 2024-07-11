@@ -260,10 +260,10 @@ class CreateOutput:
         """Update the numbering of the tubing segment and branch."""
 
         if self.df_annulus.shape[0] == 0 and self.df_device.shape[0] > 0:
-            self.start_segment = max(self.df_device[Headers.SEG].to_numpy()) + 1
+            self.start_segment = max(self.df_device[Headers.START_SEGMENT_NUMBER].to_numpy()) + 1
             self.start_branch = max(self.df_device[Headers.BRANCH].to_numpy()) + 1
         elif self.df_annulus.shape[0] > 0:
-            self.start_segment = max(self.df_annulus[Headers.SEG].to_numpy()) + 1
+            self.start_segment = max(self.df_annulus[Headers.START_SEGMENT_NUMBER].to_numpy()) + 1
             self.start_branch = max(self.df_annulus[Headers.BRANCH].to_numpy()) + 1
 
     def make_compdat(self, lateral: int) -> None:

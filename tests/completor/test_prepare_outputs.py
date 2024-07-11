@@ -208,8 +208,8 @@ def test_prepare_compsegs():
             [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -254,7 +254,7 @@ def test_prepare_compsegs():
             Headers.END_MEASURED_DEPTH,
             Headers.DIRECTION,
             Headers.DEF,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
             Headers.EMPTY,
         ],
     )
@@ -271,8 +271,8 @@ def test_prepare_compsegs():
             [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -313,7 +313,7 @@ def test_prepare_compsegs():
             Headers.END_MEASURED_DEPTH,
             Headers.DIRECTION,
             Headers.DEF,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
             Headers.EMPTY,
         ],
     )
@@ -330,8 +330,8 @@ def test_prepare_compsegs():
             [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -346,8 +346,8 @@ def test_prepare_compsegs():
             [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -389,7 +389,7 @@ def test_prepare_compsegs():
             Headers.END_MEASURED_DEPTH,
             Headers.DIRECTION,
             Headers.DEF,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
             Headers.EMPTY,
         ],
     )
@@ -406,8 +406,8 @@ def test_prepare_compsegs():
             [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -422,8 +422,8 @@ def test_prepare_compsegs():
             [7, 7, 1, 3, 2250.0, 2250.0, 0.15, 0.0001, "/"],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -465,7 +465,7 @@ def test_prepare_compsegs():
             Headers.END_MEASURED_DEPTH,
             Headers.DIRECTION,
             Headers.DEF,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
             Headers.EMPTY,
         ],
     )
@@ -482,8 +482,8 @@ def test_prepare_compsegs():
             [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -498,8 +498,8 @@ def test_prepare_compsegs():
             [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -541,7 +541,7 @@ def test_prepare_compsegs():
             Headers.END_MEASURED_DEPTH,
             Headers.DIRECTION,
             Headers.DEF,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
             Headers.EMPTY,
         ],
     )
@@ -563,14 +563,14 @@ def test_connect_lateral_logs_warning(caplog):
             [3, 3, 1, 2, 2200.73413],
             [4, 4, 1, 3, 2202.75139],
         ],
-        columns=[Headers.SEG, Headers.SEG2, Headers.BRANCH, Headers.OUT, Headers.MD],
+        columns=[Headers.START_SEGMENT_NUMBER, Headers.END_SEGMENT_NUMBER, Headers.BRANCH, Headers.OUT, Headers.MD],
     )
     df_tubing_lat_2 = pd.DataFrame(
         [
             [16, 16, 5, 15, 2179.9725],
             [17, 17, 5, 16, 2195.5],
         ],
-        columns=[Headers.SEG, Headers.SEG2, Headers.BRANCH, Headers.OUT, Headers.MD],
+        columns=[Headers.START_SEGMENT_NUMBER, Headers.END_SEGMENT_NUMBER, Headers.BRANCH, Headers.OUT, Headers.MD],
     )
     df_top = pd.DataFrame(
         [[1, 2188.76261]],
@@ -641,7 +641,7 @@ def test_print_wsegdar(tmpdir):
         [[Headers.WELL, 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
         columns=[
             Headers.WELL,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
             Headers.CV_DAR,
             Headers.AC_OIL,
             Headers.AC_GAS,
@@ -661,7 +661,7 @@ def test_print_wsegdar(tmpdir):
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 
@@ -673,7 +673,7 @@ SUVTRIG 'WELL' 3 = 0 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_GAS  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_GAS  DEFAULTS  AC_MAX
   'WELL' 3 1 2.590e-06  5* 7.852e-06 /
 /
 
@@ -691,7 +691,7 @@ SUVTRIG 'WELL' 3 = 0 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_WATER  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_WATER  DEFAULTS  AC_MAX
   'WELL' 3 1 1.590e-06  5* 7.852e-06 /
 /
 
@@ -708,7 +708,7 @@ SUVTRIG 'WELL' 3 = 1 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 
@@ -725,7 +725,7 @@ SUVTRIG 'WELL' 3 = 2 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 UDQ
@@ -771,8 +771,8 @@ def test_prepare_wsegvalv():
             [4, 4, 1, 3, 1260.0, 1260.0, 0.1, 0.1],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -786,7 +786,15 @@ def test_prepare_wsegvalv():
             ["'WELL'", 3, 1.0, 1.2, "5*", 2.1, "/"],
             ["'WELL'", 4, 1.0, 1.2, "5*", 1.2, "/"],
         ],
-        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX, Headers.EMPTY],
+        columns=[
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.CV,
+            Headers.AC,
+            Headers.L,
+            Headers.AC_MAX,
+            Headers.EMPTY,
+        ],
     )
     wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", 1, df_well, df_device)
     pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
@@ -921,8 +929,8 @@ def test_prepare_wsegicv(tmpdir):
             [5, 5, 1, 4, 2050.0, 2000.0, 0.1, 0.1],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -938,8 +946,8 @@ def test_prepare_wsegicv(tmpdir):
             [4, 4, 1, 3, 2015, 2000, 0.1, 0.1],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -981,7 +989,15 @@ def test_prepare_wsegicv(tmpdir):
             ["'WELL'", 3, 1.2, 4.1, "5*", 5.1, "/"],
             ["'WELL'", 4, 3.5, 3.2, "5*", 6.1, "/"],
         ],
-        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX, Headers.EMPTY],
+        columns=[
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.CV,
+            Headers.AC,
+            Headers.DEFAULTS,
+            Headers.AC_MAX,
+            Headers.EMPTY,
+        ],
     )
     pd.testing.assert_frame_equal(wsegicv_output, true_wsegicv_output)
 
@@ -1023,8 +1039,8 @@ def test_prepare_icv_compseg(tmpdir):
             [22, 22, 6, 8, 4266.0, 1613.0, 0.15, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -1040,8 +1056,8 @@ def test_prepare_icv_compseg(tmpdir):
             [35, 35, 18, 34, 4266.0, 1613.0, 0.2724, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
             Headers.MD,
@@ -1090,7 +1106,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ],
     )
     compseg_annulus_true = pd.DataFrame(
@@ -1109,7 +1125,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ],
     )
     compseg_icv_output_tubing = compseg_icv_output_tubing[
@@ -1120,7 +1136,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ]
     ]
     compseg_icv_output_annulus = compseg_icv_output_annulus[
@@ -1131,7 +1147,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ]
     ]
     pd.testing.assert_frame_equal(compseg_icv_output_tubing, compseg_tubing_true)

@@ -82,20 +82,16 @@ class Headers:
 
     # Completion Data (COMPDAT)
     # WELL NAME
-    # I = "I"  # noqa: E741
-    # J = "J"
-    # K = "K"
+    # I
+    # J
+    # K
     K2 = "K2"
-    # OPEN/SHUT STATUS
     STATUS = "STATUS"
-    # SATURATION TABLE NUMBER
     SATURATION_FUNCTION_REGION_NUMBERS = "SATNUM"
-    # TRANSMISSIBILITY FACTOR
     CONNECTION_FACTOR = "CF"  # Transmissibility factor for the connection. If defaulted or set to zero,
     # the connection transmissibility factor is calculated using the remaining items of data in this record. See "The
     # connection transmissibility factor" in the ECLIPSE Technical Description for an account of the methods used in
     # Cartesian and radial geometries. The well bore diameter must be set in item 9.
-    # WELL BORE WELL_BORE_DIAMETER
     WELL_BORE_DIAMETER = "DIAM"
     FORMATION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
     # thickness, h, in a producing well, referred to as kh.
@@ -103,12 +99,40 @@ class Headers:
     # actual conditions with theoretical or ideal conditions. A positive skin value indicates some damage or
     # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
     # typically resulting from stimulation.
-
     D_FACTOR = "DFACT"  # Non-darcy flow of free gas.
-    # DIRECTION
-    # PRESSURE EQUIVALENT RADIUS
     COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
-    RO = "RO"
+    RO = "RO"  # Pressure equivalent radius, R_o.
+
+    # Autonomous Inflow Control Device Well Segments (WSEGAICD)
+    # Well name
+    START_SEGMENT_NUMBER = "START_SEGMENT_NUMBER"  # Duplicate, ish
+    END_SEGMENT_NUMBER = "END_SEGMENT_NUMBER"
+    ALPHA = "ALPHA"
+    SF = "SF"  # Saturation functions?
+    RHO = "RHO"
+    VISCOSITY = "VIS"
+    DEF = "DEF"
+    X = "X"
+    Y = "Y"
+    # FLAG
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    F = "F"
+    EMPTY = ""
+
+    # Inflow Control Device Well Segments (WSEGICD)
+    # wsegsicd[Headers.WELL] = [well_name] * df_merge.shape[0]
+    # wsegsicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+    # wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+    # wsegsicd[Headers.ALPHA] = df_merge[Headers.STRENGTH].to_numpy()
+    # wsegsicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
+    # wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
+    # wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
+    # wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WATER_CUT].to_numpy()
+    # wsegsicd[Headers.EMPTY] = "/"
 
     # TBD
 
@@ -122,10 +146,7 @@ class Headers:
     DEVICE_NUMBER = "DEVICENUMBER"
     WATER_CUT = "WCT"
     OPEN = "OPEN"
-    RHO = "RHO"
-    VISCOSITY = "VIS"
     DEVICE = "DEVICE"
-    SF = "SF"  # Saturation functions?
 
     MARKER = "MARKER"
     SCALING_FACTOR = "SCALINGFACTOR"
@@ -133,10 +154,7 @@ class Headers:
     ADDITIONAL_SEGMENT = "AdditionalSegment"
     ORIGINAL_SEGMENT = "OriginalSegment"
     SAT = "SAT"  # Saturation?
-    DEF = "DEF"
     DIRECTION = "DIR"
-    SEG = "SEG"  # Duplicate, ish
-    SEG2 = "SEG2"
     OUT = "OUT"
     LATERAL = "LATERAL"
     NUMBER_OF_DEVICES = "NDEVICES"
@@ -180,15 +198,6 @@ class Headers:
     GHF_LCF_DAR = "GHF_LCF_DAR"
     GHF_HCF_DAR = "GHF_HCF_DAR"
 
-    ALPHA = "ALPHA"
-    X = "X"
-    Y = "Y"
-    A = "A"
-    B = "B"
-    C = "C"
-    D = "D"
-    E = "E"
-    F = "F"
     RHOCAL_AICD = "RHOCAL_AICD"
     VISCAL_AICD = "VISCAL_AICD"
 
@@ -207,8 +216,6 @@ class Headers:
     # SEGMENT_MEASURED_DEPTH = "SEGMENTMD"
     # SEGMENT_TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
     # TUBING_SEGMENT2 = "TUBINGSEGMENT2"
-
-    EMPTY = ""
 
 
 @dataclass(frozen=True)
