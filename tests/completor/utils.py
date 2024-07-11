@@ -169,10 +169,10 @@ class ReadSchedule:
             }
         )
 
-        # If CONNECTION_FACTOR and FORAMTION_PERMEABILITY_THICKNESS are defaulted by users, type conversion fails and
+        # If CONNECTION_FACTOR and FORMATION_PERMEABILITY_THICKNESS are defaulted by users, type conversion fails and
         # we deliberately ignore it:
         self.compdat = self.compdat.astype(
-            {Headers.CONNECTION_FACTOR: np.float64, Headers.FORAMTION_PERMEABILITY_THICKNESS: np.float64},
+            {Headers.CONNECTION_FACTOR: np.float64, Headers.FORMATION_PERMEABILITY_THICKNESS: np.float64},
             errors="ignore",
         )
 

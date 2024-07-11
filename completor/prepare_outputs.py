@@ -105,7 +105,7 @@ def dataframe_tostring(
                 Headers.SF: "{:.10g}".format,
                 Headers.ROUGHNESS: "{:.10g}".format,
                 Headers.CONNECTION_FACTOR: "{:.10g}".format,
-                Headers.FORAMTION_PERMEABILITY_THICKNESS: "{:.10g}".format,
+                Headers.FORMATION_PERMEABILITY_THICKNESS: "{:.10g}".format,
                 Headers.MD: "{:.3f}".format,
                 Headers.TVD: "{:.3f}".format,
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
@@ -226,7 +226,7 @@ def prepare_tubing_layer(
     rnm = {
         Headers.TUBING_MEASURED_DEPTH: Headers.MD,
         Headers.TUBING_TRUE_VERTICAL_DEPTH: Headers.TVD,
-        Headers.TUBING_INNER_DIAMETER: Headers.DIAMETER,
+        Headers.TUBING_INNER_DIAMETER: Headers.WELL_BORE_DIAMETER,
         Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
@@ -301,7 +301,7 @@ def fix_tubing_inner_diam_roughness(
             completion_table_start = completion_table_well[Headers.START_MEASURED_DEPTH].iloc[idx_completion_table_well]
             completion_table_end = completion_table_well[Headers.END_MEASURED_DEPTH].iloc[idx_completion_table_well]
             if (completion_table_end >= overburden_md >= completion_table_start) and not overburden_found_in_completion:
-                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.DIAMETER)] = (
+                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.WELL_BORE_DIAMETER)] = (
                     completion_table_well[Headers.INNER_DIAMETER].iloc[idx_completion_table_well]
                 )
                 overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.ROUGHNESS)] = (
@@ -422,7 +422,7 @@ def prepare_device_layer(
     )
     df_device[Headers.MD] = df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy() + device_length
     df_device[Headers.TVD] = df_well[Headers.TUB_TVD].to_numpy()
-    df_device[Headers.DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
+    df_device[Headers.WELL_BORE_DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
     df_device[Headers.ROUGHNESS] = df_well[Headers.ROUGHNESS].to_numpy()
     device_comment = np.where(
         df_well[Headers.DEVICE_TYPE] == "PERF",
@@ -529,7 +529,7 @@ def prepare_annulus_layer(
                 df_branch_downstream[Headers.TUBING_MEASURED_DEPTH].to_numpy() + annulus_length
             )
             df_annulus_downstream[Headers.TVD] = df_branch_downstream[Headers.TUB_TVD].to_numpy()
-            df_annulus_downstream[Headers.DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
+            df_annulus_downstream[Headers.WELL_BORE_DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
             df_annulus_downstream[Headers.ROUGHNESS] = df_branch_downstream[Headers.ROUGHNESS].to_numpy()
 
             # no WSEGLINK in the downstream part because
@@ -611,7 +611,7 @@ def calculate_upstream(
     df_annulus_upstream[Headers.OUT] = out_segment
     df_annulus_upstream[Headers.MD] = md_
     df_annulus_upstream[Headers.TVD] = df_branch[Headers.TUB_TVD].to_numpy()
-    df_annulus_upstream[Headers.DIAMETER] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
+    df_annulus_upstream[Headers.WELL_BORE_DIAMETER] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
     df_annulus_upstream[Headers.ROUGHNESS] = df_branch[Headers.ROUGHNESS].to_numpy()
     device_segment = get_outlet_segment(
         df_active[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
@@ -929,7 +929,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
             if start_completion <= md_reservoir <= end_completion:
                 completion_diameters.append(outer_inner_diameter_completion)
                 break
-    df_reservoir[Headers.DIAMETER] = completion_diameters
+    df_reservoir[Headers.WELL_BORE_DIAMETER] = completion_diameters
     return df_reservoir
 
 
@@ -964,9 +964,11 @@ def prepare_compdat(
     compdat[Headers.FLAG] = df_reservoir[Headers.STATUS].to_numpy()
     compdat[Headers.SAT] = df_reservoir[Headers.SATURATION_FUNCTION_REGION_NUMBERS].to_numpy()
     compdat[Headers.CONNECTION_FACTOR] = df_reservoir[Headers.CONNECTION_FACTOR].to_numpy()
-    compdat[Headers.DIAMETER] = fix_well_id(df_reservoir, df_completion_table)[Headers.DIAMETER].to_numpy()
-    compdat[Headers.FORAMTION_PERMEABILITY_THICKNESS] = df_reservoir[
-        Headers.FORAMTION_PERMEABILITY_THICKNESS
+    compdat[Headers.WELL_BORE_DIAMETER] = fix_well_id(df_reservoir, df_completion_table)[
+        Headers.WELL_BORE_DIAMETER
+    ].to_numpy()
+    compdat[Headers.FORMATION_PERMEABILITY_THICKNESS] = df_reservoir[
+        Headers.FORMATION_PERMEABILITY_THICKNESS
     ].to_numpy()
     compdat[Headers.SKIN] = df_reservoir[Headers.SKIN].to_numpy()
     compdat[Headers.DFACT] = df_reservoir[Headers.DFACT].to_numpy()
@@ -1162,7 +1164,9 @@ def prepare_wsegicv(
         df_temp = df_temp[[Headers.SEG, Headers.CV, Headers.AC, Headers.AC_MAX]]
         df_temp[Headers.WELL] = [well_name] * df_merge_tubing.shape[0]
         df_temp[Headers.DEFAULTS] = "5*"
-        df_temp[Headers.AC_MAX] = df_temp[Headers.AC_MAX].fillna(math.pi * 0.5 * df_tubing[Headers.DIAMETER] ** 2)
+        df_temp[Headers.AC_MAX] = df_temp[Headers.AC_MAX].fillna(
+            math.pi * 0.5 * df_tubing[Headers.WELL_BORE_DIAMETER] ** 2
+        )
         df_temp = df_temp.reindex(
             columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX]
         )

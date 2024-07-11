@@ -801,8 +801,8 @@ class WellSchedule:
             Headers.STATUS,
             Headers.SATURATION_FUNCTION_REGION_NUMBERS,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.FORAMTION_PERMEABILITY_THICKNESS,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
             Headers.COMPDAT_DIRECTION,
@@ -817,14 +817,16 @@ class WellSchedule:
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
         df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
-        df[[Headers.DIAMETER, Headers.SKIN]] = df[[Headers.DIAMETER, Headers.SKIN]].astype(np.float64)
-        # check if CONNECTION_FACTOR, FORAMTION_PERMEABILITY_THICKNESS, and RO are defaulted by the users
+        df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]] = df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]].astype(
+            np.float64
+        )
+        # check if CONNECTION_FACTOR, FORMATION_PERMEABILITY_THICKNESS, and RO are defaulted by the users
         try:
             df[[Headers.CONNECTION_FACTOR]] = df[[Headers.CONNECTION_FACTOR]].astype(np.float64)
         except ValueError:
             pass
         try:
-            df[[Headers.FORAMTION_PERMEABILITY_THICKNESS]] = df[[Headers.FORAMTION_PERMEABILITY_THICKNESS]].astype(
+            df[[Headers.FORMATION_PERMEABILITY_THICKNESS]] = df[[Headers.FORMATION_PERMEABILITY_THICKNESS]].astype(
                 np.float64
             )
         except ValueError:

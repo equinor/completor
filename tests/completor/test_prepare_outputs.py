@@ -163,12 +163,12 @@ def test_prepare_tubing_layer():
             ["A1", 3471.062485, 2251.620480, 0.1, 0.1, 1],
             ["A1", 3516.044325, 2255.627560, 0.1, 0.1, 1],
         ],
-        columns=[Headers.WELL, Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS, Headers.LATERAL],
+        columns=[Headers.WELL, Headers.MD, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS, Headers.LATERAL],
     )
 
     pd.testing.assert_frame_equal(
-        df_test[[Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS]],
-        df_true[[Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS]],
+        df_test[[Headers.MD, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
+        df_true[[Headers.MD, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
     )
 
 
@@ -192,7 +192,7 @@ def test_prepare_compsegs():
             Headers.COMPSEGS_DIRECTION,
             Headers.K2,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.MD,
             Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
@@ -214,7 +214,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -277,7 +277,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -336,7 +336,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -352,7 +352,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
             Headers.EMPTY,
         ],
@@ -412,7 +412,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -428,7 +428,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
             Headers.EMPTY,
         ],
@@ -488,7 +488,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -504,7 +504,7 @@ def test_prepare_compsegs():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
             Headers.EMPTY,
         ],
@@ -777,7 +777,7 @@ def test_prepare_wsegvalv():
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -833,8 +833,8 @@ def test_prepare_compdat(tmpdir):
             Headers.STATUS,
             Headers.SATURATION_FUNCTION_REGION_NUMBERS,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.FORAMTION_PERMEABILITY_THICKNESS,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
             Headers.COMPDAT_DIRECTION,
@@ -874,8 +874,8 @@ def test_prepare_compdat(tmpdir):
             Headers.FLAG,
             Headers.SAT,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.FORAMTION_PERMEABILITY_THICKNESS,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
             Headers.DFACT,
             Headers.DIRECTION,
@@ -927,7 +927,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -944,7 +944,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -1006,7 +1006,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.COMPSEGS_DIRECTION,
             Headers.K2,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.MD,
             Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
@@ -1029,7 +1029,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -1046,7 +1046,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.OUT,
             Headers.MD,
             Headers.TVD,
-            Headers.DIAMETER,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )

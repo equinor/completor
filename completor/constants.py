@@ -80,6 +80,38 @@ class Headers:
     WELL_MODEL_TYPE = "WELL_MODEL_TYPE"
     POLYMER_MIXING_TABLE_NUMBER = "POLYMER_MIXING_TABLE_NUMBER"
 
+    # Completion Data (COMPDAT)
+    # WELL NAME
+    # I = "I"  # noqa: E741
+    # J = "J"
+    # K = "K"
+    K2 = "K2"
+    # OPEN/SHUT STATUS
+    STATUS = "STATUS"
+    # SATURATION TABLE NUMBER
+    SATURATION_FUNCTION_REGION_NUMBERS = "SATNUM"
+    # TRANSMISSIBILITY FACTOR
+    CONNECTION_FACTOR = "CF"  # Transmissibility factor for the connection. If defaulted or set to zero,
+    # the connection transmissibility factor is calculated using the remaining items of data in this record. See "The
+    # connection transmissibility factor" in the ECLIPSE Technical Description for an account of the methods used in
+    # Cartesian and radial geometries. The well bore diameter must be set in item 9.
+    # WELL BORE WELL_BORE_DIAMETER
+    WELL_BORE_DIAMETER = "DIAM"
+    # EFFECTIVE Kh (permeability x thickness)
+    # SKIN Factor
+    # D-Factor non-darcy flow of free gas
+    # DIRECTION
+    # PRESSURE EQUIVALENT RADIUS
+    FORMATION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
+    # thickness, h, in a producing well, referred to as kh.
+    SKIN = "SKIN"  # A dimensionless factor calculated to determine the production efficiency of a well by comparing
+    # actual conditions with theoretical or ideal conditions. A positive skin value indicates some damage or
+    # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
+    # typically resulting from stimulation.
+    DFACT = "DFACT"
+    COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
+    RO = "RO"
+
     # TBD
 
     ANNULUS = "ANNULUS"
@@ -110,27 +142,6 @@ class Headers:
     OUT = "OUT"
     LATERAL = "LATERAL"
     NUMBER_OF_DEVICES = "NDEVICES"
-    # I = "I"  # noqa: E741
-    # J = "J"
-    # K = "K"
-    K2 = "K2"
-    STATUS = "STATUS"
-    SATURATION_FUNCTION_REGION_NUMBERS = "SATNUM"
-    CONNECTION_FACTOR = "CF"  # Transmissibility factor for the connection. If defaulted or set to zero,
-    # the connection transmissibility factor is calculated using the remaining items of data in this record. See "The
-    # connection transmissibility factor" in the ECLIPSE Technical Description for an account of the methods used in
-    # Cartesian and radial geometries. The well bore diameter must be set in item 9.
-
-    DIAMETER = "DIAM"
-    FORAMTION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
-    # thickness, h, in a producing well, referred to as kh.
-    SKIN = "SKIN"  # A dimensionless factor calculated to determine the production efficiency of a well by comparing
-    # actual conditions with theoretical or ideal conditions. A positive skin value indicates some damage or
-    # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
-    # typically resulting from stimulation.
-    DFACT = "DFACT"
-    COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
-    RO = "RO"
 
     TUB_TVD = "TUB_TVD"  # Same as TUBINGTVD
     TVD = "TVD"
