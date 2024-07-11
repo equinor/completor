@@ -758,7 +758,7 @@ def prepare_compsegs(
         compseg[Headers.BRANCH] = df_compseg_device[Headers.BRANCH].to_numpy()
         compseg[Headers.START_MEASURED_DEPTH] = df_compseg_device[Headers.START_MEASURED_DEPTH].to_numpy()
         compseg[Headers.END_MEASURED_DEPTH] = df_compseg_device[Headers.END_MEASURED_DEPTH].to_numpy()
-        compseg[Headers.DIRECTION] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
+        compseg[Headers.DIRECTION] = df_compseg_device[Headers.PENETRATION_DIRECTION].to_numpy()
         compseg[Headers.DEF] = "3*"
         compseg[Headers.SEG] = df_compseg_device[Headers.SEG].to_numpy()
     else:
@@ -806,7 +806,7 @@ def prepare_compsegs(
             BRANCH=_choose(Headers.BRANCH),
             STARTMD=_choose(Headers.START_MEASURED_DEPTH),
             ENDMD=_choose(Headers.END_MEASURED_DEPTH),
-            DIR=_choose(Headers.COMPSEGS_DIRECTION),
+            DIR=_choose(Headers.PENETRATION_DIRECTION),
             DEF="3*",
             SEG=_choose(Headers.SEG),
         )

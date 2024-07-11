@@ -487,7 +487,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.COMPSEGS_DIRECTION,
+            Headers.PENETRATION_DIRECTION,
             Headers.ENDGRID,
             Headers.PERFORATION_DEPTH,
             Headers.THERMAL_CONTACT_LENGTH,
