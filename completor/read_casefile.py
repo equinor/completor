@@ -399,7 +399,7 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.ALPHA,
+                Headers.STRENGTH,
                 Headers.X,
                 Headers.Y,
                 Headers.A,

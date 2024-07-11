@@ -101,7 +101,7 @@ def dataframe_tostring(
     if format_column:
         if formatters is None:
             formatters = {
-                Headers.ALPHA: "{:.10g}".format,
+                Headers.STRENGTH: "{:.10g}".format,
                 Headers.SF: "{:.10g}".format,
                 Headers.ROUGHNESS: "{:.10g}".format,
                 Headers.CONNECTION_FACTOR: "{:.10g}".format,
@@ -814,7 +814,7 @@ def prepare_compsegs(
             ENDMD=_choose(Headers.END_MEASURED_DEPTH),
             DIR=_choose(Headers.COMPSEGS_DIRECTION),
             DEF="3*",
-            SEG=_choose(Headers.START_SEGMENT_NUMBER),
+            START_SEGMENT_NUMBER=_choose(Headers.START_SEGMENT_NUMBER),
         )
     compseg[Headers.EMPTY] = "/"
     return compseg
@@ -1016,7 +1016,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicd[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegaicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
-        wsegaicd[Headers.ALPHA] = df_merge[Headers.ALPHA].to_numpy()
+        wsegaicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
         wsegaicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
         wsegaicd[Headers.RHO] = df_merge[Headers.RHOCAL_AICD].to_numpy()
         wsegaicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_AICD].to_numpy()
@@ -1063,7 +1063,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegsicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
-        wsegsicd[Headers.ALPHA] = df_merge[Headers.STRENGTH].to_numpy()
+        wsegsicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
         wsegsicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
         wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
         wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
@@ -1486,7 +1486,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
         Headers.WELL,
         Headers.START_SEGMENT_NUMBER,
         Headers.END_SEGMENT_NUMBER,
-        Headers.ALPHA,
+        Headers.STRENGTH,
         Headers.SF,
         Headers.RHO,
         Headers.VISCOSITY,

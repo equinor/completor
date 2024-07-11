@@ -94,7 +94,7 @@ def test_read_case_wsegaicd():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.ALPHA,
+            Headers.STRENGTH,
             Headers.X,
             Headers.Y,
             Headers.A,

@@ -107,7 +107,7 @@ class Headers:
     # Well name
     START_SEGMENT_NUMBER = "START_SEGMENT_NUMBER"  # Duplicate, ish
     END_SEGMENT_NUMBER = "END_SEGMENT_NUMBER"
-    ALPHA = "ALPHA"
+    STRENGTH = "STRENGTH"
     SF = "SF"  # Saturation functions?
     RHO = "RHO"
     VISCOSITY = "VIS"
@@ -127,7 +127,7 @@ class Headers:
     # wsegsicd[Headers.WELL] = [well_name] * df_merge.shape[0]
     # wsegsicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
     # wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
-    # wsegsicd[Headers.ALPHA] = df_merge[Headers.STRENGTH].to_numpy()
+    # wsegsicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
     # wsegsicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
     # wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
     # wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
@@ -164,7 +164,7 @@ class Headers:
     SEGMENT_DESC = "SEGMENT_DESC"
     VISCAL_ICD = "VISCAL_ICD"
     RHOCAL_ICD = "RHOCAL_ICD"
-    STRENGTH = "STRENGTH"
+    # STRENGTH = "STRENGTH"
 
     WCT_AICV = "WCT_AICV"
     GHF_AICV = "GHF_AICV"
