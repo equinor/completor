@@ -103,15 +103,20 @@ class Headers:
     COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
     RO = "RO"  # Pressure equivalent radius, R_o.
 
-    # Autonomous Inflow Control Device Well Segments (WSEGAICD)
+    # Inflow Control Device Well Segments (WSEGSICD) and Autonomous (WSEGAICD)
     # Well name
+    DEVICE_NUMBER = "DEVICENUMBER"
     START_SEGMENT_NUMBER = "START_SEGMENT_NUMBER"  # Duplicate, ish
     END_SEGMENT_NUMBER = "END_SEGMENT_NUMBER"
     STRENGTH = "STRENGTH"
     SCALE_FACTOR = "SCALE_FACTOR"
     CALIBRATION_FLUID_DENSITY = "CALIBRATION_FLUID_DENSITY"
-    CALIBRATION_FLUID_VISCOSITY = "VIS"
-    DEF = "DEF"
+    CALIBRATION_FLUID_VISCOSITY = "CALIBRATION_FLUID_VISCOSITY"
+    DEF = "DEF"  # The critical value of the local water in liquid fraction
+    # used to select between a water-in-oil or oil-in-water equation for the emulsion viscosity;
+    # this is described in Emulsion viscosity.
+
+    # This stops making sense from here on out?
     X = "X"
     Y = "Y"
     # FLAG
@@ -123,17 +128,6 @@ class Headers:
     F = "F"
     EMPTY = ""
 
-    # Inflow Control Device Well Segments (WSEGICD)
-    # wsegsicd[Headers.WELL] = [well_name] * df_merge.shape[0]
-    # wsegsicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
-    # wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
-    # wsegsicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
-    # wsegsicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALING_FACTOR].to_numpy()
-    # wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
-    # wsegsicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
-    # wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WATER_CUT].to_numpy()
-    # wsegsicd[Headers.EMPTY] = "/"
-
     # TBD
 
     ANNULUS = "ANNULUS"
@@ -143,7 +137,6 @@ class Headers:
     OUTER_DIAMETER = "OUTER_DIAMETER"
     ROUGHNESS = "ROUGHNESS"
     DEVICE_TYPE = "DEVICETYPE"
-    DEVICE_NUMBER = "DEVICENUMBER"
     WATER_CUT = "WCT"
     OPEN = "OPEN"
     DEVICE = "DEVICE"
@@ -162,8 +155,6 @@ class Headers:
     TUB_TVD = "TUB_TVD"  # Same as TUBINGTVD
     TVD = "TVD"
     SEGMENT_DESC = "SEGMENT_DESC"
-    VISCAL_ICD = "VISCAL_ICD"
-    RHOCAL_ICD = "RHOCAL_ICD"
     # STRENGTH = "STRENGTH"
 
     WCT_AICV = "WCT_AICV"

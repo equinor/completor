@@ -123,8 +123,8 @@ def test_read_case_wsegsicd():
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
             Headers.STRENGTH,
-            Headers.RHOCAL_ICD,
-            Headers.VISCAL_ICD,
+            Headers.CALIBRATION_FLUID_DENSITY,
+            Headers.CALIBRATION_FLUID_VISCOSITY,
             Headers.WATER_CUT,
         ],
     )
@@ -346,8 +346,8 @@ WSEGAICD
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
             Headers.STRENGTH,
-            Headers.RHOCAL_ICD,
-            Headers.VISCAL_ICD,
+            Headers.CALIBRATION_FLUID_DENSITY,
+            Headers.CALIBRATION_FLUID_VISCOSITY,
             Headers.WATER_CUT,
         ],
     )

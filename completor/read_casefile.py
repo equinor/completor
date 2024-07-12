@@ -369,8 +369,8 @@ class ReadCasefile:
             header = [
                 Headers.DEVICE_NUMBER,
                 Headers.STRENGTH,
-                Headers.RHOCAL_ICD,
-                Headers.VISCAL_ICD,
+                Headers.CALIBRATION_FLUID_DENSITY,
+                Headers.CALIBRATION_FLUID_VISCOSITY,
                 Headers.WATER_CUT,
             ]
             self.wsegsicd_table = val.set_format_wsegsicd(

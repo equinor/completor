@@ -1065,8 +1065,8 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegsicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
         wsegsicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALING_FACTOR].to_numpy()
-        wsegsicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.RHOCAL_ICD].to_numpy()
-        wsegsicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
+        wsegsicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.CALIBRATION_FLUID_DENSITY].to_numpy()
+        wsegsicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.CALIBRATION_FLUID_VISCOSITY].to_numpy()
         wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WATER_CUT].to_numpy()
         wsegsicd[Headers.EMPTY] = "/"
     return wsegsicd
