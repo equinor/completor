@@ -105,11 +105,11 @@ WSEGAICD
 ------------------------------------------------------------------------------------------------
 -- Well : A1 : Lateral : 1
 ------------------------------------------------------------------------------------------------
--- WELL  START_SEGMENT_NUMBER  END_SEGMENT_NUMBER   STRENGTH  SF     RHO  VIS DEF   X   Y FLAG   A   B   C   D   E   F
+-- WELL  START_SEGMENT_NUMBER  END_SEGMENT_NUMBER  STRENGTH  SCALE_FACTOR  CALIBRATION_FLUID_DENSITY  VIS DEF  X  Y  FLAG  A  B  C  D  E  F
 'A1' 6 6 0.00021 -0.5047955578 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
 'A1' 7 7 0.00021 -0.2311559725 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
 /
 
-    """
+    """  # noqa: more human readable at this witdth.
     utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
     utils.assert_results(true_file, _TEST_FILE)

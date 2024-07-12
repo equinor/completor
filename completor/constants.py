@@ -108,9 +108,9 @@ class Headers:
     START_SEGMENT_NUMBER = "START_SEGMENT_NUMBER"  # Duplicate, ish
     END_SEGMENT_NUMBER = "END_SEGMENT_NUMBER"
     STRENGTH = "STRENGTH"
-    SF = "SF"  # Saturation functions?
-    RHO = "RHO"
-    VISCOSITY = "VIS"
+    SCALE_FACTOR = "SCALE_FACTOR"
+    CALIBRATION_FLUID_DENSITY = "CALIBRATION_FLUID_DENSITY"
+    CALIBRATION_FLUID_VISCOSITY = "VIS"
     DEF = "DEF"
     X = "X"
     Y = "Y"
@@ -128,9 +128,9 @@ class Headers:
     # wsegsicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
     # wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
     # wsegsicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
-    # wsegsicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
+    # wsegsicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALING_FACTOR].to_numpy()
     # wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
-    # wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
+    # wsegsicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
     # wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WATER_CUT].to_numpy()
     # wsegsicd[Headers.EMPTY] = "/"
 
