@@ -111,12 +111,12 @@ def dataframe_tostring(
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.CV_DAR: "{:.10g}".format,
-                Headers.CV: "{:.10g}".format,
-                Headers.AC: "{:.3e}".format,
+                Headers.FLOW_COEFFICIENT: "{:.10g}".format,
+                Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
                 Headers.AC_OIL: "{:.3e}".format,
                 Headers.AC_GAS: "{:.3e}".format,
                 Headers.AC_WATER: "{:.3e}".format,
-                Headers.AC_MAX: "{:.3e}".format,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
                 Headers.DEFAULTS: "{:.10s}".format,
                 Headers.WHF_LCF_DAR: "{:.10g}".format,
                 Headers.WHF_HCF_DAR: "{:.10g}".format,
@@ -1101,11 +1101,12 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegvalv[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegvalv[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         # the Cv is already corrected by the scaling factor
-        wsegvalv[Headers.CV] = df_merge[Headers.CV].to_numpy()
-        wsegvalv[Headers.AC] = df_merge[Headers.AC].to_numpy()
-        wsegvalv[Headers.L] = "5*"
-        wsegvalv[Headers.AC_MAX] = df_merge[Headers.AC_MAX].to_numpy()
-        wsegvalv[Headers.AC_MAX] = wsegvalv[Headers.AC_MAX].fillna(df_merge[Headers.AC])
+        wsegvalv[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
+        wsegvalv[Headers.FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegvalv[Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP] = "5*"
+        wsegvalv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA].fillna(
+            df_merge[Headers.FLOW_CROSS_SECTIONAL_AREA]
+        )
         wsegvalv[Headers.EMPTY] = "/"
     return wsegvalv
 
@@ -1146,18 +1147,27 @@ def prepare_wsegicv(
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICV"]
     if not df_merge.empty:
         wsegicv = df_merge.copy()
-        wsegicv = wsegicv[[Headers.START_SEGMENT_NUMBER, Headers.CV, Headers.AC, Headers.AC_MAX]]
+        wsegicv = wsegicv[
+            [
+                Headers.START_SEGMENT_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            ]
+        ]
         wsegicv[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegicv[Headers.DEFAULTS] = "5*"
-        wsegicv[Headers.AC_MAX] = wsegicv[Headers.AC_MAX].fillna(df_merge[Headers.AC])
+        wsegicv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegicv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA].fillna(
+            df_merge[Headers.FLOW_CROSS_SECTIONAL_AREA]
+        )
         wsegicv = wsegicv.reindex(
             columns=[
                 Headers.WELL,
                 Headers.START_SEGMENT_NUMBER,
-                Headers.CV,
-                Headers.AC,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
                 Headers.DEFAULTS,
-                Headers.AC_MAX,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             ]
         )
         wsegicv[Headers.EMPTY] = "/"
@@ -1174,20 +1184,27 @@ def prepare_wsegicv(
             direction="nearest",
         )
         df_temp = df_merge_tubing.copy()
-        df_temp = df_temp[[Headers.START_SEGMENT_NUMBER, Headers.CV, Headers.AC, Headers.AC_MAX]]
+        df_temp = df_temp[
+            [
+                Headers.START_SEGMENT_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            ]
+        ]
         df_temp[Headers.WELL] = [well_name] * df_merge_tubing.shape[0]
         df_temp[Headers.DEFAULTS] = "5*"
-        df_temp[Headers.AC_MAX] = df_temp[Headers.AC_MAX].fillna(
+        df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA].fillna(
             math.pi * 0.5 * df_tubing[Headers.WELL_BORE_DIAMETER] ** 2
         )
         df_temp = df_temp.reindex(
             columns=[
                 Headers.WELL,
                 Headers.START_SEGMENT_NUMBER,
-                Headers.CV,
-                Headers.AC,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
                 Headers.DEFAULTS,
-                Headers.AC_MAX,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             ]
         )
         df_temp[Headers.EMPTY] = "/"
@@ -1233,7 +1250,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         wsegdar[Headers.GHF_LCF_DAR] = df_merge[Headers.GHF_LCF_DAR].to_numpy()
         wsegdar[Headers.GHF_HCF_DAR] = df_merge[Headers.GHF_HCF_DAR].to_numpy()
         wsegdar[Headers.DEFAULTS] = "5*"
-        wsegdar[Headers.AC_MAX] = wsegdar[Headers.AC_OIL].to_numpy()
+        wsegdar[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegdar[Headers.AC_OIL].to_numpy()
         wsegdar[Headers.EMPTY] = "/"
     return wsegdar
 
@@ -1310,17 +1327,38 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         CompletorError: If there are to many wells and/or segments with DAR.
     """
     header = [
-        [Headers.WELL, Headers.START_SEGMENT_NUMBER, Headers.CV_DAR, Headers.AC_GAS, Headers.DEFAULTS, Headers.AC_MAX],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.CV_DAR,
+            Headers.AC_GAS,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
         [
             Headers.WELL,
             Headers.START_SEGMENT_NUMBER,
             Headers.CV_DAR,
             Headers.AC_WATER,
             Headers.DEFAULTS,
-            Headers.AC_MAX,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
-        [Headers.WELL, Headers.START_SEGMENT_NUMBER, Headers.CV_DAR, Headers.AC_OIL, Headers.DEFAULTS, Headers.AC_MAX],
-        [Headers.WELL, Headers.START_SEGMENT_NUMBER, Headers.CV_DAR, Headers.AC_OIL, Headers.DEFAULTS, Headers.AC_MAX],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.CV_DAR,
+            Headers.AC_OIL,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.CV_DAR,
+            Headers.AC_OIL,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     ]
     sign_water = ["<=", ">", "", "<"]
     sign_gas = [">", "<=", "<", ""]

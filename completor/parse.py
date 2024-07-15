@@ -192,7 +192,8 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
 def complete_wsegvalv_record(record: list[str]) -> list[str]:
     """Complete the WSEGVALV record.
 
-    Columns DEFAULT_1 - DEFAULT_4, STATE and AC_MAX might not be provided and need to be filled in with default values.
+    Columns PIPE_DIAMETER, ABSOLUTE_PIPE_ROUGHNESS, PIPE_CROSS_SECTION_AREA, FLAG, and MAX_FLOW_CROSS_SECTIONAL_AREA
+    might not be provided and need to be filled in with default values.
 
     Args:
         record: List of strings.
@@ -200,9 +201,9 @@ def complete_wsegvalv_record(record: list[str]) -> list[str]:
     Returns:
         Completed list of strings.
     """
-    WSEGVALV_COLUMNS = 10
-    AC_INDEX = 3
-    DEFAULT_STATE = "OPEN"
+    wsegvalv_columns = 10
+    ac_index = 3
+    default_state = "OPEN"
 
     if len(record) < 8:
         # add defaults
@@ -210,14 +211,14 @@ def complete_wsegvalv_record(record: list[str]) -> list[str]:
 
     if len(record) < 9:
         # append default state
-        record.append(DEFAULT_STATE)
+        record.append(default_state)
 
-    if len(record) < WSEGVALV_COLUMNS:
+    if len(record) < wsegvalv_columns:
         # append default ac_max
-        record.append(record[AC_INDEX])
+        record.append(record[ac_index])
 
-    if len(record) > WSEGVALV_COLUMNS:
-        record = record[:WSEGVALV_COLUMNS]
+    if len(record) > wsegvalv_columns:
+        record = record[:wsegvalv_columns]
 
     return record
 
@@ -318,7 +319,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.TUBING_TRUE_VERTICAL_DEPTH,
         Headers.TUBING_INNER_DIAMETER,
         Headers.TUBING_ROUGHNESS,
-        Headers.CROSS_SECTIONAL_AREA,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
         Headers.SEGMENT_VOLUME,
         Headers.X_COORDINATE_LAST_SEGMENT,
         Headers.Y_COORDINATE_LAST_SEGMENT,
@@ -376,7 +377,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
         Headers.DR,
         Headers.FLAG,
         Headers.SHUT,
-        Headers.CROSS_SECTIONAL_AREA,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
         Headers.PRESSURE_TABLE,
         Headers.DENSITY_CALCULATION,
         Headers.REGION,
@@ -508,7 +509,18 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
     Returns:
         WSEGVALV table.
     """
-    columns = ["WELL", "SEGMENT", "CD", "AC", "DEFAULT_1", "DEFAULT_2", "DEFAULT_3", "DEFAULT_4", "STATE", "AC_MAX"]
+    columns = [
+        Headers.WELL,
+        Headers.SEGMENT,
+        Headers.FLOW_COEFFICIENT,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
+        Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+        Headers.PIPE_DIAMETER,
+        Headers.ABSOLUTE_PIPE_ROUGHNESS,
+        Headers.PIPE_CROSS_SECTION_AREA,
+        Headers.FLAG,
+        Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+    ]
 
     wsegvalv_collections = [np.asarray(collection) for collection in collections if collection.name == "WSEGVALV"]
     wsegvalv_table = np.vstack(wsegvalv_collections)
@@ -519,16 +531,16 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
     wsegvalv_table = pd.DataFrame(wsegvalv_table, columns=columns)
     wsegvalv_table = wsegvalv_table.astype(
         {
-            "WELL": "string",
-            "SEGMENT": "int",
-            "CD": "float",
-            "AC": "float",
-            "DEFAULT_1": "string",
-            "DEFAULT_2": "string",
-            "DEFAULT_3": "string",
-            "DEFAULT_4": "string",
-            "STATE": "string",
-            "AC_MAX": "float",
+            Headers.WELL: "string",
+            Headers.SEGMENT: "int",
+            Headers.FLOW_COEFFICIENT: "float",
+            Headers.FLOW_CROSS_SECTIONAL_AREA: "float",
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP: "string",
+            Headers.PIPE_DIAMETER: "string",
+            Headers.ABSOLUTE_PIPE_ROUGHNESS: "string",
+            Headers.PIPE_CROSS_SECTION_AREA: "string",
+            Headers.FLAG: "string",
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "float",
         }
     )
     return remove_string_characters(wsegvalv_table)

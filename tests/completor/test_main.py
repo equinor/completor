@@ -76,14 +76,14 @@ WSEGAICV = WSEGAICV_MAIN + WSEGAICV_PILOT
 
 WSEGVALV = """
 WSEGVALV
--- DeviceNumber     Cv      Ac      L
+-- DeviceNumber     Cv      Ac      ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
         1         0.85      0.01  5*
 /
 """
 
 WSEGICV = """
 WSEGICV
--- DEVICE   CV      AC      DEFAULTS  AC_MAX
+-- DEVICE   FLOW_COEFFICIENT      FLOW_CROSS_SECTIONAL_AREA      DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
 1           0.95    3       5*         4
 2           2       4       5*         4
 /

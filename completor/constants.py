@@ -40,7 +40,7 @@ class Headers:
     TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
     TUBING_INNER_DIAMETER = "TUBINGID"
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
-    CROSS_SECTIONAL_AREA = "CROSS"  # Cross-sectional area for fluid flow.
+    FLOW_CROSS_SECTIONAL_AREA = "CROSS"  # Cross-sectional area for fluid flow.
     SEGMENT_VOLUME = "VSEG"
     X_COORDINATE_LAST_SEGMENT = "DEFAULT_6"  # X coordinate of the last nodal point in the range.
     Y_COORDINATE_LAST_SEGMENT = "DEFAULT_7"  # Y coordinate of the last nodal point in the range.
@@ -128,6 +128,24 @@ class Headers:
     F = "F"
     EMPTY = ""
 
+    # Sub critical valve well segment (WSEGVALV)
+    # 1. WELL_NAME
+    # 2. START_SEGMENT_NUMBER
+    FLOW_COEFFICIENT = "FLOW_COEFFICIENT"  # The dimensionless flow coefficient for the valve, Cv.
+    # FLOW_CROSS_SECTIONAL_AREA # Cross-section area for flow in the constriction, Ac.
+    ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP = (
+        "ADDITIONAL_PIPE_LENGTH"  # Additional length of pipe for the friction pressure drop, L.
+    )
+    PIPE_DIAMETER = "PIPE_DIAMETER"  # The pipe diameter, D, for the frictional pressure drop calculation.
+    ABSOLUTE_PIPE_ROUGHNESS = "ABSOLUTE_PIPE_ROUGHNESS"  # The absolute roughness of the pipe wall.
+    PIPE_CROSS_SECTION_AREA = "PIPE_CROSS_SECTION_AREA"  # The pipe cross-section area, Ap.
+    # FLAG # Flag to indicate whether the device is open or shut.
+    MAX_FLOW_CROSS_SECTIONAL_AREA = (
+        "MAX_FLOW_CROSS_SECTIONAL_AREA"  # The maximum cross-sectional area for flow in the constriction, Amax.
+    )
+    # 11. The length of the valve, lVAL (Scale factor).
+    # 12. An integer which determines how the flow scaling factor is calculated.
+
     # TBD
 
     ANNULUS = "ANNULUS"
@@ -155,7 +173,6 @@ class Headers:
     TUB_TVD = "TUB_TVD"  # Same as TUBINGTVD
     TVD = "TVD"
     SEGMENT_DESC = "SEGMENT_DESC"
-    # STRENGTH = "STRENGTH"
 
     WCT_AICV = "WCT_AICV"
     GHF_AICV = "GHF_AICV"
@@ -193,11 +210,6 @@ class Headers:
     VISCAL_AICD = "VISCAL_AICD"
 
     DEFAULTS = "DEFAULTS"
-    AC_MAX = "AC_MAX"
-
-    CV = "CV"
-    AC = "AC"
-    L = "L"
 
     MD = "MD"
 

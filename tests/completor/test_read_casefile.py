@@ -67,7 +67,14 @@ def test_read_case_wsegvalv():
             ["VALVE", 1, 0.85, 0.01, "5*", 0.04],
             ["VALVE", 2, 0.95, 0.02, "5*", 0.04],
         ],
-        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     )
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegvalv_table)
 
@@ -79,7 +86,13 @@ def test_read_case_wsegicv():
             ["ICV", 1, 1.0, 2.0, 2.0],
             ["ICV", 2, 3, 4, 1.0],
         ],
-        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.AC_MAX],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     )
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegicv_table)
 
@@ -382,7 +395,7 @@ WSEGSICD
 
     case_content += """
 WSEGVALV
--- Device no    Cv     Ac           L
+-- Device no    Cv     Ac           ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
           1    1.0    9.62e-6      5*
 /
 

@@ -648,7 +648,7 @@ def test_print_wsegdar(tmpdir):
             Headers.GHF_LCF_DAR,
             Headers.GHF_HCF_DAR,
             Headers.DEFAULTS,
-            Headers.AC_MAX,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
     )
     well_number = 1
@@ -658,7 +658,7 @@ def test_print_wsegdar(tmpdir):
 /
 
 WSEGVALV
---  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 
@@ -670,7 +670,7 @@ SUVTRIG 'WELL' 3 = 0 /
 /
 
 WSEGVALV
---  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_GAS  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_GAS  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 2.590e-06  5* 7.852e-06 /
 /
 
@@ -688,7 +688,7 @@ SUVTRIG 'WELL' 3 = 0 /
 /
 
 WSEGVALV
---  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_WATER  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_WATER  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 1.590e-06  5* 7.852e-06 /
 /
 
@@ -705,7 +705,7 @@ SUVTRIG 'WELL' 3 = 1 /
 /
 
 WSEGVALV
---  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 
@@ -722,7 +722,7 @@ SUVTRIG 'WELL' 3 = 2 /
 /
 
 WSEGVALV
---  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  CV_DAR  AC_OIL  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 UDQ
@@ -753,10 +753,10 @@ def test_prepare_wsegvalv():
             Headers.ROUGHNESS,
             Headers.LATERAL,
             Headers.ANNULUS,
-            Headers.CV,
-            Headers.AC,
-            Headers.L,
-            Headers.AC_MAX,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEVICE_TYPE,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_NUMBER,
@@ -786,10 +786,10 @@ def test_prepare_wsegvalv():
         columns=[
             Headers.WELL,
             Headers.START_SEGMENT_NUMBER,
-            Headers.CV,
-            Headers.AC,
-            Headers.L,
-            Headers.AC_MAX,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             Headers.EMPTY,
         ],
     )
@@ -911,10 +911,10 @@ def test_prepare_wsegicv(tmpdir):
             Headers.ROUGHNESS,
             Headers.LATERAL,
             Headers.ANNULUS,
-            Headers.CV,
-            Headers.AC,
-            Headers.L,
-            Headers.AC_MAX,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEVICE_TYPE,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_NUMBER,
@@ -973,7 +973,14 @@ def test_prepare_wsegicv(tmpdir):
     )
     df_icv = pd.DataFrame(
         [["ICV", 1, 1.2, 4.1, "5*", 5.1], ["ICV", 2, 3.5, 3.2, "5*", 6.1]],
-        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     )
     wsegicv_output = prepare_outputs.prepare_wsegicv(
         well_name, lateral, df_well, df_device, df_tubing, df_icv_tubing, df_icv
@@ -989,10 +996,10 @@ def test_prepare_wsegicv(tmpdir):
         columns=[
             Headers.WELL,
             Headers.START_SEGMENT_NUMBER,
-            Headers.CV,
-            Headers.AC,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEFAULTS,
-            Headers.AC_MAX,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             Headers.EMPTY,
         ],
     )

@@ -141,7 +141,7 @@ B-1 3 5115 99999 0.150 0.216 1.5E-5 GP    0 VALVE 1
 /
 
 WSEGVALV
--- Device no    Cv     Ac           L
+-- Device no    Cv     Ac           ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
 1    0.85    1.00e-5      5*
 2    0.85    2.00e-5      5*
 3    0.85    3.00e-5      5*
@@ -185,7 +185,7 @@ B-1 3 4922  5115 0.150 0.216 1.5E-5 GP 0.67 VALVE 1
 /
 
 WSEGVALV
--- Device no    Cv     Ac   L
+-- Device no    Cv     Ac   ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
 1    0.85    1.00e-5      5*
 2    0.85    2.00e-5      5*
 3    0.85    3.00e-5      5*

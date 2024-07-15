@@ -632,7 +632,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     if device_type == "VALVE":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well[Headers.CV] = -df_well[Headers.CV] / df_well[Headers.SCALING_FACTOR]
+        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALING_FACTOR]
     elif device_type == "DAR":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
@@ -747,7 +747,7 @@ class WellSchedule:
             Headers.DR,
             Headers.FLAG,
             Headers.SHUT,
-            Headers.CROSS_SECTIONAL_AREA,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
             Headers.PRESSURE_TABLE,
             Headers.DENSITY_CALCULATION,
             Headers.REGION,
@@ -891,7 +891,7 @@ class WellSchedule:
             Headers.TUBING_TRUE_VERTICAL_DEPTH,
             Headers.TUBING_INNER_DIAMETER,
             Headers.TUBING_ROUGHNESS,
-            Headers.CROSS_SECTIONAL_AREA,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
             Headers.SEGMENT_VOLUME,
             Headers.X_COORDINATE_LAST_SEGMENT,
             Headers.Y_COORDINATE_LAST_SEGMENT,

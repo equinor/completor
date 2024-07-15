@@ -35,7 +35,7 @@ WSEGSICD
 """
 WSEGVALV = """
 WSEGVALV
--- DeviceNumber Cv      Ac    L
+-- DeviceNumber Cv      Ac    ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
         1     0.1234 1.234e-4 5*
 /
 """

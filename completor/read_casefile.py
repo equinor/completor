@@ -338,12 +338,17 @@ class ReadCasefile:
                 raise CompletorError("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
+            header = [
+                Headers.DEVICE_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            ]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp[Headers.AC_MAX] = np.nan
+                df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = np.nan
             except CaseReaderFormatError:
-                header += [Headers.AC_MAX]
+                header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
 
             self.wsegvalv_table = val.set_format_wsegvalv(df_temp)
@@ -521,12 +526,12 @@ class ReadCasefile:
                 raise CompletorError("WSEGICV keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC]
+            header = [Headers.DEVICE_NUMBER, Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp[Headers.AC_MAX] = np.nan
+                df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = np.nan
             except CaseReaderFormatError:
-                header += [Headers.AC_MAX]
+                header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
             # Fix format
             self.wsegicv_table = val.set_format_wsegicv(df_temp)

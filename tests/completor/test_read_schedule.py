@@ -155,7 +155,7 @@ def test_reading_wsegvalv():
     """Test the functions which read the WSEGVALV keyword."""
     true_wsegvalv = StringIO(
         """
-WELL,SEGMENT,CD,AC,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,STATE,AC_MAX
+WELL,SEGMENT,FLOW_COEFFICIENT,CROSS,ADDITIONAL_PIPE_LENGTH,PIPE_DIAMETER,ABSOLUTE_PIPE_ROUGHNESS,PIPE_CROSS_SECTION_AREA,FLAG,MAX_FLOW_CROSS_SECTIONAL_AREA
 WELL1,0,0.830,1.0000E-03,1*,1*,1*,1*,OPEN,1.0000E-03
 WELL1,1,0.830,1.0000E-02,1*,1*,1*,1*,SHUT,2.0000E-02
 WELL2,5,1,5e-3,1*,1*,1*,1*,OPEN,6e-3
@@ -169,16 +169,16 @@ WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN,6E-03
     df_true = fr.remove_string_characters(df_true)
     df_true = df_true.astype(
         {
-            "WELL": "string",
-            "SEGMENT": "int",
-            "CD": "float",
-            "AC": "float",
-            "DEFAULT_1": "string",
-            "DEFAULT_2": "string",
-            "DEFAULT_3": "string",
-            "DEFAULT_4": "string",
-            "STATE": "string",
-            "AC_MAX": "float",
+            Headers.WELL: "string",
+            Headers.SEGMENT: "int",
+            Headers.FLOW_COEFFICIENT: "float",
+            Headers.FLOW_CROSS_SECTIONAL_AREA: "float",
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP: "string",
+            Headers.PIPE_DIAMETER: "string",
+            Headers.ABSOLUTE_PIPE_ROUGHNESS: "string",
+            Headers.PIPE_CROSS_SECTION_AREA: "string",
+            Headers.FLAG: "string",
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "float",
         }
     )
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.wsegvalv)
