@@ -243,14 +243,14 @@ def test_well_trajectory():
         [
             [2.0, 1.0],
         ],
-        columns=[Headers.SEGMENT_MEASURED_DEPTH, Headers.SEGMENT_TRUE_VERTICAL_DEPTH],
+        columns=[Headers.MEASURED_DEPTH, Headers.TRUE_VERTICAL_DEPTH],
     )
     df_welsegs_content = pd.DataFrame(
         [
             [5.0, 1.0],
             [4.0, 3.0],
         ],
-        columns=[Headers.TUBING_MEASURED_DEPTH, Headers.TUBING_TRUE_VERTICAL_DEPTH],
+        columns=[Headers.TUBING_MEASURED_DEPTH, Headers.TRUE_VERTICAL_DEPTH],
     )
     df_true = pd.DataFrame(
         [
@@ -487,7 +487,7 @@ def test_create_tubing_segments_cells():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -533,7 +533,7 @@ def test_create_tubing_segments_cells_with_input_lumping():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -572,7 +572,7 @@ def test_minimum_segment_length_gt_zero():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -619,7 +619,7 @@ def test_minimum_segment_length_eq_zero():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -661,7 +661,7 @@ def test_minimum_segment_length_default():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
     df_test = completion.create_tubing_segments(
@@ -705,7 +705,7 @@ def test_create_tubing_segments_user():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -744,7 +744,7 @@ def test_create_tubing_segments_fix_15():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -784,7 +784,7 @@ def test_create_tubing_segments_fix_1():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -825,7 +825,7 @@ def test_create_tubing_segment_welsegs():
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
         ],
     )
 
@@ -847,7 +847,7 @@ START_MEASURED_DEPTH;END_MEASURED_DEPTH;NVALVEPERJOINT;INNER_DIAMETER;OUTER_DIAM
 
     csv_tubing = StringIO(
         """
-START_MEASURED_DEPTH;END_MEASURED_DEPTH;TUBING_MEASURED_DEPTH;TUBING_TRUE_VERTICAL_DEPTH;SEGMENT_DESC
+START_MEASURED_DEPTH;END_MEASURED_DEPTH;TUBING_MEASURED_DEPTH;TRUE_VERTICAL_DEPTH;SEGMENT_DESC
 0;26;13;19.5;OriginalSegment
 26;35;30.5;32.75;AdditionalSegment
 35;50;42.5;46.25;OriginalSegment
@@ -855,7 +855,7 @@ START_MEASURED_DEPTH;END_MEASURED_DEPTH;TUBING_MEASURED_DEPTH;TUBING_TRUE_VERTIC
     )
     csv_true = StringIO(
         """
-TUBING_MEASURED_DEPTH;TUBING_TRUE_VERTICAL_DEPTH;LENGTH;SEGMENT_DESC;NDEVICES;DEVICENUMBER;DEVICETYPE;INNER_DIAMETER;OUTER_DIAMETER;ROUGHNESS;ANNULUS_ZONE;SCALE_FACTOR
+TUBING_MEASURED_DEPTH;TRUE_VERTICAL_DEPTH;LENGTH;SEGMENT_DESC;NDEVICES;DEVICENUMBER;DEVICETYPE;INNER_DIAMETER;OUTER_DIAMETER;ROUGHNESS;ANNULUS_ZONE;SCALE_FACTOR
 13;19.5;26;OriginalSegment;3.2;1;AICD;1.2;1.723368794;1.1;1;-0.3125
 42.5;46.25;15;OriginalSegment;5;4;DAR;3;2.645751311;4;3;-0.2
 """

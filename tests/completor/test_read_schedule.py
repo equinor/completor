@@ -108,7 +108,7 @@ def test_reading_welsegs():
     """
     true_welsegs1 = StringIO(
         """
-WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,DEFAULT_5
+WELL,TRUE_VERTICAL_DEPTH,MEASURED_DEPTH,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,DEFAULT_5
 'WELL3',1328,1328,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
 'WELL4',1316,1316,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
 'WELL5',1326.8,1326.8,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
@@ -123,9 +123,7 @@ WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,DEFAULT_1,DEFAULT_
     )
     true_welsegs1 = pd.read_csv(true_welsegs1, sep=",", dtype=object)
     true_welsegs1 = fr.remove_string_characters(true_welsegs1)
-    true_welsegs1 = true_welsegs1.astype(
-        {Headers.SEGMENT_TRUE_VERTICAL_DEPTH: np.float64, Headers.SEGMENT_MEASURED_DEPTH: np.float64}
-    )
+    true_welsegs1 = true_welsegs1.astype({Headers.TRUE_VERTICAL_DEPTH: np.float64, Headers.MEASURED_DEPTH: np.float64})
     true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_well4 = pd.read_csv(true_well4, sep=",", dtype=object)
     true_well4 = fr.remove_string_characters(true_well4)
@@ -136,7 +134,7 @@ WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,DEFAULT_1,DEFAULT_
             Headers.TUBING_BRANCH: np.int64,
             Headers.TUBING_OUTLET: np.int64,
             Headers.TUBING_MEASURED_DEPTH: np.float64,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH: np.float64,
+            Headers.TRUE_VERTICAL_DEPTH: np.float64,
             Headers.TUBING_ROUGHNESS: np.float64,
         }
     )
@@ -226,7 +224,7 @@ def test_fix_welsegs():
     """
     df_header = pd.DataFrame(
         [[1000.0, 1500.0, "INC"]],
-        columns=[Headers.SEGMENT_TRUE_VERTICAL_DEPTH, Headers.SEGMENT_MEASURED_DEPTH, Headers.INFO_TYPE],
+        columns=[Headers.TRUE_VERTICAL_DEPTH, Headers.MEASURED_DEPTH, Headers.INFO_TYPE],
     )
     df_content = pd.DataFrame(
         [
@@ -238,14 +236,14 @@ def test_fix_welsegs():
         columns=[
             Headers.TUBING_SEGMENT,
             Headers.TUBING_OUTLET,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
         ],
     )
 
     df_header_true = pd.DataFrame(
         [[1000.0, 1500.0, "ABS"]],
-        columns=[Headers.SEGMENT_TRUE_VERTICAL_DEPTH, Headers.SEGMENT_MEASURED_DEPTH, Headers.INFO_TYPE],
+        columns=[Headers.TRUE_VERTICAL_DEPTH, Headers.MEASURED_DEPTH, Headers.INFO_TYPE],
     )
     df_content_true = pd.DataFrame(
         [
@@ -257,7 +255,7 @@ def test_fix_welsegs():
         columns=[
             Headers.TUBING_SEGMENT,
             Headers.TUBING_OUTLET,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
         ],
     )

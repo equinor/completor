@@ -11,8 +11,8 @@ class Headers:
 
     # Well Segments Record 1 (WELSEGS)
     WELL = "WELL"
-    SEGMENT_TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
-    SEGMENT_MEASURED_DEPTH = "SEGMENTMD"
+    TRUE_VERTICAL_DEPTH = "TRUE_VERTICAL_DEPTH"
+    # MEASURED_DEPTH = "SEGMENTMD"
     WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
     # This quantity is used to calculate wellbore storage effects in the top segment.
     INFO_TYPE = "INFOTYPE"  # Either 'INC' for incremental values (not supported in completor) or 'ABS' absolute values.
@@ -37,7 +37,7 @@ class Headers:
     TUBING_BRANCH = "TUBINGBRANCH"  # Branch number.
     TUBING_OUTLET = "TUBINGOUTLET"
     TUBING_MEASURED_DEPTH = "TUBING_MEASURED_DEPTH"
-    TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
+    # TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
     TUBING_INNER_DIAMETER = "TUBINGID"
     TUBING_ROUGHNESS = "TUBINGROUGHNESS"
     FLOW_CROSS_SECTIONAL_AREA = "CROSS"  # Cross-sectional area for fluid flow.
@@ -179,7 +179,6 @@ class Headers:
     LATERAL = "LATERAL"
     NUMBER_OF_DEVICES = "NDEVICES"
 
-    TUBING_TRUE_VERTICAL_DEPTH = "TUBING_TRUE_VERTICAL_DEPTH"  # Same as TUBINGTVD
     TRUE_VERTICAL_DEPTH = "TRUE_VERTICAL_DEPTH"
     SEGMENT_DESC = "SEGMENT_DESC"
 
@@ -216,8 +215,8 @@ class Headers:
     # Completion
 
     # Well segments
-    # SEGMENT_MEASURED_DEPTH = "SEGMENTMD"
-    # SEGMENT_TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
+    # MEASURED_DEPTH = "SEGMENTMD"
+    # TRUE_VERTICAL_DEPTH = "SEGMENTTVD"
     # TUBING_SEGMENT2 = "TUBINGSEGMENT2"
 
 

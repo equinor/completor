@@ -202,13 +202,13 @@ class ReadSchedule:
                 Headers.TUBING_BRANCH: np.int64,
                 Headers.TUBING_OUTLET: np.int64,
                 Headers.TUBING_MEASURED_DEPTH: np.float64,
-                Headers.TUBING_TRUE_VERTICAL_DEPTH: np.float64,
+                Headers.TRUE_VERTICAL_DEPTH: np.float64,
                 Headers.TUBING_ROUGHNESS: np.float64,
             }
         )
 
         self._welsegs_header = welsegs_header.astype(
-            {Headers.SEGMENT_TRUE_VERTICAL_DEPTH: np.float64, Headers.SEGMENT_MEASURED_DEPTH: np.float64}
+            {Headers.TRUE_VERTICAL_DEPTH: np.float64, Headers.MEASURED_DEPTH: np.float64}
         )
         return self._welsegs_header, self._welsegs_content  # type: ignore
 

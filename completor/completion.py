@@ -86,10 +86,10 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
 
     """
     measured_depth = df_well_segments_content[Headers.TUBING_MEASURED_DEPTH].to_numpy()
-    measured_depth = np.insert(measured_depth, 0, df_well_segments_header[Headers.SEGMENT_MEASURED_DEPTH].iloc[0])
-    true_vertical_depth = df_well_segments_content[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy()
+    measured_depth = np.insert(measured_depth, 0, df_well_segments_header[Headers.MEASURED_DEPTH].iloc[0])
+    true_vertical_depth = df_well_segments_content[Headers.TRUE_VERTICAL_DEPTH].to_numpy()
     true_vertical_depth = np.insert(
-        true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENT_TRUE_VERTICAL_DEPTH].iloc[0]
+        true_vertical_depth, 0, df_well_segments_header[Headers.TRUE_VERTICAL_DEPTH].iloc[0]
     )
     df_measured_true_vertical_depth = pd.DataFrame(
         {Headers.MEASURED_DEPTH: measured_depth, Headers.TRUE_VERTICAL_DEPTH: true_vertical_depth}
@@ -357,7 +357,7 @@ def create_tubing_segments(
             Headers.START_MEASURED_DEPTH: start_measured_depth,
             Headers.END_MEASURED_DEPTH: end_measured_depth,
             Headers.TUBING_MEASURED_DEPTH: measured_depth_,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH: true_vertical_depth,
+            Headers.TRUE_VERTICAL_DEPTH: true_vertical_depth,
         }
     )
 
@@ -547,7 +547,7 @@ def complete_the_well(
     df_well = pd.DataFrame(
         {
             Headers.TUBING_MEASURED_DEPTH: df_tubing_segments[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
-            Headers.TUBING_TRUE_VERTICAL_DEPTH: df_tubing_segments[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy(),
+            Headers.TRUE_VERTICAL_DEPTH: df_tubing_segments[Headers.TRUE_VERTICAL_DEPTH].to_numpy(),
             Headers.LENGTH: end - start,
             Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
             Headers.NUMBER_OF_DEVICES: information.number_of_devices,
@@ -870,8 +870,8 @@ class WellSchedule:
         # make df for header record
         columns_header = [
             Headers.WELL,
-            Headers.SEGMENT_TRUE_VERTICAL_DEPTH,
-            Headers.SEGMENT_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.MEASURED_DEPTH,
             Headers.WELLBORE_VOLUME,
             Headers.INFO_TYPE,
             Headers.PRESSURE_DROP_COMPLETION,
@@ -894,7 +894,7 @@ class WellSchedule:
             Headers.TUBING_BRANCH,
             Headers.TUBING_OUTLET,
             Headers.TUBING_MEASURED_DEPTH,
-            Headers.TUBING_TRUE_VERTICAL_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
             Headers.TUBING_INNER_DIAMETER,
             Headers.TUBING_ROUGHNESS,
             Headers.FLOW_CROSS_SECTIONAL_AREA,

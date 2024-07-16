@@ -297,8 +297,8 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
     """
     header_columns = [
         Headers.WELL,
-        Headers.SEGMENT_TRUE_VERTICAL_DEPTH,
-        Headers.SEGMENT_MEASURED_DEPTH,
+        Headers.TRUE_VERTICAL_DEPTH,
+        Headers.MEASURED_DEPTH,
         Headers.WELLBORE_VOLUME,
         Headers.INFO_TYPE,
         Headers.PRESSURE_DROP_COMPLETION,
@@ -316,7 +316,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.TUBING_BRANCH,
         Headers.TUBING_OUTLET,
         Headers.TUBING_MEASURED_DEPTH,
-        Headers.TUBING_TRUE_VERTICAL_DEPTH,
+        Headers.TRUE_VERTICAL_DEPTH,
         Headers.TUBING_INNER_DIAMETER,
         Headers.TUBING_ROUGHNESS,
         Headers.FLOW_CROSS_SECTIONAL_AREA,

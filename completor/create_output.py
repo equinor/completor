@@ -243,8 +243,8 @@ class CreateOutput:
         In this case, adjust segments measured depth to be 1 meter shallower.
         """
         start_md = self.df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0]
-        if self.welsegs_header[Headers.SEGMENT_MEASURED_DEPTH].iloc[0] > start_md:
-            self.welsegs_header[Headers.SEGMENT_MEASURED_DEPTH] = start_md - 1.0
+        if self.welsegs_header[Headers.MEASURED_DEPTH].iloc[0] > start_md:
+            self.welsegs_header[Headers.MEASURED_DEPTH] = start_md - 1.0
 
     def check_segments(self, lateral: int) -> None:
         """Check whether there is annular flow in the well.
