@@ -413,8 +413,8 @@ class ReadCasefile:
                 Headers.D,
                 Headers.E,
                 Headers.F,
-                Headers.RHOCAL_AICD,
-                Headers.VISCAL_AICD,
+                Headers.AICD_CALIBRATION_FLUID_DENSITY,
+                Headers.AICD_FLUID_VISCOSITY,
             ]
             self.wsegaicd_table = val.set_format_wsegaicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
@@ -478,10 +478,10 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.WCT_AICV,
-                Headers.GHF_AICV,
-                Headers.RHOCAL_AICV,
-                Headers.VISCAL_AICV,
+                Headers.AICV_WATER_CUT,
+                Headers.AICV_GAS_HOLDUP_FRACTION,
+                Headers.AICV_CALIBRATION_FLUID_DENSITY,
+                Headers.AICV_FLUID_VISCOSITY,
                 Headers.ALPHA_MAIN,
                 Headers.X_MAIN,
                 Headers.Y_MAIN,

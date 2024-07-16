@@ -110,7 +110,6 @@ def dataframe_tostring(
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.FLOW_COEFFICIENT: "{:.10g}".format,
-                Headers.FLOW_COEFFICIENT: "{:.10g}".format,
                 Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
                 Headers.OIL_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
                 Headers.GAS_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
@@ -1046,8 +1045,8 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
         wsegaicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
-        wsegaicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.RHOCAL_AICD].to_numpy()
-        wsegaicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.VISCAL_AICD].to_numpy()
+        wsegaicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.AICD_CALIBRATION_FLUID_DENSITY].to_numpy()
+        wsegaicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.AICD_FLUID_VISCOSITY].to_numpy()
         wsegaicd[Headers.DEF] = ["5*"] * df_merge.shape[0]
         wsegaicd[Headers.X] = df_merge[Headers.X].to_numpy()
         wsegaicd[Headers.Y] = df_merge[Headers.Y].to_numpy()
@@ -1322,8 +1321,8 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicv[Headers.ALPHA_MAIN] = df_merge[Headers.ALPHA_MAIN].to_numpy()
         wsegaicv[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
-        wsegaicv[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.RHOCAL_AICV].to_numpy()
-        wsegaicv[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.VISCAL_AICV].to_numpy()
+        wsegaicv[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.AICV_CALIBRATION_FLUID_DENSITY].to_numpy()
+        wsegaicv[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.AICV_FLUID_VISCOSITY].to_numpy()
         wsegaicv[Headers.DEF] = ["5*"] * df_merge.shape[0]
         wsegaicv[Headers.X_MAIN] = df_merge[Headers.X_MAIN].to_numpy()
         wsegaicv[Headers.Y_MAIN] = df_merge[Headers.Y_MAIN].to_numpy()
@@ -1343,8 +1342,8 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv[Headers.D_PILOT] = df_merge[Headers.D_PILOT].to_numpy()
         wsegaicv[Headers.E_PILOT] = df_merge[Headers.E_PILOT].to_numpy()
         wsegaicv[Headers.F_PILOT] = df_merge[Headers.F_PILOT].to_numpy()
-        wsegaicv[Headers.WCT_AICV] = df_merge[Headers.WCT_AICV].to_numpy()
-        wsegaicv[Headers.GHF_AICV] = df_merge[Headers.GHF_AICV].to_numpy()
+        wsegaicv[Headers.AICV_WATER_CUT] = df_merge[Headers.AICV_WATER_CUT].to_numpy()
+        wsegaicv[Headers.AICV_GAS_HOLDUP_FRACTION] = df_merge[Headers.AICV_GAS_HOLDUP_FRACTION].to_numpy()
         wsegaicv[Headers.EMPTY] = "/"
     return wsegaicv
 
@@ -1583,8 +1582,8 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
     for idx in range(df_wsegaicv.shape[0]):
         segment_number = df_wsegaicv[Headers.START_SEGMENT_NUMBER].iloc[idx]
         well_name = df_wsegaicv[Headers.WELL].iloc[idx]
-        wct = df_wsegaicv[Headers.WCT_AICV].iloc[idx]
-        ghf = df_wsegaicv[Headers.GHF_AICV].iloc[idx]
+        wct = df_wsegaicv[Headers.AICV_WATER_CUT].iloc[idx]
+        ghf = df_wsegaicv[Headers.AICV_GAS_HOLDUP_FRACTION].iloc[idx]
         # LOWWCT_LOWGHF
         for iaction in range(2):
             act_number = iaction + 1

@@ -116,8 +116,8 @@ def test_read_case_wsegaicd():
             Headers.D,
             Headers.E,
             Headers.F,
-            Headers.RHOCAL_AICD,
-            Headers.VISCAL_AICD,
+            Headers.AICD_CALIBRATION_FLUID_DENSITY,
+            Headers.AICD_FLUID_VISCOSITY,
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
@@ -242,10 +242,10 @@ def test_read_case_wsegaicv():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.WCT_AICV,
-            Headers.GHF_AICV,
-            Headers.RHOCAL_AICV,
-            Headers.VISCAL_AICV,
+            Headers.AICV_WATER_CUT,
+            Headers.AICV_GAS_HOLDUP_FRACTION,
+            Headers.AICV_CALIBRATION_FLUID_DENSITY,
+            Headers.AICV_FLUID_VISCOSITY,
             Headers.ALPHA_MAIN,
             Headers.X_MAIN,
             Headers.Y_MAIN,
