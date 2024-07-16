@@ -13,7 +13,6 @@ from completor.constants import Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
-from completor.utils import as_data_frame
 
 
 def trim_pandas(df_temp: pd.DataFrame) -> pd.DataFrame:
@@ -641,15 +640,18 @@ def calculate_upstream(
         df_annulus_upstream[Headers.MEASURED_DEPTH].to_numpy(),
         df_annulus_upstream[Headers.OUT].to_numpy(),
     )
-    df_wseglink_upstream = as_data_frame(
-        WELL=[well_name] * device_segment.shape[0],
-        ANNULUS=annulus_segment,
-        DEVICE=device_segment,
-        OUTLET=outlet_segment,
+    df_wseglink_upstream = pd.DataFrame(
+        {
+            Headers.WELL: [well_name] * device_segment.shape[0],
+            Headers.ANNULUS: annulus_segment,
+            Headers.DEVICE: device_segment,
+            Headers.OUT: outlet_segment,
+        }
     )
-    # basically WSEGLINK is only for those segments
-    # whose its outlet segment is not a device segment
-    df_wseglink_upstream = df_wseglink_upstream[df_wseglink_upstream[Headers.DEVICE] != df_wseglink_upstream["OUTLET"]]
+    # WSEGLINK is only for those segments whose outlet segment is not a device segment.
+    df_wseglink_upstream = df_wseglink_upstream[
+        df_wseglink_upstream[Headers.DEVICE] != df_wseglink_upstream[Headers.OUT]
+    ]
     return df_annulus_upstream, df_wseglink_upstream
 
 
@@ -827,16 +829,18 @@ def prepare_compsegs(
         def _choose(parameter: str) -> np.ndarray:
             return choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, parameter)
 
-        compseg = as_data_frame(
-            I=_choose(Headers.I),
-            J=_choose(Headers.J),
-            K=_choose(Headers.K),
-            BRANCH=_choose(Headers.BRANCH),
-            START_MEASURED_DEPTH=_choose(Headers.START_MEASURED_DEPTH),
-            END_MEASURED_DEPTH=_choose(Headers.END_MEASURED_DEPTH),
-            COMPSEGS_DIRECTION=_choose(Headers.COMPSEGS_DIRECTION),
-            DEF="3*",
-            START_SEGMENT_NUMBER=_choose(Headers.START_SEGMENT_NUMBER),
+        compseg = pd.DataFrame(
+            {
+                Headers.I: _choose(Headers.I),
+                Headers.J: _choose(Headers.J),
+                Headers.K: _choose(Headers.K),
+                Headers.BRANCH: _choose(Headers.BRANCH),
+                Headers.START_MEASURED_DEPTH: _choose(Headers.START_MEASURED_DEPTH),
+                Headers.END_MEASURED_DEPTH: _choose(Headers.END_MEASURED_DEPTH),
+                Headers.COMPSEGS_DIRECTION: _choose(Headers.COMPSEGS_DIRECTION),
+                Headers.DEF: "3*",
+                Headers.START_SEGMENT_NUMBER: _choose(Headers.START_SEGMENT_NUMBER),
+            }
         )
     compseg[Headers.EMPTY] = "/"
     return compseg

@@ -12,7 +12,7 @@ from completor.constants import Headers, Keywords, Method
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
-from completor.utils import as_data_frame, log_and_raise_exception
+from completor.utils import log_and_raise_exception
 
 try:
     from typing import Literal, TypeAlias  # type: ignore
@@ -151,7 +151,7 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
             if not is_gravel_pack_location:
                 annulus_zone[idx] = max(annulus_zone) + 1
             # else it is 0
-        df_annulus = as_data_frame(
+        df_annulus = pd.DataFrame(
             {
                 Headers.START_MEASURED_DEPTH: start_bound,
                 Headers.END_MEASURED_DEPTH: end_bound,
@@ -352,7 +352,7 @@ def create_tubing_segments(
         df_measured_depth_true_vertical_depth[Headers.TRUE_VERTICAL_DEPTH].to_numpy(),
     )
     # create data frame
-    return as_data_frame(
+    return pd.DataFrame(
         {
             Headers.START_MEASURED_DEPTH: start_measured_depth,
             Headers.END_MEASURED_DEPTH: end_measured_depth,
@@ -544,7 +544,7 @@ def complete_the_well(
     for i in range(df_tubing_segments.shape[0]):
         information += get_completion(start[i], end[i], df_completion, joint_length)
 
-    df_well = as_data_frame(
+    df_well = pd.DataFrame(
         {
             Headers.TUBING_MEASURED_DEPTH: df_tubing_segments[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
             Headers.TUBING_TRUE_VERTICAL_DEPTH: df_tubing_segments[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy(),
