@@ -50,8 +50,8 @@ class Headers:
     J = "J"
     K = "K"
     BRANCH = "BRANCH"
-    START_MEASURED_DEPTH = "STARTMD"
-    END_MEASURED_DEPTH = "ENDMD"
+    START_MEASURED_DEPTH = "START_MEASURED_DEPTH"
+    END_MEASURED_DEPTH = "END_MEASURED_DEPTH"
     COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"  # Direction of penetration through the grid block or the range.
     # X or I for horizontal penetration in the x-direction, Y or J for horizontal penetration in the y-direction,
     # Z or K for vertical penetration.

@@ -401,7 +401,7 @@ def prepare_device_layer(
         well_name: Well name.
         lateral: Lateral number.
         df_well: Must contain LATERAL, TUBING_MEASURED_DEPTH, TUBING_TRUE_VERTICAL_DEPTH,
-            INNER_DIAMETER, ROUGHNESS, DEVICETYPE and NDEVICES.
+            INNER_DIAMETER, ROUGHNESS, DEVICE_TYPE and NDEVICES.
         df_tubing: Data frame from function prepare_tubing_layer for this well and this lateral.
         device_length: Segment length. Default to 0.1.
 
@@ -832,8 +832,8 @@ def prepare_compsegs(
             J=_choose(Headers.J),
             K=_choose(Headers.K),
             BRANCH=_choose(Headers.BRANCH),
-            STARTMD=_choose(Headers.START_MEASURED_DEPTH),
-            ENDMD=_choose(Headers.END_MEASURED_DEPTH),
+            START_MEASURED_DEPTH=_choose(Headers.START_MEASURED_DEPTH),
+            END_MEASURED_DEPTH=_choose(Headers.END_MEASURED_DEPTH),
             COMPSEGS_DIRECTION=_choose(Headers.COMPSEGS_DIRECTION),
             DEF="3*",
             START_SEGMENT_NUMBER=_choose(Headers.START_SEGMENT_NUMBER),
