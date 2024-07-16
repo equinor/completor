@@ -91,7 +91,7 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
     true_vertical_depth = np.insert(
         true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENT_TRUE_VERTICAL_DEPTH].iloc[0]
     )
-    df_measured_true_vertical_depth = as_data_frame(
+    df_measured_true_vertical_depth = pd.DataFrame(
         {Headers.MEASURED_DEPTH: measured_depth, Headers.TRUE_VERTICAL_DEPTH: true_vertical_depth}
     )
     # sort based on md
