@@ -175,7 +175,6 @@ class Headers:
     LENGTH = "LENGTH"
     ADDITIONAL_SEGMENT = "AdditionalSegment"
     ORIGINAL_SEGMENT = "OriginalSegment"
-    DIRECTION = "DIR"
     OUT = "OUT"
     LATERAL = "LATERAL"
     NUMBER_OF_DEVICES = "NDEVICES"

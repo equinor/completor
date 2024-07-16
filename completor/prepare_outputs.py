@@ -764,7 +764,7 @@ def prepare_compsegs(
         compseg[Headers.BRANCH] = df_compseg_device[Headers.BRANCH].to_numpy()
         compseg[Headers.START_MEASURED_DEPTH] = df_compseg_device[Headers.START_MEASURED_DEPTH].to_numpy()
         compseg[Headers.END_MEASURED_DEPTH] = df_compseg_device[Headers.END_MEASURED_DEPTH].to_numpy()
-        compseg[Headers.DIRECTION] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
+        compseg[Headers.COMPSEGS_DIRECTION] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
         compseg[Headers.DEF] = "3*"
         compseg[Headers.START_SEGMENT_NUMBER] = df_compseg_device[Headers.START_SEGMENT_NUMBER].to_numpy()
     else:
@@ -812,7 +812,7 @@ def prepare_compsegs(
             BRANCH=_choose(Headers.BRANCH),
             STARTMD=_choose(Headers.START_MEASURED_DEPTH),
             ENDMD=_choose(Headers.END_MEASURED_DEPTH),
-            DIR=_choose(Headers.COMPSEGS_DIRECTION),
+            COMPSEGS_DIRECTION=_choose(Headers.COMPSEGS_DIRECTION),
             DEF="3*",
             START_SEGMENT_NUMBER=_choose(Headers.START_SEGMENT_NUMBER),
         )
@@ -980,7 +980,7 @@ def prepare_compdat(
     ].to_numpy()
     compdat[Headers.SKIN] = df_reservoir[Headers.SKIN].to_numpy()
     compdat[Headers.D_FACTOR] = df_reservoir[Headers.D_FACTOR].to_numpy()
-    compdat[Headers.DIRECTION] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
+    compdat[Headers.COMPDAT_DIRECTION] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
     compdat[Headers.RO] = df_reservoir[Headers.RO].to_numpy()
     # remove default columns
     compdat = trim_pandas(compdat)
