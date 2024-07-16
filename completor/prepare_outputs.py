@@ -107,7 +107,7 @@ def dataframe_tostring(
                 Headers.CONNECTION_FACTOR: "{:.10g}".format,
                 Headers.FORMATION_PERMEABILITY_THICKNESS: "{:.10g}".format,
                 Headers.MEASURED_DEPTH: "{:.3f}".format,
-                Headers.TVD: "{:.3f}".format,
+                Headers.TRUE_VERTICAL_DEPTH: "{:.3f}".format,
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.FLOW_COEFFICIENT: "{:.10g}".format,
@@ -218,7 +218,7 @@ def prepare_tubing_layer(
         schedule: Schedule object.
         well_name: Well name.
         lateral: Lateral number.
-        df_well: Must contain column LATERAL, TUBING_MEASURED_DEPTH, TUB_TVD, INNER_DIAMETER, ROUGHNESS.
+        df_well: Must contain column LATERAL, TUBING_MEASURED_DEPTH, TUBING_TRUE_VERTICAL_DEPTH, INNER_DIAMETER, ROUGHNESS.
         start_segment: Start number of the first tubing segment.
         branch_no: Branch number for this tubing layer.
         completion_table: DataFrame with completion data.
@@ -228,7 +228,7 @@ def prepare_tubing_layer(
     """
     rnm = {
         Headers.TUBING_MEASURED_DEPTH: Headers.MEASURED_DEPTH,
-        Headers.TUBING_TRUE_VERTICAL_DEPTH: Headers.TVD,
+        Headers.TUBING_TRUE_VERTICAL_DEPTH: Headers.TRUE_VERTICAL_DEPTH,
         Headers.TUBING_INNER_DIAMETER: Headers.WELL_BORE_DIAMETER,
         Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
     }
@@ -237,8 +237,8 @@ def prepare_tubing_layer(
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_tubing_in_reservoir = pd.DataFrame(
         {
-            "MEASURED_DEPTH": df_well[Headers.TUBING_MEASURED_DEPTH],
-            "TVD": df_well[Headers.TUB_TVD],
+            Headers.MEASURED_DEPTH: df_well[Headers.TUBING_MEASURED_DEPTH],
+            Headers.TRUE_VERTICAL_DEPTH: df_well[Headers.TUBING_TRUE_VERTICAL_DEPTH],
             "DIAM": df_well[Headers.INNER_DIAMETER],
             "ROUGHNESS": df_well[Headers.ROUGHNESS],
         }
@@ -355,8 +355,8 @@ def connect_lateral(
     """
     df_tubing, _, _, _, top = data[lateral]
     if not top.empty:
-        lateral0 = top.TUBINGBRANCH.to_numpy()[0]
-        md_junct = top.TUBINGMD.to_numpy()[0]
+        lateral0 = top[Headers.TUBING_BRANCH].to_numpy()[0]
+        md_junct = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
         if md_junct > df_tubing[Headers.MEASURED_DEPTH][0]:
             logger.warning(
                 "Found a junction above the start of the tubing layer, well %s, "
@@ -400,7 +400,8 @@ def prepare_device_layer(
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: Must contain LATERAL, TUBING_MEASURED_DEPTH, TUB_TVD, INNER_DIAMETER, ROUGHNESS, DEVICETYPE and NDEVICES.
+        df_well: Must contain LATERAL, TUBING_MEASURED_DEPTH, TUBING_TRUE_VERTICAL_DEPTH,
+            INNER_DIAMETER, ROUGHNESS, DEVICETYPE and NDEVICES.
         df_tubing: Data frame from function prepare_tubing_layer for this well and this lateral.
         device_length: Segment length. Default to 0.1.
 
@@ -429,7 +430,7 @@ def prepare_device_layer(
         df_tubing[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
     df_device[Headers.MEASURED_DEPTH] = df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy() + device_length
-    df_device[Headers.TVD] = df_well[Headers.TUB_TVD].to_numpy()
+    df_device[Headers.TRUE_VERTICAL_DEPTH] = df_well[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy()
     df_device[Headers.WELL_BORE_DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
     df_device[Headers.ROUGHNESS] = df_well[Headers.ROUGHNESS].to_numpy()
     device_comment = np.where(
@@ -469,7 +470,7 @@ def prepare_annulus_layer(
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: Must contain LATERAL, ANNULUS_ZONE, TUBING_MEASURED_DEPTH, TUB_TVD, OUTER_DIAMETER,
+        df_well: Must contain LATERAL, ANNULUS_ZONE, TUBING_MEASURED_DEPTH, TUBING_TRUE_VERTICAL_DEPTH, OUTER_DIAMETER,
             ROUGHNESS, DEVICETYPE and NDEVICES.
         df_device: DataFrame from function prepare_device_layer for this well and this lateral.
         annulus_length: Annulus segment length increment. Default to 0.1.
@@ -538,7 +539,9 @@ def prepare_annulus_layer(
             df_annulus_downstream[Headers.MEASURED_DEPTH] = (
                 df_branch_downstream[Headers.TUBING_MEASURED_DEPTH].to_numpy() + annulus_length
             )
-            df_annulus_downstream[Headers.TVD] = df_branch_downstream[Headers.TUB_TVD].to_numpy()
+            df_annulus_downstream[Headers.TRUE_VERTICAL_DEPTH] = df_branch_downstream[
+                Headers.TUBING_TRUE_VERTICAL_DEPTH
+            ].to_numpy()
             df_annulus_downstream[Headers.WELL_BORE_DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
             df_annulus_downstream[Headers.ROUGHNESS] = df_branch_downstream[Headers.ROUGHNESS].to_numpy()
 
@@ -620,7 +623,7 @@ def calculate_upstream(
     md_[0] = md_[0] + annulus_length
     df_annulus_upstream[Headers.OUT] = out_segment
     df_annulus_upstream[Headers.MEASURED_DEPTH] = md_
-    df_annulus_upstream[Headers.TVD] = df_branch[Headers.TUB_TVD].to_numpy()
+    df_annulus_upstream[Headers.TRUE_VERTICAL_DEPTH] = df_branch[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy()
     df_annulus_upstream[Headers.WELL_BORE_DIAMETER] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
     df_annulus_upstream[Headers.ROUGHNESS] = df_branch[Headers.ROUGHNESS].to_numpy()
     device_segment = get_outlet_segment(

@@ -92,11 +92,11 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
         true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENT_TRUE_VERTICAL_DEPTH].iloc[0]
     )
     df_measured_true_vertical_depth = as_data_frame(
-        {Headers.MEASURED_DEPTH: measured_depth, Headers.TVD: true_vertical_depth}
+        {Headers.MEASURED_DEPTH: measured_depth, Headers.TRUE_VERTICAL_DEPTH: true_vertical_depth}
     )
     # sort based on md
     df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(
-        by=[Headers.MEASURED_DEPTH, Headers.TVD]
+        by=[Headers.MEASURED_DEPTH, Headers.TRUE_VERTICAL_DEPTH]
     )
     # reset index after sorting
     return df_measured_true_vertical_depth.reset_index(drop=True)
@@ -345,11 +345,11 @@ def create_tubing_segments(
 
     # md for tubing segments
     measured_depth_ = 0.5 * (start_measured_depth + end_measured_depth)
-    # estimate TVD
+    # estimate TRUE_VERTICAL_DEPTH
     true_vertical_depth = np.interp(
         measured_depth_,
         df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy(),
-        df_measured_depth_true_vertical_depth[Headers.TVD].to_numpy(),
+        df_measured_depth_true_vertical_depth[Headers.TRUE_VERTICAL_DEPTH].to_numpy(),
     )
     # create data frame
     return as_data_frame(
@@ -357,7 +357,7 @@ def create_tubing_segments(
             Headers.START_MEASURED_DEPTH: start_measured_depth,
             Headers.END_MEASURED_DEPTH: end_measured_depth,
             Headers.TUBING_MEASURED_DEPTH: measured_depth_,
-            Headers.TUB_TVD: true_vertical_depth,
+            Headers.TUBING_TRUE_VERTICAL_DEPTH: true_vertical_depth,
         }
     )
 
@@ -547,7 +547,7 @@ def complete_the_well(
     df_well = as_data_frame(
         {
             Headers.TUBING_MEASURED_DEPTH: df_tubing_segments[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
-            Headers.TUB_TVD: df_tubing_segments[Headers.TUB_TVD].to_numpy(),
+            Headers.TUBING_TRUE_VERTICAL_DEPTH: df_tubing_segments[Headers.TUBING_TRUE_VERTICAL_DEPTH].to_numpy(),
             Headers.LENGTH: end - start,
             Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
             Headers.NUMBER_OF_DEVICES: information.number_of_devices,

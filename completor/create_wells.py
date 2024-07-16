@@ -32,7 +32,7 @@ class CreateWells:
         df_reservoir: COMPDAT and COMPSEGS data frame fusion in loop.
         df_welsegs_header: WELSEGS first record.
         df_welsegs_content: WELSEGS second record.
-        df_mdtvd: Data frame of MEASURED_DEPTH and TVD relationship.
+        df_mdtvd: Data frame of MEASURED_DEPTH and TRUE_VERTICAL_DEPTH relationship.
         df_tubing_segments: Tubing segment data frame.
         df_well: Data frame after completion.
         df_well_all: Data frame (df_well) for all laterals after completion.
