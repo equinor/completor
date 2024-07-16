@@ -431,7 +431,7 @@ class ReadCasefile:
         Raises:
             ValueError: If there are invalid entries in WSEGDAR.
             CompletorError: If not all device in COMPLETION is specified in WSEGDAR.
-            If WSEGDAR keyword not defined, when DAR is used in the completion.
+                If WSEGDAR keyword not defined, when DAR is used in the completion.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGDAR)
         if start_index == end_index:
@@ -441,14 +441,14 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.CV_DAR,
-                Headers.AC_OIL,
-                Headers.AC_GAS,
-                Headers.AC_WATER,
-                Headers.WHF_LCF_DAR,
-                Headers.WHF_HCF_DAR,
-                Headers.GHF_LCF_DAR,
-                Headers.GHF_HCF_DAR,
+                Headers.FLOW_COEFFICIENT,
+                Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+                Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+                Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+                Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
             ]
 
             # Fix table format

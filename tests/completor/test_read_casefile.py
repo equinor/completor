@@ -155,14 +155,14 @@ def test_read_case_wsegdar():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.CV_DAR,
-            Headers.AC_OIL,
-            Headers.AC_GAS,
-            Headers.AC_WATER,
-            Headers.WHF_LCF_DAR,
-            Headers.WHF_HCF_DAR,
-            Headers.GHF_LCF_DAR,
-            Headers.GHF_HCF_DAR,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)

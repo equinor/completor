@@ -110,18 +110,18 @@ def dataframe_tostring(
                 Headers.TVD: "{:.3f}".format,
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
-                Headers.CV_DAR: "{:.10g}".format,
+                Headers.FLOW_COEFFICIENT: "{:.10g}".format,
                 Headers.FLOW_COEFFICIENT: "{:.10g}".format,
                 Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
-                Headers.AC_OIL: "{:.3e}".format,
-                Headers.AC_GAS: "{:.3e}".format,
-                Headers.AC_WATER: "{:.3e}".format,
+                Headers.OIL_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+                Headers.GAS_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+                Headers.WATER_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
                 Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
                 Headers.DEFAULTS: "{:.10s}".format,
-                Headers.WHF_LCF_DAR: "{:.10g}".format,
-                Headers.WHF_HCF_DAR: "{:.10g}".format,
-                Headers.GHF_LCF_DAR: "{:.10g}".format,
-                Headers.GHF_HCF_DAR: "{:.10g}".format,
+                Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
+                Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
+                Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
+                Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
                 Headers.ALPHA_MAIN: "{:.10g}".format,
                 Headers.ALPHA_PILOT: "{:.10g}".format,
             }
@@ -1017,7 +1017,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
-        wsegaicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALING_FACTOR].to_numpy()
+        wsegaicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
         wsegaicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.RHOCAL_AICD].to_numpy()
         wsegaicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.VISCAL_AICD].to_numpy()
         wsegaicd[Headers.DEF] = ["5*"] * df_merge.shape[0]
@@ -1064,7 +1064,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegsicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegsicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
-        wsegsicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALING_FACTOR].to_numpy()
+        wsegsicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
         wsegsicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.CALIBRATION_FLUID_DENSITY].to_numpy()
         wsegsicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.CALIBRATION_FLUID_VISCOSITY].to_numpy()
         wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WATER_CUT].to_numpy()
@@ -1241,16 +1241,20 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         wsegdar[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegdar[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         # the Cv is already corrected by the scaling factor
-        wsegdar[Headers.CV_DAR] = df_merge[Headers.CV_DAR].to_numpy()
-        wsegdar[Headers.AC_OIL] = df_merge[Headers.AC_OIL].to_numpy()
-        wsegdar[Headers.AC_GAS] = df_merge[Headers.AC_GAS].to_numpy()
-        wsegdar[Headers.AC_WATER] = df_merge[Headers.AC_WATER].to_numpy()
-        wsegdar[Headers.WHF_LCF_DAR] = df_merge[Headers.WHF_LCF_DAR].to_numpy()
-        wsegdar[Headers.WHF_HCF_DAR] = df_merge[Headers.WHF_HCF_DAR].to_numpy()
-        wsegdar[Headers.GHF_LCF_DAR] = df_merge[Headers.GHF_LCF_DAR].to_numpy()
-        wsegdar[Headers.GHF_HCF_DAR] = df_merge[Headers.GHF_HCF_DAR].to_numpy()
+        wsegdar[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
+        wsegdar[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdar[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdar[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdar[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF
+        ].to_numpy()
+        wsegdar[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF
+        ].to_numpy()
+        wsegdar[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].to_numpy()
+        wsegdar[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].to_numpy()
         wsegdar[Headers.DEFAULTS] = "5*"
-        wsegdar[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegdar[Headers.AC_OIL].to_numpy()
+        wsegdar[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegdar[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
         wsegdar[Headers.EMPTY] = "/"
     return wsegdar
 
@@ -1285,7 +1289,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicv[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicv[Headers.ALPHA_MAIN] = df_merge[Headers.ALPHA_MAIN].to_numpy()
-        wsegaicv[Headers.SCALE_FACTOR] = df_merge[Headers.SCALING_FACTOR].to_numpy()
+        wsegaicv[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
         wsegaicv[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.RHOCAL_AICV].to_numpy()
         wsegaicv[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.VISCAL_AICV].to_numpy()
         wsegaicv[Headers.DEF] = ["5*"] * df_merge.shape[0]
@@ -1330,32 +1334,32 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         [
             Headers.WELL,
             Headers.START_SEGMENT_NUMBER,
-            Headers.CV_DAR,
-            Headers.AC_GAS,
+            Headers.FLOW_COEFFICIENT,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEFAULTS,
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
         [
             Headers.WELL,
             Headers.START_SEGMENT_NUMBER,
-            Headers.CV_DAR,
-            Headers.AC_WATER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEFAULTS,
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
         [
             Headers.WELL,
             Headers.START_SEGMENT_NUMBER,
-            Headers.CV_DAR,
-            Headers.AC_OIL,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEFAULTS,
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
         [
             Headers.WELL,
             Headers.START_SEGMENT_NUMBER,
-            Headers.CV_DAR,
-            Headers.AC_OIL,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEFAULTS,
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
@@ -1385,10 +1389,10 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
     for idx in range(df_wsegdar.shape[0]):
         segment_number = df_wsegdar[Headers.START_SEGMENT_NUMBER].iloc[idx]
         well_name = df_wsegdar[Headers.WELL].iloc[idx]
-        water_holdup_fraction_low_cutoff = df_wsegdar[Headers.WHF_LCF_DAR].iloc[idx]
-        water_holdup_fraction_high_cutoff = df_wsegdar[Headers.WHF_HCF_DAR].iloc[idx]
-        gas_holdup_fraction_low_cutoff = df_wsegdar[Headers.GHF_LCF_DAR].iloc[idx]
-        gas_holdup_fraction_high_cutoff = df_wsegdar[Headers.GHF_HCF_DAR].iloc[idx]
+        water_holdup_fraction_low_cutoff = df_wsegdar[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        water_holdup_fraction_high_cutoff = df_wsegdar[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
+        gas_holdup_fraction_low_cutoff = df_wsegdar[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        gas_holdup_fraction_high_cutoff = df_wsegdar[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
         for iaction in range(2):
             act_number = iaction + 1
             act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"

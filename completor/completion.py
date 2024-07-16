@@ -560,7 +560,7 @@ def complete_the_well(
     df_well = lumping_segments(df_well)
 
     # create scaling factor
-    df_well[Headers.SCALING_FACTOR] = np.where(
+    df_well[Headers.SCALE_FACTOR] = np.where(
         df_well[Headers.NUMBER_OF_DEVICES] > 0.0, -1.0 / df_well[Headers.NUMBER_OF_DEVICES], 0.0
     )
     return df_well
@@ -632,11 +632,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     if device_type == "VALVE":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALING_FACTOR]
+        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     elif device_type == "DAR":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well[Headers.CV_DAR] = -df_well[Headers.CV_DAR] / df_well[Headers.SCALING_FACTOR]
+        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     return df_well
 
 
