@@ -106,7 +106,7 @@ def dataframe_tostring(
                 Headers.ROUGHNESS: "{:.10g}".format,
                 Headers.CONNECTION_FACTOR: "{:.10g}".format,
                 Headers.FORMATION_PERMEABILITY_THICKNESS: "{:.10g}".format,
-                Headers.MD: "{:.3f}".format,
+                Headers.MEASURED_DEPTH: "{:.3f}".format,
                 Headers.TVD: "{:.3f}".format,
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
@@ -152,14 +152,15 @@ def get_outlet_segment(
     Returns:
         The outlet segments.
     """
-    df_target_md = pd.DataFrame(target_md, columns=[Headers.MD])
+    df_target_md = pd.DataFrame(target_md, columns=[Headers.MEASURED_DEPTH])
     df_reference = pd.DataFrame(
-        np.column_stack((reference_md, reference_segment_number)), columns=[Headers.MD, Headers.START_SEGMENT_NUMBER]
+        np.column_stack((reference_md, reference_segment_number)),
+        columns=[Headers.MEASURED_DEPTH, Headers.START_SEGMENT_NUMBER],
     )
     df_reference[Headers.START_SEGMENT_NUMBER] = df_reference[Headers.START_SEGMENT_NUMBER].astype(np.int64)
-    df_reference.sort_values(by=[Headers.MD], inplace=True)
+    df_reference.sort_values(by=[Headers.MEASURED_DEPTH], inplace=True)
     return (
-        pd.merge_asof(left=df_target_md, right=df_reference, on=[Headers.MD], direction="nearest")[
+        pd.merge_asof(left=df_target_md, right=df_reference, on=[Headers.MEASURED_DEPTH], direction="nearest")[
             Headers.START_SEGMENT_NUMBER
         ]
         .to_numpy()
@@ -226,7 +227,7 @@ def prepare_tubing_layer(
         DataFrame for tubing layer.
     """
     rnm = {
-        Headers.TUBING_MEASURED_DEPTH: Headers.MD,
+        Headers.TUBING_MEASURED_DEPTH: Headers.MEASURED_DEPTH,
         Headers.TUBING_TRUE_VERTICAL_DEPTH: Headers.TVD,
         Headers.TUBING_INNER_DIAMETER: Headers.WELL_BORE_DIAMETER,
         Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
@@ -234,16 +235,19 @@ def prepare_tubing_layer(
     cols = list(rnm.values())
     df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_tubing_in_reservoir = as_data_frame(
-        MD=df_well[Headers.TUBING_MEASURED_DEPTH],
-        TVD=df_well[Headers.TUB_TVD],
-        DIAM=df_well[Headers.INNER_DIAMETER],
-        ROUGHNESS=df_well[Headers.ROUGHNESS],
+    df_tubing_in_reservoir = pd.DataFrame(
+        {
+            "MEASURED_DEPTH": df_well[Headers.TUBING_MEASURED_DEPTH],
+            "TVD": df_well[Headers.TUB_TVD],
+            "DIAM": df_well[Headers.INNER_DIAMETER],
+            "ROUGHNESS": df_well[Headers.ROUGHNESS],
+        }
     )
+
     # handle overburden
     well_segments = schedule.get_well_segments(well_name, lateral)[1]
     md_input_welsegs = well_segments[Headers.TUBING_MEASURED_DEPTH]
-    md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MD]
+    md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MEASURED_DEPTH]
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
     if not overburden.empty:
         overburden = overburden.rename(index=str, columns=rnm)
@@ -299,7 +303,7 @@ def fix_tubing_inner_diam_roughness(
     overburden_md = None
 
     for idx_overburden in range(overburden_out.shape[0]):
-        overburden_md = overburden_out[Headers.MD].iloc[idx_overburden]
+        overburden_md = overburden_out[Headers.MEASURED_DEPTH].iloc[idx_overburden]
         overburden_found_in_completion = False
         for idx_completion_table_well in range(completion_table_well.shape[0]):
             completion_table_start = completion_table_well[Headers.START_MEASURED_DEPTH].iloc[idx_completion_table_well]
@@ -353,7 +357,7 @@ def connect_lateral(
     if not top.empty:
         lateral0 = top.TUBINGBRANCH.to_numpy()[0]
         md_junct = top.TUBINGMD.to_numpy()[0]
-        if md_junct > df_tubing[Headers.MD][0]:
+        if md_junct > df_tubing[Headers.MEASURED_DEPTH][0]:
             logger.warning(
                 "Found a junction above the start of the tubing layer, well %s, "
                 "branch %s. Check the depth of segments pointing at the main stem "
@@ -368,18 +372,18 @@ def connect_lateral(
         try:
             if case.connect_to_tubing(well_name, lateral):
                 # Since md_junct (top.TUBING_MEASURED_DEPTH) has segment tops and
-                # segm0.MD has grid block midpoints, a junction at the top of the
+                # segm0.MEASURED_DEPTH has grid block midpoints, a junction at the top of the
                 # well may not be found. Therefore, we try the following:
-                if (~(df_segm0.MD <= md_junct)).all():
-                    md_junct = df_segm0.MD.iloc[0]
-                    idx = np.where(df_segm0.MD <= md_junct)[0][-1]
+                if (~(df_segm0.MEASURED_DEPTH <= md_junct)).all():
+                    md_junct = df_segm0.MEASURED_DEPTH.iloc[0]
+                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
                 else:
-                    idx = np.where(df_segm0.MD <= md_junct)[0][-1]
+                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
             else:
                 # Add 0.1 to md_junct since md_junct refers to the tubing layer
                 # junction md and the device layer md is shifted 0.1 m to the
                 # tubing layer.
-                idx = np.where(df_segm0.MD <= md_junct + 0.1)[0][-1]
+                idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct + 0.1)[0][-1]
         except IndexError as err:
             raise CompletorError(f"Cannot find a device layer at junction of lateral {lateral} in {well_name}") from err
         outsegm = df_segm0.at[idx, Headers.START_SEGMENT_NUMBER]
@@ -421,10 +425,10 @@ def prepare_device_layer(
     df_device[Headers.BRANCH] = start_branch + np.arange(df_well.shape[0])
     df_device[Headers.OUT] = get_outlet_segment(
         df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
-        df_tubing[Headers.MD].to_numpy(),
+        df_tubing[Headers.MEASURED_DEPTH].to_numpy(),
         df_tubing[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
-    df_device[Headers.MD] = df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy() + device_length
+    df_device[Headers.MEASURED_DEPTH] = df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy() + device_length
     df_device[Headers.TVD] = df_well[Headers.TUB_TVD].to_numpy()
     df_device[Headers.WELL_BORE_DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
     df_device[Headers.ROUGHNESS] = df_well[Headers.ROUGHNESS].to_numpy()
@@ -531,7 +535,7 @@ def prepare_annulus_layer(
             df_annulus_downstream[Headers.END_SEGMENT_NUMBER] = df_annulus_downstream[Headers.START_SEGMENT_NUMBER]
             df_annulus_downstream[Headers.BRANCH] = start_branch
             df_annulus_downstream[Headers.OUT] = df_annulus_downstream[Headers.START_SEGMENT_NUMBER] + 1
-            df_annulus_downstream[Headers.MD] = (
+            df_annulus_downstream[Headers.MEASURED_DEPTH] = (
                 df_branch_downstream[Headers.TUBING_MEASURED_DEPTH].to_numpy() + annulus_length
             )
             df_annulus_downstream[Headers.TVD] = df_branch_downstream[Headers.TUB_TVD].to_numpy()
@@ -605,7 +609,7 @@ def calculate_upstream(
     # then the outlet is its adjacent annulus segment
     device_segment = get_outlet_segment(
         df_branch[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
-        df_device[Headers.MD].to_numpy(),
+        df_device[Headers.MEASURED_DEPTH].to_numpy(),
         df_device[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
     # but for the most downstream annulus segment
@@ -615,23 +619,23 @@ def calculate_upstream(
     md_ = df_branch[Headers.TUBING_MEASURED_DEPTH].to_numpy() + annulus_length
     md_[0] = md_[0] + annulus_length
     df_annulus_upstream[Headers.OUT] = out_segment
-    df_annulus_upstream[Headers.MD] = md_
+    df_annulus_upstream[Headers.MEASURED_DEPTH] = md_
     df_annulus_upstream[Headers.TVD] = df_branch[Headers.TUB_TVD].to_numpy()
     df_annulus_upstream[Headers.WELL_BORE_DIAMETER] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
     df_annulus_upstream[Headers.ROUGHNESS] = df_branch[Headers.ROUGHNESS].to_numpy()
     device_segment = get_outlet_segment(
         df_active[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
-        df_device[Headers.MD].to_numpy(),
+        df_device[Headers.MEASURED_DEPTH].to_numpy(),
         df_device[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
     annulus_segment = get_outlet_segment(
         df_active[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
-        df_annulus_upstream[Headers.MD].to_numpy(),
+        df_annulus_upstream[Headers.MEASURED_DEPTH].to_numpy(),
         df_annulus_upstream[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
     outlet_segment = get_outlet_segment(
         df_active[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
-        df_annulus_upstream[Headers.MD].to_numpy(),
+        df_annulus_upstream[Headers.MEASURED_DEPTH].to_numpy(),
         df_annulus_upstream[Headers.OUT].to_numpy(),
     )
     df_wseglink_upstream = as_data_frame(
@@ -667,7 +671,7 @@ def connect_compseg_icv(
     df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
     df_res = df_reservoir.copy(deep=True)
 
-    df_res[_MARKER_MEASURED_DEPTH] = df_res[Headers.MD]
+    df_res[_MARKER_MEASURED_DEPTH] = df_res[Headers.MEASURED_DEPTH]
     starts = df_completion_table_clean[Headers.START_MEASURED_DEPTH].apply(
         lambda x: max(x, df_res[Headers.START_MEASURED_DEPTH].iloc[0])
     )
@@ -675,18 +679,29 @@ def connect_compseg_icv(
         lambda x: min(x, df_res[Headers.END_MEASURED_DEPTH].iloc[-1])
     )
     for start, end in zip(starts, ends):
-        condition = f"@df_res.MD >= {start} and @df_res.MD <= {end} and @df_res.DEVICETYPE == 'ICV'"
+        condition = (
+            f"@df_res.{Headers.MEASURED_DEPTH} >= {start} and @df_res.{Headers.MEASURED_DEPTH} <= {end} "
+            f"and @df_res.{Headers.DEVICE_TYPE} == 'ICV'"
+        )
         func = float(start + end) / 2
         column_index = df_res.query(condition).index
         df_res.loc[column_index, _MARKER_MEASURED_DEPTH] = func
 
     df_compseg_device = pd.merge_asof(
-        left=df_res, right=df_device, left_on=_MARKER_MEASURED_DEPTH, right_on=Headers.MD, direction="nearest"
+        left=df_res,
+        right=df_device,
+        left_on=_MARKER_MEASURED_DEPTH,
+        right_on=Headers.MEASURED_DEPTH,
+        direction="nearest",
     )
     df_compseg_annulus = pd.DataFrame()
     if (df_completion_table[Headers.ANNULUS] == "OA").any():
         df_compseg_annulus = pd.merge_asof(
-            left=df_res, right=df_annulus, left_on=_MARKER_MEASURED_DEPTH, right_on=Headers.MD, direction="nearest"
+            left=df_res,
+            right=df_annulus,
+            left_on=_MARKER_MEASURED_DEPTH,
+            right_on=Headers.MEASURED_DEPTH,
+            direction="nearest",
         ).drop(_MARKER_MEASURED_DEPTH, axis=1)
     return df_compseg_device.drop(_MARKER_MEASURED_DEPTH, axis=1), df_compseg_annulus
 
@@ -725,10 +740,10 @@ def prepare_compsegs(
         | (df_reservoir[Headers.NUMBER_OF_DEVICES] > 0)
         | (df_reservoir[Headers.DEVICE_TYPE] == "PERF")
     ]
-    # sort device dataframe by MD to be used for pd.merge_asof
+    # sort device dataframe by MEASURED_DEPTH to be used for pd.merge_asof
     if df_reservoir.shape[0] == 0:
         return pd.DataFrame()
-    df_device = df_device.sort_values(by=[Headers.MD])
+    df_device = df_device.sort_values(by=[Headers.MEASURED_DEPTH])
     if isinstance(segment_length, str):
         if segment_length.upper() == "USER":
             segment_length = -1.0
@@ -742,7 +757,7 @@ def prepare_compsegs(
         if isinstance(segment_length, float):
             if segment_length >= 0:
                 df_compseg_device = pd.merge_asof(
-                    left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest"
+                    left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
                 )
             else:
                 # Ensure that tubing segment boundaries as described in the case
@@ -753,7 +768,9 @@ def prepare_compsegs(
                     df_reservoir, df_device, df_annulus, df_completion_table
                 )
         else:
-            df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest")
+            df_compseg_device = pd.merge_asof(
+                left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
+            )
         if icv_segmenting:
             df_compseg_device, _ = connect_compseg_icv(df_reservoir, df_device, df_annulus, df_completion_table)
         compseg = pd.DataFrame()
@@ -769,15 +786,15 @@ def prepare_compsegs(
         compseg[Headers.START_SEGMENT_NUMBER] = df_compseg_device[Headers.START_SEGMENT_NUMBER].to_numpy()
     else:
         # sort the df_annulus and df_device
-        df_annulus = df_annulus.sort_values(by=[Headers.MD])
+        df_annulus = df_annulus.sort_values(by=[Headers.MEASURED_DEPTH])
         if isinstance(segment_length, float):
             # SEGMENTLENGTH = FIXED
             if segment_length >= 0:
                 df_compseg_annulus = pd.merge_asof(
-                    left=df_reservoir, right=df_annulus, on=[Headers.MD], direction="nearest"
+                    left=df_reservoir, right=df_annulus, on=[Headers.MEASURED_DEPTH], direction="nearest"
                 )
                 df_compseg_device = pd.merge_asof(
-                    left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest"
+                    left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
                 )
             else:
                 # Ensure that tubing segment boundaries as described in the case
@@ -794,9 +811,11 @@ def prepare_compsegs(
                 df_compseg_annulus.drop([Headers.MARKER], axis=1, inplace=True)
         else:
             df_compseg_annulus = pd.merge_asof(
-                left=df_reservoir, right=df_annulus, on=[Headers.MD], direction="nearest"
+                left=df_reservoir, right=df_annulus, on=[Headers.MEASURED_DEPTH], direction="nearest"
             )
-            df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest")
+            df_compseg_device = pd.merge_asof(
+                left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
+            )
         if icv_segmenting:
             df_compseg_device, df_compseg_annulus = connect_compseg_icv(
                 df_reservoir, df_device, df_annulus, df_completion_table
@@ -859,7 +878,7 @@ def connect_compseg_usersegment(
     )
     func = 1
     for start, end in zip(starts, ends):
-        condition = f"@df_res.MD >= {start} and @df_res.MD <= {end}"
+        condition = f"@df_res.{Headers.MEASURED_DEPTH} >= {start} and @df_res.{Headers.MEASURED_DEPTH} <= {end}"
         column_to_modify = Headers.MARKER
         column_index = df_res.query(condition).index
         df_res.loc[column_index, column_to_modify] = func
@@ -926,7 +945,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
     """
     df_reservoir = df_reservoir.copy(deep=True)
     completion_diameters = []
-    for md_reservoir in df_reservoir[Headers.MD]:
+    for md_reservoir in df_reservoir[Headers.MEASURED_DEPTH]:
         for start_completion, outer_inner_diameter_completion, end_completion in zip(
             df_completion[Headers.START_MEASURED_DEPTH],
             df_completion[Headers.OUTER_DIAMETER],
@@ -1008,7 +1027,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     df_merge = pd.merge_asof(
         left=df_device,
         right=df_well,
-        left_on=[Headers.MD],
+        left_on=[Headers.MEASURED_DEPTH],
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
@@ -1055,7 +1074,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     df_merge = pd.merge_asof(
         left=df_device,
         right=df_well,
-        left_on=[Headers.MD],
+        left_on=[Headers.MEASURED_DEPTH],
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
@@ -1093,7 +1112,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     df_merge = pd.merge_asof(
         left=df_device,
         right=df_well,
-        left_on=[Headers.MD],
+        left_on=[Headers.MEASURED_DEPTH],
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
@@ -1143,7 +1162,11 @@ def prepare_wsegicv(
     if df_well.empty:
         return df_well
     df_merge = pd.merge_asof(
-        left=df_device, right=df_well, left_on=Headers.MD, right_on=Headers.TUBING_MEASURED_DEPTH, direction="nearest"
+        left=df_device,
+        right=df_well,
+        left_on=Headers.MEASURED_DEPTH,
+        right_on=Headers.TUBING_MEASURED_DEPTH,
+        direction="nearest",
     )
     wsegicv = pd.DataFrame()
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICV"]
@@ -1182,7 +1205,7 @@ def prepare_wsegicv(
             left=df_merge_tubing,
             right=df_tubing,
             left_on=Headers.START_MEASURED_DEPTH,
-            right_on=Headers.MD,
+            right_on=Headers.MEASURED_DEPTH,
             direction="nearest",
         )
         df_temp = df_merge_tubing.copy()
@@ -1233,7 +1256,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
     df_merge = pd.merge_asof(
         left=df_device,
         right=df_well,
-        left_on=[Headers.MD],
+        left_on=[Headers.MEASURED_DEPTH],
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
@@ -1280,7 +1303,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     df_merge = pd.merge_asof(
         left=df_device,
         right=df_well,
-        left_on=[Headers.MD],
+        left_on=[Headers.MEASURED_DEPTH],
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )

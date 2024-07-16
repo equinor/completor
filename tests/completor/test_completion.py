@@ -54,7 +54,12 @@ def test_connect_cells_segment_cells():
             [3.0, 10.0, 6.5, 5.0],
             [10.0, 20.0, 15.0, 8.0],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUBING_MEASURED_DEPTH],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+        ],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="cells")
@@ -94,7 +99,12 @@ def test_connect_cells_segment_cells_2():
             [3.0, 10.0, 6.5, 1.0],
             [10.0, 20.0, 15.0, 15.0],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUBING_MEASURED_DEPTH],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+        ],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="cells")
@@ -133,7 +143,12 @@ def test_connect_cells_segment_user():
             [3.0, 10.0, 6.5, 5.0],
             [10.0, 20.0, 15.0, 10.0],
         ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.MD, Headers.TUBING_MEASURED_DEPTH],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+        ],
     )
 
     df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="user")
@@ -243,7 +258,7 @@ def test_well_trajectory():
             [4.0, 3.0],
             [5.0, 1.0],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
 
     df_test = completion.well_trajectory(df_welsegs_header, df_welsegs_content)
@@ -458,7 +473,7 @@ def test_create_tubing_segments_cells():
             [0, 0],
             [10, 10],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -507,7 +522,7 @@ def test_create_tubing_segments_cells_with_input_lumping():
             [0, 0],
             [10, 10],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -545,7 +560,7 @@ def test_minimum_segment_length_gt_zero():
             [0, 0],
             [30, 30],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -590,7 +605,7 @@ def test_minimum_segment_length_eq_zero():
             [0, 0],
             [30, 30],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -632,7 +647,7 @@ def test_minimum_segment_length_default():
             [0, 0],
             [30, 30],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -676,7 +691,7 @@ def test_create_tubing_segments_user():
             [0, 0],
             [10, 10],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -716,7 +731,7 @@ def test_create_tubing_segments_fix_15():
             [0, 0],
             [10, 10],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -755,7 +770,7 @@ def test_create_tubing_segments_fix_1():
             [0, 0],
             [10, 10],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [
@@ -795,7 +810,7 @@ def test_create_tubing_segment_welsegs():
             [5.0, 5.0],
             [6.0, 6.0],
         ],
-        columns=[Headers.MD, Headers.TVD],
+        columns=[Headers.MEASURED_DEPTH, Headers.TVD],
     )
     df_true = pd.DataFrame(
         [

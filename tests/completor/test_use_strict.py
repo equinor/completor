@@ -48,7 +48,7 @@ ml_well.sch
 
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
 A1    1        0  2190.266 0.15  0.2159  0.00065   GP      0       AICD  1
 A1    1 2190.266  99999    0.15  0.2159  0.00065   GP      1       AICD  1
@@ -79,7 +79,7 @@ def test_use_strict_true_false_default(tmpdir):
     completion_keyword = """
 COMPLETION
 --Well Branch Start  End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD    MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH    MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                       Diameter Diameter
    A1    1     0     2190.166 0.15 0.2159  0.00065     GP     0     AICD    1
    A1    1  2190.166 99999    0.15 0.2159  0.00065     GP     1     AICD    1
@@ -141,7 +141,7 @@ SCHFILE
 
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1    0     2190.166 0.15 0.2159  0.00065     GP     0     AICD     1
    A1    1 2190.166 99999    0.15 0.2159  0.00065     GP     1     AICD     1
@@ -175,7 +175,7 @@ ml_well.sch
 /
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve Valve Device
---     Number  MD   MD  Tubing   Casing            Content /Joint Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content /Joint Type  Number
 --                      Diameter Diameter
    A1     1    0  99999  0.15     0.2159  0.00065    GP       1   AICD     1
 /
@@ -203,7 +203,7 @@ ml_well.sch
 /
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve Valve Device
---     Number  MD   MD  Tubing   Casing            Content /Joint Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content /Joint Type  Number
 --                      Diameter Diameter
    A1    1     0  99999  0.15     0.2159  0.00065     GP      1   AICD     1
 /

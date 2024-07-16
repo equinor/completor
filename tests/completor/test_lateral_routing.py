@@ -13,7 +13,7 @@ _TEST_FILE = "ml_well.sch"
 COMPLETION_TWO_ROWS = """
 COMPLETION
 -- Well  Branch Start End Screen   Well/   Roughness Annulus Nvalve Valve Device
---       Number MD    MD  Tubing   Casing            Content /Joint Type  Number
+--       Number MEASURED_DEPTH    MEASURED_DEPTH  Tubing   Casing            Content /Joint Type  Number
 --                        Diameter Diameter
 A1        1    0    99999 0.15     0.2159   0.00065 GP      1       AICD  1
 A1        2    0    99999 0.15     0.2159   0.00065 GP      1       AICD  1
@@ -131,7 +131,7 @@ ml_well_l2d_nodevicetest.sch
 
 COMPLETION
 -- Well  Branch Start End Screen   Well/   Roughness Annulus Nvalve Valve Device
---       Number MD    MD  Tubing   Casing            Content /Joint Type  Number
+--       Number MEASURED_DEPTH    MEASURED_DEPTH  Tubing   Casing            Content /Joint Type  Number
 --                        Diameter Diameter
 A1     1        0  2190.166  0.15  0.2159  0.00065   GP      0      AICD  1
 A1     1 2190.166     99999  0.15  0.2159  0.00065   GP      1      AICD  1

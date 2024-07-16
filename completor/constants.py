@@ -211,7 +211,7 @@ class Headers:
 
     DEFAULTS = "DEFAULTS"
 
-    MD = "MD"
+    MEASURED_DEPTH = "MEASURED_DEPTH"
 
     # Completion
 

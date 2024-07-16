@@ -8,7 +8,7 @@ import utils
 COMPLETION = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1     0  10000  0.15364  0.1905 1.524E-005   GP     1   __TYPE__   1
 /
@@ -72,7 +72,7 @@ WELSEGS = """
 WELSEGS
 -- WELL SEGTVD SEGMD WBVOL INFO PDROPCOMP MULTIPHASE_FLOW_MODEL
     A1   0.0    0.0    1*  ABS     HF-      HO /
--- START_SEGMENT_NUMBER END_SEGMENT_NUMBER BRANCH OUT MD TVD DIAM ROUGHNESS
+-- START_SEGMENT_NUMBER END_SEGMENT_NUMBER BRANCH OUT MEASURED_DEPTH TVD DIAM ROUGHNESS
     2    2    1     1 0.0 0.0 0.15 0.00065 /
 /
 """

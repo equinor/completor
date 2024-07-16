@@ -106,7 +106,7 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
             axs.annotate(
                 "",
                 xy=(df_reservoir[Headers.TUBING_MEASURED_DEPTH].iloc[idx], 3.0),
-                xytext=(df_reservoir[Headers.MD].iloc[idx], 4.0),
+                xytext=(df_reservoir[Headers.MEASURED_DEPTH].iloc[idx], 4.0),
                 arrowprops=dict(facecolor="black", shrink=0.05, width=0.5, headwidth=4.0),
             )
         else:
@@ -117,16 +117,18 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
                 axs.annotate(
                     "",
                     xy=(df_reservoir[Headers.TUBING_MEASURED_DEPTH].iloc[idx], 2.0),
-                    xytext=(df_reservoir[Headers.MD].iloc[idx], 4.0),
+                    xytext=(df_reservoir[Headers.MEASURED_DEPTH].iloc[idx], 4.0),
                     arrowprops=dict(facecolor="black", shrink=0.05, width=0.5, headwidth=4.0),
                 )
     # get connection factor
     if "1*" not in df_reservoir[Headers.CONNECTION_FACTOR].to_numpy().tolist():
         max_cf = max(df_reservoir[Headers.CONNECTION_FACTOR].to_numpy())
-        ax_twinx.plot(df_reservoir[Headers.MD], df_reservoir[Headers.CONNECTION_FACTOR], "k-")
+        ax_twinx.plot(df_reservoir[Headers.MEASURED_DEPTH], df_reservoir[Headers.CONNECTION_FACTOR], "k-")
         ax_twinx.invert_yaxis()
         ax_twinx.set_ylim([max_cf * 5.0 + 1e-5, 0])
-        ax_twinx.fill_between(df_reservoir[Headers.MD], 0, df_reservoir[Headers.CONNECTION_FACTOR], alpha=0.5)
+        ax_twinx.fill_between(
+            df_reservoir[Headers.MEASURED_DEPTH], 0, df_reservoir[Headers.CONNECTION_FACTOR], alpha=0.5
+        )
 
     return axs, ax_twinx
 
@@ -186,8 +188,8 @@ def visualize_well(
             max_md = max(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())
             min_md = min(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())
         else:
-            max_md = max(df_reservoir[Headers.MD].to_numpy())
-            min_md = min(df_reservoir[Headers.MD].to_numpy())
+            max_md = max(df_reservoir[Headers.MEASURED_DEPTH].to_numpy())
+            min_md = min(df_reservoir[Headers.MEASURED_DEPTH].to_numpy())
     elif isinstance(segment_length, str):
         max_md = max(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())
         min_md = min(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())

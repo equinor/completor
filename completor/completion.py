@@ -91,9 +91,13 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
     true_vertical_depth = np.insert(
         true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENT_TRUE_VERTICAL_DEPTH].iloc[0]
     )
-    df_measured_true_vertical_depth = as_data_frame({Headers.MD: measured_depth, Headers.TVD: true_vertical_depth})
+    df_measured_true_vertical_depth = as_data_frame(
+        {Headers.MEASURED_DEPTH: measured_depth, Headers.TVD: true_vertical_depth}
+    )
     # sort based on md
-    df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(by=[Headers.MD, Headers.TVD])
+    df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(
+        by=[Headers.MEASURED_DEPTH, Headers.TVD]
+    )
     # reset index after sorting
     return df_measured_true_vertical_depth.reset_index(drop=True)
 
@@ -296,7 +300,7 @@ def create_tubing_segments(
         # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
         # Completor interprets WELSEGS depths as segment midpoint depths.
         # Obtain the well_segments segment midpoint depth.
-        well_segments = df_measured_depth_true_vertical_depth[Headers.MD].to_numpy()
+        well_segments = df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy()
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
@@ -344,7 +348,7 @@ def create_tubing_segments(
     # estimate TVD
     true_vertical_depth = np.interp(
         measured_depth_,
-        df_measured_depth_true_vertical_depth[Headers.MD].to_numpy(),
+        df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy(),
         df_measured_depth_true_vertical_depth[Headers.TVD].to_numpy(),
     )
     # create data frame
@@ -679,7 +683,7 @@ def connect_cells_to_segments(
         Merged DataFrame.
     """
     # Calculate mid cell measured depth
-    df_reservoir[Headers.MD] = (
+    df_reservoir[Headers.MEASURED_DEPTH] = (
         df_reservoir[Headers.START_MEASURED_DEPTH] + df_reservoir[Headers.END_MEASURED_DEPTH]
     ) * 0.5
     if method == Method.USER:
@@ -693,7 +697,9 @@ def connect_cells_to_segments(
         for idx in df_wel[Headers.TUBING_MEASURED_DEPTH].index:
             start_measured_depth = df_tubing_segments[Headers.START_MEASURED_DEPTH].iloc[idx]
             end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].iloc[idx]
-            df_res.loc[df_res[Headers.MD].between(start_measured_depth, end_measured_depth), Headers.MARKER] = marker
+            df_res.loc[
+                df_res[Headers.MEASURED_DEPTH].between(start_measured_depth, end_measured_depth), Headers.MARKER
+            ] = marker
             marker += 1
         # Merge
         tmp = df_res.merge(df_wel, on=[Headers.MARKER])
@@ -702,7 +708,7 @@ def connect_cells_to_segments(
     return pd.merge_asof(
         left=df_reservoir,
         right=df_well,
-        left_on=[Headers.MD],
+        left_on=[Headers.MEASURED_DEPTH],
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
@@ -919,7 +925,7 @@ class WellSchedule:
                 logger.warning(
                     "The branch %s in well %s contains negative length segments. "
                     "Check the input schedulefile WELSEGS keyword for inconsistencies "
-                    "in measured depth (MD) of Tubing layer.",
+                    "in measured depth (MEASURED_DEPTH) of Tubing layer.",
                     branch_num,
                     well_name,
                 )

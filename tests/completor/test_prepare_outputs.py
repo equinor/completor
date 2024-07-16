@@ -164,12 +164,19 @@ def test_prepare_tubing_layer():
             ["A1", 3471.062485, 2251.620480, 0.1, 0.1, 1],
             ["A1", 3516.044325, 2255.627560, 0.1, 0.1, 1],
         ],
-        columns=[Headers.WELL, Headers.MD, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS, Headers.LATERAL],
+        columns=[
+            Headers.WELL,
+            Headers.MEASURED_DEPTH,
+            Headers.TVD,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.LATERAL,
+        ],
     )
 
     pd.testing.assert_frame_equal(
-        df_test[[Headers.MD, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
-        df_true[[Headers.MD, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
+        df_test[[Headers.MEASURED_DEPTH, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
+        df_true[[Headers.MEASURED_DEPTH, Headers.TVD, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
     )
 
 
@@ -188,7 +195,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -245,7 +252,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -302,7 +309,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -318,7 +325,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -375,7 +382,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -391,7 +398,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -448,7 +455,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -464,7 +471,7 @@ def test_prepare_tubing_layer():
                     Headers.END_SEGMENT_NUMBER,
                     Headers.BRANCH,
                     Headers.OUT,
-                    Headers.MD,
+                    Headers.MEASURED_DEPTH,
                     Headers.TVD,
                     Headers.WELL_BORE_DIAMETER,
                     Headers.ROUGHNESS,
@@ -532,7 +539,7 @@ def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion_t
             Headers.K2,
             Headers.CONNECTION_FACTOR,
             Headers.WELL_BORE_DIAMETER,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
@@ -560,14 +567,26 @@ def test_connect_lateral_logs_warning(caplog):
             [3, 3, 1, 2, 2200.73413],
             [4, 4, 1, 3, 2202.75139],
         ],
-        columns=[Headers.START_SEGMENT_NUMBER, Headers.END_SEGMENT_NUMBER, Headers.BRANCH, Headers.OUT, Headers.MD],
+        columns=[
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
+            Headers.BRANCH,
+            Headers.OUT,
+            Headers.MEASURED_DEPTH,
+        ],
     )
     df_tubing_lat_2 = pd.DataFrame(
         [
             [16, 16, 5, 15, 2179.9725],
             [17, 17, 5, 16, 2195.5],
         ],
-        columns=[Headers.START_SEGMENT_NUMBER, Headers.END_SEGMENT_NUMBER, Headers.BRANCH, Headers.OUT, Headers.MD],
+        columns=[
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
+            Headers.BRANCH,
+            Headers.OUT,
+            Headers.MEASURED_DEPTH,
+        ],
     )
     df_top = pd.DataFrame(
         [[1, 2188.76261]],
@@ -584,7 +603,7 @@ def test_connect_lateral_logs_warning(caplog):
             """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
   A1     1   0.0  2451.78 0.15   0.19    0.00035     GP      1     PERF    1
   A1     2   0.0  2450.0  0.15   0.19    0.00035     GP      1     PERF    1
@@ -772,7 +791,7 @@ def test_prepare_wsegvalv():
             Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.TVD,
             Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
@@ -844,7 +863,7 @@ def test_prepare_compdat(tmpdir):
             Headers.D_FACTOR,
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.ANNULUS_ZONE,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
@@ -930,7 +949,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.TVD,
             Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
@@ -947,7 +966,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.TVD,
             Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
@@ -1027,7 +1046,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.K2,
             Headers.CONNECTION_FACTOR,
             Headers.WELL_BORE_DIAMETER,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
@@ -1047,7 +1066,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.TVD,
             Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
@@ -1064,7 +1083,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.TVD,
             Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
