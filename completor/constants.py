@@ -172,11 +172,9 @@ class Headers:
     DEVICE = "DEVICE"
 
     MARKER = "MARKER"
-    # SCALE_FACTOR = "SCALINGFACTOR"
     LENGTH = "LENGTH"
     ADDITIONAL_SEGMENT = "AdditionalSegment"
     ORIGINAL_SEGMENT = "OriginalSegment"
-    SAT = "SAT"  # Saturation?
     DIRECTION = "DIR"
     OUT = "OUT"
     LATERAL = "LATERAL"

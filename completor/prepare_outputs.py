@@ -968,7 +968,9 @@ def prepare_compdat(
     compdat[Headers.K] = df_reservoir[Headers.K].to_numpy()
     compdat[Headers.K2] = df_reservoir[Headers.K2].to_numpy()
     compdat[Headers.FLAG] = df_reservoir[Headers.STATUS].to_numpy()
-    compdat[Headers.SAT] = df_reservoir[Headers.SATURATION_FUNCTION_REGION_NUMBERS].to_numpy()
+    compdat[Headers.SATURATION_FUNCTION_REGION_NUMBERS] = df_reservoir[
+        Headers.SATURATION_FUNCTION_REGION_NUMBERS
+    ].to_numpy()
     compdat[Headers.CONNECTION_FACTOR] = df_reservoir[Headers.CONNECTION_FACTOR].to_numpy()
     compdat[Headers.WELL_BORE_DIAMETER] = fix_well_id(df_reservoir, df_completion_table)[
         Headers.WELL_BORE_DIAMETER

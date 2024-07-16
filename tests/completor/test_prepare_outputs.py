@@ -877,7 +877,7 @@ def test_prepare_compdat(tmpdir):
             Headers.K,
             Headers.K2,
             Headers.FLAG,
-            Headers.SAT,
+            Headers.SATURATION_FUNCTION_REGION_NUMBERS,
             Headers.CONNECTION_FACTOR,
             Headers.WELL_BORE_DIAMETER,
             Headers.FORMATION_PERMEABILITY_THICKNESS,
