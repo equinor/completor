@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
+import typing
 from typing import overload
 
 import numpy as np
@@ -169,3 +170,31 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
         if cleaned_line:
             clean_lines.append(cleaned_line)
     return clean_lines
+
+
+def shift_array(
+    array: npt.NDArray[typing.Any], shift_by: int, fill_value: typing.Any = np.nan
+) -> npt.NDArray[typing.Any]:
+    """Shift an array to the left or right, similar to Pandas' shift.
+
+    Note: By chrisaycock https://stackoverflow.com/a/42642326.
+
+    Args:
+        array: Array to shift.
+        shift_by: The amount and direction (positive/negative) to shift by.
+        fill_value: The value to fill out of range values with. Defaults to np.nan.
+
+    Returns:
+        Shifted Numpy array.
+
+    """
+    result = np.empty_like(array)
+    if shift_by > 0:
+        result[:shift_by] = fill_value
+        result[shift_by:] = array[:-shift_by]
+    elif shift_by < 0:
+        result[shift_by:] = fill_value
+        result[:shift_by] = array[-shift_by:]
+    else:
+        result[:] = array
+    return result
