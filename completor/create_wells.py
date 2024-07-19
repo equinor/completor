@@ -75,8 +75,12 @@ class CreateWells:
                 self.df_reservoir, self.df_completion, self.df_mdtvd, self.method, self.case
             )
             self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, self.well_name)
-            self.complete_the_well()
-            self.get_devices()
+            self.df_well = completion.complete_the_well(
+                self.df_tubing_segments, self.df_completion, self.case.joint_length
+            )
+            self.df_well[Headers.ROUGHNESS] = self.df_well[Headers.ROUGHNESS].apply(lambda x: f"{x:.3E}")
+            self.df_well = self.get_devices(self.df_completion, self.df_well, self.case)
+
             self.correct_annulus_zone()
             self.connect_cells_to_segments()
             self.add_well_lateral_column(lateral)
@@ -234,34 +238,31 @@ class CreateWells:
         # If none of the devices are ICVs use defined method.
         return df_tubing_cells
 
-    def complete_the_well(self) -> None:
-        """Complete the well with users' completion design."""
-        self.df_well = completion.complete_the_well(self.df_tubing_segments, self.df_completion, self.case.joint_length)
-        self.df_well[Headers.ROUGHNESS] = self.df_well[Headers.ROUGHNESS].apply(lambda x: f"{x:.3E}")
-
-    def get_devices(self) -> None:
+    @staticmethod
+    def get_devices(df_completion: pd.DataFrame, df_well: pd.DataFrame, case: ReadCasefile) -> pd.DataFrame:
         """Complete the well with the device information.
 
         Updates the class property DataFrame df_well described in ``complete_the_well``.
         """
-        if not self.case.completion_icv_tubing.empty:
+        if not case.completion_icv_tubing.empty:
             active_devices = pd.concat(
-                [self.df_completion[Headers.DEVICE_TYPE], self.case.completion_icv_tubing[Headers.DEVICE_TYPE]]
+                [df_completion[Headers.DEVICE_TYPE], case.completion_icv_tubing[Headers.DEVICE_TYPE]]
             ).unique()
         else:
-            active_devices = self.df_completion[Headers.DEVICE_TYPE].unique()
+            active_devices = df_completion[Headers.DEVICE_TYPE].unique()
         if "VALVE" in active_devices:
-            self.df_well = completion.get_device(self.df_well, self.case.wsegvalv_table, "VALVE")
+            df_well = completion.get_device(df_well, case.wsegvalv_table, "VALVE")
         if "ICD" in active_devices:
-            self.df_well = completion.get_device(self.df_well, self.case.wsegsicd_table, "ICD")
+            df_well = completion.get_device(df_well, case.wsegsicd_table, "ICD")
         if "AICD" in active_devices:
-            self.df_well = completion.get_device(self.df_well, self.case.wsegaicd_table, "AICD")
+            df_well = completion.get_device(df_well, case.wsegaicd_table, "AICD")
         if "DAR" in active_devices:
-            self.df_well = completion.get_device(self.df_well, self.case.wsegdar_table, "DAR")
+            df_well = completion.get_device(df_well, case.wsegdar_table, "DAR")
         if "AICV" in active_devices:
-            self.df_well = completion.get_device(self.df_well, self.case.wsegaicv_table, "AICV")
+            df_well = completion.get_device(df_well, case.wsegaicv_table, "AICV")
         if "ICV" in active_devices:
-            self.df_well = completion.get_device(self.df_well, self.case.wsegicv_table, "ICV")
+            df_well = completion.get_device(df_well, case.wsegicv_table, "ICV")
+        return df_well
 
     def correct_annulus_zone(self) -> None:
         """Remove the annulus zone if there is no connection to the tubing."""
