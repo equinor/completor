@@ -69,8 +69,8 @@ class CreateWells:
         self._active_laterals()
         for lateral in self.laterals:
             self.select_well(schedule, lateral)
-            self.well_trajectory()
-            self.define_annulus_zone()
+            self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
+            self.df_completion = completion.define_annulus_zone(self.df_completion)
             self.create_tubing_segments()
             self.insert_missing_segments()
             self.complete_the_well()
@@ -186,14 +186,6 @@ class CreateWells:
         # If multiple occurrences of same IJK in compdat/compsegs --> keep the last one.
         self.df_reservoir.drop_duplicates(subset=Headers.START_MEASURED_DEPTH, keep="last", inplace=True)
         self.df_reservoir.reset_index(inplace=True)
-
-    def well_trajectory(self) -> None:
-        """Create trajectory DataFrame relations between measured depth and true vertical depth."""
-        self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
-
-    def define_annulus_zone(self) -> None:
-        """Define an annulus zone if specified."""
-        self.df_completion = completion.define_annulus_zone(self.df_completion)
 
     def create_tubing_segments(self) -> None:
         """Create tubing segments as the basis.
