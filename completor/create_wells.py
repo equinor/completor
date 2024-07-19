@@ -209,48 +209,49 @@ class CreateWells:
 
     @staticmethod
     def create_tubing_segments(
-        df_reservoir, df_completion, df_mdtvd, method, case  # segment_length, minimum_segment_length
+        df_reservoir: pd.DataFrame,
+        df_completion: pd.DataFrame,
+        df_mdtvd: pd.DataFrame,
+        method: Method,
+        case: ReadCasefile,
     ) -> pd.DataFrame:
-        """Create tubing segments as the basis.
-
-        The function creates a class property DataFrame df_tubing_segments
-        from the class property DataFrames df_reservoir, df_completion, and df_mdtvd.
+        """Create tubing segments based on the method and presence of Inflow Control Valves (ICVs).
 
         The behavior of the df_tubing_segments will vary depending on the existence of the ICV keyword.
         When the ICV keyword is present, it always creates a lumped tubing segment on its interval,
         whereas other types of devices follow the default input.
-        If there is a combination of an ICV and other devices (with devicetype >1),
-        this results in a combination of ICV segment length with segment lumping,
+        If there is a combination of ICV and other devices (with devicetype > 1),
+        it results in a combination of ICV segment length with segment lumping,
         and default segment length on other devices.
+
+        Args:
+            df_reservoir: Reservoir data
+            df_completion: Completion information.
+            df_mdtvd: Measured and true vertical depths.
+            method: The method to use for creating segments.
+            case: Case data.
+
+        Returns:
+            Tubing data.
         """
-        df_tubing_cells = completion.create_tubing_segments(
-            df_reservoir,
-            df_completion,
-            df_mdtvd,
-            method,
-            case.segment_length,
-            case.minimum_segment_length,
+        df_tubing_segments_cells = completion.create_tubing_segments(
+            df_reservoir, df_completion, df_mdtvd, method, case.segment_length, case.minimum_segment_length
         )
 
-        df_tubing_user = completion.create_tubing_segments(
-            df_reservoir,
-            df_completion,
-            df_mdtvd,
-            Method.USER,
-            case.segment_length,
-            case.minimum_segment_length,
+        df_tubing_segments_user = completion.create_tubing_segments(
+            df_reservoir, df_completion, df_mdtvd, Method.USER, case.segment_length, case.minimum_segment_length
         )
 
-        if (len(df_completion[Headers.DEVICE_TYPE].unique()) > 1) & (
+        if (pd.unique(df_completion[Headers.DEVICE_TYPE]).size > 1) & (
             (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
         ).any():
-            return fix_compsegs_by_priority(df_completion, df_tubing_cells, df_tubing_user)
+            return fix_compsegs_by_priority(df_completion, df_tubing_segments_cells, df_tubing_segments_user)
 
         # If all the devices are ICVs, lump the segments.
         if (df_completion[Headers.DEVICE_TYPE] == "ICV").all():
-            return df_tubing_user
+            return df_tubing_segments_user
         # If none of the devices are ICVs use defined method.
-        return df_tubing_cells
+        return df_tubing_segments_cells
 
     @staticmethod
     def get_devices(df_completion: pd.DataFrame, df_well: pd.DataFrame, case: ReadCasefile) -> pd.DataFrame:
