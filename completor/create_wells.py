@@ -257,7 +257,13 @@ class CreateWells:
     def get_devices(df_completion: pd.DataFrame, df_well: pd.DataFrame, case: ReadCasefile) -> pd.DataFrame:
         """Complete the well with the device information.
 
-        Updates the class property DataFrame df_well described in ``complete_the_well``.
+        Args:
+            df_completion: Completion information.
+            df_well: Well data.
+            case: Case data.
+
+        Returns:
+            Well data with device information.
         """
         if not case.completion_icv_tubing.empty:
             active_devices = pd.concat(
