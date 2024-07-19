@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from io import StringIO
-
 import pandas as pd
 import pytest
 
@@ -835,36 +833,62 @@ def test_create_tubing_segment_welsegs():
 
 def test_complete_the_well():
     """Test the complete_the_well function."""
-    csv_completion = StringIO(
-        """
-START_MEASURED_DEPTH;END_MEASURED_DEPTH;VALVES_PER_JOINT;INNER_DIAMETER;OUTER_DIAMETER;ROUGHNESS;DEVICETYPE;DEVICENUMBER;ANNULUS_ZONE
-0;20;1;1.2;2.1;1.10E+00;AICD;1;1
-20;30;2;1;5;2.00E+00;ICD;2;0
-30;40;3;2;3;3.00E+00;VALVE;3;2
-40;50;3.5;3;4;4.00E+00;DAR;4;3
-"""
+    df_completion = pd.DataFrame(
+        [
+            [0, 20, 1, 1.2, 2.1, 1.1, "AICD", 1, 1],
+            [20, 30, 2, 1, 5, 2.0, "ICD", 2, 0],
+            [30, 40, 3, 2, 3, 3.0, "VALVE", 3, 2],
+            [40, 50, 3.5, 3, 4, 4.0, "DAR", 4, 3],
+        ],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.VALVES_PER_JOINT,
+            Headers.INNER_DIAMETER,
+            Headers.OUTER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.ANNULUS_ZONE,
+        ],
     )
 
-    csv_tubing = StringIO(
-        """
-START_MEASURED_DEPTH;END_MEASURED_DEPTH;TUBING_MEASURED_DEPTH;TRUE_VERTICAL_DEPTH;SEGMENT_DESC
-0;26;13;19.5;OriginalSegment
-26;35;30.5;32.75;AdditionalSegment
-35;50;42.5;46.25;OriginalSegment
-"""
+    df_tubing = pd.DataFrame(
+        [
+            [0, 26, 13, 19.5, "OriginalSegment"],
+            [26, 35, 30.5, 32.75, "AdditionalSegment"],
+            [35, 50, 42.5, 46.25, "OriginalSegment"],
+        ],
+        columns=[
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.SEGMENT_DESC,
+        ],
     )
-    csv_true = StringIO(
-        """
-TUBING_MEASURED_DEPTH;TRUE_VERTICAL_DEPTH;LENGTH;SEGMENT_DESC;NUMBER_OF_DEVICES;DEVICENUMBER;DEVICETYPE;INNER_DIAMETER;OUTER_DIAMETER;ROUGHNESS;ANNULUS_ZONE;SCALE_FACTOR
-13;19.5;26;OriginalSegment;3.2;1;AICD;1.2;1.723368794;1.1;1;-0.3125
-42.5;46.25;15;OriginalSegment;5;4;DAR;3;2.645751311;4;3;-0.2
-"""
+    df_true = pd.DataFrame(
+        [
+            [13, 19.5, 26, "OriginalSegment", 3.2, 1, "AICD", 1.2, 1.723368794, 1.1, 1, -0.3125],
+            [42.5, 46.25, 15, "OriginalSegment", 5, 4, "DAR", 3, 2.645751311, 4, 3, -0.2],
+        ],
+        columns=[
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.LENGTH,
+            Headers.SEGMENT_DESC,
+            Headers.NUMBER_OF_DEVICES,
+            Headers.DEVICE_NUMBER,
+            Headers.DEVICE_TYPE,
+            Headers.INNER_DIAMETER,
+            Headers.OUTER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.ANNULUS_ZONE,
+            Headers.SCALE_FACTOR,
+        ],
     )
 
-    df_completion = pd.read_csv(csv_completion, sep=";")
-    df_tubing = pd.read_csv(csv_tubing, sep=";")
     joint_length = 10.0
-    df_true = pd.read_csv(csv_true, sep=";")
     df_test = completion.complete_the_well(df_tubing, df_completion, joint_length)
     pd.testing.assert_frame_equal(df_test, df_true)
 
