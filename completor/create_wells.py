@@ -62,7 +62,7 @@ class CreateWells:
             schedule: ReadSchedule object.
         """
         self.well_name = well_name
-        active_laterals = self._active_laterals(well_name, self.case)
+        active_laterals = self._active_laterals(well_name, self.case.completion_table)
         for lateral in active_laterals:
             self.df_completion = self.case.get_completion(well_name, lateral)
             self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(well_name, lateral)
@@ -171,18 +171,17 @@ class CreateWells:
         )
 
     @staticmethod
-    def _active_laterals(well_name: str, case: ReadCasefile) -> list[int]:
+    def _active_laterals(well_name: str, df_completion: pd.DataFrame) -> npt.NDArray[np.int_]:
         """Get a list of lateral numbers for the well.
 
         Args:
             well_name: The well name.
-            case: The case information to get lateral numbers from.
+            df_completion: The completion information from case data.
 
         Returns:
-
-
+            The active laterals.
         """
-        return list(case.completion_table[case.completion_table[Headers.WELL] == well_name][Headers.BRANCH].unique())
+        return np.array(df_completion[df_completion[Headers.WELL] == well_name][Headers.BRANCH].unique())
 
     @staticmethod
     def select_well(well_name, schedule: completion.WellSchedule, lateral: int) -> pd.DataFrame:
