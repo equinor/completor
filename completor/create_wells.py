@@ -61,6 +61,8 @@ class CreateWells:
             well_name: Well name.
             schedule: ReadSchedule object.
         """
+        if well_name is None:
+            raise ValueError("Cannot update well without well name.")
         self.well_name = well_name
         active_laterals = self._active_laterals(well_name, self.case.completion_table)
         for lateral in active_laterals:
@@ -184,11 +186,17 @@ class CreateWells:
         return np.array(df_completion[df_completion[Headers.WELL] == well_name][Headers.BRANCH].unique())
 
     @staticmethod
-    def select_well(well_name, schedule: completion.WellSchedule, lateral: int) -> pd.DataFrame:
-        """Filter all the required DataFrames for this well and its laterals."""
-        if well_name is None:
-            raise ValueError("No well name given")
+    def select_well(well_name: str, schedule: completion.WellSchedule, lateral: int) -> pd.DataFrame:
+        """Filter the reservoir data for this well and its laterals.
 
+        Args:
+            well_name: The name of the well.
+            schedule: Schedule data.
+            lateral: The lateral number.
+
+        Returns:
+            Filtered reservoir data.
+        """
         df_compsegs = schedule.get_compsegs(well_name, lateral)
         df_compdat = schedule.get_compdat(well_name)
         df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
