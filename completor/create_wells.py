@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from completor import completion
@@ -10,11 +11,6 @@ from completor.constants import Headers, Method
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
 from completor.read_schedule import fix_compsegs_by_priority
-
-try:
-    import numpy.typing as npt
-except ImportError:
-    pass
 
 
 class CreateWells:
@@ -68,11 +64,17 @@ class CreateWells:
         self.well_name = well_name
         active_laterals = self._active_laterals()
         for lateral in active_laterals:
-            self.select_well(schedule, lateral)
+            self.df_completion = self.case.get_completion(self.well_name, lateral)
+            self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(self.well_name, lateral)
+
+            self.df_reservoir = self.select_well(schedule, lateral)
+
             self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
             self.df_completion = completion.define_annulus_zone(self.df_completion)
-            self.create_tubing_segments()
-            self.insert_missing_segments()
+            self.df_tubing_segments = self.create_tubing_segments(
+                self.df_reservoir, self.df_completion, self.df_mdtvd, self.method, self.case
+            )
+            self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, self.well_name)
             self.complete_the_well()
             self.get_devices()
             self.correct_annulus_zone()
@@ -172,24 +174,25 @@ class CreateWells:
             ].unique()
         )
 
-    def select_well(self, schedule: completion.WellSchedule, lateral: int) -> None:
+    def select_well(self, schedule: completion.WellSchedule, lateral: int) -> pd.DataFrame:
         """Filter all the required DataFrames for this well and its laterals."""
         if self.well_name is None:
             raise ValueError("No well name given")
 
-        self.df_completion = self.case.get_completion(self.well_name, lateral)
-        self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(self.well_name, lateral)
         df_compsegs = schedule.get_compsegs(self.well_name, lateral)
         df_compdat = schedule.get_compdat(self.well_name)
-        self.df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
+        df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
         # Remove WELL column in the df_reservoir.
-        self.df_reservoir.drop([Headers.WELL], inplace=True, axis=1)
+        df_reservoir = df_reservoir.drop([Headers.WELL], axis=1)
         # If multiple occurrences of same IJK in compdat/compsegs --> keep the last one.
-        self.df_reservoir.drop_duplicates(subset=Headers.START_MEASURED_DEPTH, keep="last", inplace=True)
-        self.df_reservoir.reset_index(inplace=True)
+        df_reservoir = df_reservoir.drop_duplicates(subset=Headers.START_MEASURED_DEPTH, keep="last")
+        return df_reservoir.reset_index()
 
-    def create_tubing_segments(self) -> None:
+    @staticmethod
+    def create_tubing_segments(
+        df_reservoir, df_completion, df_mdtvd, method, case  # segment_length, minimum_segment_length
+    ) -> pd.DataFrame:
         """Create tubing segments as the basis.
 
         The function creates a class property DataFrame df_tubing_segments
@@ -203,38 +206,33 @@ class CreateWells:
         and default segment length on other devices.
         """
         df_tubing_cells = completion.create_tubing_segments(
-            self.df_reservoir,
-            self.df_completion,
-            self.df_mdtvd,
-            self.method,
-            self.case.segment_length,
-            self.case.minimum_segment_length,
+            df_reservoir,
+            df_completion,
+            df_mdtvd,
+            method,
+            case.segment_length,
+            case.minimum_segment_length,
         )
 
         df_tubing_user = completion.create_tubing_segments(
-            self.df_reservoir,
-            self.df_completion,
-            self.df_mdtvd,
+            df_reservoir,
+            df_completion,
+            df_mdtvd,
             Method.USER,
-            self.case.segment_length,
-            self.case.minimum_segment_length,
+            case.segment_length,
+            case.minimum_segment_length,
         )
 
-        if (len(self.df_completion[Headers.DEVICE_TYPE].unique()) > 1) & (
-            (self.df_completion[Headers.DEVICE_TYPE] == "ICV") & (self.df_completion[Headers.VALVES_PER_JOINT] > 0)
+        if (len(df_completion[Headers.DEVICE_TYPE].unique()) > 1) & (
+            (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
         ).any():
-            self.df_tubing_segments = fix_compsegs_by_priority(self.df_completion, df_tubing_cells, df_tubing_user)
+            return fix_compsegs_by_priority(df_completion, df_tubing_cells, df_tubing_user)
 
         # If all the devices are ICVs, lump the segments.
-        elif (self.df_completion[Headers.DEVICE_TYPE] == "ICV").all():
-            self.df_tubing_segments = df_tubing_user
+        if (df_completion[Headers.DEVICE_TYPE] == "ICV").all():
+            return df_tubing_user
         # If none of the devices are ICVs use defined method.
-        else:
-            self.df_tubing_segments = df_tubing_cells
-
-    def insert_missing_segments(self) -> None:
-        """Create a placeholder segment for inactive cells."""
-        self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, self.well_name)
+        return df_tubing_cells
 
     def complete_the_well(self) -> None:
         """Complete the well with users' completion design."""
