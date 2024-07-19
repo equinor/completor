@@ -66,8 +66,8 @@ class CreateWells:
             schedule: ReadSchedule object.
         """
         self.well_name = well_name
-        self._active_laterals()
-        for lateral in self.laterals:
+        active_laterals = self._active_laterals()
+        for lateral in active_laterals:
             self.select_well(schedule, lateral)
             self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
             self.df_completion = completion.define_annulus_zone(self.df_completion)
@@ -78,7 +78,9 @@ class CreateWells:
             self.correct_annulus_zone()
             self.connect_cells_to_segments()
             self.add_well_lateral_column(lateral)
-            self.combine_df(lateral)
+
+            self.df_well_all = pd.concat([self.df_well_all, self.df_well], sort=False)
+            self.df_reservoir_all = pd.concat([self.df_reservoir_all, self.df_reservoir], sort=False)
 
     def _active_wells(self) -> npt.NDArray[np.unicode_]:
         """Get a list of active wells specified by users.
@@ -157,14 +159,14 @@ class CreateWells:
                 "The keyword must either be float or string."
             )
 
-    def _active_laterals(self) -> None:
+    def _active_laterals(self) -> list[int]:
         """Get a list of lateral numbers for the well.
 
         ``get_active_laterals`` uses the case class DataFrame property
         ``completion_table`` with a format as shown in the function
         ``read_casefile.ReadCasefile.read_completion``.
         """
-        self.laterals = list(
+        return list(
             self.case.completion_table[self.case.completion_table[Headers.WELL] == self.well_name][
                 Headers.BRANCH
             ].unique()
@@ -297,12 +299,3 @@ class CreateWells:
         self.df_reservoir[Headers.WELL] = self.well_name
         self.df_well[Headers.LATERAL] = lateral
         self.df_reservoir[Headers.LATERAL] = lateral
-
-    def combine_df(self, lateral: int) -> None:
-        """Combine all DataFrames for this well."""
-        if lateral == self.laterals[0]:
-            self.df_well_all = self.df_well.copy(deep=True)
-            self.df_reservoir_all = self.df_reservoir.copy(deep=True)
-        else:
-            self.df_well_all = pd.concat([self.df_well_all, self.df_well], sort=False)
-            self.df_reservoir_all = pd.concat([self.df_reservoir_all, self.df_reservoir], sort=False)
