@@ -80,9 +80,10 @@ class CreateWells:
             )
             self.df_well[Headers.ROUGHNESS] = self.df_well[Headers.ROUGHNESS].apply(lambda x: f"{x:.3E}")
             self.df_well = self.get_devices(self.df_completion, self.df_well, self.case)
-
-            self.correct_annulus_zone()
-            self.connect_cells_to_segments()
+            self.df_well = completion.correct_annulus_zone(self.df_well)
+            self.df_reservoir = self.connect_cells_to_segments(
+                self.df_reservoir, self.df_well, self.df_tubing_segments, self.method
+            )
             self.add_well_lateral_column(lateral)
 
             self.df_well_all = pd.concat([self.df_well_all, self.df_well], sort=False)
@@ -264,11 +265,10 @@ class CreateWells:
             df_well = completion.get_device(df_well, case.wsegicv_table, "ICV")
         return df_well
 
-    def correct_annulus_zone(self) -> None:
-        """Remove the annulus zone if there is no connection to the tubing."""
-        self.df_well = completion.correct_annulus_zone(self.df_well)
-
-    def connect_cells_to_segments(self) -> None:
+    @staticmethod
+    def connect_cells_to_segments(
+        df_reservoir: pd.DataFrame, df_well: pd.DataFrame, df_tubing_segments: pd.DataFrame, method: Method
+    ) -> pd.DataFrame:
         """Connect cells to the well.
 
         We only need the following columns from the well DataFrame: MEASURED_DEPTH, NDEVICES, DEVICETYPE, and ANNULUS_ZONE.
@@ -276,21 +276,17 @@ class CreateWells:
         ICV placement forces different methods in segment creation as USER defined.
         """
         # drop BRANCH column, not needed
-        self.df_reservoir.drop([Headers.BRANCH], axis=1, inplace=True)
+        df_reservoir = df_reservoir.drop([Headers.BRANCH], axis=1)
         icv_device = (
-            self.df_well[Headers.DEVICE_TYPE].nunique() > 1
-            and (self.df_well[Headers.DEVICE_TYPE] == "ICV").any()
-            and not self.df_well[Headers.NUMBER_OF_DEVICES].empty
+            df_well[Headers.DEVICE_TYPE].nunique() > 1
+            and (df_well[Headers.DEVICE_TYPE] == "ICV").any()
+            and not df_well[Headers.NUMBER_OF_DEVICES].empty
         )
-        method = Method.USER if icv_device else self.method
-        self.df_reservoir = completion.connect_cells_to_segments(
-            self.df_well[
-                [Headers.TUBING_MEASURED_DEPTH, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]
-            ],
-            self.df_reservoir,
-            self.df_tubing_segments,
-            method,
-        )
+        method = Method.USER if icv_device else method
+        df_well = df_well[
+            [Headers.TUBING_MEASURED_DEPTH, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]
+        ]
+        return completion.connect_cells_to_segments(df_well, df_reservoir, df_tubing_segments, method)
 
     def add_well_lateral_column(self, lateral: int) -> None:
         """Add well and lateral column in df_well and df_compsegs."""
