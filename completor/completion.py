@@ -23,55 +23,6 @@ except ImportError:
 DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
 
 
-class Information:
-    """Holds information from `get_completion`."""
-
-    # TODO(#85): Improve the class.
-
-    def __init__(
-        self,
-        number_of_devices: float | list[float] | None = None,
-        device_type: DeviceType | list[DeviceType] | None = None,
-        device_number: int | list[int] | None = None,
-        inner_diameter: float | list[float] | None = None,
-        outer_diameter: float | list[float] | None = None,
-        roughness: float | list[float] | None = None,
-        annulus_zone: int | list[int] | None = None,
-    ):
-        """Initialize Information class."""
-        self.number_of_devices = number_of_devices
-        self.device_type = device_type
-        self.device_number = device_number
-        self.inner_diameter = inner_diameter
-        self.outer_diameter = outer_diameter
-        self.roughness = roughness
-        self.annulus_zone = annulus_zone
-
-    def __iadd__(self, other: Information):
-        """Implement value-wise addition between two Information instances."""
-        attributes = [
-            attribute for attribute in dir(self) if not attribute.startswith("__") and not attribute.endswith("__")
-        ]
-        for attribute in attributes:
-            value = getattr(self, attribute)
-            if not isinstance(value, list):
-                if value is None:
-                    value = []
-                else:
-                    value = [value]
-                setattr(self, attribute, value)
-
-            value = getattr(other, attribute)
-            attr: list = getattr(self, attribute)
-            if attr is None:
-                attr = []
-            if isinstance(value, list):
-                attr.extend(value)
-            else:
-                attr.append(value)
-        return self
-
-
 def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_content: pd.DataFrame) -> pd.DataFrame:
     """Create trajectory relation between measured depth and true vertical depth.
 
@@ -433,14 +384,16 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
     return int(_start[0]), int(_end[0])
 
 
-def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_length: float) -> None:
+def get_completion(
+    start: float, end: float, df_completion: pd.DataFrame, joint_length: float
+) -> tuple[float, float, float, float, float, float, float]:
     """Get information from the completion.
 
     Args:
         start: Start measured depth of the segment.
         end: End measured depth of the segment.
         df_completion: COMPLETION table that must contain columns: `STARTMD`, `ENDMD`, `NVALVEPERJOINT`,
-        `INNER_DIAMETER`, `OUTER_DIAMETER`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
+            `INNER_DIAMETER`, `OUTER_DIAMETER`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
         joint_length: Length of a joint.
 
     Returns:
@@ -462,42 +415,39 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
         well_name = df_completion[Headers.WELL].iloc[0]
         log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
 
-    # previous length start with 0
-    prev_length = 0.0
-    num_device = 0.0
-
-    number_of_devices = 0.0
-
     indices = np.arange(idx0, idx1 + 1)
     lengths = np.minimum(end_completion[indices], end) - np.maximum(start_completion[indices], start)
-    if any(np.where(lengths <= 0)):
+    # warning_mask = lengths <= 0
+    if (lengths <= 0).any():
         # _ = "equals" if length == 0 else "less than"
-        # logger.warning(f"Start depth {_} stop depth, in row {i}, " f"for well {df_completion[Headers.WELL][i]}")
+        # _ = np.where(lengths == 0, "equals", 0)
+        # _2 = np.where(lengths < 0, "less than", 0)
+        # logger.warning(
+        #     f"Start depth less than or equals to stop depth,
+        #     for {df_completion[Headers.START_MEASURED_DEPTH][indices][warning_mask]}"
+        # )
         logger.warning("Depths are incongruent")
-    # number_of_devices = np.cumsum(
-    #     (lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices]
-    # )
     number_of_devices = np.sum((lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices])
 
     mask = lengths > shift_array(lengths, 1, fill_value=0)
-    inner_diameter = df_completion[Headers.INNER_DIAMETER][indices][mask]
-    outer_diameter = df_completion[Headers.OUTER_DIAMETER][indices][mask]
-    roughness = df_completion[Headers.ROUGHNESS][indices][mask]
+    inner_diameter = df_completion[Headers.INNER_DIAMETER].to_numpy()[indices][mask]
+    outer_diameter = df_completion[Headers.OUTER_DIAMETER].to_numpy()[indices][mask]
+    roughness = df_completion[Headers.ROUGHNESS].to_numpy()[indices][mask]
     if (inner_diameter > outer_diameter).any():
         raise ValueError("Check screen/tubing and well/casing ID in case file.")
     outer_diameter = (outer_diameter**2 - inner_diameter**2) ** 0.5
-    device_type = df_completion[Headers.DEVICE_TYPE][indices][mask]
-    device_number = df_completion[Headers.DEVICE_NUMBER][indices][mask]
-    annulus_zone = df_completion[Headers.ANNULUS_ZONE][indices][mask]
+    device_type = df_completion[Headers.DEVICE_TYPE].to_numpy()[indices][mask]
+    device_number = df_completion[Headers.DEVICE_NUMBER].to_numpy()[indices][mask]
+    annulus_zone = df_completion[Headers.ANNULUS_ZONE].to_numpy()[indices][mask]
 
     return (
         number_of_devices,
-        device_type.iloc[-1],
-        device_number.iloc[-1],
-        inner_diameter.iloc[-1],
-        outer_diameter.iloc[-1],
-        roughness.iloc[-1],
-        annulus_zone.iloc[-1],
+        device_type[-1],
+        device_number[-1],
+        inner_diameter[-1],
+        outer_diameter[-1],
+        roughness[-1],
+        annulus_zone[-1],
     )
 
 
@@ -514,54 +464,7 @@ def complete_the_well(
     Returns:
         Well information.
     """
-    # #################################
-    #
-    #
-    # start_completion = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
-    # end_completion = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
-    # # idx0, idx1 = completion_index(df_completion, start, end)
-    # # indices = [
-    # #     (completion_index(df_completion, s, e)[0], completion_index(df_completion, s, e)[1] + 1)
-    # #     for s, e in zip(start, end)
-    # # ]
-    # indices = [completion_index(df_completion, s, e) for s, e in zip(start, end)]
-    #
-    # if any(idx0 == -1 or idx1 == -1 for idx0, idx1 in indices):
-    #     well_name = df_completion[Headers.WELL].iloc[0]
-    #     log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
-    #
-    # # previous length start with 0
-    # prev_length = 0.0
-    # num_device = 0.0
-    #
-    # number_of_devices = 0.0
-    #
-    # shifted_indices = [(np.array((x, y + 1))) for x, y in indices]
-    # # shifted_indices = [(np.arange(x, y + 1)) for x, y in indices]
-    # for s in shifted_indices:
-    #
-    #     print(np.minimum(end_completion[s], end) - np.maximum(start_completion[s], start))
-    #
-    # lengths = [
-    #     np.minimum(end_completion[indices], end) - np.maximum(start_completion[indices], start)
-    #     for indices in shifted_indices
-    # ]
-    # if any(np.where(lengths <= 0)):
-    #     # _ = "equals" if length == 0 else "less than"
-    #     # logger.warning(f"Start depth {_} stop depth, in row {i}, " f"for well {df_completion[Headers.WELL][i]}")
-    #     logger.warning("Depths are incongruent")
-    # # = lengths / joint_length * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices]
-    # # number_of_devices = np.cumsum(
-    # #     (lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices]
-    # # )
-    # number_of_devices = np.sum((lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices])
-    #
-    # if lengths > lengths.shift(-1):
-    #     logger.warning("Depths are incongruent")
-    #
-    #
-    # #################################
-
+    test_dir: dict[str, list]
     test_dir = {
         "number_of_devices": [],
         "device_type": [],
@@ -573,47 +476,18 @@ def complete_the_well(
     }
     start = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()
     end = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
-    start_completion = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
-    end_completion = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
+    # start_completion = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
+    # end_completion = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
 
     # loop through the cells
     for i in range(df_tubing_segments.shape[0]):
-        # idx0, idx1 = completion_index(df_completion, start, end)
-        # indices = [
-        #     (completion_index(df_completion, s, e)[0], completion_index(df_completion, s, e)[1] + 1)
-        #     for s, e in zip(start, end)
-        # ]
         indices = [np.array(completion_index(df_completion, s, e)) for s, e in zip(start, end)]
-        shifted_indices = [(np.array((x, y + 1))) for x, y in indices]
+        # shifted_indices = [(np.array((x, y + 1))) for x, y in indices]
 
         if any(idx0 == -1 or idx1 == -1 for idx0, idx1 in indices):
             well_name = df_completion[Headers.WELL].iloc[0]
             log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
 
-        prev_length = 0.0
-        num_device = 0.0
-        number_of_devices = 0.0
-
-        # test = np.array()
-        # for s in shifted_indices:
-        #     np.append(test, max(np.minimum(end_completion[s], end[i]) - np.maximum(start_completion[s], start[i])))
-        #
-        # lengths = [
-        #     np.minimum(end_completion[indices], end) - np.maximum(start_completion[indices], start)
-        #     for indices in shifted_indices
-        # ]
-        # if any(np.where(lengths <= 0)):
-        #     # _ = "equals" if length == 0 else "less than"
-        #     # logger.warning(f"Start depth {_} stop depth, in row {i}, " f"for well {df_completion[Headers.WELL][i]}")
-        #     logger.warning("Depths are incongruent")
-        # # = lengths / joint_length * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices]
-        # # number_of_devices = np.cumsum(
-        # #     (lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices]
-        # # )
-        # number_of_devices = np.sum(
-        #     (lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices]
-        # )
-        #
         attrs = get_completion(start[i], end[i], df_completion, joint_length)
         test_dir["number_of_devices"] += [attrs[0]]
         test_dir["device_type"] += [attrs[1]]
