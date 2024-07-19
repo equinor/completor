@@ -52,7 +52,7 @@ class CreateWells:
 
         self.case: ReadCasefile = case
         self.active_wells = self._active_wells(self.case)
-        self.method = self._method()
+        self.method = self._method(self.case)
 
     def update(self, well_name: str, schedule: completion.WellSchedule) -> None:
         """Update class variables in CreateWells.
@@ -127,8 +127,12 @@ class CreateWells:
                 return np.array([])
         return active_wells
 
-    def _method(self) -> Method:
+    @staticmethod
+    def _method(case: ReadCasefile) -> Method:
         """Define how the user wants to create segments.
+
+        Args:
+            case: Case data.
 
         Returns:
             Creation method enum.
@@ -136,38 +140,35 @@ class CreateWells:
         Raises:
             ValueError: If method is not one of the defined methods.
         """
-        if isinstance(self.case.segment_length, float):
-            if float(self.case.segment_length) > 0.0:
+        if isinstance(case.segment_length, float):
+            if float(case.segment_length) > 0.0:
                 return Method.FIX
-            if float(self.case.segment_length) == 0.0:
+            if float(case.segment_length) == 0.0:
                 return Method.CELLS
-            if self.case.segment_length < 0.0:
+            if case.segment_length < 0.0:
                 return Method.USER
-            else:
-                raise ValueError(
-                    f"Unrecognized method '{self.case.segment_length}' in SEGMENTLENGTH keyword. "
-                    "The value should be one of: 'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', "
-                    "0 for 'CELLS', or a positive number for 'FIX'."
-                )
-
-        elif isinstance(self.case.segment_length, str):
-            if "welsegs" in self.case.segment_length.lower() or "infill" in self.case.segment_length.lower():
-                return Method.WELSEGS
-            if "cell" in self.case.segment_length.lower():
-                return Method.CELLS
-            if "user" in self.case.segment_length.lower():
-                return Method.USER
-            else:
-                raise ValueError(
-                    f"Unrecognized method '{self.case.segment_length}' in SEGMENTLENGTH keyword. "
-                    "The value should be one of: "
-                    "'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', 0 for 'CELLS', positive number for 'FIX'."
-                )
-        else:
             raise ValueError(
-                f"Unrecognized type of '{self.case.segment_length}' in SEGMENTLENGTH keyword. "
-                "The keyword must either be float or string."
+                f"Unrecognized method '{case.segment_length}' in SEGMENTLENGTH keyword. "
+                "The value should be one of: 'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', "
+                "0 for 'CELLS', or a positive number for 'FIX'."
             )
+
+        if isinstance(case.segment_length, str):
+            if "welsegs" in case.segment_length.lower() or "infill" in case.segment_length.lower():
+                return Method.WELSEGS
+            if "cell" in case.segment_length.lower():
+                return Method.CELLS
+            if "user" in case.segment_length.lower():
+                return Method.USER
+            raise ValueError(
+                f"Unrecognized method '{case.segment_length}' in SEGMENTLENGTH keyword. The value should be one of: "
+                "'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', 0 for 'CELLS', positive number for 'FIX'."
+            )
+
+        raise ValueError(
+            f"Unrecognized type of '{case.segment_length}' in SEGMENTLENGTH keyword. "
+            "The keyword must either be float or string."
+        )
 
     @staticmethod
     def _active_laterals(well_name: str, case: ReadCasefile) -> list[int]:
