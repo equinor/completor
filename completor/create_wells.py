@@ -51,7 +51,7 @@ class CreateWells:
         self.laterals: list[int] = []
 
         self.case: ReadCasefile = case
-        self.active_wells = self._active_wells()
+        self.active_wells = self._active_wells(self.case)
         self.method = self._method()
 
     def update(self, well_name: str, schedule: completion.WellSchedule) -> None:
@@ -62,19 +62,19 @@ class CreateWells:
             schedule: ReadSchedule object.
         """
         self.well_name = well_name
-        active_laterals = self._active_laterals()
+        active_laterals = self._active_laterals(well_name, self.case)
         for lateral in active_laterals:
-            self.df_completion = self.case.get_completion(self.well_name, lateral)
-            self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(self.well_name, lateral)
+            self.df_completion = self.case.get_completion(well_name, lateral)
+            self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(well_name, lateral)
 
-            self.df_reservoir = self.select_well(schedule, lateral)
+            self.df_reservoir = self.select_well(well_name, schedule, lateral)
 
             self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
             self.df_completion = completion.define_annulus_zone(self.df_completion)
             self.df_tubing_segments = self.create_tubing_segments(
                 self.df_reservoir, self.df_completion, self.df_mdtvd, self.method, self.case
             )
-            self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, self.well_name)
+            self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, well_name)
             self.df_well = completion.complete_the_well(
                 self.df_tubing_segments, self.df_completion, self.case.joint_length
             )
@@ -84,45 +84,48 @@ class CreateWells:
             self.df_reservoir = self.connect_cells_to_segments(
                 self.df_reservoir, self.df_well, self.df_tubing_segments, self.method
             )
-            self.add_well_lateral_column(lateral)
+            self.df_well[Headers.WELL] = well_name
+            self.df_reservoir[Headers.WELL] = well_name
+            self.df_well[Headers.LATERAL] = lateral
+            self.df_reservoir[Headers.LATERAL] = lateral
 
             self.df_well_all = pd.concat([self.df_well_all, self.df_well], sort=False)
             self.df_reservoir_all = pd.concat([self.df_reservoir_all, self.df_reservoir], sort=False)
 
-    def _active_wells(self) -> npt.NDArray[np.unicode_]:
+    @staticmethod
+    def _active_wells(case: ReadCasefile) -> npt.NDArray[np.str_]:
         """Get a list of active wells specified by users.
 
-        If the well has annulus content with gravel pack and the well is perforated,
-        Completor will not add a device layer.
-        Completor does nothing to gravel-packed perforated wells by default.
-        This behavior can be changed by setting the GP_PERF_DEVICELAYER keyword in the case file to true.
+        Notes:
+            No device layer will be added for perforated wells with gravel-packed annulus.
+            Completor does nothing to gravel-packed perforated wells by default.
+            This behavior can be changed by setting the GP_PERF_DEVICELAYER keyword in the case file to true.
+
+        Args:
+            case: Case data.
 
         Returns:
-            Active wells.
+            The active wells found.
         """
-        # Need to check completion of all wells in completion table to remove GP-PERF type wells
-        active_wells = list(set(self.case.completion_table[Headers.WELL]))
+        # Need to check completion of all wells in the completion table to remove GP-PERF type wells
+        active_wells = np.array(case.completion_table[Headers.WELL].unique())
         # We cannot update a list while iterating of it
-        for well_name in active_wells.copy():
+        for well_name in active_wells:
             # Annulus content of each well
-            ann_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name][
-                Headers.ANNULUS
-            ]
-            type_series = self.case.completion_table[self.case.completion_table[Headers.WELL] == well_name][
-                Headers.DEVICE_TYPE
-            ]
+            ann_series = case.completion_table[case.completion_table[Headers.WELL] == well_name][Headers.ANNULUS]
+            type_series = case.completion_table[case.completion_table[Headers.WELL] == well_name][Headers.DEVICE_TYPE]
             gp_check = not ann_series.isin(["OA"]).any()
             perf_check = not type_series.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"]).any()
-            if gp_check and perf_check and not self.case.gp_perf_devicelayer:
+            if gp_check and perf_check and not case.gp_perf_devicelayer:
                 # De-activate wells with GP_PERF if instructed to do so:
-                active_wells.remove(well_name)
-            if not active_wells:
+                active_wells = np.setdiff1d(active_wells, well_name, assume_unique=True)
+            if active_wells.size == 0:
                 logger.warning(
                     "There are no active wells for Completor to work on. E.g. all wells are defined with Gravel Pack "
                     "(GP) and valve type PERF. If you want these wells to be active set GP_PERF_DEVICELAYER to TRUE."
                 )
                 return np.array([])
-        return np.array(active_wells)
+        return active_wells
 
     def _method(self) -> Method:
         """Define how the user wants to create segments.
@@ -166,26 +169,28 @@ class CreateWells:
                 "The keyword must either be float or string."
             )
 
-    def _active_laterals(self) -> list[int]:
+    @staticmethod
+    def _active_laterals(well_name: str, case: ReadCasefile) -> list[int]:
         """Get a list of lateral numbers for the well.
 
-        ``get_active_laterals`` uses the case class DataFrame property
-        ``completion_table`` with a format as shown in the function
-        ``read_casefile.ReadCasefile.read_completion``.
-        """
-        return list(
-            self.case.completion_table[self.case.completion_table[Headers.WELL] == self.well_name][
-                Headers.BRANCH
-            ].unique()
-        )
+        Args:
+            well_name: The well name.
+            case: The case information to get lateral numbers from.
 
-    def select_well(self, schedule: completion.WellSchedule, lateral: int) -> pd.DataFrame:
+        Returns:
+
+
+        """
+        return list(case.completion_table[case.completion_table[Headers.WELL] == well_name][Headers.BRANCH].unique())
+
+    @staticmethod
+    def select_well(well_name, schedule: completion.WellSchedule, lateral: int) -> pd.DataFrame:
         """Filter all the required DataFrames for this well and its laterals."""
-        if self.well_name is None:
+        if well_name is None:
             raise ValueError("No well name given")
 
-        df_compsegs = schedule.get_compsegs(self.well_name, lateral)
-        df_compdat = schedule.get_compdat(self.well_name)
+        df_compsegs = schedule.get_compsegs(well_name, lateral)
+        df_compdat = schedule.get_compdat(well_name)
         df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
         # Remove WELL column in the df_reservoir.
@@ -287,10 +292,3 @@ class CreateWells:
             [Headers.TUBING_MEASURED_DEPTH, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]
         ]
         return completion.connect_cells_to_segments(df_well, df_reservoir, df_tubing_segments, method)
-
-    def add_well_lateral_column(self, lateral: int) -> None:
-        """Add well and lateral column in df_well and df_compsegs."""
-        self.df_well[Headers.WELL] = self.well_name
-        self.df_reservoir[Headers.WELL] = self.well_name
-        self.df_well[Headers.LATERAL] = lateral
-        self.df_reservoir[Headers.LATERAL] = lateral
