@@ -291,9 +291,18 @@ class CreateWells:
     ) -> pd.DataFrame:
         """Connect cells to the well.
 
-        We only need the following columns from the well DataFrame: MEASURED_DEPTH, NDEVICES, DEVICETYPE, and ANNULUS_ZONE.
+        Notes:
+            Only some columns from well DataFrame are needed: MEASURED_DEPTH, NDEVICES, DEVICETYPE, and ANNULUS_ZONE.
+            ICV placement forces different methods in segment creation as USER defined.
 
-        ICV placement forces different methods in segment creation as USER defined.
+        Args:
+            df_reservoir: Reservoir data.
+            df_well: Well data.
+            df_tubing_segments: Tubing information.
+            method: The method to use for creating segments.
+
+        Returns:
+            Reservoir data with additional info on connected cells.
         """
         # drop BRANCH column, not needed
         df_reservoir = df_reservoir.drop([Headers.BRANCH], axis=1)
