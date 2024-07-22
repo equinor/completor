@@ -50,7 +50,7 @@ class CreateWells:
         self.df_welsegs_content = pd.DataFrame()
         self.laterals: list[int] = []
         self.case: ReadCasefile = case
-        self.active_wells = get_active_wells(self.case)
+        self.active_wells = get_active_wells(self.case.completion_table, self.case.gp_perf_devicelayer)
         self.method = _get_method(self.case)
 
     def update(self, well_name: str, schedule: completion.WellSchedule) -> None:
@@ -94,7 +94,7 @@ class CreateWells:
             self.df_reservoir_all = pd.concat([self.df_reservoir_all, self.df_reservoir], sort=False)
 
 
-def get_active_wells(case: ReadCasefile) -> npt.NDArray[np.str_]:
+def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) -> npt.NDArray[np.str_]:
     """Get a list of active wells specified by users.
 
     Notes:
@@ -103,30 +103,30 @@ def get_active_wells(case: ReadCasefile) -> npt.NDArray[np.str_]:
         This behavior can be changed by setting the GP_PERF_DEVICELAYER keyword in the case file to true.
 
     Args:
-        case: Case data.
+        completion_table: Completion information.
+        gp_perf_devicelayer: Keyword denoting if the user wants a device layer for this type of completion.
 
     Returns:
         The active wells found.
     """
     # Need to check completion of all wells in the completion table to remove GP-PERF type wells
-    wells = np.array(case.completion_table[Headers.WELL].unique())
-    # We cannot update a list while iterating of it
-    for well_name in wells:
-        # Annulus content of each well
-        ann_series = case.completion_table[case.completion_table[Headers.WELL] == well_name][Headers.ANNULUS]
-        type_series = case.completion_table[case.completion_table[Headers.WELL] == well_name][Headers.DEVICE_TYPE]
-        gp_check = not ann_series.isin(["OA"]).any()
-        perf_check = not type_series.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"]).any()
-        if gp_check and perf_check and not case.gp_perf_devicelayer:
-            # De-activate wells with GP_PERF if instructed to do so:
-            wells = np.setdiff1d(wells, well_name, assume_unique=True)
-        if wells.size == 0:
+    wells = np.array(completion_table[Headers.WELL])
+    annuli = completion_table[completion_table[Headers.WELL] == wells][Headers.ANNULUS]
+    device_types = completion_table[completion_table[Headers.WELL] == wells][Headers.DEVICE_TYPE]
+
+    # If the user wants a device layer for this type of completion.
+    if not gp_perf_devicelayer:
+        gp_check = annuli == "OA"
+        perf_check = device_types.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"])
+        # Where annuli is "OA" or perforation is in the list above.
+        mask = gp_check | perf_check
+        if not mask.any():
             logger.warning(
                 "There are no active wells for Completor to work on. E.g. all wells are defined with Gravel Pack "
                 "(GP) and valve type PERF. If you want these wells to be active set GP_PERF_DEVICELAYER to TRUE."
             )
-            return np.array([])
-    return wells
+        return np.array(completion_table[Headers.WELL][mask].unique())
+    return np.array(completion_table[Headers.WELL].unique())
 
 
 def _get_method(case: ReadCasefile) -> Method:
