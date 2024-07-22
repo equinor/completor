@@ -16,7 +16,7 @@ def update_fonts(family: str = "DejaVu Serif", size: float = 12) -> None:
         size: Font sizes.
     """
     rcParams["font.family"] = family
-    rcParams.update({"font.size": size})
+    rcParams["font.size"] = size
 
 
 def format_axis(subplot: Axes, title: str, xlabel: str, ylabel: str, categorical: bool = False) -> Axes:
