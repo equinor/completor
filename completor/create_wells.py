@@ -50,7 +50,6 @@ class CreateWells:
         self.df_welsegs_content = pd.DataFrame()
         self.laterals: list[int] = []
         self.case: ReadCasefile = case
-        self.active_wells = get_active_wells(self.case.completion_table, self.case.gp_perf_devicelayer)
         self.method = _get_method(self.case)
 
     def update(self, well_name: str, schedule: completion.WellSchedule) -> None:
@@ -220,7 +219,7 @@ def _create_tubing_segments(
     and default segment length on other devices.
 
     Args:
-        df_reservoir: Reservoir data
+        df_reservoir: Reservoir data.
         df_completion: Completion information.
         df_mdtvd: Measured and true vertical depths.
         method: The method to use for creating segments.

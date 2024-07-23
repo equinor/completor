@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 import utils
 
+from completor import create_wells
 from completor.constants import Method  # type: ignore
-from completor.create_wells import CreateWells  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -62,7 +62,7 @@ SEGMENTLENGTH
 """
     # Test default value
     case_obj = ReadCasefile(case_obj, "dummy_value.sch")
-    well = CreateWells(case_obj)
+    well = create_wells.CreateWells(case_obj)
     assert well.method == expected
 
 
@@ -85,7 +85,7 @@ NON_VALID_INPUT
     # Test default value
     case_obj = ReadCasefile(case_obj, "dummy_value.sch")
     with pytest.raises(ValueError) as e:
-        CreateWells(case_obj)
+        create_wells.CreateWells(case_obj)
     assert "Unrecognized method 'NON_VALID_INPUT' in SEGMENTLENGTH keyword" in str(e.value)
 
 

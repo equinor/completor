@@ -12,7 +12,7 @@ from typing import overload
 import numpy as np
 
 import completor
-from completor import parse
+from completor import create_wells, parse
 from completor.completion import WellSchedule
 from completor.constants import Keywords
 from completor.create_output import CreateOutput
@@ -241,10 +241,11 @@ def create(
     """
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     wells = CreateWells(case)
-    schedule = WellSchedule(wells.active_wells)  # container for MSW-data
+
+    active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
+    schedule = WellSchedule(active_wells)  # container for MSW-data
 
     lines = schedule_file.splitlines()
-
     clean_lines_map = {}
     for line_number, line in enumerate(lines):
         line = clean_file_line(line, remove_quotation_marks=True)
@@ -253,7 +254,6 @@ def create(
 
     outfile = FileWriter(new_file, case.mapper)
     chunks = []  # for debug..
-    figno = 0
     written = set()  # Keep track of which MSW's has been written
     line_number = 0
     progress_status = ProgressStatus(len(lines), percent)
@@ -339,7 +339,6 @@ def create(
                     written.add(well_name)
                 else:
                     write_welsegs = False
-                figno += 1
                 logger.debug("Writing new MSW info for well %s", well_name)
                 wells.update(well_name, schedule)
                 output = CreateOutput(
