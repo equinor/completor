@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import overload, Literal
+from typing import Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -15,7 +15,7 @@ from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import log_and_raise_exception, shift_array
 
 try:
-    from typing import TypeAlias  # type: ignore
+    from typing import TypeAlias
 except ImportError:
     pass
 

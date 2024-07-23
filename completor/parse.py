@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from copy import deepcopy
-from typing import Literal, overload
+from typing import Any, Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -14,7 +14,7 @@ from completor.constants import Headers, Keywords
 from completor.exceptions.clean_exceptions import CompletorError
 
 
-class ContentCollection(list):
+class ContentCollection(list[Any]):
     """A subclass of list that can accept additional attributes. To be used like a regular list."""
 
     def __new__(cls, *args, **kwargs):
