@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
-import typing
-from typing import overload
+from typing import Any, Literal, NoReturn, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -13,11 +12,6 @@ import pandas as pd
 
 from completor.constants import Headers
 from completor.logger import logger
-
-try:
-    from typing import Literal, NoReturn
-except ImportError:
-    pass
 
 
 def abort(message: str, status: int = 1) -> SystemExit:
@@ -172,9 +166,7 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
     return clean_lines
 
 
-def shift_array(
-    array: npt.NDArray[typing.Any], shift_by: int, fill_value: typing.Any = np.nan
-) -> npt.NDArray[typing.Any]:
+def shift_array(array: npt.NDArray[Any], shift_by: int, fill_value: Any = np.nan) -> npt.NDArray[Any]:
     """Shift an array to the left or right, similar to Pandas' shift.
 
     Note: By chrisaycock https://stackoverflow.com/a/42642326.

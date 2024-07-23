@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import overload
+from typing import overload, Literal
 
 import numpy as np
 import numpy.typing as npt
@@ -15,12 +15,12 @@ from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import log_and_raise_exception, shift_array
 
 try:
-    from typing import Literal, TypeAlias  # type: ignore
+    from typing import TypeAlias  # type: ignore
 except ImportError:
     pass
 
 # Use more precise type information, if possible
-DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
+DeviceType: TypeAlias = Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]
 
 
 def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_content: pd.DataFrame) -> pd.DataFrame:
@@ -358,9 +358,8 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     df_copy[Headers.SEGMENT_DESC] = [Headers.ADDITIONAL_SEGMENT] * df_copy.shape[0]
     # combine the two data frame
     df_tubing_segments = pd.concat([df_tubing_segments, df_copy])
-    df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH], inplace=True)
-    df_tubing_segments.reset_index(drop=True, inplace=True)
-    return df_tubing_segments
+    df_tubing_segments = df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH])
+    return df_tubing_segments.reset_index(drop=True)
 
 
 def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> tuple[int, int]:

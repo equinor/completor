@@ -7,7 +7,7 @@ import os
 import re
 import time
 from collections.abc import Mapping
-from typing import overload
+from typing import Literal, overload
 
 import numpy as np
 
@@ -23,11 +23,6 @@ from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
 from completor.visualization import close_figure, create_pdfpages
-
-try:
-    from typing import Literal
-except ImportError:
-    pass
 
 
 class FileWriter:
