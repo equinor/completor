@@ -46,7 +46,7 @@ def test_reading_welspecs():
             Headers.SHUT,
             Headers.FLOW_CROSS_SECTIONAL_AREA,
             Headers.PRESSURE_TABLE,
-            Headers.CALIBRATION_FLUID_DENSITY,
+            Headers.DENSITY_CALCULATION_TYPE,
             Headers.REGION,
             Headers.RESERVED_HEADER_1,
             Headers.RESERVED_HEADER_2,
