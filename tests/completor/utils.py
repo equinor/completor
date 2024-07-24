@@ -81,10 +81,10 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     # WELSEGS content
     wsc_true = true_output.welsegs_content
     wsc_true.set_index(Headers.WELL, inplace=True)
-    wsc_true.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
+    wsc_true.sort_values([Headers.WELL, Headers.TUBING_MEASURED_DEPTH], inplace=True)
     wsc_test = test_output.welsegs_content
     wsc_test.set_index(Headers.WELL, inplace=True)
-    wsc_test.sort_values([Headers.WELL, Headers.TUBINGMD], inplace=True)
+    wsc_test.sort_values([Headers.WELL, Headers.TUBING_MEASURED_DEPTH], inplace=True)
     pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
 
     # COMPSEGS
@@ -169,10 +169,10 @@ class ReadSchedule:
             }
         )
 
-        # If CONNECTION_FACTOR and FORAMTION_PERMEABILITY_THICKNESS are defaulted by users, type conversion fails and
+        # If CONNECTION_FACTOR and FORMATION_PERMEABILITY_THICKNESS are defaulted by users, type conversion fails and
         # we deliberately ignore it:
         self.compdat = self.compdat.astype(
-            {Headers.CONNECTION_FACTOR: np.float64, Headers.FORAMTION_PERMEABILITY_THICKNESS: np.float64},
+            {Headers.CONNECTION_FACTOR: np.float64, Headers.FORMATION_PERMEABILITY_THICKNESS: np.float64},
             errors="ignore",
         )
 
@@ -199,15 +199,17 @@ class ReadSchedule:
             {
                 Headers.TUBING_SEGMENT: np.int64,
                 Headers.TUBING_SEGMENT_2: np.int64,
-                Headers.TUBINGBRANCH: np.int64,
+                Headers.TUBING_BRANCH: np.int64,
                 Headers.TUBING_OUTLET: np.int64,
-                Headers.TUBINGMD: np.float64,
-                Headers.TUBINGTVD: np.float64,
+                Headers.TUBING_MEASURED_DEPTH: np.float64,
+                Headers.TRUE_VERTICAL_DEPTH: np.float64,
                 Headers.TUBING_ROUGHNESS: np.float64,
             }
         )
 
-        self._welsegs_header = welsegs_header.astype({Headers.SEGMENTTVD: np.float64, Headers.SEGMENTMD: np.float64})
+        self._welsegs_header = welsegs_header.astype(
+            {Headers.TRUE_VERTICAL_DEPTH: np.float64, Headers.MEASURED_DEPTH: np.float64}
+        )
         return self._welsegs_header, self._welsegs_content  # type: ignore
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:
@@ -252,7 +254,7 @@ class ReadSchedule:
         df1_welsegs = self.welsegs_header[self.welsegs_header[Headers.WELL] == well_name]
         df2_welsegs = self.welsegs_content[self.welsegs_content[Headers.WELL] == well_name].copy()
         if branch is not None:
-            df2_welsegs = df2_welsegs[df2_welsegs[Headers.TUBINGBRANCH] == branch]
+            df2_welsegs = df2_welsegs[df2_welsegs[Headers.TUBING_BRANCH] == branch]
         # remove the well column because it does not exist
         # in the original input
         df2_welsegs.drop([Headers.WELL], inplace=True, axis=1)

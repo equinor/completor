@@ -24,12 +24,12 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
     if df_header[Headers.INFO_TYPE].iloc[0] == "ABS":
         return df_header, df_content
 
-    ref_tvd = df_header[Headers.SEGMENTTVD].iloc[0]
-    ref_md = df_header[Headers.SEGMENTMD].iloc[0]
+    ref_tvd = df_header[Headers.TRUE_VERTICAL_DEPTH].iloc[0]
+    ref_md = df_header[Headers.MEASURED_DEPTH].iloc[0]
     inlet_segment = df_content[Headers.TUBING_SEGMENT].to_numpy()
     outlet_segment = df_content[Headers.TUBING_OUTLET].to_numpy()
-    md_inc = df_content[Headers.TUBING_MD].to_numpy()
-    tvd_inc = df_content[Headers.TUBING_TVD].to_numpy()
+    md_inc = df_content[Headers.TUBING_MEASURED_DEPTH].to_numpy()
+    tvd_inc = df_content[Headers.TRUE_VERTICAL_DEPTH].to_numpy()
     md_new = np.zeros(inlet_segment.shape[0])
     tvd_new = np.zeros(inlet_segment.shape[0])
 
@@ -44,8 +44,8 @@ def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.D
 
     # update data frame
     df_header[Headers.INFO_TYPE] = ["ABS"]
-    df_content[Headers.TUBING_MD] = md_new
-    df_content[Headers.TUBING_TVD] = tvd_new
+    df_content[Headers.TUBING_MEASURED_DEPTH] = md_new
+    df_content[Headers.TRUE_VERTICAL_DEPTH] = tvd_new
     return df_header, df_content
 
 

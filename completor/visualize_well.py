@@ -20,7 +20,7 @@ def visualize_tubing(axs: Axes, df_well: pd.DataFrame) -> Axes:
     """
     df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
     if df_device.shape[0] > 0:
-        axs.plot(df_well[Headers.TUB_MD].to_numpy(), [1] * df_well.shape[0], "go-")
+        axs.plot(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy(), [1] * df_well.shape[0], "go-")
     return axs
 
 
@@ -36,7 +36,7 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
     """
     df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
     for idx in range(df_device.shape[0]):
-        xpar = [df_device[Headers.TUB_MD].iloc[idx]] * 2
+        xpar = [df_device[Headers.TUBING_MEASURED_DEPTH].iloc[idx]] * 2
         ypar = [1.0, 2.0]
         if df_device[Headers.DEVICE_TYPE].iloc[idx] == "PERF":
             axs.plot(xpar, ypar, "ro-", markevery=[1])
@@ -67,7 +67,7 @@ def visualize_annulus(axs: Axes, df_well: pd.DataFrame) -> Axes:
     branches = df_well[Headers.ANNULUS_ZONE].unique()
     for branch in branches:
         df_branch = df_annulus[df_annulus[Headers.ANNULUS_ZONE] == branch]
-        xpar = df_branch[Headers.TUB_MD].to_numpy()
+        xpar = df_branch[Headers.TUBING_MEASURED_DEPTH].to_numpy()
         ypar = [3.0] * len(xpar)
         axs.plot(xpar, ypar, "bo-")
         # find the first connection in branches
@@ -75,7 +75,7 @@ def visualize_annulus(axs: Axes, df_well: pd.DataFrame) -> Axes:
             (df_branch[Headers.NUMBER_OF_DEVICES] > 0) | (df_branch[Headers.DEVICE_TYPE] == "PERF")
         ]
         for idx in range(df_annulus_with_connection_to_tubing.shape[0]):
-            xpar = [df_annulus_with_connection_to_tubing[Headers.TUB_MD].iloc[idx]] * 2
+            xpar = [df_annulus_with_connection_to_tubing[Headers.TUBING_MEASURED_DEPTH].iloc[idx]] * 2
             ypar = [2.0, 3.0]
             if idx == 0:
                 axs.plot(xpar, ypar, "bo-", markevery=[1])
@@ -105,8 +105,8 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
         if df_reservoir[Headers.ANNULUS_ZONE].iloc[idx] > 0:
             axs.annotate(
                 "",
-                xy=(df_reservoir[Headers.TUB_MD].iloc[idx], 3.0),
-                xytext=(df_reservoir[Headers.MD].iloc[idx], 4.0),
+                xy=(df_reservoir[Headers.TUBING_MEASURED_DEPTH].iloc[idx], 3.0),
+                xytext=(df_reservoir[Headers.MEASURED_DEPTH].iloc[idx], 4.0),
                 arrowprops=dict(facecolor="black", shrink=0.05, width=0.5, headwidth=4.0),
             )
         else:
@@ -116,17 +116,19 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
             ):
                 axs.annotate(
                     "",
-                    xy=(df_reservoir[Headers.TUB_MD].iloc[idx], 2.0),
-                    xytext=(df_reservoir[Headers.MD].iloc[idx], 4.0),
+                    xy=(df_reservoir[Headers.TUBING_MEASURED_DEPTH].iloc[idx], 2.0),
+                    xytext=(df_reservoir[Headers.MEASURED_DEPTH].iloc[idx], 4.0),
                     arrowprops=dict(facecolor="black", shrink=0.05, width=0.5, headwidth=4.0),
                 )
     # get connection factor
     if "1*" not in df_reservoir[Headers.CONNECTION_FACTOR].to_numpy().tolist():
         max_cf = max(df_reservoir[Headers.CONNECTION_FACTOR].to_numpy())
-        ax_twinx.plot(df_reservoir[Headers.MD], df_reservoir[Headers.CONNECTION_FACTOR], "k-")
+        ax_twinx.plot(df_reservoir[Headers.MEASURED_DEPTH], df_reservoir[Headers.CONNECTION_FACTOR], "k-")
         ax_twinx.invert_yaxis()
         ax_twinx.set_ylim([max_cf * 5.0 + 1e-5, 0])
-        ax_twinx.fill_between(df_reservoir[Headers.MD], 0, df_reservoir[Headers.CONNECTION_FACTOR], alpha=0.5)
+        ax_twinx.fill_between(
+            df_reservoir[Headers.MEASURED_DEPTH], 0, df_reservoir[Headers.CONNECTION_FACTOR], alpha=0.5
+        )
 
     return axs, ax_twinx
 
@@ -183,14 +185,14 @@ def visualize_well(
     laterals = df_well[Headers.LATERAL].unique()
     if isinstance(segment_length, float):
         if segment_length >= 0.0:
-            max_md = max(df_well[Headers.TUB_MD].to_numpy())
-            min_md = min(df_well[Headers.TUB_MD].to_numpy())
+            max_md = max(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())
+            min_md = min(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())
         else:
-            max_md = max(df_reservoir[Headers.MD].to_numpy())
-            min_md = min(df_reservoir[Headers.MD].to_numpy())
+            max_md = max(df_reservoir[Headers.MEASURED_DEPTH].to_numpy())
+            min_md = min(df_reservoir[Headers.MEASURED_DEPTH].to_numpy())
     elif isinstance(segment_length, str):
-        max_md = max(df_well[Headers.TUB_MD].to_numpy())
-        min_md = min(df_well[Headers.TUB_MD].to_numpy())
+        max_md = max(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())
+        min_md = min(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy())
     else:
         raise TypeError(f"segment_length has invalid type ({type(segment_length)})")
     for lateral_idx, lateral in enumerate(laterals):

@@ -338,12 +338,17 @@ class ReadCasefile:
                 raise CompletorError("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
+            header = [
+                Headers.DEVICE_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            ]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp[Headers.AC_MAX] = np.nan
+                df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = np.nan
             except CaseReaderFormatError:
-                header += [Headers.AC_MAX]
+                header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
 
             self.wsegvalv_table = val.set_format_wsegvalv(df_temp)
@@ -369,8 +374,8 @@ class ReadCasefile:
             header = [
                 Headers.DEVICE_NUMBER,
                 Headers.STRENGTH,
-                Headers.RHOCAL_ICD,
-                Headers.VISCAL_ICD,
+                Headers.CALIBRATION_FLUID_DENSITY,
+                Headers.CALIBRATION_FLUID_VISCOSITY,
                 Headers.WATER_CUT,
             ]
             self.wsegsicd_table = val.set_format_wsegsicd(
@@ -399,7 +404,7 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.ALPHA,
+                Headers.STRENGTH,
                 Headers.X,
                 Headers.Y,
                 Headers.A,
@@ -408,8 +413,8 @@ class ReadCasefile:
                 Headers.D,
                 Headers.E,
                 Headers.F,
-                Headers.RHOCAL_AICD,
-                Headers.VISCAL_AICD,
+                Headers.AICD_CALIBRATION_FLUID_DENSITY,
+                Headers.AICD_FLUID_VISCOSITY,
             ]
             self.wsegaicd_table = val.set_format_wsegaicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
@@ -426,7 +431,7 @@ class ReadCasefile:
         Raises:
             ValueError: If there are invalid entries in WSEGDAR.
             CompletorError: If not all device in COMPLETION is specified in WSEGDAR.
-            If WSEGDAR keyword not defined, when DAR is used in the completion.
+                If WSEGDAR keyword not defined, when DAR is used in the completion.
         """
         start_index, end_index = self.locate_keyword(Keywords.WSEGDAR)
         if start_index == end_index:
@@ -436,14 +441,14 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.CV_DAR,
-                Headers.AC_OIL,
-                Headers.AC_GAS,
-                Headers.AC_WATER,
-                Headers.WHF_LCF_DAR,
-                Headers.WHF_HCF_DAR,
-                Headers.GHF_LCF_DAR,
-                Headers.GHF_HCF_DAR,
+                Headers.FLOW_COEFFICIENT,
+                Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+                Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+                Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+                Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
             ]
 
             # Fix table format
@@ -473,10 +478,10 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.WCT_AICV,
-                Headers.GHF_AICV,
-                Headers.RHOCAL_AICV,
-                Headers.VISCAL_AICV,
+                Headers.AICV_WATER_CUT,
+                Headers.AICV_GAS_HOLDUP_FRACTION,
+                Headers.AICV_CALIBRATION_FLUID_DENSITY,
+                Headers.AICV_FLUID_VISCOSITY,
                 Headers.ALPHA_MAIN,
                 Headers.X_MAIN,
                 Headers.Y_MAIN,
@@ -521,12 +526,12 @@ class ReadCasefile:
                 raise CompletorError("WSEGICV keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC]
+            header = [Headers.DEVICE_NUMBER, Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp[Headers.AC_MAX] = np.nan
+                df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = np.nan
             except CaseReaderFormatError:
-                header += [Headers.AC_MAX]
+                header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
             # Fix format
             self.wsegicv_table = val.set_format_wsegicv(df_temp)

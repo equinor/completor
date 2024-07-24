@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
-from typing import Any, overload
+from typing import overload
 
 import numpy as np
 import numpy.typing as npt
@@ -58,20 +58,6 @@ def sort_by_midpoint(
     df[_temp_column] = df[[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]].mean(axis=1)
     df = df.sort_values(by=[_temp_column])
     return df.drop([_temp_column], axis=1)
-
-
-def as_data_frame(args: dict[str, Any] | None = None, **kwargs) -> pd.DataFrame:
-    """Helper function to create a data frame from a dictionary, or keywords."""
-    if (args is None and kwargs is None) or (not args and not kwargs):
-        raise ValueError("`as_data_frame` requires either a single dictionary, or keywords")
-
-    if args:
-        kwargs = args
-    data = pd.DataFrame()
-    for key, value in kwargs.items():
-        data[key] = value
-
-    return data
 
 
 @overload

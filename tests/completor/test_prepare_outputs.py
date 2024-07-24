@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 import utils
 
 from completor import completion, prepare_outputs, read_casefile  # type:ignore
@@ -127,8 +128,8 @@ def test_prepare_tubing_layer():
             ],
             columns=[
                 Headers.WELL,
-                Headers.TUB_MD,
-                Headers.TUB_TVD,
+                Headers.TUBING_MEASURED_DEPTH,
+                Headers.TRUE_VERTICAL_DEPTH,
                 Headers.INNER_DIAMETER,
                 Headers.ROUGHNESS,
                 Headers.LATERAL,
@@ -163,16 +164,361 @@ def test_prepare_tubing_layer():
             ["A1", 3471.062485, 2251.620480, 0.1, 0.1, 1],
             ["A1", 3516.044325, 2255.627560, 0.1, 0.1, 1],
         ],
-        columns=[Headers.WELL, Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS, Headers.LATERAL],
+        columns=[
+            Headers.WELL,
+            Headers.MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.LATERAL,
+        ],
     )
 
     pd.testing.assert_frame_equal(
-        df_test[[Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS]],
-        df_true[[Headers.MD, Headers.TVD, Headers.DIAMETER, Headers.ROUGHNESS]],
+        df_test[[Headers.MEASURED_DEPTH, Headers.TRUE_VERTICAL_DEPTH, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
+        df_true[[Headers.MEASURED_DEPTH, Headers.TRUE_VERTICAL_DEPTH, Headers.WELL_BORE_DIAMETER, Headers.ROUGHNESS]],
     )
 
 
-def test_prepare_compsegs():
+@pytest.mark.parametrize(
+    "segment_length,df_device,df_annulus,df_completion_table,expected",
+    [
+        pytest.param(
+            1.0,
+            pd.DataFrame(
+                [
+                    [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
+                    [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                ],
+            ),
+            pd.DataFrame([], columns=[]),
+            pd.DataFrame(
+                [
+                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
+                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
+                ],
+                columns=[
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.TUBING_MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.SEGMENT_DESC,
+                    Headers.VALVES_PER_JOINT,
+                    Headers.DEVICE_TYPE,
+                    Headers.ANNULUS,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+                    [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
+                    [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+                    [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+                ],
+                columns=[
+                    Headers.I,
+                    Headers.J,
+                    Headers.K,
+                    Headers.BRANCH,
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.COMPSEGS_DIRECTION,
+                    Headers.DEF,
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.EMPTY,
+                ],
+            ),
+            id="Positive segment length, no annulus zone",
+        ),
+        pytest.param(
+            -1.0,
+            pd.DataFrame(
+                [
+                    [4, 4, 1, 2, 1250.0, 1250.0, 0.15, 0.00065],
+                    [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                ],
+            ),
+            pd.DataFrame([], columns=[]),
+            pd.DataFrame(
+                [
+                    [1000.0, 1500.0, 1250.0, 1250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
+                    [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
+                ],
+                columns=[
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.TUBING_MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.SEGMENT_DESC,
+                    Headers.ANNULUS,
+                    Headers.VALVES_PER_JOINT,
+                    Headers.DEVICE_TYPE,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+                    [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 5, "/"],
+                    [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+                    [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+                ],
+                columns=[
+                    Headers.I,
+                    Headers.J,
+                    Headers.K,
+                    Headers.BRANCH,
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.COMPSEGS_DIRECTION,
+                    Headers.DEF,
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.EMPTY,
+                ],
+            ),
+            id="Negative segment length, no annulus zone",
+        ),
+        pytest.param(
+            1.0,
+            pd.DataFrame(
+                [
+                    [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
+                    [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [6, 6, 1, 2, 1500.0, 1500.0, 0.15, 0.0001, "/"],
+                    [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                    Headers.EMPTY,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
+                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
+                ],
+                columns=[
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.TUBING_MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.SEGMENT_DESC,
+                    Headers.VALVES_PER_JOINT,
+                    Headers.ANNULUS,
+                    Headers.DEVICE_TYPE,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+                    [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
+                    [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+                    [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+                ],
+                columns=[
+                    Headers.I,
+                    Headers.J,
+                    Headers.K,
+                    Headers.BRANCH,
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.COMPSEGS_DIRECTION,
+                    Headers.DEF,
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.EMPTY,
+                ],
+            ),
+            id="Positive segment length with annulus zone",
+        ),
+        pytest.param(
+            -1.0,
+            pd.DataFrame(
+                [
+                    [4, 4, 1, 2, 1250.0, 1250.0, 0.15, 0.00065],
+                    [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [6, 6, 1, 2, 1250.0, 1250.0, 0.15, 0.0001, "/"],
+                    [7, 7, 1, 3, 2250.0, 2250.0, 0.15, 0.0001, "/"],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                    Headers.EMPTY,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1000.0, 1500.0, 1300.0, 1300.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
+                    [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
+                ],
+                columns=[
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.TUBING_MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.SEGMENT_DESC,
+                    Headers.ANNULUS,
+                    Headers.VALVES_PER_JOINT,
+                    Headers.DEVICE_TYPE,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+                    [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 5, "/"],
+                    [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+                    [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+                ],
+                columns=[
+                    Headers.I,
+                    Headers.J,
+                    Headers.K,
+                    Headers.BRANCH,
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.COMPSEGS_DIRECTION,
+                    Headers.DEF,
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.EMPTY,
+                ],
+            ),
+            id="Negative segment length with annulus zone",
+        ),
+        pytest.param(
+            Keywords.WELSEGS,
+            pd.DataFrame(
+                [
+                    [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
+                    [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [6, 6, 1, 2, 1500.0, 1500.0, 0.15, 0.0001, "/"],
+                    [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
+                ],
+                columns=[
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.END_SEGMENT_NUMBER,
+                    Headers.BRANCH,
+                    Headers.OUT,
+                    Headers.MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.WELL_BORE_DIAMETER,
+                    Headers.ROUGHNESS,
+                    Headers.EMPTY,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
+                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
+                ],
+                columns=[
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.TUBING_MEASURED_DEPTH,
+                    Headers.TRUE_VERTICAL_DEPTH,
+                    Headers.SEGMENT_DESC,
+                    Headers.ANNULUS,
+                    Headers.VALVES_PER_JOINT,
+                    Headers.DEVICE_TYPE,
+                ],
+            ),
+            pd.DataFrame(
+                [
+                    [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
+                    [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
+                    [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
+                    [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
+                ],
+                columns=[
+                    Headers.I,
+                    Headers.J,
+                    Headers.K,
+                    Headers.BRANCH,
+                    Headers.START_MEASURED_DEPTH,
+                    Headers.END_MEASURED_DEPTH,
+                    Headers.COMPSEGS_DIRECTION,
+                    Headers.DEF,
+                    Headers.START_SEGMENT_NUMBER,
+                    Headers.EMPTY,
+                ],
+            ),
+            id="WELSEGS segment length with annulus",
+        ),
+    ],
+)
+def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion_table, expected):
     """Tests the function prepare_outputs.py::prepare_compsegs."""
     well_name = "A1"
     lateral = 1
@@ -192,9 +538,9 @@ def test_prepare_compsegs():
             Headers.COMPSEGS_DIRECTION,
             Headers.K2,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.MD,
-            Headers.TUB_MD,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
             Headers.ANNULUS_ZONE,
@@ -202,353 +548,11 @@ def test_prepare_compsegs():
             Headers.LATERAL,
         ],
     )
-    df_device = pd.DataFrame(
-        [
-            [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
-            [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-        ],
-    )
-    df_annulus = pd.DataFrame([], columns=[])
-    df_tubing_segments = pd.DataFrame(
-        [
-            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
-            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
-        ],
-        columns=[
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
-            Headers.SEGMENT_DESC,
-            Headers.VALVES_PER_JOINT,
-            Headers.DEVICE_TYPE,
-            Headers.ANNULUS,
-        ],
-    )
 
-    # Test1: Positive segment length and no annulus zone
-    segment_length = 1.0
-    true_compsegs = pd.DataFrame(
-        [
-            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
-            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
-            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
-            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
-        ],
-        columns=[
-            Headers.I,
-            Headers.J,
-            Headers.K,
-            Headers.BRANCH,
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.DIRECTION,
-            Headers.DEF,
-            Headers.SEG,
-            Headers.EMPTY,
-        ],
-    )
-    test_compsegs = prepare_outputs.prepare_compsegs(
-        well_name, lateral, df_reservoir, df_device, df_annulus, df_tubing_segments, segment_length
-    )
-    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
-
-    # Test2: Negative segment length and no annulus zone
-    segment_length = -1.0
-    df_device = pd.DataFrame(
-        [
-            [4, 4, 1, 2, 1250.0, 1250.0, 0.15, 0.00065],
-            [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-        ],
-    )
-    df_completion_table = pd.DataFrame(
-        [
-            [1000.0, 1500.0, 1250.0, 1250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
-            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
-        ],
-        columns=[
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
-            Headers.SEGMENT_DESC,
-            Headers.ANNULUS,
-            Headers.VALVES_PER_JOINT,
-            Headers.DEVICE_TYPE,
-        ],
-    )
-    true_compsegs = pd.DataFrame(
-        [
-            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
-            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 5, "/"],
-            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
-            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
-        ],
-        columns=[
-            Headers.I,
-            Headers.J,
-            Headers.K,
-            Headers.BRANCH,
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.DIRECTION,
-            Headers.DEF,
-            Headers.SEG,
-            Headers.EMPTY,
-        ],
-    )
     test_compsegs = prepare_outputs.prepare_compsegs(
         well_name, lateral, df_reservoir, df_device, df_annulus, df_completion_table, segment_length
     )
-    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
-
-    # Test3: Positive segment length and annulus zone
-    segment_length = 1.0
-    df_device = pd.DataFrame(
-        [
-            [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
-            [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-        ],
-    )
-    df_annulus = pd.DataFrame(
-        [
-            [6, 6, 1, 2, 1500.0, 1500.0, 0.15, 0.0001, "/"],
-            [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-            Headers.EMPTY,
-        ],
-    )
-    df_tubing_segments = pd.DataFrame(
-        [
-            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
-            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
-        ],
-        columns=[
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
-            Headers.SEGMENT_DESC,
-            Headers.VALVES_PER_JOINT,
-            Headers.ANNULUS,
-            Headers.DEVICE_TYPE,
-        ],
-    )
-    true_compsegs = pd.DataFrame(
-        [
-            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
-            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
-            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
-            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
-        ],
-        columns=[
-            Headers.I,
-            Headers.J,
-            Headers.K,
-            Headers.BRANCH,
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.DIRECTION,
-            Headers.DEF,
-            Headers.SEG,
-            Headers.EMPTY,
-        ],
-    )
-    test_compsegs = prepare_outputs.prepare_compsegs(
-        well_name, lateral, df_reservoir, df_device, df_annulus, df_tubing_segments, segment_length
-    )
-    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
-
-    # Test4: Negative segment length and annulus zone
-    segment_length = -1.0
-    df_device = pd.DataFrame(
-        [
-            [4, 4, 1, 2, 1250.0, 1250.0, 0.15, 0.00065],
-            [5, 5, 1, 3, 2250.0, 2250.0, 0.15, 0.00065],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-        ],
-    )
-    df_annulus = pd.DataFrame(
-        [
-            [6, 6, 1, 2, 1250.0, 1250.0, 0.15, 0.0001, "/"],
-            [7, 7, 1, 3, 2250.0, 2250.0, 0.15, 0.0001, "/"],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-            Headers.EMPTY,
-        ],
-    )
-    df_completion_table = pd.DataFrame(
-        [
-            [1000.0, 1500.0, 1300.0, 1300.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
-            [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
-        ],
-        columns=[
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
-            Headers.SEGMENT_DESC,
-            Headers.ANNULUS,
-            Headers.VALVES_PER_JOINT,
-            Headers.DEVICE_TYPE,
-        ],
-    )
-    true_compsegs = pd.DataFrame(
-        [
-            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
-            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 5, "/"],
-            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
-            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
-        ],
-        columns=[
-            Headers.I,
-            Headers.J,
-            Headers.K,
-            Headers.BRANCH,
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.DIRECTION,
-            Headers.DEF,
-            Headers.SEG,
-            Headers.EMPTY,
-        ],
-    )
-    test_compsegs = prepare_outputs.prepare_compsegs(
-        well_name, lateral, df_reservoir, df_device, df_annulus, df_completion_table, segment_length
-    )
-    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
-
-    # Test5: WELSEGS segment length with annulus
-    segment_length = Keywords.WELSEGS
-    df_device = pd.DataFrame(
-        [
-            [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
-            [5, 5, 1, 3, 2500.0, 2500.0, 0.15, 0.00065],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-        ],
-    )
-    df_annulus = pd.DataFrame(
-        [
-            [6, 6, 1, 2, 1500.0, 1500.0, 0.15, 0.0001, "/"],
-            [7, 7, 1, 3, 2500.0, 2500.0, 0.15, 0.0001, "/"],
-        ],
-        columns=[
-            Headers.SEG,
-            Headers.SEG2,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
-            Headers.ROUGHNESS,
-            Headers.EMPTY,
-        ],
-    )
-    df_tubing_segments = pd.DataFrame(
-        [
-            [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
-            [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
-        ],
-        columns=[
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
-            Headers.SEGMENT_DESC,
-            Headers.ANNULUS,
-            Headers.VALVES_PER_JOINT,
-            Headers.DEVICE_TYPE,
-        ],
-    )
-    true_compsegs = pd.DataFrame(
-        [
-            [1, 1, 1, 1, 1000.0, 1500.0, "1*", "3*", 4, "/"],
-            [1, 1, 2, 1, 1500.0, 2000.0, "1*", "3*", 4, "/"],
-            [1, 1, 3, 1, 2000.0, 2500.0, "1*", "3*", 5, "/"],
-            [1, 1, 4, 1, 2500.0, 3000.0, "1*", "3*", 5, "/"],
-        ],
-        columns=[
-            Headers.I,
-            Headers.J,
-            Headers.K,
-            Headers.BRANCH,
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.DIRECTION,
-            Headers.DEF,
-            Headers.SEG,
-            Headers.EMPTY,
-        ],
-    )
-    test_compsegs = prepare_outputs.prepare_compsegs(
-        well_name, lateral, df_reservoir, df_device, df_annulus, df_tubing_segments, segment_length
-    )
-    pd.testing.assert_frame_equal(test_compsegs, true_compsegs)
+    pd.testing.assert_frame_equal(test_compsegs, expected)
 
 
 def test_connect_lateral_logs_warning(caplog):
@@ -563,18 +567,30 @@ def test_connect_lateral_logs_warning(caplog):
             [3, 3, 1, 2, 2200.73413],
             [4, 4, 1, 3, 2202.75139],
         ],
-        columns=[Headers.SEG, Headers.SEG2, Headers.BRANCH, Headers.OUT, Headers.MD],
+        columns=[
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
+            Headers.BRANCH,
+            Headers.OUT,
+            Headers.MEASURED_DEPTH,
+        ],
     )
     df_tubing_lat_2 = pd.DataFrame(
         [
             [16, 16, 5, 15, 2179.9725],
             [17, 17, 5, 16, 2195.5],
         ],
-        columns=[Headers.SEG, Headers.SEG2, Headers.BRANCH, Headers.OUT, Headers.MD],
+        columns=[
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
+            Headers.BRANCH,
+            Headers.OUT,
+            Headers.MEASURED_DEPTH,
+        ],
     )
     df_top = pd.DataFrame(
         [[1, 2188.76261]],
-        columns=[Headers.TUBINGBRANCH, Headers.TUBINGMD],
+        columns=[Headers.TUBING_BRANCH, Headers.TUBING_MEASURED_DEPTH],
     )
     empty_df = pd.DataFrame()
 
@@ -587,7 +603,7 @@ def test_connect_lateral_logs_warning(caplog):
             """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
   A1     1   0.0  2451.78 0.15   0.19    0.00035     GP      1     PERF    1
   A1     2   0.0  2450.0  0.15   0.19    0.00035     GP      1     PERF    1
@@ -641,17 +657,17 @@ def test_print_wsegdar(tmpdir):
         [[Headers.WELL, 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
         columns=[
             Headers.WELL,
-            Headers.SEG,
-            Headers.CV_DAR,
-            Headers.AC_OIL,
-            Headers.AC_GAS,
-            Headers.AC_WATER,
-            Headers.WHF_LCF_DAR,
-            Headers.WHF_HCF_DAR,
-            Headers.GHF_LCF_DAR,
-            Headers.GHF_HCF_DAR,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
             Headers.DEFAULTS,
-            Headers.AC_MAX,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
     )
     well_number = 1
@@ -661,7 +677,7 @@ def test_print_wsegdar(tmpdir):
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 
@@ -673,7 +689,7 @@ SUVTRIG 'WELL' 3 = 0 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_GAS  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  GAS_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 2.590e-06  5* 7.852e-06 /
 /
 
@@ -691,7 +707,7 @@ SUVTRIG 'WELL' 3 = 0 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_WATER  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  WATER_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 1.590e-06  5* 7.852e-06 /
 /
 
@@ -708,7 +724,7 @@ SUVTRIG 'WELL' 3 = 1 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 
@@ -725,7 +741,7 @@ SUVTRIG 'WELL' 3 = 2 /
 /
 
 WSEGVALV
---  WELL  SEG  CV_DAR  AC_OIL  DEFAULTS  AC_MAX
+--  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'WELL' 3 1 7.852e-06  5* 7.852e-06 /
 /
 UDQ
@@ -750,16 +766,16 @@ def test_prepare_wsegvalv():
         ],
         columns=[
             Headers.WELL,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
             Headers.INNER_DIAMETER,
             Headers.ROUGHNESS,
             Headers.LATERAL,
             Headers.ANNULUS,
-            Headers.CV,
-            Headers.AC,
-            Headers.L,
-            Headers.AC_MAX,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEVICE_TYPE,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_NUMBER,
@@ -771,13 +787,13 @@ def test_prepare_wsegvalv():
             [4, 4, 1, 3, 1260.0, 1260.0, 0.1, 0.1],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
+            Headers.MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -786,7 +802,15 @@ def test_prepare_wsegvalv():
             ["'WELL'", 3, 1.0, 1.2, "5*", 2.1, "/"],
             ["'WELL'", 4, 1.0, 1.2, "5*", 1.2, "/"],
         ],
-        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX, Headers.EMPTY],
+        columns=[
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.EMPTY,
+        ],
     )
     wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", 1, df_well, df_device)
     pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
@@ -833,13 +857,13 @@ def test_prepare_compdat(tmpdir):
             Headers.STATUS,
             Headers.SATURATION_FUNCTION_REGION_NUMBERS,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.FORAMTION_PERMEABILITY_THICKNESS,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
-            Headers.DFACT,
+            Headers.D_FACTOR,
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
-            Headers.MD,
+            Headers.MEASURED_DEPTH,
             Headers.ANNULUS_ZONE,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
@@ -851,8 +875,8 @@ def test_prepare_compdat(tmpdir):
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
             Headers.SEGMENT_DESC,
             Headers.ANNULUS,
             Headers.VALVES_PER_JOINT,
@@ -872,13 +896,13 @@ def test_prepare_compdat(tmpdir):
             Headers.K,
             Headers.K2,
             Headers.FLAG,
-            Headers.SAT,
+            Headers.SATURATION_FUNCTION_REGION_NUMBERS,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.FORAMTION_PERMEABILITY_THICKNESS,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
-            Headers.DFACT,
-            Headers.DIRECTION,
+            Headers.D_FACTOR,
+            Headers.COMPDAT_DIRECTION,
             Headers.RO,
             Headers.EMPTY,
         ],
@@ -900,16 +924,16 @@ def test_prepare_wsegicv(tmpdir):
         ],
         columns=[
             Headers.WELL,
-            Headers.TUB_MD,
-            Headers.TUB_TVD,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
             Headers.INNER_DIAMETER,
             Headers.ROUGHNESS,
             Headers.LATERAL,
             Headers.ANNULUS,
-            Headers.CV,
-            Headers.AC,
-            Headers.L,
-            Headers.AC_MAX,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             Headers.DEVICE_TYPE,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_NUMBER,
@@ -921,13 +945,13 @@ def test_prepare_wsegicv(tmpdir):
             [5, 5, 1, 4, 2050.0, 2000.0, 0.1, 0.1],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
+            Headers.MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -938,13 +962,13 @@ def test_prepare_wsegicv(tmpdir):
             [4, 4, 1, 3, 2015, 2000, 0.1, 0.1],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
+            Headers.MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -968,7 +992,14 @@ def test_prepare_wsegicv(tmpdir):
     )
     df_icv = pd.DataFrame(
         [["ICV", 1, 1.2, 4.1, "5*", 5.1], ["ICV", 2, 3.5, 3.2, "5*", 6.1]],
-        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     )
     wsegicv_output = prepare_outputs.prepare_wsegicv(
         well_name, lateral, df_well, df_device, df_tubing, df_icv_tubing, df_icv
@@ -981,7 +1012,15 @@ def test_prepare_wsegicv(tmpdir):
             ["'WELL'", 3, 1.2, 4.1, "5*", 5.1, "/"],
             ["'WELL'", 4, 3.5, 3.2, "5*", 6.1, "/"],
         ],
-        columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX, Headers.EMPTY],
+        columns=[
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.EMPTY,
+        ],
     )
     pd.testing.assert_frame_equal(wsegicv_output, true_wsegicv_output)
 
@@ -1006,9 +1045,9 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.COMPSEGS_DIRECTION,
             Headers.K2,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.MD,
-            Headers.TUB_MD,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.MEASURED_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
             Headers.NUMBER_OF_DEVICES,
             Headers.DEVICE_TYPE,
             Headers.ANNULUS_ZONE,
@@ -1023,13 +1062,13 @@ def test_prepare_icv_compseg(tmpdir):
             [22, 22, 6, 8, 4266.0, 1613.0, 0.15, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
+            Headers.MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -1040,13 +1079,13 @@ def test_prepare_icv_compseg(tmpdir):
             [35, 35, 18, 34, 4266.0, 1613.0, 0.2724, 0.00065],
         ],
         columns=[
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.BRANCH,
             Headers.OUT,
-            Headers.MD,
-            Headers.TVD,
-            Headers.DIAMETER,
+            Headers.MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.WELL_BORE_DIAMETER,
             Headers.ROUGHNESS,
         ],
     )
@@ -1090,7 +1129,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ],
     )
     compseg_annulus_true = pd.DataFrame(
@@ -1109,7 +1148,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ],
     )
     compseg_icv_output_tubing = compseg_icv_output_tubing[
@@ -1120,7 +1159,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ]
     ]
     compseg_icv_output_annulus = compseg_icv_output_annulus[
@@ -1131,7 +1170,7 @@ def test_prepare_icv_compseg(tmpdir):
             Headers.BRANCH,
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
-            Headers.SEG,
+            Headers.START_SEGMENT_NUMBER,
         ]
     ]
     pd.testing.assert_frame_equal(compseg_icv_output_tubing, compseg_tubing_true)
