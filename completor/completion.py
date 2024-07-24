@@ -425,7 +425,7 @@ def get_completion(
         #     f"Start depth less than or equals to stop depth,
         #     for {df_completion[Headers.START_MEASURED_DEPTH][indices][warning_mask]}"
         # )
-        logger.warning("Depths are incongruent")
+        logger.warning("Depths are incongruent.")
     number_of_devices = np.sum((lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices])
 
     mask = lengths > shift_array(lengths, 1, fill_value=0)
@@ -475,13 +475,10 @@ def complete_the_well(
     }
     start = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()
     end = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
-    # start_completion = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
-    # end_completion = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
 
     # loop through the cells
     for i in range(df_tubing_segments.shape[0]):
         indices = [np.array(completion_index(df_completion, s, e)) for s, e in zip(start, end)]
-        # shifted_indices = [(np.array((x, y + 1))) for x, y in indices]
 
         if any(idx0 == -1 or idx1 == -1 for idx0, idx1 in indices):
             well_name = df_completion[Headers.WELL].iloc[0]
