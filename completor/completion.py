@@ -704,7 +704,7 @@ class WellSchedule:
             Headers.SHUT,
             Headers.FLOW_CROSS_SECTIONAL_AREA,
             Headers.PRESSURE_TABLE,
-            Headers.DENSITY_CALCULATION,
+            Headers.DENSITY_CALCULATION_TYPE,
             Headers.REGION,
             Headers.RESERVED_HEADER_1,
             Headers.RESERVED_HEADER_2,

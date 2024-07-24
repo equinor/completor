@@ -73,7 +73,7 @@ class Headers:
     SHUT = "SHUT"
     # CROSS = "CROSS"
     PRESSURE_TABLE = "PRESSURETABLE"
-    DENSITY_CALCULATION = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
+    DENSITY_CALCULATION_TYPE = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
     REGION = "REGION"
     RESERVED_HEADER_1 = "RESERVED_1"
     RESERVED_HEADER_2 = "RESERVED_2"
