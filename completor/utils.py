@@ -23,8 +23,8 @@ def abort(message: str, status: int = 1) -> SystemExit:
         I.e. there were no errors, while 1 or above indicates that an error occurred. The default code is 1.
 
     Returns:
-        SystemExit: Makes type checkers happy, when using the ``raise`` keyword with this function. I.e.
-            `>>> raise abort("Something when terribly wrong")`
+        SystemExit: Makes type checkers happy when using the ``raise`` keyword with this function. I.e.
+            `>>> raise abort("Something when terribly wrong.")`
     """
     if status == 0:
         logger.info(message)

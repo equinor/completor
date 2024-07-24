@@ -324,9 +324,6 @@ class ReadCasefile:
             # the content is in between the keyword and the /
             self.mapfile = parse.remove_string_characters(self.content[start_index + 1])
             self.mapper = _mapper(self.mapfile)
-        else:
-            self.mapfile = None
-            self.mapper = None
 
     def read_wsegvalv(self) -> None:
         """Read the WSEGVALV keyword in the case file.
@@ -572,6 +569,9 @@ class ReadCasefile:
 
         Returns:
             COMPLETION for that well and branch.
+
+        Raises:
+            CompletorError: If strict is true and there are undefined branches.
         """
         msw = schedule.msws[well_name]
         compl = self.completion_table[self.completion_table.WELL == well_name]

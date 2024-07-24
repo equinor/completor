@@ -396,7 +396,7 @@ def get_completion(
         joint_length: Length of a joint.
 
     Returns:
-        .
+        The number of devices, device type, device number, inner diameter, outer diameter, roughness, annulus zone.
 
     Raises:
         ValueError:
@@ -416,7 +416,6 @@ def get_completion(
 
     indices = np.arange(idx0, idx1 + 1)
     lengths = np.minimum(end_completion[indices], end) - np.maximum(start_completion[indices], start)
-    # warning_mask = lengths <= 0
     if (lengths <= 0).any():
         # _ = "equals" if length == 0 else "less than"
         # _ = np.where(lengths == 0, "equals", 0)
@@ -463,16 +462,14 @@ def complete_the_well(
     Returns:
         Well information.
     """
-    test_dir: dict[str, list]
-    test_dir = {
-        "number_of_devices": [],
-        "device_type": [],
-        "device_number": [],
-        "inner_diameter": [],
-        "outer_diameter": [],
-        "roughness": [],
-        "annulus_zone": [],
-    }
+    number_of_devices = []
+    device_type = []
+    device_number = []
+    inner_diameter = []
+    outer_diameter = []
+    roughness = []
+    annulus_zone = []
+
     start = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()
     end = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
 
@@ -484,14 +481,14 @@ def complete_the_well(
             well_name = df_completion[Headers.WELL].iloc[0]
             log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
 
-        attrs = get_completion(start[i], end[i], df_completion, joint_length)
-        test_dir["number_of_devices"] += [attrs[0]]
-        test_dir["device_type"] += [attrs[1]]
-        test_dir["device_number"] += [attrs[2]]
-        test_dir["inner_diameter"] += [attrs[3]]
-        test_dir["outer_diameter"] += [attrs[4]]
-        test_dir["roughness"] += [attrs[5]]
-        test_dir["annulus_zone"] += [attrs[6]]
+        completion_data = get_completion(start[i], end[i], df_completion, joint_length)
+        number_of_devices.append(completion_data[0])
+        device_type.append(completion_data[1])
+        device_number.append(completion_data[2])
+        inner_diameter.append(completion_data[3])
+        outer_diameter.append(completion_data[4])
+        roughness.append(completion_data[5])
+        annulus_zone.append(completion_data[6])
 
     df_well = pd.DataFrame(
         {
@@ -499,13 +496,13 @@ def complete_the_well(
             Headers.TRUE_VERTICAL_DEPTH: df_tubing_segments[Headers.TRUE_VERTICAL_DEPTH].to_numpy(),
             Headers.LENGTH: end - start,
             Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
-            Headers.NUMBER_OF_DEVICES: test_dir["number_of_devices"],
-            Headers.DEVICE_NUMBER: test_dir["device_number"],
-            Headers.DEVICE_TYPE: test_dir["device_type"],
-            Headers.INNER_DIAMETER: test_dir["inner_diameter"],
-            Headers.OUTER_DIAMETER: test_dir["outer_diameter"],
-            Headers.ROUGHNESS: test_dir["roughness"],
-            Headers.ANNULUS_ZONE: test_dir["annulus_zone"],
+            Headers.NUMBER_OF_DEVICES: number_of_devices,
+            Headers.DEVICE_NUMBER: device_number,
+            Headers.DEVICE_TYPE: device_type,
+            Headers.INNER_DIAMETER: inner_diameter,
+            Headers.OUTER_DIAMETER: outer_diameter,
+            Headers.ROUGHNESS: roughness,
+            Headers.ANNULUS_ZONE: annulus_zone,
         }
     )
 
