@@ -7,7 +7,6 @@ import os
 import re
 import time
 from collections.abc import Mapping
-from typing import Literal, overload
 
 import numpy as np
 
@@ -24,106 +23,69 @@ from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
 from completor.visualization import close_figure, create_pdfpages
 
+# from typing import Literal, overload
 
-class FileWriter:
-    """Functionality for writing a new schedule file."""
 
-    def __init__(self, file: str, mapper: Mapping[str, str] | None):
-        """Initialize the FileWriter.
-
-        Args:
-            file: Name of file to be written. Does not check if it already exists.
-            mapper: A dictionary for mapping strings.
-                Typically used for mapping pre-processor reservoir modelling tools to reservoir simulator well names.
-        """
-        self.fh = open(file, "w", encoding="utf-8")  # create new output file
-        self.mapper = mapper
-
-    @overload
-    def write(self, keyword: Literal[None], content: str, chunk: bool = True, end_of_record: bool = False) -> None: ...
-
-    @overload
-    def write(
-        self, keyword: str, content: list[list[str]], chunk: Literal[True] = True, end_of_record: bool = False
-    ) -> None: ...
-
-    @overload
-    def write(
-        self, keyword: str, content: list[str] | str, chunk: Literal[False] = False, end_of_record: bool = False
-    ) -> None: ...
-
-    @overload
-    def write(
-        self, keyword: str, content: list[list[str]] | list[str] | str, chunk: bool = True, end_of_record: bool = False
-    ) -> None: ...
-
-    def write(
-        self,
-        keyword: str | None,
-        content: list[list[str]] | list[str] | str,
-        chunk: bool = True,
-        end_of_record: bool = False,
-    ) -> None:
-        """Write the content of a keyword to the output file.
-
-        Args:
-            keyword: Reservoir simulator keyword.
-            content: Text to be written.
-            chunk: Flag for indicating this is a list of records.
-            end_of_record: Flag for adding end-of-record ('/').
-        """
-        txt = ""
-
-        if keyword is None:
-            txt = content  # type: ignore  # it's really a formatted string
-        else:
-            self.fh.write(f"{keyword:s}\n")
-            if chunk:
-                for recs in content:
-                    txt += " " + " ".join(recs) + " /\n"
-            else:
-                for line in content:
-                    if isinstance(line, list):
-                        logger.warning(
-                            "Chunk is False, but content contains lists of lists, "
-                            "instead of a list of strings the lines will be concatenated."
-                        )
-                        line = " ".join(line)
-                    txt += line + "\n"
-        if self.mapper:
-            txt = self._replace_preprocessing_names(txt)
-        if end_of_record:
-            txt += "/\n"
-        self.fh.write(txt)
-
-    def _replace_preprocessing_names(self, text: str) -> str:
-        """Expand start and end marker pairs for well pattern recognition as needed.
-
-        Args:
-            text: Text with pre-processor reservoir modelling well names.
-
-        Returns:
-            Text with reservoir simulator well names.
-        """
-        if self.mapper is None:
-            raise ValueError(
-                f"{self._replace_preprocessing_names.__name__} requires a file containing two "
-                "columns with input and output names given by the MAPFILE keyword in "
-                f"case file to be set when creating {self.__class__.__name__}."
-            )
-        start_marks = ["'", " ", "\n", "\t"]
-        end_marks = ["'", " ", " ", " "]
-        for key, value in self.mapper.items():
-            for start, end in zip(start_marks, end_marks):
-                my_key = start + str(key) + start
-                if my_key in text:
-                    my_value = start + str(value) + end
-                    text = text.replace(my_key, my_value)
-        return text
-
-    def close(self) -> None:
-        """Close FileWriter."""
-        self.fh.close()
+# class FileWriter:
+#     """Functionality for writing a new schedule file."""
+#
+#     def __init__(self, file: str, mapper: Mapping[str, str] | None):
+#         """Initialize the FileWriter.
+#
+#         Args:
+#             file: Name of file to be written. Does not check if it already exists.
+#             mapper: A dictionary for mapping strings.
+#                 Typically used for mapping pre-processor reservoir modelling tools to reservoir simulator well names.
+#         """
+#         self.fh = open(file, "w", encoding="utf-8")  # create new output file
+#         self.mapper = mapper
+#
+#     @overload
+#     def write(self, keyword: Literal[None], content: str, chunk: bool = True, end_of_record: bool = False) -> None: ...
+#
+#     @overload
+#     def write(
+#         self, keyword: str, content: list[list[str]], chunk: Literal[True] = True, end_of_record: bool = False
+#     ) -> None: ...
+#
+#     @overload
+#     def write(
+#         self, keyword: str, content: list[str] | str, chunk: Literal[False] = False, end_of_record: bool = False
+#     ) -> None: ...
+#
+#     @overload
+#     def write(
+#         self, keyword: str, content: list[list[str]] | list[str] | str, chunk: bool = True, end_of_record: bool = False
+#     ) -> None: ...
+#
+#
+#     def _replace_preprocessing_names(self, text: str) -> str:
+#         """Expand start and end marker pairs for well pattern recognition as needed.
+#
+#         Args:
+#             text: Text with pre-processor reservoir modelling well names.
+#
+#         Returns:
+#             Text with reservoir simulator well names.
+#         """
+#         if self.mapper is None:
+#             raise ValueError(
+#                 "Mapper requires a file containing two columns with input and output names given by the "
+#                 f"'MAPFILE' keyword in case file to be set to correctly replace preprocessing names."
+#             )
+#         start_marks = ["'", " ", "\n", "\t"]
+#         end_marks = ["'", " ", " ", " "]
+#         for key, value in self.mapper.items():
+#             for start, end in zip(start_marks, end_marks):
+#                 my_key = start + str(key) + start
+#                 if my_key in text:
+#                     my_value = start + str(value) + end
+#                     text = text.replace(my_key, my_value)
+#         return text
+#
+#     def close(self) -> None:
+#         """Close FileWriter."""
+#         self.fh.close()
 
 
 class ProgressStatus:
@@ -160,6 +122,65 @@ class ProgressStatus:
             logger.info("Done processing %i %% of schedule/data file", n * self.percent)
             logger.info("=" * 80)
             self.prev_n = n
+
+
+def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
+    """Expand start and end marker pairs for well pattern recognition as needed.
+
+    Args:
+        text: Text with pre-processor reservoir modelling well names.
+
+    Returns:
+        Text with reservoir simulator well names.
+    """
+    if mapper is None:
+        return text
+    start_marks = ["'", " ", "\n", "\t"]
+    end_marks = ["'", " ", " ", " "]
+    for key, value in mapper.items():
+        for start, end in zip(start_marks, end_marks):
+            my_key = start + str(key) + start
+            if my_key in text:
+                my_value = start + str(value) + end
+                text = text.replace(my_key, my_value)
+    return text
+
+
+def format_text(
+    keyword: str | None, content: list[list[str]] | list[str] | str, chunk: bool = True, end_of_record: bool = False
+) -> str:
+    """Write the content of a keyword to the output file.
+
+    Args:
+        keyword: Reservoir simulator keyword.
+        content: Text to be written.
+        chunk: Flag for indicating this is a list of records.
+        end_of_record: Flag for adding end-of-record ('/').
+
+    Returns:
+        Formatted text.
+    """
+    text = ""
+    if keyword is None:
+        return content  # type: ignore # it's really a formatted string
+
+    text += f"{keyword:s}\n"
+    if chunk:
+        for recs in content:
+            text += f" {' '.join(recs)} /\n"
+    else:
+        for line in content:
+            if isinstance(line, list):
+                logger.warning(
+                    "Chunk is False, but content contains lists of lists, "
+                    "instead of a list of strings the lines will be concatenated."
+                )
+                line = " ".join(line)
+            text += line + "\n"
+    if end_of_record:
+        text += "/\n"
+
+    return text
 
 
 def get_content_and_path(case_content: str, file_path: str | None, keyword: str) -> tuple[str | None, str | None]:
@@ -234,24 +255,14 @@ def create(
     Returns:
         Completor schedule file.
     """
-    case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
-    wells = CreateWells(case)
-
-    active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    schedule = WellSchedule(active_wells)  # container for MSW-data
-
-    lines = schedule_file.splitlines()
-    clean_lines_map = {}
-    for line_number, line in enumerate(lines):
-        line = clean_file_line(line, remove_quotation_marks=True)
-        if line:
-            clean_lines_map[line_number] = line
-
-    outfile = FileWriter(new_file, case.mapper)
+    output_text = ""
     chunks = []  # for debug..
     written = set()  # Keep track of which MSW's has been written
-    line_number = 0
-    progress_status = ProgressStatus(len(lines), percent)
+    case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
+    wells = CreateWells(case)
+    active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
+    schedule = WellSchedule(active_wells)  # container for MSW-data
+    output = None
 
     pdf_file = None
     if show_fig:
@@ -261,28 +272,38 @@ def create(
             figure_no += 1
             fnm = f"Well_schematic_{figure_no:03d}.pdf"
         pdf_file = create_pdfpages(fnm)
-    # loop lines
-    while line_number < len(lines):
-        progress_status.update(line_number)
-        line = lines[line_number]
-        keyword = line[:8].rstrip()  # look for keywords
 
-        # most lines will just be duplicated
-        if keyword not in Keywords.main_keywords:
-            outfile.write(None, f"{line}\n")
-        else:
-            # This is a (potential) MSW keyword.
-            logger.debug(keyword)
+    lines = schedule_file.splitlines()
+    clean_lines_map = {}
+    for line_number, line in enumerate(lines):
+        line = clean_file_line(line, remove_quotation_marks=True)
+        if line:
+            clean_lines_map[line_number] = line
+
+    progress_status = ProgressStatus(len(lines), percent)
+    err: Exception | None = None
+
+    try:
+        line_number = 0
+        while line_number < len(lines):
+            progress_status.update(line_number)
+            line = lines[line_number]
+            keyword = line[:8].rstrip()  # look for keywords
+
+            # Unrecognized (potential) keywords are written back untouched.
+            if keyword not in Keywords.main_keywords:
+                output_text += format_text(None, f"{line}\n")
+                line_number += 1
+                continue
 
             well_name = _get_well_name(clean_lines_map, line_number)
             if keyword in Keywords.segments:  # check if it is an active well
-                logger.debug(well_name)
                 if well_name not in list(schedule.active_wells):
-                    outfile.write(keyword, "")
+                    output_text += format_text(keyword, "")
                     line_number += 1
                     continue  # not an active well
 
-            # first, collect data for this keyword into a 'chunk'
+            # collect data for this keyword into a 'chunk'
             chunk_str = ""
             raw = []  # only used for WELSPECS which we dont modify
             # concatenate and look for 'end of records' => //
@@ -296,19 +317,16 @@ def create(
 
             # use data to update our schedule
             if keyword == Keywords.WELSPECS:
-                schedule.set_welspecs(chunk)  # update with new data
-                outfile.write(keyword, raw, chunk=False)  # but write it back 'untouched'
-                line_number += 1  # ready for next line
+                schedule.set_welspecs(chunk)  # Update with new data.
+                output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
+                line_number += 1
                 continue
 
             elif keyword == Keywords.COMPDAT:
                 remains = schedule.handle_compdat(chunk)  # update with new data
                 if remains:
-                    # Add single quotes to non-active well names
-                    for remain in remains:
-                        remain[0] = "'" + remain[0] + "'"
-                    outfile.write(keyword, remains, end_of_record=True)  # write any 'none-active' wells here
-                line_number += 1  # ready for next line
+                    output_text += format_text(keyword, remains, end_of_record=True)  # Write non-active wells.
+                line_number += 1
                 continue
 
             elif keyword == Keywords.WELSEGS:
@@ -321,12 +339,10 @@ def create(
                 try:
                     case.check_input(well_name, schedule)
                 except NameError as err:
-                    # This might mean that `Keywords.segments` has changed to
-                    # not include `Keywords.COMPSEGS`
+                    # This might mean that `Keywords.segments` has changed to not include `Keywords.COMPSEGS`
                     raise SystemError(
                         "Well name not defined, even though it should be defined when "
-                        f"token ({keyword} is one of "
-                        f"{', '.join(Keywords.segments)})"
+                        f"token ({keyword} is one of {', '.join(Keywords.segments)})"
                     ) from err
 
                 if well_name not in written:
@@ -348,20 +364,26 @@ def create(
                     write_welsegs,
                     paths,
                 )
-                outfile.write(None, output.finalprint)
-            else:
-                raise ValueError(f"The keyword '{keyword}' has not been implemented in Completor, but should have been")
+                output_text += format_text(None, output.finalprint)
 
-        line_number += 1  # ready for next line
-        logger.debug(line_number)
-    outfile.close()
-    close_figure()
-    if pdf_file is not None:
-        pdf_file.close()
+            line_number += 1
 
-    try:
-        return chunks, case, schedule, wells, output  # for debug ...
-    except NameError:
+    except Exception as e_:
+        err = e_
+    finally:
+
+        output_text = _replace_preprocessing_names(output_text, case.mapper)
+        with open(new_file, "w", encoding="utf-8") as file:
+            file.write(output_text)
+
+        close_figure()
+        if pdf_file is not None:
+            pdf_file.close()
+
+    if err is not None:
+        raise err
+
+    if output is None:
         if len(schedule.active_wells) == 0:
             return chunks, case, schedule, wells
         else:
@@ -369,6 +391,7 @@ def create(
                 "Inconsistent case and input schedule files. "
                 "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
             )
+    return chunks, case, schedule, wells, output
 
 
 def main() -> None:
