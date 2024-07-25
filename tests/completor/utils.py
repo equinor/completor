@@ -111,11 +111,7 @@ class ReadSchedule:
         compsegs (pd.DataFrame): Table of COMPSEGS keyword.
     """
 
-    def __init__(
-        self,
-        schedule_file: str,
-        optional_keywords: list[str] = ["WSEGVALV"],
-    ):
+    def __init__(self, schedule_file: str, optional_keywords: list[str] | None = None):
         """Initialize the class.
 
         Args:
@@ -127,6 +123,8 @@ class ReadSchedule:
 
         # get contents of the listed keywords
         # and the content of the not listed keywords
+        if optional_keywords is None:
+            optional_keywords = ["WSEGVALV"]
         self.collections, self.unused_keywords = parse.read_schedule_keywords(
             self.content, Keywords.main_keywords, optional_keywords
         )

@@ -224,7 +224,7 @@ def complete_wsegvalv_record(record: list[str]) -> list[str]:
 
 
 def read_schedule_keywords(
-    content: list[str], keywords: list[str], optional_keywords: list[str] = []
+    content: list[str], keywords: list[str], optional_keywords: list[str] | None = None
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """Read schedule keywords or all keywords in table format.
 
@@ -245,6 +245,8 @@ def read_schedule_keywords(
     content = deepcopy(content)
     used_index = np.asarray([-1])
     collections = []
+    if optional_keywords is None:
+        optional_keywords = []
     # get the contents that correspond with the list_keywords
     for keyword in keywords + optional_keywords:
         start_index, end_index = locate_keyword(content, keyword, take_first=False)

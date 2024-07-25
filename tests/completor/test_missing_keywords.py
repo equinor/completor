@@ -175,7 +175,7 @@ def test_inconsistent_files(tmpdir):
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     outputmessage = (
-        "Inconsistent case and input schedule files. " "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
+        "Inconsistent case and input schedule files. Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
     )
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)
