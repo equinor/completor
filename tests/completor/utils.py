@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from argparse import Namespace
 from pathlib import Path
 
@@ -22,6 +23,7 @@ def open_files_run_create(
 
     Then run main.py's create function with the data.
     """
+    os.environ["TQDM_DISABLE"] = "1"
     if isinstance(case, Path):
         with open(case, encoding="utf-8") as file:
             case = file.read()

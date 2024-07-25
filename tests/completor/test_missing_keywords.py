@@ -105,7 +105,7 @@ def set_files(tmpdir):
 
 
 def set_case(completion_type, combination, case_file):
-    """Set contents of case file from a completion type and combination of keywords."""
+    """Set the contents of case file from a completion type and combination of keywords."""
     case_content = ""
     for case_keyword in combination:
         case_content += CASE_KEYWORDS[case_keyword].replace("__TYPE__", completion_type)
@@ -121,8 +121,7 @@ def set_schedule(combination, schedule_file):
 
 
 def test_minimum_input(tmpdir, capsys):
-    """
-    Test output to screen from Completor.
+    """Test output to screen from Completor.
 
     Uses combinations of keywords in input case- and schedule files.
     """

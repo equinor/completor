@@ -9,6 +9,7 @@ import time
 from collections.abc import Mapping
 
 import numpy as np
+import tqdm
 
 import completor
 from completor import create_wells, parse
@@ -22,106 +23,6 @@ from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
 from completor.visualization import close_figure, create_pdfpages
-
-# from typing import Literal, overload
-
-
-# class FileWriter:
-#     """Functionality for writing a new schedule file."""
-#
-#     def __init__(self, file: str, mapper: Mapping[str, str] | None):
-#         """Initialize the FileWriter.
-#
-#         Args:
-#             file: Name of file to be written. Does not check if it already exists.
-#             mapper: A dictionary for mapping strings.
-#                 Typically used for mapping pre-processor reservoir modelling tools to reservoir simulator well names.
-#         """
-#         self.fh = open(file, "w", encoding="utf-8")  # create new output file
-#         self.mapper = mapper
-#
-#     @overload
-#     def write(self, keyword: Literal[None], content: str, chunk: bool = True, end_of_record: bool = False) -> None: ...
-#
-#     @overload
-#     def write(
-#         self, keyword: str, content: list[list[str]], chunk: Literal[True] = True, end_of_record: bool = False
-#     ) -> None: ...
-#
-#     @overload
-#     def write(
-#         self, keyword: str, content: list[str] | str, chunk: Literal[False] = False, end_of_record: bool = False
-#     ) -> None: ...
-#
-#     @overload
-#     def write(
-#         self, keyword: str, content: list[list[str]] | list[str] | str, chunk: bool = True, end_of_record: bool = False
-#     ) -> None: ...
-#
-#
-#     def _replace_preprocessing_names(self, text: str) -> str:
-#         """Expand start and end marker pairs for well pattern recognition as needed.
-#
-#         Args:
-#             text: Text with pre-processor reservoir modelling well names.
-#
-#         Returns:
-#             Text with reservoir simulator well names.
-#         """
-#         if self.mapper is None:
-#             raise ValueError(
-#                 "Mapper requires a file containing two columns with input and output names given by the "
-#                 f"'MAPFILE' keyword in case file to be set to correctly replace preprocessing names."
-#             )
-#         start_marks = ["'", " ", "\n", "\t"]
-#         end_marks = ["'", " ", " ", " "]
-#         for key, value in self.mapper.items():
-#             for start, end in zip(start_marks, end_marks):
-#                 my_key = start + str(key) + start
-#                 if my_key in text:
-#                     my_value = start + str(value) + end
-#                     text = text.replace(my_key, my_value)
-#         return text
-#
-#     def close(self) -> None:
-#         """Close FileWriter."""
-#         self.fh.close()
-
-
-class ProgressStatus:
-    """Bookmark the reading progress of a schedule file.
-
-    See https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
-    for improved functionality.
-    """
-
-    def __init__(self, num_lines: int, percent: float):
-        """Initialize ProgressStatus.
-
-        Args:
-            num_lines: Number of lines in schedule file.
-            percent: Indicates schedule file processing progress (in percent).
-        """
-        self.percent = percent
-        self.nlines = num_lines
-        self.prev_n = 0
-
-    def update(self, line_number: int) -> None:
-        """Update logger information.
-
-        Args:
-            line_number: Input schedule file line number.
-
-        Returns:
-            Logger info message.
-        """
-        # If the divisor, or numerator is a float, the integer division gives a float
-        n = int((line_number / self.nlines * 100) // self.percent)
-        if n > self.prev_n:
-            logger.info("=" * 80)
-            logger.info("Done processing %i %% of schedule/data file", n * self.percent)
-            logger.info("=" * 80)
-            self.prev_n = n
 
 
 def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
@@ -227,6 +128,27 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
     return None, file_path
 
 
+def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list[list[str]], int]:
+    """Process the contents
+
+    Args:
+        line_number: The current line number.
+        clean_lines: Clean line to line number mapping.
+
+    Returns:
+        The formatted contents, and the new number of lines after processing.
+
+    """
+    content = ""
+    # concatenate and look for 'end of records' => //
+    while not re.search(r"/\s*/$", content):
+        line_number += 1
+        if line_number in clean_lines:
+            content += clean_lines[line_number]
+    content = _format_content(content)
+    return content, line_number
+
+
 # noinspection TimingAttack
 # caused by `if token == '...'` and token is interpreted as a security token / JWT
 # or otherwise sensitive, but in this context, `token` refers to a token of parsed
@@ -236,12 +158,8 @@ def create(
     schedule_file: str,
     new_file: str,
     show_fig: bool = False,
-    percent: float = 5.0,
     paths: tuple[str, str] | None = None,
-) -> (
-    tuple[list[tuple[str, list[list[str]]]], ReadCasefile, WellSchedule, CreateWells, CreateOutput]
-    | tuple[list[tuple[str, list[list[str]]]], ReadCasefile, WellSchedule, CreateWells]
-):
+) -> tuple[ReadCasefile, WellSchedule, CreateWells, CreateOutput] | tuple[ReadCasefile, WellSchedule, CreateWells]:
     """Create a new Completor schedule file from input case- and schedule files.
 
     Args:
@@ -249,14 +167,12 @@ def create(
         schedule_file: Input schedule file.
         new_file: Output schedule file.
         show_fig: Flag indicating if a figure is to be shown.
-        percent: ProgressStatus percentage steps to be shown (in percent, %).
         paths: Optional additional paths.
 
     Returns:
         Completor schedule file.
     """
     output_text = ""
-    chunks = []  # for debug..
     written = set()  # Keep track of which MSW's has been written
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     wells = CreateWells(case)
@@ -267,11 +183,11 @@ def create(
     pdf_file = None
     if show_fig:
         figure_no = 1
-        fnm = f"Well_schematic_{figure_no:03d}.pdf"
-        while os.path.isfile(fnm):
+        figure_name = f"Well_schematic_{figure_no:03d}.pdf"
+        while os.path.isfile(figure_name):
             figure_no += 1
-            fnm = f"Well_schematic_{figure_no:03d}.pdf"
-        pdf_file = create_pdfpages(fnm)
+            figure_name = f"Well_schematic_{figure_no:03d}.pdf"
+        pdf_file = create_pdfpages(figure_name)
 
     lines = schedule_file.splitlines()
     clean_lines_map = {}
@@ -280,96 +196,94 @@ def create(
         if line:
             clean_lines_map[line_number] = line
 
-    progress_status = ProgressStatus(len(lines), percent)
     err: Exception | None = None
 
+    line_number = 0
+    prev_line_number = 0
+
     try:
-        line_number = 0
-        while line_number < len(lines):
-            progress_status.update(line_number)
-            line = lines[line_number]
-            keyword = line[:8].rstrip()  # look for keywords
+        with tqdm.tqdm(total=len(lines)) as progress_bar:
+            while line_number < len(lines):
+                progress_bar.update(line_number - prev_line_number)
+                prev_line_number = line_number
+                line = lines[line_number]
+                keyword = line[:8].rstrip()  # look for keywords
 
-            # Unrecognized (potential) keywords are written back untouched.
-            if keyword not in Keywords.main_keywords:
-                output_text += format_text(None, f"{line}\n")
-                line_number += 1
-                continue
-
-            well_name = _get_well_name(clean_lines_map, line_number)
-            if keyword in Keywords.segments:  # check if it is an active well
-                if well_name not in list(schedule.active_wells):
-                    output_text += format_text(keyword, "")
+                # Unrecognized (potential) keywords are written back untouched.
+                if keyword not in Keywords.main_keywords:
+                    output_text += format_text(None, f"{line}\n")
                     line_number += 1
-                    continue  # not an active well
+                    continue
 
-            # collect data for this keyword into a 'chunk'
-            chunk_str = ""
-            raw = []  # only used for WELSPECS which we dont modify
-            # concatenate and look for 'end of records' => //
-            while not re.search(r"/\s*/$", chunk_str):
-                line_number += 1
-                raw.append(lines[line_number])
-                if line_number in clean_lines_map:
-                    chunk_str += clean_lines_map[line_number]
-            chunk = _format_chunk(chunk_str)
-            chunks.append((keyword, chunk))  # for debug ...
+                well_name = _get_well_name(clean_lines_map, line_number)
 
-            # use data to update our schedule
-            if keyword == Keywords.WELSPECS:
-                schedule.set_welspecs(chunk)  # Update with new data.
-                output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
-                line_number += 1
-                continue
+                if keyword == Keywords.WELSPECS:
+                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+                    schedule.set_welspecs(chunk)  # Update with new data.
+                    raw = lines[line_number:after_content_line_number]
+                    output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
+                    line_number = after_content_line_number + 1
+                    continue
 
-            elif keyword == Keywords.COMPDAT:
-                remains = schedule.handle_compdat(chunk)  # update with new data
-                if remains:
-                    output_text += format_text(keyword, remains, end_of_record=True)  # Write non-active wells.
-                line_number += 1
-                continue
+                elif keyword == Keywords.COMPDAT:
+                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+                    remains = schedule.handle_compdat(chunk)  # update with new data
+                    if remains:
+                        output_text += format_text(keyword, remains, end_of_record=True)  # Write non-active wells.
+                    line_number = after_content_line_number + 1
+                    continue
 
-            elif keyword == Keywords.WELSEGS:
-                schedule.set_welsegs(chunk)  # update with new data
+                elif keyword == Keywords.WELSEGS:
+                    if well_name not in list(schedule.active_wells):
+                        output_text += format_text(keyword, "")
+                        line_number += 1
+                        continue  # not an active well
+                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+                    schedule.set_welsegs(chunk)  # update with new data
+                    line_number = after_content_line_number + 1
 
-            elif keyword == Keywords.COMPSEGS:
-                # this is COMPSEGS'. will now update and write out new data
-                schedule.set_compsegs(chunk)
+                elif keyword == Keywords.COMPSEGS:
+                    if well_name not in list(schedule.active_wells):
+                        output_text += format_text(keyword, "")
+                        line_number += 1
+                        continue  # not an active well
+                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+                    schedule.set_compsegs(chunk)
+                    line_number = after_content_line_number + 1
 
-                try:
-                    case.check_input(well_name, schedule)
-                except NameError as err:
-                    # This might mean that `Keywords.segments` has changed to not include `Keywords.COMPSEGS`
-                    raise SystemError(
-                        "Well name not defined, even though it should be defined when "
-                        f"token ({keyword} is one of {', '.join(Keywords.segments)})"
-                    ) from err
+                    try:
+                        case.check_input(well_name, schedule)
+                    except NameError as err:
+                        # This might mean that `Keywords.segments` has changed to not include `Keywords.COMPSEGS`
+                        raise SystemError(
+                            "Well name not defined, even though it should be defined when "
+                            f"token ({keyword} is one of {', '.join(Keywords.segments)})"
+                        ) from err
 
-                if well_name not in written:
-                    write_welsegs = True  # will only write WELSEGS once
-                    written.add(well_name)
-                else:
-                    write_welsegs = False
-                logger.debug("Writing new MSW info for well %s", well_name)
-                wells.update(well_name, schedule)
-                output = CreateOutput(
-                    case,
-                    schedule,
-                    wells,
-                    well_name,
-                    schedule.get_well_number(well_name),
-                    completor.__version__,
-                    show_fig,
-                    pdf_file,
-                    write_welsegs,
-                    paths,
-                )
-                output_text += format_text(None, output.finalprint)
-
-            line_number += 1
+                    if well_name not in written:
+                        write_welsegs = True  # will only write WELSEGS once
+                        written.add(well_name)
+                    else:
+                        write_welsegs = False
+                    logger.debug("Writing new MSW info for well %s", well_name)
+                    wells.update(well_name, schedule)
+                    output = CreateOutput(
+                        case,
+                        schedule,
+                        wells,
+                        well_name,
+                        schedule.get_well_number(well_name),
+                        show_fig,
+                        pdf_file,
+                        write_welsegs,
+                        paths,
+                    )
+                    output_text += format_text(None, output.finalprint)
+            else:
+                progress_bar.update(len(lines) - prev_line_number)
 
     except Exception as e_:
-        err = e_
+        err = e_  # type: ignore
     finally:
 
         output_text = _replace_preprocessing_names(output_text, case.mapper)
@@ -385,13 +299,13 @@ def create(
 
     if output is None:
         if len(schedule.active_wells) == 0:
-            return chunks, case, schedule, wells
+            return case, schedule, wells
         else:
             raise ValueError(
                 "Inconsistent case and input schedule files. "
                 "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
             )
-    return chunks, case, schedule, wells, output
+    return case, schedule, wells, output
 
 
 def main() -> None:
@@ -465,18 +379,18 @@ def _get_well_name(schedule_lines: dict[int, str], i: int) -> str:
     return next_line.split()[0]
 
 
-def _format_chunk(chunk_str: str) -> list[list[str]]:
+def _format_content(text: str) -> list[list[str]]:
     """Format the data-records and resolve the repeat-mechanism.
 
     E.g. 3* == 1* 1* 1*, 3*250 == 250 250 250.
 
     Args:
-        chunk_str: A chunk data-record.
+        text: A chunk data-record.
 
     Returns:
         Expanded values.
     """
-    chunk = re.split(r"\s+/", chunk_str)[:-1]
+    chunk = re.split(r"\s+/", text)[:-1]
     expanded_data = []
     for line in chunk:
         new_record = ""
@@ -488,7 +402,7 @@ def _format_chunk(chunk_str: str) -> list[list[str]]:
                 new_record += record + " "
                 continue
 
-            # need to handle things like 3* or 3*250
+            # Handle repeats like 3* or 3*250.
             multiplier, number = record.split("*")
             new_record += f"{number if number else '1*'} " * int(multiplier)
         if new_record:
