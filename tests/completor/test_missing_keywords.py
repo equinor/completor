@@ -151,10 +151,10 @@ def test_missing_compdat(tmpdir):
     """Test output to screen from Completor missing COMPDAT."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = "Input schedule file missing COMPDAT keyword."
+    expected_error_message = "Input schedule file missing COMPDAT keyword."
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "welsegs", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
+    with pytest.raises(ValueError, match=expected_error_message):
         utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
@@ -162,10 +162,10 @@ def test_missing_welsegs(tmpdir):
     """Test output to screen from Completor missing WELSEGS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = "Input schedule file missing WELSEGS keyword."
+    expected_error_message = "Input schedule file missing WELSEGS keyword."
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
+    with pytest.raises(ValueError, match=expected_error_message):
         utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
@@ -173,12 +173,12 @@ def test_inconsistent_files(tmpdir):
     """Test output to screen from Completor missing COMPSEGS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = (
-        "Inconsistent case and input schedule files. Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
+    expected_error_message = (
+        "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
     )
     set_case("PERF", ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
+    with pytest.raises(ValueError, match=expected_error_message):
         utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 
@@ -186,10 +186,10 @@ def test_missing_completion(tmpdir):
     """Test output to screen from Completor missing COMPLETION."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = "No completion is defined in the case file."
+    expected_error_message = "No completion is defined in the case file."
     set_case("PERF", ["wsegaicd"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
+    with pytest.raises(ValueError, match=expected_error_message):
         utils.open_files_run_create(case_file, schedule_file, _outfile)
 
 

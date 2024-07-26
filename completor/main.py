@@ -98,8 +98,7 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
         File content, file path.
 
     Raises:
-        CompletorError: If the keyword cannot be found.
-        CompletorError: If the file cannot be found.
+        CompletorError: If the keyword or file cannot be found.
     """
     if file_path is None:
         # Find the path/name of file from case file
@@ -149,18 +148,10 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
     return content, line_number
 
 
-# noinspection TimingAttack
-# caused by `if token == '...'` and token is interpreted as a security token / JWT
-# or otherwise sensitive, but in this context, `token` refers to a token of parsed
-# text / semantic token
 def create(
-    input_file: str,
-    schedule_file: str,
-    new_file: str,
-    show_fig: bool = False,
-    paths: tuple[str, str] | None = None,
+    input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
 ) -> tuple[ReadCasefile, WellSchedule, CreateWells, CreateOutput] | tuple[ReadCasefile, WellSchedule, CreateWells]:
-    """Create a new Completor schedule file from input case- and schedule files.
+    """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
         input_file: Input case file.
@@ -170,15 +161,15 @@ def create(
         paths: Optional additional paths.
 
     Returns:
-        Completor schedule file.
+        The case and schedule file, the well and output object.
     """
     output_text = ""
-    written = set()  # Keep track of which MSW's has been written
+    output = None
+    written_wells = set()  # Keep track of which wells has been written.
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     wells = CreateWells(case)
     active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
     schedule = WellSchedule(active_wells)  # container for MSW-data
-    output = None
 
     pdf_file = None
     if show_fig:
@@ -200,14 +191,13 @@ def create(
 
     line_number = 0
     prev_line_number = 0
-
     try:
         with tqdm.tqdm(total=len(lines)) as progress_bar:
             while line_number < len(lines):
                 progress_bar.update(line_number - prev_line_number)
                 prev_line_number = line_number
                 line = lines[line_number]
-                keyword = line[:8].rstrip()  # look for keywords
+                keyword = line[:8].rstrip()
 
                 # Unrecognized (potential) keywords are written back untouched.
                 if keyword not in Keywords.main_keywords:
@@ -219,7 +209,7 @@ def create(
 
                 if keyword == Keywords.WELSPECS:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.set_welspecs(chunk)  # Update with new data.
+                    schedule.set_welspecs(chunk)
                     raw = lines[line_number:after_content_line_number]
                     output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
                     line_number = after_content_line_number + 1
@@ -227,7 +217,7 @@ def create(
 
                 elif keyword == Keywords.COMPDAT:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    remains = schedule.handle_compdat(chunk)  # update with new data
+                    remains = schedule.handle_compdat(chunk)
                     if remains:
                         output_text += format_text(keyword, remains, end_of_record=True)  # Write non-active wells.
                     line_number = after_content_line_number + 1
@@ -241,6 +231,7 @@ def create(
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule.set_welsegs(chunk)  # update with new data
                     line_number = after_content_line_number + 1
+                    continue
 
                 elif keyword == Keywords.COMPSEGS:
                     if well_name not in list(schedule.active_wells):
@@ -251,41 +242,32 @@ def create(
                     schedule.set_compsegs(chunk)
                     line_number = after_content_line_number + 1
 
-                    try:
-                        case.check_input(well_name, schedule)
-                    except NameError as err:
-                        # This might mean that `Keywords.segments` has changed to not include `Keywords.COMPSEGS`
-                        raise SystemError(
-                            "Well name not defined, even though it should be defined when "
-                            f"token ({keyword} is one of {', '.join(Keywords.segments)})"
-                        ) from err
+                    case.check_input(well_name, schedule)
 
-                    if well_name not in written:
+                    if well_name not in written_wells:
                         write_welsegs = True  # will only write WELSEGS once
-                        written.add(well_name)
+                        written_wells.add(well_name)
                     else:
                         write_welsegs = False
                     logger.debug("Writing new MSW info for well %s", well_name)
                     wells.update(well_name, schedule)
+                    well_number = schedule.get_well_number(well_name)
                     output = CreateOutput(
-                        case,
-                        schedule,
-                        wells,
-                        well_name,
-                        schedule.get_well_number(well_name),
-                        show_fig,
-                        pdf_file,
-                        write_welsegs,
-                        paths,
+                        case, schedule, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
                     )
                     output_text += format_text(None, output.finalprint)
+                    continue
+                raise CompletorError(
+                    f"Unrecognized content at line number {line_number} with content:\n{line}\n"
+                    "If you encounter this, please contact the team as this might be a mistake with the software."
+                )
             else:
                 progress_bar.update(len(lines) - prev_line_number)
 
     except Exception as e_:
         err = e_  # type: ignore
     finally:
-
+        # Make sure the output thus far is written, and figure files are closed.
         output_text = _replace_preprocessing_names(output_text, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
             file.write(output_text)
@@ -298,13 +280,11 @@ def create(
         raise err
 
     if output is None:
-        if len(schedule.active_wells) == 0:
-            return case, schedule, wells
-        else:
+        if len(schedule.active_wells) != 0:
             raise ValueError(
-                "Inconsistent case and input schedule files. "
-                "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
+                "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
             )
+        return case, schedule, wells
     return case, schedule, wells, output
 
 
@@ -346,7 +326,10 @@ def main() -> None:
 
     if inputs.outputfile is None:
         if inputs.schedulefile is None:
-            raise ValueError("No schedule provided, or none where found " "in the case file (keyword 'SCHFILE')")
+            raise ValueError(
+                "Could not find a path to schedule file. "
+                "It must be provided as a input argument or within the case files keyword 'SCHFILE'."
+            )
         inputs.outputfile = inputs.schedulefile.split(".")[0] + "_advanced.wells"
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
@@ -364,7 +347,7 @@ def main() -> None:
 
 
 def _get_well_name(schedule_lines: dict[int, str], i: int) -> str:
-    """Get the well name from line number
+    """Get the well name from line number.
 
     Args:
         schedule_lines: Dictionary of lines in schedule file.
