@@ -988,13 +988,15 @@ class WellSchedule:
         content.reset_index(drop=True, inplace=True)
         return columns, content
 
-    def get_well_number(self, well_name: str) -> int:
-        """Well number in the active_wells list.
 
-        Args:
-            well_name: Well name.
+def get_well_number(well_name: str, active_wells: npt.NDArray[np.str_]) -> int:
+    """Well number in the active_wells list.
 
-        Returns:
-            Well number.
-        """
-        return int(np.where(self.active_wells == well_name)[0][0])
+    Args:
+        well_name: Well name.
+        active_wells: The active wells
+
+    Returns:
+        Well number.
+    """
+    return int(np.where(active_wells == well_name)[0][0])

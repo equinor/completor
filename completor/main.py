@@ -12,7 +12,7 @@ import numpy as np
 import tqdm
 
 import completor
-from completor import create_wells, parse
+from completor import completion, create_wells, parse
 from completor.completion import WellSchedule
 from completor.constants import Keywords
 from completor.create_output import CreateOutput
@@ -251,7 +251,7 @@ def create(
                         write_welsegs = False
                     logger.debug("Writing new MSW info for well %s", well_name)
                     wells.update(well_name, schedule)
-                    well_number = schedule.get_well_number(well_name)
+                    well_number = completion.get_well_number(well_name, active_wells)
                     output = CreateOutput(
                         case, schedule, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
                     )
