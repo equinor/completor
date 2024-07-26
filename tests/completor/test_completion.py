@@ -149,7 +149,7 @@ def test_connect_cells_segment_user():
         ],
     )
 
-    df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="user")
+    df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method=Method.USER)
     pd.testing.assert_frame_equal(df_test, df_merge)
 
 

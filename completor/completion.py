@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, overload
+from typing import Any, Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -964,29 +964,33 @@ class WellSchedule:
         df.reset_index(drop=True, inplace=True)  # reset index after filtering
         return fix_compsegs(df, well_name)
 
-    def get_well_segments(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Get-function for well segments.
 
-        Args:
-            well_name: Well name.
-            branch: Branch number.
+def get_well_segments(
+    msws: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Get-function for well segments.
 
-        Returns:
-            Well segments headers and content.
+    Args:
+        msws: The multisegmented wells.
+        well_name: Well name.
+        branch: Branch number.
 
-        Raises:
-            ValueError: If WELSEGS keyword missing in input schedule file.
-        """
-        try:
-            columns, content = self.msws[well_name][Keywords.WELSEGS]
-        except KeyError as err:
-            if f"'{Keywords.WELSEGS}'" in str(err):
-                raise ValueError("Input schedule file missing WELSEGS keyword.") from err
-            raise err
-        if branch is not None:
-            content = content[content[Headers.TUBING_BRANCH] == branch]
-        content.reset_index(drop=True, inplace=True)
-        return columns, content
+    Returns:
+        Well segments headers and content.
+
+    Raises:
+        ValueError: If WELSEGS keyword missing in input schedule file.
+    """
+    try:
+        columns, content = msws[well_name][Keywords.WELSEGS]
+    except KeyError as err:
+        if f"'{Keywords.WELSEGS}'" in str(err):
+            raise ValueError("Input schedule file missing WELSEGS keyword.") from err
+        raise err
+    if branch is not None:
+        content = content[content[Headers.TUBING_BRANCH] == branch]
+    content.reset_index(drop=True, inplace=True)
+    return columns, content
 
 
 def get_well_number(well_name: str, active_wells: npt.NDArray[np.str_]) -> int:

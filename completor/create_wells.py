@@ -65,7 +65,9 @@ class CreateWells:
         active_laterals = _get_active_laterals(well_name, self.case.completion_table)
         for lateral in active_laterals:
             self.df_completion = self.case.get_completion(well_name, lateral)
-            self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(well_name, lateral)
+            self.df_welsegs_header, self.df_welsegs_content = completion.get_well_segments(
+                schedule.msws, well_name, lateral
+            )
 
             self.df_reservoir = _select_well(well_name, schedule, lateral)
 
