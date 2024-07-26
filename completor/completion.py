@@ -631,31 +631,28 @@ def connect_cells_to_segments(
     # Calculate mid cell measured depth
     df_reservoir[Headers.MEASURED_DEPTH] = (
         df_reservoir[Headers.START_MEASURED_DEPTH] + df_reservoir[Headers.END_MEASURED_DEPTH]
-    ) * 0.5
+    ) / 2
     if method == Method.USER:
-        df_res = df_reservoir.copy(deep=True)
-        df_wel = df_well.copy(deep=True)
         # Ensure that tubing segment boundaries as described in the case file are honored.
-        # Associate reservoir cells with tubing segment midpoints using markers
+        # Associate reservoir cells with tubing segment midpoints using markers.
+        df_reservoir[Headers.MARKER] = np.full(df_reservoir.shape[0], 0)
+        df_well[Headers.MARKER] = np.arange(df_well.shape[0]) + 1
+
+        start_measured_depths = df_tubing_segments[Headers.START_MEASURED_DEPTH]
+        end_measured_depths = df_tubing_segments[Headers.END_MEASURED_DEPTH]
+
         marker = 1
-        df_res[Headers.MARKER] = np.full(df_reservoir.shape[0], 0)
-        df_wel[Headers.MARKER] = np.arange(df_well.shape[0]) + 1
-        for idx in df_wel[Headers.TUBING_MEASURED_DEPTH].index:
-            start_measured_depth = df_tubing_segments[Headers.START_MEASURED_DEPTH].iloc[idx]
-            end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].iloc[idx]
-            df_res.loc[
-                df_res[Headers.MEASURED_DEPTH].between(start_measured_depth, end_measured_depth), Headers.MARKER
-            ] = marker
+        for start, end in zip(start_measured_depths, end_measured_depths):
+            df_reservoir.loc[df_reservoir[Headers.MEASURED_DEPTH].between(start, end), Headers.MARKER] = marker
             marker += 1
-        # Merge
-        tmp = df_res.merge(df_wel, on=[Headers.MARKER])
-        return tmp.drop([Headers.MARKER], axis=1, inplace=False)
+
+        return df_reservoir.merge(df_well, on=Headers.MARKER).drop(Headers.MARKER, axis=1)
 
     return pd.merge_asof(
         left=df_reservoir,
         right=df_well,
-        left_on=[Headers.MEASURED_DEPTH],
-        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        left_on=Headers.MEASURED_DEPTH,
+        right_on=Headers.TUBING_MEASURED_DEPTH,
         direction="nearest",
     )
 
