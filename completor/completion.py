@@ -667,10 +667,10 @@ class WellSchedule:
         active_wells: Active multi-segment wells defined in a case file.
     """
 
-    def __init__(self, active_wells: npt.NDArray[np.unicode_] | list[str]):
+    def __init__(self, active_wells: npt.NDArray[np.unicode_]):
         """Initialize WellSchedule."""
-        self.msws: dict[str, dict] = {}
-        self.active_wells = np.array(active_wells)
+        self.msws: dict[str, dict[str, Any]] = {}
+        self.active_wells = active_wells
 
     def set_welspecs(self, records: list[list[str]]) -> None:
         """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
@@ -877,45 +877,50 @@ class WellSchedule:
         self.msws[well_name][Keywords.WELSEGS] = df_header, df_records
         return well_name
 
-    def set_compsegs(self, recs: list[list[str]]) -> str | None:
-        """Update COMPSEGS for a well if it is an active well.
 
-        * Pads missing record columns in header and contents with default 1*.
-        * Convert header and column records to DataFrames.
-        * Sets proper DataFrame column types and titles.
+def set_compsegs(
+    well_segments: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
+) -> dict[str, dict[str, Any]]:
+    """Update COMPSEGS for a well if it is an active well.
 
-        Args:
-            recs: Record set of header and contents data.
+    * Pads missing record columns in header and contents with default 1*.
+    * Convert header and column records to DataFrames.
+    * Sets proper DataFrame column types and titles.
 
-        Returns:
-            Name of well if it was updated, or None if it is not in active_wells.
-        """
-        well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
-        if well_name not in self.active_wells:
-            return None
-        columns = [
-            Headers.I,
-            Headers.J,
-            Headers.K,
-            Headers.BRANCH,
-            Headers.START_MEASURED_DEPTH,
-            Headers.END_MEASURED_DEPTH,
-            Headers.COMPSEGS_DIRECTION,
-            Headers.ENDGRID,
-            Headers.PERFORATION_DEPTH,
-            Headers.THERMAL_CONTACT_LENGTH,
-            Headers.SEGMENT,
-        ]
-        recs = np.array(recs[1:])
-        recs = np.pad(recs, ((0, 0), (0, len(columns) - recs.shape[1])), "constant", constant_values="1*")
-        df = pd.DataFrame(recs, columns=columns)
-        df[columns[:4]] = df[columns[:4]].astype(np.int64)
-        df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
-        if well_name not in self.msws:
-            self.msws[well_name] = {}
-        self.msws[well_name][Keywords.COMPSEGS] = df
-        logger.debug("set_compsegs for %s", well_name)
-        return well_name
+    Args:
+        well_schedule: Data containing multisegmented well schedules.
+        active_wells:
+        recs: Record set of header and contents data.
+
+    Returns:
+        Name of well if it was updated, or None if it is not in active_wells.
+    """
+    well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
+    if well_name not in active_wells:
+        raise ValueError("Well is not active!")
+    columns = [
+        Headers.I,
+        Headers.J,
+        Headers.K,
+        Headers.BRANCH,
+        Headers.START_MEASURED_DEPTH,
+        Headers.END_MEASURED_DEPTH,
+        Headers.COMPSEGS_DIRECTION,
+        Headers.ENDGRID,
+        Headers.PERFORATION_DEPTH,
+        Headers.THERMAL_CONTACT_LENGTH,
+        Headers.SEGMENT,
+    ]
+    recs = np.array(recs[1:])
+    recs = np.pad(recs, ((0, 0), (0, len(columns) - recs.shape[1])), "constant", constant_values="1*")
+    df = pd.DataFrame(recs, columns=columns)
+    df[columns[:4]] = df[columns[:4]].astype(np.int64)
+    df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
+    if well_name not in well_segments:
+        well_segments[well_name] = {}
+    well_segments[well_name][Keywords.COMPSEGS] = df
+    logger.debug("set_compsegs for %s", well_name)
+    return well_segments
 
 
 def get_completion_data(well_schedule: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:

@@ -239,7 +239,11 @@ def create(
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.set_compsegs(chunk)
+                    try:
+                        schedule.msws = completion.set_compsegs(schedule.msws, schedule.active_wells, chunk)
+                    except ValueError:
+                        pass
+
                     line_number = after_content_line_number + 1
 
                     case.check_input(well_name, schedule)
