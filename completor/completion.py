@@ -917,17 +917,6 @@ class WellSchedule:
         logger.debug("set_compsegs for %s", well_name)
         return well_name
 
-    def get_welspecs(self, well_name: str) -> pd.DataFrame:
-        """Get-function for WELSPECS.
-
-        Args:
-            well_name: Well name.
-
-        Returns:
-            Well specifications.
-        """
-        return self.msws[well_name][Keywords.WELSPECS]
-
 
 def get_completion_data(well_schedule: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
     """Get-function for COMPDAT.
