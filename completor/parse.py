@@ -245,8 +245,7 @@ def read_schedule_keywords(
     content = deepcopy(content)
     used_index = np.asarray([-1])
     collections = []
-    if optional_keywords is None:
-        optional_keywords = []
+    optional_keywords = [] if optional_keyword is None else optional_keywords
     # get the contents that correspond with the list_keywords
     for keyword in keywords + optional_keywords:
         start_index, end_index = locate_keyword(content, keyword, take_first=False)
