@@ -928,24 +928,26 @@ class WellSchedule:
         """
         return self.msws[well_name][Keywords.WELSPECS]
 
-    def get_compdat(self, well_name: str) -> pd.DataFrame:
-        """Get-function for COMPDAT.
 
-        Args:
-            well_name: Well name.
+def get_compdat(well_schedule: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
+    """Get-function for COMPDAT.
 
-        Returns:
-            Completion data.
+    Args:
+        well_schedule: Data containing multisegmented well schedules.
+        well_name: Well name.
 
-        Raises:
-            ValueError: If completion data keyword is missing in input schedule file.
-        """
-        try:
-            return self.msws[well_name][Keywords.COMPDAT]
-        except KeyError as err:
-            if f"'{Keywords.COMPDAT}'" in str(err):
-                raise ValueError("Input schedule file missing COMPDAT keyword.") from err
-            raise err
+    Returns:
+        Completion data.
+
+    Raises:
+        ValueError: If completion data keyword is missing in input schedule file.
+    """
+    try:
+        return well_schedule[well_name][Keywords.COMPDAT]
+    except KeyError as err:
+        if f"'{Keywords.COMPDAT}'" in str(err):
+            raise ValueError("Input schedule file missing COMPDAT keyword.") from err
+        raise err
 
 
 def get_completion_segments(
