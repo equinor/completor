@@ -169,7 +169,7 @@ def create_tubing_segments(
         cells: Create one segment per cell.
         user: Create segment based on the completion definition.
         fix: Create segment based on a fixed interval.
-        well_segments: Create segment based on well segments keyword.
+        multisegmented_well_segments: Create segment based on well segments keyword.
 
     Returns:
         DataFrame with start and end measured depth, tubing measured depth, and tubing true vertical depth.
@@ -250,15 +250,15 @@ def create_tubing_segments(
         # Create the tubing layer from segment measured depths in the WELSEGS keyword that are missing from COMPSEGS.
         # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
         # Completor interprets WELSEGS depths as segment midpoint depths.
-        # Obtain the well_segments segment midpoint depth.
+        # Obtain the multisegmented_well_segments segment midpoint depth.
         well_segments = df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy()
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
         start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir[Headers.START_MEASURED_DEPTH].to_numpy()
         end_compsegs_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
-        # If there are gaps in compsegs and there are well_segments segments that fit in the gaps,
-        # insert well_segments segments into the compsegs gaps.
+        # If there are gaps in compsegs and there are multisegmented_well_segments segments that fit in the gaps,
+        # insert multisegmented_well_segments segments into the compsegs gaps.
         gaps_compsegs = start_compsegs_depth[1:] - end_compsegs_depth[:-1]
         # Indices of gaps in compsegs.
         indices_gaps = np.nonzero(gaps_compsegs)
@@ -274,7 +274,7 @@ def create_tubing_segments(
         end_welsegs_outside = end_welsegs_depth[np.argwhere(end_welsegs_depth > end_compsegs_depth[-1])]
         welsegs_to_add = np.append(welsegs_to_add, start_welsegs_outside)
         welsegs_to_add = np.append(welsegs_to_add, end_welsegs_outside)
-        # Find well_segments start and end in gaps.
+        # Find multisegmented_well_segments start and end in gaps.
         start_compsegs_depth = np.append(start_compsegs_depth, welsegs_to_add)
         end_compsegs_depth = np.append(end_compsegs_depth, welsegs_to_add)
         start_measured_depth = np.sort(start_compsegs_depth)
@@ -683,7 +683,7 @@ class WellSchedule:
             records: Raw well specification.
 
         Returns:
-            Record of inactive wells (in `self.msws`).
+            Record of inactive wells (in `self.multisegmented_well_segments`).
         """
         columns = [
             Headers.WELL,
@@ -879,7 +879,7 @@ class WellSchedule:
 
 
 def set_compsegs(
-    well_segments: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
+    multisegmented_well_segments: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
 ) -> dict[str, dict[str, Any]]:
     """Update COMPSEGS for a well if it is an active well.
 
@@ -888,16 +888,16 @@ def set_compsegs(
     * Sets proper DataFrame column types and titles.
 
     Args:
-        well_schedule: Data containing multisegmented well schedules.
-        active_wells:
+        multisegmented_well_segments: Data containing multisegmented well schedules.
+        active_wells: Active wells.
         recs: Record set of header and contents data.
 
     Returns:
-        Name of well if it was updated, or None if it is not in active_wells.
+        The updated well segments.
     """
     well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
     if well_name not in active_wells:
-        raise ValueError("Well is not active!")
+        raise ValueError("The well must be active!")
     columns = [
         Headers.I,
         Headers.J,
@@ -916,18 +916,18 @@ def set_compsegs(
     df = pd.DataFrame(recs, columns=columns)
     df[columns[:4]] = df[columns[:4]].astype(np.int64)
     df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
-    if well_name not in well_segments:
-        well_segments[well_name] = {}
-    well_segments[well_name][Keywords.COMPSEGS] = df
+    if well_name not in multisegmented_well_segments:
+        multisegmented_well_segments[well_name] = {}
+    multisegmented_well_segments[well_name][Keywords.COMPSEGS] = df
     logger.debug("set_compsegs for %s", well_name)
-    return well_segments
+    return multisegmented_well_segments
 
 
-def get_completion_data(well_schedule: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
+def get_completion_data(multisegmented_well_segments: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
     """Get-function for COMPDAT.
 
     Args:
-        well_schedule: Data containing multisegmented well schedules.
+        multisegmented_well_segments: Segment information.
         well_name: Well name.
 
     Returns:
@@ -937,7 +937,7 @@ def get_completion_data(well_schedule: dict[str, dict[str, Any]], well_name: str
         ValueError: If completion data keyword is missing in input schedule file.
     """
     try:
-        return well_schedule[well_name][Keywords.COMPDAT]
+        return multisegmented_well_segments[well_name][Keywords.COMPDAT]
     except KeyError as err:
         if f"'{Keywords.COMPDAT}'" in str(err):
             raise ValueError("Input schedule file missing COMPDAT keyword.") from err
@@ -945,19 +945,19 @@ def get_completion_data(well_schedule: dict[str, dict[str, Any]], well_name: str
 
 
 def get_completion_segments(
-    well_schedule: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
+    multisegmented_well_segments: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
 ) -> pd.DataFrame:
     """Get-function for COMPSEGS.
 
     Args:
-       well_schedule: Data containing multisegmented well schedules.
+       multisegmented_well_segments: Data containing multisegmented well segments.
        well_name: Well name.
        branch: Branch number.
 
     Returns:
         Completion segment data.
     """
-    df = well_schedule[well_name][Keywords.COMPSEGS].copy()
+    df = multisegmented_well_segments[well_name][Keywords.COMPSEGS].copy()
     if branch is not None:
         df = df[df[Headers.BRANCH] == branch]
     df.reset_index(drop=True, inplace=True)  # reset index after filtering
@@ -965,12 +965,12 @@ def get_completion_segments(
 
 
 def get_well_segments(
-    msws: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
+    multisegmented_well_segments: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get-function for well segments.
 
     Args:
-        msws: The multisegmented wells.
+        multisegmented_well_segments: The multisegmented wells.
         well_name: Well name.
         branch: Branch number.
 
@@ -981,7 +981,7 @@ def get_well_segments(
         ValueError: If WELSEGS keyword missing in input schedule file.
     """
     try:
-        columns, content = msws[well_name][Keywords.WELSEGS]
+        columns, content = multisegmented_well_segments[well_name][Keywords.WELSEGS]
     except KeyError as err:
         if f"'{Keywords.WELSEGS}'" in str(err):
             raise ValueError("Input schedule file missing WELSEGS keyword.") from err
@@ -997,7 +997,7 @@ def get_well_number(well_name: str, active_wells: npt.NDArray[np.str_]) -> int:
 
     Args:
         well_name: Well name.
-        active_wells: The active wells
+        active_wells: The active wells.
 
     Returns:
         Well number.
