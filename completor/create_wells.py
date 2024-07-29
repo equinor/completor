@@ -32,7 +32,7 @@ class CreateWells:
         df_reservoir: COMPDAT and COMPSEGS data frame fusion in loop.
         df_welsegs_header: WELSEGS first record.
         df_welsegs_content: WELSEGS second record.
-        df_mdtvd: Data frame of MD and TVD relationship.
+        df_mdtvd: Data frame of MEASURED_DEPTH and TRUE_VERTICAL_DEPTH relationship.
         df_tubing_segments: Tubing segment data frame.
         df_well: Data frame after completion.
         df_well_all: Data frame (df_well) for all laterals after completion.
@@ -278,7 +278,7 @@ class CreateWells:
     def connect_cells_to_segments(self) -> None:
         """Connect cells to the well.
 
-        We only need the following columns from the well DataFrame: MD, NDEVICES, DEVICETYPE, and ANNULUS_ZONE.
+        We only need the following columns from the well DataFrame: MEASURED_DEPTH, NDEVICES, DEVICETYPE, and ANNULUS_ZONE.
 
         ICV placement forces different methods in segment creation as USER defined.
         """
@@ -291,7 +291,9 @@ class CreateWells:
         )
         method = Method.USER if icv_device else self.method
         self.df_reservoir = completion.connect_cells_to_segments(
-            self.df_well[[Headers.TUB_MD, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]],
+            self.df_well[
+                [Headers.TUBING_MEASURED_DEPTH, Headers.NUMBER_OF_DEVICES, Headers.DEVICE_TYPE, Headers.ANNULUS_ZONE]
+            ],
             self.df_reservoir,
             self.df_tubing_segments,
             method,

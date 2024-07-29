@@ -12,7 +12,7 @@ from completor.constants import Headers, Keywords, Method
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
-from completor.utils import as_data_frame, log_and_raise_exception
+from completor.utils import log_and_raise_exception
 
 try:
     from typing import Literal, TypeAlias  # type: ignore
@@ -85,13 +85,19 @@ def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_cont
         Measured depth versus true vertical depth.
 
     """
-    measured_depth = df_well_segments_content[Headers.TUBINGMD].to_numpy()
-    measured_depth = np.insert(measured_depth, 0, df_well_segments_header[Headers.SEGMENTMD].iloc[0])
-    true_vertical_depth = df_well_segments_content[Headers.TUBINGTVD].to_numpy()
-    true_vertical_depth = np.insert(true_vertical_depth, 0, df_well_segments_header[Headers.SEGMENTTVD].iloc[0])
-    df_measured_true_vertical_depth = as_data_frame({Headers.MD: measured_depth, Headers.TVD: true_vertical_depth})
+    measured_depth = df_well_segments_content[Headers.TUBING_MEASURED_DEPTH].to_numpy()
+    measured_depth = np.insert(measured_depth, 0, df_well_segments_header[Headers.MEASURED_DEPTH].iloc[0])
+    true_vertical_depth = df_well_segments_content[Headers.TRUE_VERTICAL_DEPTH].to_numpy()
+    true_vertical_depth = np.insert(
+        true_vertical_depth, 0, df_well_segments_header[Headers.TRUE_VERTICAL_DEPTH].iloc[0]
+    )
+    df_measured_true_vertical_depth = pd.DataFrame(
+        {Headers.MEASURED_DEPTH: measured_depth, Headers.TRUE_VERTICAL_DEPTH: true_vertical_depth}
+    )
     # sort based on md
-    df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(by=[Headers.MD, Headers.TVD])
+    df_measured_true_vertical_depth = df_measured_true_vertical_depth.sort_values(
+        by=[Headers.MEASURED_DEPTH, Headers.TRUE_VERTICAL_DEPTH]
+    )
     # reset index after sorting
     return df_measured_true_vertical_depth.reset_index(drop=True)
 
@@ -145,7 +151,7 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
             if not is_gravel_pack_location:
                 annulus_zone[idx] = max(annulus_zone) + 1
             # else it is 0
-        df_annulus = as_data_frame(
+        df_annulus = pd.DataFrame(
             {
                 Headers.START_MEASURED_DEPTH: start_bound,
                 Headers.END_MEASURED_DEPTH: end_bound,
@@ -294,7 +300,7 @@ def create_tubing_segments(
         # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
         # Completor interprets WELSEGS depths as segment midpoint depths.
         # Obtain the well_segments segment midpoint depth.
-        well_segments = df_measured_depth_true_vertical_depth[Headers.MD].to_numpy()
+        well_segments = df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy()
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
@@ -339,19 +345,19 @@ def create_tubing_segments(
 
     # md for tubing segments
     measured_depth_ = 0.5 * (start_measured_depth + end_measured_depth)
-    # estimate TVD
+    # estimate TRUE_VERTICAL_DEPTH
     true_vertical_depth = np.interp(
         measured_depth_,
-        df_measured_depth_true_vertical_depth[Headers.MD].to_numpy(),
-        df_measured_depth_true_vertical_depth[Headers.TVD].to_numpy(),
+        df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy(),
+        df_measured_depth_true_vertical_depth[Headers.TRUE_VERTICAL_DEPTH].to_numpy(),
     )
     # create data frame
-    return as_data_frame(
+    return pd.DataFrame(
         {
             Headers.START_MEASURED_DEPTH: start_measured_depth,
             Headers.END_MEASURED_DEPTH: end_measured_depth,
-            Headers.TUB_MD: measured_depth_,
-            Headers.TUB_TVD: true_vertical_depth,
+            Headers.TUBING_MEASURED_DEPTH: measured_depth_,
+            Headers.TRUE_VERTICAL_DEPTH: true_vertical_depth,
         }
     )
 
@@ -538,10 +544,10 @@ def complete_the_well(
     for i in range(df_tubing_segments.shape[0]):
         information += get_completion(start[i], end[i], df_completion, joint_length)
 
-    df_well = as_data_frame(
+    df_well = pd.DataFrame(
         {
-            Headers.TUB_MD: df_tubing_segments[Headers.TUB_MD].to_numpy(),
-            Headers.TUB_TVD: df_tubing_segments[Headers.TUB_TVD].to_numpy(),
+            Headers.TUBING_MEASURED_DEPTH: df_tubing_segments[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
+            Headers.TRUE_VERTICAL_DEPTH: df_tubing_segments[Headers.TRUE_VERTICAL_DEPTH].to_numpy(),
             Headers.LENGTH: end - start,
             Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
             Headers.NUMBER_OF_DEVICES: information.number_of_devices,
@@ -558,7 +564,7 @@ def complete_the_well(
     df_well = lumping_segments(df_well)
 
     # create scaling factor
-    df_well[Headers.SCALING_FACTOR] = np.where(
+    df_well[Headers.SCALE_FACTOR] = np.where(
         df_well[Headers.NUMBER_OF_DEVICES] > 0.0, -1.0 / df_well[Headers.NUMBER_OF_DEVICES], 0.0
     )
     return df_well
@@ -630,11 +636,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
     if device_type == "VALVE":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well[Headers.CV] = -df_well[Headers.CV] / df_well[Headers.SCALING_FACTOR]
+        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     elif device_type == "DAR":
         # rescale the Cv
         # because no scaling factor in WSEGVALV
-        df_well[Headers.CV_DAR] = -df_well[Headers.CV_DAR] / df_well[Headers.SCALING_FACTOR]
+        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     return df_well
 
 
@@ -677,7 +683,7 @@ def connect_cells_to_segments(
         Merged DataFrame.
     """
     # Calculate mid cell measured depth
-    df_reservoir[Headers.MD] = (
+    df_reservoir[Headers.MEASURED_DEPTH] = (
         df_reservoir[Headers.START_MEASURED_DEPTH] + df_reservoir[Headers.END_MEASURED_DEPTH]
     ) * 0.5
     if method == Method.USER:
@@ -688,17 +694,23 @@ def connect_cells_to_segments(
         marker = 1
         df_res[Headers.MARKER] = np.full(df_reservoir.shape[0], 0)
         df_wel[Headers.MARKER] = np.arange(df_well.shape[0]) + 1
-        for idx in df_wel[Headers.TUB_MD].index:
+        for idx in df_wel[Headers.TUBING_MEASURED_DEPTH].index:
             start_measured_depth = df_tubing_segments[Headers.START_MEASURED_DEPTH].iloc[idx]
             end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].iloc[idx]
-            df_res.loc[df_res[Headers.MD].between(start_measured_depth, end_measured_depth), Headers.MARKER] = marker
+            df_res.loc[
+                df_res[Headers.MEASURED_DEPTH].between(start_measured_depth, end_measured_depth), Headers.MARKER
+            ] = marker
             marker += 1
         # Merge
         tmp = df_res.merge(df_wel, on=[Headers.MARKER])
         return tmp.drop([Headers.MARKER], axis=1, inplace=False)
 
     return pd.merge_asof(
-        left=df_reservoir, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+        left=df_reservoir,
+        right=df_well,
+        left_on=[Headers.MEASURED_DEPTH],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
     )
 
 
@@ -741,14 +753,14 @@ class WellSchedule:
             Headers.DR,
             Headers.FLAG,
             Headers.SHUT,
-            Headers.CROSS,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
             Headers.PRESSURE_TABLE,
-            Headers.DENSCAL,
+            Headers.DENSITY_CALCULATION_TYPE,
             Headers.REGION,
-            Headers.ITEM_14,
-            Headers.ITEM_15,
-            Headers.ITEM_16,
-            Headers.ITEM_17,
+            Headers.RESERVED_HEADER_1,
+            Headers.RESERVED_HEADER_2,
+            Headers.WELL_MODEL_TYPE,
+            Headers.POLYMER_MIXING_TABLE_NUMBER,
         ]
         _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
         df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
@@ -795,10 +807,10 @@ class WellSchedule:
             Headers.STATUS,
             Headers.SATURATION_FUNCTION_REGION_NUMBERS,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.FORAMTION_PERMEABILITY_THICKNESS,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
-            Headers.DFACT,
+            Headers.D_FACTOR,
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
         ]
@@ -811,14 +823,16 @@ class WellSchedule:
         df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
         # Change default value '1*' to equivalent float
         df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
-        df[[Headers.DIAMETER, Headers.SKIN]] = df[[Headers.DIAMETER, Headers.SKIN]].astype(np.float64)
-        # check if CONNECTION_FACTOR, FORAMTION_PERMEABILITY_THICKNESS, and RO are defaulted by the users
+        df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]] = df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]].astype(
+            np.float64
+        )
+        # check if CONNECTION_FACTOR, FORMATION_PERMEABILITY_THICKNESS, and RO are defaulted by the users
         try:
             df[[Headers.CONNECTION_FACTOR]] = df[[Headers.CONNECTION_FACTOR]].astype(np.float64)
         except ValueError:
             pass
         try:
-            df[[Headers.FORAMTION_PERMEABILITY_THICKNESS]] = df[[Headers.FORAMTION_PERMEABILITY_THICKNESS]].astype(
+            df[[Headers.FORMATION_PERMEABILITY_THICKNESS]] = df[[Headers.FORMATION_PERMEABILITY_THICKNESS]].astype(
                 np.float64
             )
         except ValueError:
@@ -856,17 +870,17 @@ class WellSchedule:
         # make df for header record
         columns_header = [
             Headers.WELL,
-            Headers.SEGMENTTVD,
-            Headers.SEGMENTMD,
-            Headers.WBVOLUME,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.MEASURED_DEPTH,
+            Headers.WELLBORE_VOLUME,
             Headers.INFO_TYPE,
-            Headers.PDROPCOMP,
-            Headers.MPMODEL,
-            Headers.ITEM_8,
-            Headers.ITEM_9,
-            Headers.ITEM_10,
-            Headers.ITEM_11,
-            Headers.ITEM_12,
+            Headers.PRESSURE_DROP_COMPLETION,
+            Headers.MULTIPHASE_FLOW_MODEL,
+            Headers.X_COORDINATE_TOP_SEGMENT,
+            Headers.Y_COORDINATE_TOP_SEGMENT,
+            Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+            Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+            Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
         ]
         # pad header with default values (1*)
         header = recs[0] + ["1*"] * (len(columns_header) - len(recs[0]))
@@ -877,19 +891,19 @@ class WellSchedule:
         columns_data = [
             Headers.TUBING_SEGMENT,
             Headers.TUBING_SEGMENT_2,
-            Headers.TUBINGBRANCH,
+            Headers.TUBING_BRANCH,
             Headers.TUBING_OUTLET,
-            Headers.TUBINGMD,
-            Headers.TUBINGTVD,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
             Headers.TUBING_INNER_DIAMETER,
             Headers.TUBING_ROUGHNESS,
-            Headers.CROSS,
-            Headers.VSEG,
-            Headers.ITEM_11,
-            Headers.ITEM_12,
-            Headers.ITEM_13,
-            Headers.ITEM_14,
-            Headers.ITEM_15,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.SEGMENT_VOLUME,
+            Headers.X_COORDINATE_LAST_SEGMENT,
+            Headers.Y_COORDINATE_LAST_SEGMENT,
+            Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+            Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+            Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
         ]
         # pad with default values (1*)
         recs = [rec + ["1*"] * (len(columns_data) - len(rec)) for rec in recs[1:]]
@@ -902,16 +916,16 @@ class WellSchedule:
 
         # Warn user if the tubing segments' measured depth for a branch
         # is not sorted in ascending order (monotonic)
-        for branch_num in df_records[Headers.TUBINGBRANCH].unique():
+        for branch_num in df_records[Headers.TUBING_BRANCH].unique():
             if (
-                not df_records[Headers.TUBINGMD]
-                .loc[df_records[Headers.TUBINGBRANCH] == branch_num]
+                not df_records[Headers.TUBING_MEASURED_DEPTH]
+                .loc[df_records[Headers.TUBING_BRANCH] == branch_num]
                 .is_monotonic_increasing
             ):
                 logger.warning(
                     "The branch %s in well %s contains negative length segments. "
                     "Check the input schedulefile WELSEGS keyword for inconsistencies "
-                    "in measured depth (MD) of Tubing layer.",
+                    "in measured depth (MEASURED_DEPTH) of Tubing layer.",
                     branch_num,
                     well_name,
                 )
@@ -946,11 +960,12 @@ class WellSchedule:
             Headers.END_MEASURED_DEPTH,
             Headers.COMPSEGS_DIRECTION,
             Headers.ENDGRID,
-            Headers.PERFDEPTH,
-            Headers.THERM,
+            Headers.PERFORATION_DEPTH,
+            Headers.THERMAL_CONTACT_LENGTH,
             Headers.SEGMENT,
         ]
-        recs = [rec + ["1*"] * (len(columns) - len(rec)) for rec in recs[1:]]  # pad with default values (1*)
+        recs = np.array(recs[1:])
+        recs = np.pad(recs, ((0, 0), (0, len(columns) - recs.shape[1])), "constant", constant_values="1*")
         df = pd.DataFrame(recs, columns=columns)
         df[columns[:4]] = df[columns[:4]].astype(np.int64)
         df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
@@ -1026,7 +1041,7 @@ class WellSchedule:
                 raise ValueError("Input schedule file missing WELSEGS keyword.") from err
             raise err
         if branch is not None:
-            content = content[content[Headers.TUBINGBRANCH] == branch]
+            content = content[content[Headers.TUBING_BRANCH] == branch]
         content.reset_index(drop=True, inplace=True)
         return columns, content
 
