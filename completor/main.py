@@ -229,7 +229,7 @@ def create(
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.set_welsegs(chunk)  # update with new data
+                    schedule.msws = completion.set_welsegs(schedule.msws, schedule.active_wells, chunk)
                     line_number = after_content_line_number + 1
                     continue
 

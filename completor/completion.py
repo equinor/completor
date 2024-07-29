@@ -791,91 +791,99 @@ class WellSchedule:
             logger.debug("handle_compdat for %s", well_name)
         return remains
 
-    def set_welsegs(self, recs: list[list[str]]) -> str | None:
-        """Update the well segments (WELSEGS) for a given well if it is an active well.
 
-        * Pads missing record columns in header and contents with default values.
-        * Convert header and column records to DataFrames.
-        * Sets proper DataFrame column types and titles.
-        * Converts segment depth specified in incremental (INC) to absolute (ABS) values using fix_welsegs.
+def set_welsegs(
+    multisegmented_well_segments: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
+) -> dict[str, dict[str, Any]]:
+    """Update the well segments (WELSEGS) for a given well if it is an active well.
 
-        Args:
-            recs: Record set of header and contents data.
+    * Pads missing record columns in header and contents with default values.
+    * Convert header and column records to DataFrames.
+    * Sets proper DataFrame column types and titles.
+    * Converts segment depth specified in incremental (INC) to absolute (ABS) values using fix_welsegs.
 
-        Returns:
-            Name of well if it was updated, or None if it is not in the active_wells list.
-        """
-        well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
-        if well_name not in self.active_wells:
-            return None
+    Args:
+        multisegmented_well_segments: Data containing multisegmented well schedules.
+        active_wells: Active wells.
+        recs: Record set of header and contents data.
 
-        # make df for header record
-        columns_header = [
-            Headers.WELL,
-            Headers.TRUE_VERTICAL_DEPTH,
-            Headers.MEASURED_DEPTH,
-            Headers.WELLBORE_VOLUME,
-            Headers.INFO_TYPE,
-            Headers.PRESSURE_DROP_COMPLETION,
-            Headers.MULTIPHASE_FLOW_MODEL,
-            Headers.X_COORDINATE_TOP_SEGMENT,
-            Headers.Y_COORDINATE_TOP_SEGMENT,
-            Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
-            Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
-            Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
-        ]
-        # pad header with default values (1*)
-        header = recs[0] + ["1*"] * (len(columns_header) - len(recs[0]))
-        df_header = pd.DataFrame(np.array(header).reshape((1, len(columns_header))), columns=columns_header)
-        df_header[columns_header[1:3]] = df_header[columns_header[1:3]].astype(np.float64)  # data types
+    Returns:
+        Name of well if it was updated, or None if it is not in the active_wells list.
 
-        # make df for data records
-        columns_data = [
-            Headers.TUBING_SEGMENT,
-            Headers.TUBING_SEGMENT_2,
-            Headers.TUBING_BRANCH,
-            Headers.TUBING_OUTLET,
-            Headers.TUBING_MEASURED_DEPTH,
-            Headers.TRUE_VERTICAL_DEPTH,
-            Headers.TUBING_INNER_DIAMETER,
-            Headers.TUBING_ROUGHNESS,
-            Headers.FLOW_CROSS_SECTIONAL_AREA,
-            Headers.SEGMENT_VOLUME,
-            Headers.X_COORDINATE_LAST_SEGMENT,
-            Headers.Y_COORDINATE_LAST_SEGMENT,
-            Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
-            Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
-            Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
-        ]
-        # pad with default values (1*)
-        recs = [rec + ["1*"] * (len(columns_data) - len(rec)) for rec in recs[1:]]
-        df_records = pd.DataFrame(recs, columns=columns_data)
-        # data types
-        df_records[columns_data[:4]] = df_records[columns_data[:4]].astype(np.int64)
-        df_records[columns_data[4:7]] = df_records[columns_data[4:7]].astype(np.float64)
-        # fix abs/inc issue with welsegs
-        df_header, df_records = fix_welsegs(df_header, df_records)
+    Raises:
+        ValueError: If a well is not an active well.
+    """
+    well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
+    if well_name not in active_wells:
+        raise ValueError("The well must be active!")
 
-        # Warn user if the tubing segments' measured depth for a branch
-        # is not sorted in ascending order (monotonic)
-        for branch_num in df_records[Headers.TUBING_BRANCH].unique():
-            if (
-                not df_records[Headers.TUBING_MEASURED_DEPTH]
-                .loc[df_records[Headers.TUBING_BRANCH] == branch_num]
-                .is_monotonic_increasing
-            ):
-                logger.warning(
-                    "The branch %s in well %s contains negative length segments. "
-                    "Check the input schedulefile WELSEGS keyword for inconsistencies "
-                    "in measured depth (MEASURED_DEPTH) of Tubing layer.",
-                    branch_num,
-                    well_name,
-                )
+    # make df for header record
+    columns_header = [
+        Headers.WELL,
+        Headers.TRUE_VERTICAL_DEPTH,
+        Headers.MEASURED_DEPTH,
+        Headers.WELLBORE_VOLUME,
+        Headers.INFO_TYPE,
+        Headers.PRESSURE_DROP_COMPLETION,
+        Headers.MULTIPHASE_FLOW_MODEL,
+        Headers.X_COORDINATE_TOP_SEGMENT,
+        Headers.Y_COORDINATE_TOP_SEGMENT,
+        Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+        Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+        Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
+    ]
+    # pad header with default values (1*)
+    header = recs[0] + ["1*"] * (len(columns_header) - len(recs[0]))
+    df_header = pd.DataFrame(np.array(header).reshape((1, len(columns_header))), columns=columns_header)
+    df_header[columns_header[1:3]] = df_header[columns_header[1:3]].astype(np.float64)  # data types
 
-        if well_name not in self.msws:
-            self.msws[well_name] = {}
-        self.msws[well_name][Keywords.WELSEGS] = df_header, df_records
-        return well_name
+    # make df for data records
+    columns_data = [
+        Headers.TUBING_SEGMENT,
+        Headers.TUBING_SEGMENT_2,
+        Headers.TUBING_BRANCH,
+        Headers.TUBING_OUTLET,
+        Headers.TUBING_MEASURED_DEPTH,
+        Headers.TRUE_VERTICAL_DEPTH,
+        Headers.TUBING_INNER_DIAMETER,
+        Headers.TUBING_ROUGHNESS,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
+        Headers.SEGMENT_VOLUME,
+        Headers.X_COORDINATE_LAST_SEGMENT,
+        Headers.Y_COORDINATE_LAST_SEGMENT,
+        Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+        Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+        Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
+    ]
+    # pad with default values (1*)
+    recs = [rec + ["1*"] * (len(columns_data) - len(rec)) for rec in recs[1:]]
+    df_records = pd.DataFrame(recs, columns=columns_data)
+    # data types
+    df_records[columns_data[:4]] = df_records[columns_data[:4]].astype(np.int64)
+    df_records[columns_data[4:7]] = df_records[columns_data[4:7]].astype(np.float64)
+    # fix abs/inc issue with welsegs
+    df_header, df_records = fix_welsegs(df_header, df_records)
+
+    # Warn user if the tubing segments' measured depth for a branch
+    # is not sorted in ascending order (monotonic)
+    for branch_num in df_records[Headers.TUBING_BRANCH].unique():
+        if (
+            not df_records[Headers.TUBING_MEASURED_DEPTH]
+            .loc[df_records[Headers.TUBING_BRANCH] == branch_num]
+            .is_monotonic_increasing
+        ):
+            logger.warning(
+                "The branch %s in well %s contains negative length segments. "
+                "Check the input schedulefile WELSEGS keyword for inconsistencies "
+                "in measured depth (MEASURED_DEPTH) of Tubing layer.",
+                branch_num,
+                well_name,
+            )
+
+    if well_name not in multisegmented_well_segments:
+        multisegmented_well_segments[well_name] = {}
+    multisegmented_well_segments[well_name][Keywords.WELSEGS] = df_header, df_records
+    return multisegmented_well_segments
 
 
 def set_compsegs(
@@ -894,6 +902,9 @@ def set_compsegs(
 
     Returns:
         The updated well segments.
+
+    Raises:
+        ValueError: If a well is not an active well.
     """
     well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
     if well_name not in active_wells:

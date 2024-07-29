@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -1012,7 +1013,7 @@ def test_skin():
             Headers.RO,
         ],
     )
-    well_schedule = completion.WellSchedule(["A1"])
+    well_schedule = completion.WellSchedule(np.array(["A1"]))
     well_schedule.handle_compdat(compdat)
     df_out = well_schedule.msws["A1"][Keywords.COMPDAT]
     pd.testing.assert_frame_equal(df_out, df_true)
@@ -1020,14 +1021,17 @@ def test_skin():
 
 def test_set_welsegs_negative_length_segments(caplog):
     """Test that negative segments inside a branch give a warning."""
-    schedule = completion.WellSchedule(["A1"])
-    well_segments = [
-        ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],
-        [2, 2, 1, 1, 2202.75139, 2005.28911, 0.15200, 0.0000100],
-        [3, 3, 1, 2, 2200.73413, 2007.00000, 0.15200, 0.0000100],
-        [4, 4, 1, 3, 2219.76749, 2008.87380, 0.15200, 0.0000100],
-    ]
+    schedule = completion.WellSchedule(np.array(["A1"]))
 
-    schedule.set_welsegs(well_segments)
+    schedule.msws = completion.set_welsegs(
+        schedule.msws,
+        schedule.active_wells,
+        [
+            ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],
+            [2, 2, 1, 1, 2202.75139, 2005.28911, 0.15200, 0.0000100],
+            [3, 3, 1, 2, 2200.73413, 2007.00000, 0.15200, 0.0000100],
+            [4, 4, 1, 3, 2219.76749, 2008.87380, 0.15200, 0.0000100],
+        ],
+    )
     assert len(caplog.text) > 0
     assert "WARNING" in caplog.text
