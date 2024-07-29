@@ -335,28 +335,27 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
             "Schedule file is missing data for one or more branches defined in the case file. "
             f"Please check the data for well {well_name}."
         )
-    # sort the data frame based on STARTMD
     df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH], inplace=True)
-    # add column to indicate original segment
-    df_tubing_segments[Headers.SEGMENT_DESC] = [Headers.ORIGINAL_SEGMENT] * df_tubing_segments.shape[0]
+    # Add column to indicate original segment.
+    df_tubing_segments[Headers.SEGMENT_DESC] = Headers.ORIGINAL_SEGMENT
     end_measured_depth = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
-    # get start_measured_depth and start from segment 2 and add the last item to be the last end_measured_depth
+    # Get start_measured_depth and start from segment 2 and add the last item to be the last end_measured_depth.
     start_measured_depth = np.append(
         df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()[1:], end_measured_depth[-1]
     )
-    # find rows where start_measured_depth > end_measured_depth
+    # Find rows where start_measured_depth > end_measured_depth.
     missing_index = np.argwhere(start_measured_depth > end_measured_depth).flatten()
-    # proceed only if there are missing index
+    # Proceed only if there are missing indexes.
     if missing_index.size == 0:
         return df_tubing_segments
-    # shift one row down because we move it up one row
+    # Shift one row down because we move it up one row.
     missing_index += 1
     df_copy = df_tubing_segments.iloc[missing_index, :].copy(deep=True)
-    # new start measured depth is the previous segment end measured depth
+    # New start measured depth is the previous segment end measured depth.
     df_copy[Headers.START_MEASURED_DEPTH] = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()[missing_index - 1]
     df_copy[Headers.END_MEASURED_DEPTH] = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()[missing_index]
     df_copy[Headers.SEGMENT_DESC] = [Headers.ADDITIONAL_SEGMENT] * df_copy.shape[0]
-    # combine the two data frame
+    # Combine the dataframes.
     df_tubing_segments = pd.concat([df_tubing_segments, df_copy])
     df_tubing_segments = df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH])
     return df_tubing_segments.reset_index(drop=True)
@@ -948,21 +947,23 @@ class WellSchedule:
                 raise ValueError("Input schedule file missing COMPDAT keyword.") from err
             raise err
 
-    def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
-        """Get-function for COMPSEGS.
 
-        Args:
-           well_name: Well name.
-           branch: Branch number.
+def get_compsegs(well_schedule: dict[str, dict[str, Any]], well_name: str, branch: int | None = None) -> pd.DataFrame:
+    """Get-function for COMPSEGS.
 
-        Returns:
-            Completion segment data.
-        """
-        df = self.msws[well_name][Keywords.COMPSEGS].copy()
-        if branch is not None:
-            df = df[df[Headers.BRANCH] == branch]
-        df.reset_index(drop=True, inplace=True)  # reset index after filtering
-        return fix_compsegs(df, well_name)
+    Args:
+       well_schedule: Data containing multisegmented well schedules.
+       well_name: Well name.
+       branch: Branch number.
+
+    Returns:
+        Completion segment data.
+    """
+    df = well_schedule[well_name][Keywords.COMPSEGS].copy()
+    if branch is not None:
+        df = df[df[Headers.BRANCH] == branch]
+    df.reset_index(drop=True, inplace=True)  # reset index after filtering
+    return fix_compsegs(df, well_name)
 
 
 def get_well_segments(
