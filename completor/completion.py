@@ -948,7 +948,9 @@ class WellSchedule:
             raise err
 
 
-def get_compsegs(well_schedule: dict[str, dict[str, Any]], well_name: str, branch: int | None = None) -> pd.DataFrame:
+def get_completion_segments(
+    well_schedule: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
+) -> pd.DataFrame:
     """Get-function for COMPSEGS.
 
     Args:
