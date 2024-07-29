@@ -9,7 +9,7 @@ import time
 from collections.abc import Mapping
 
 import numpy as np
-import tqdm
+from tqdm import tqdm
 
 import completor
 from completor import completion, create_wells, parse
@@ -192,7 +192,7 @@ def create(
     line_number = 0
     prev_line_number = 0
     try:
-        with tqdm.tqdm(total=len(lines)) as progress_bar:
+        with tqdm(total=len(lines)) as progress_bar:
             while line_number < len(lines):
                 progress_bar.update(line_number - prev_line_number)
                 prev_line_number = line_number
