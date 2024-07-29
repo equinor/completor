@@ -198,7 +198,7 @@ def _select_well(well_name: str, schedule: completion.WellSchedule, lateral: int
         Filtered reservoir data.
     """
     df_compsegs = completion.get_completion_segments(schedule.msws, well_name, lateral)
-    df_compdat = completion.get_compdat(schedule.msws, well_name)
+    df_compdat = completion.get_completion_data(schedule.msws, well_name)
     df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
     # Remove WELL column in the df_reservoir.

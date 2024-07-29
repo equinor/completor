@@ -929,7 +929,7 @@ class WellSchedule:
         return self.msws[well_name][Keywords.WELSPECS]
 
 
-def get_compdat(well_schedule: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
+def get_completion_data(well_schedule: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
     """Get-function for COMPDAT.
 
     Args:
