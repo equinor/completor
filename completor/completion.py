@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import overload
+from typing import Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -12,64 +12,15 @@ from completor.constants import Headers, Keywords, Method
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
-from completor.utils import log_and_raise_exception
+from completor.utils import log_and_raise_exception, shift_array
 
 try:
-    from typing import Literal, TypeAlias  # type: ignore
+    from typing import TypeAlias
 except ImportError:
     pass
 
 # Use more precise type information, if possible
-DeviceType: TypeAlias = 'Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]'
-
-
-class Information:
-    """Holds information from `get_completion`."""
-
-    # TODO(#85): Improve the class.
-
-    def __init__(
-        self,
-        number_of_devices: float | list[float] | None = None,
-        device_type: DeviceType | list[DeviceType] | None = None,
-        device_number: int | list[int] | None = None,
-        inner_diameter: float | list[float] | None = None,
-        outer_diameter: float | list[float] | None = None,
-        roughness: float | list[float] | None = None,
-        annulus_zone: int | list[int] | None = None,
-    ):
-        """Initialize Information class."""
-        self.number_of_devices = number_of_devices
-        self.device_type = device_type
-        self.device_number = device_number
-        self.inner_diameter = inner_diameter
-        self.outer_diameter = outer_diameter
-        self.roughness = roughness
-        self.annulus_zone = annulus_zone
-
-    def __iadd__(self, other: Information):
-        """Implement value-wise addition between two Information instances."""
-        attributes = [
-            attribute for attribute in dir(self) if not attribute.startswith("__") and not attribute.endswith("__")
-        ]
-        for attribute in attributes:
-            value = getattr(self, attribute)
-            if not isinstance(value, list):
-                if value is None:
-                    value = []
-                else:
-                    value = [value]
-                setattr(self, attribute, value)
-
-            value = getattr(other, attribute)
-            attr: list = getattr(self, attribute)
-            if attr is None:
-                attr = []
-            if isinstance(value, list):
-                attr.extend(value)
-            else:
-                attr.append(value)
-        return self
+DeviceType: TypeAlias = Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]
 
 
 def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_content: pd.DataFrame) -> pd.DataFrame:
@@ -407,9 +358,8 @@ def insert_missing_segments(df_tubing_segments: pd.DataFrame, well_name: str | N
     df_copy[Headers.SEGMENT_DESC] = [Headers.ADDITIONAL_SEGMENT] * df_copy.shape[0]
     # combine the two data frame
     df_tubing_segments = pd.concat([df_tubing_segments, df_copy])
-    df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH], inplace=True)
-    df_tubing_segments.reset_index(drop=True, inplace=True)
-    return df_tubing_segments
+    df_tubing_segments = df_tubing_segments.sort_values(by=[Headers.START_MEASURED_DEPTH])
+    return df_tubing_segments.reset_index(drop=True)
 
 
 def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> tuple[int, int]:
@@ -433,18 +383,20 @@ def completion_index(df_completion: pd.DataFrame, start: float, end: float) -> t
     return int(_start[0]), int(_end[0])
 
 
-def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_length: float) -> Information:
+def get_completion(
+    start: float, end: float, df_completion: pd.DataFrame, joint_length: float
+) -> tuple[float, float, float, float, float, float, float]:
     """Get information from the completion.
 
     Args:
         start: Start measured depth of the segment.
         end: End measured depth of the segment.
         df_completion: COMPLETION table that must contain columns: `STARTMD`, `ENDMD`, `NVALVEPERJOINT`,
-        `INNER_DIAMETER`, `OUTER_DIAMETER`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
+            `INNER_DIAMETER`, `OUTER_DIAMETER`, `ROUGHNESS`, `DEVICETYPE`, `DEVICENUMBER`, and `ANNULUS_ZONE`.
         joint_length: Length of a joint.
 
     Returns:
-        Instance of Information.
+        The number of devices, device type, device number, inner diameter, outer diameter, roughness, annulus zone.
 
     Raises:
         ValueError:
@@ -453,13 +405,6 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
             If the completion data contains illegal / invalid rows.
             If information class is None.
     """
-    information = None
-    device_type = None
-    device_number = None
-    inner_diameter = None
-    outer_diameter = None
-    roughness = None
-    annulus_zone = None
 
     start_completion = df_completion[Headers.START_MEASURED_DEPTH].to_numpy()
     end_completion = df_completion[Headers.END_MEASURED_DEPTH].to_numpy()
@@ -469,58 +414,39 @@ def get_completion(start: float, end: float, df_completion: pd.DataFrame, joint_
         well_name = df_completion[Headers.WELL].iloc[0]
         log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
 
-    # previous length start with 0
-    prev_length = 0.0
-    num_device = 0.0
+    indices = np.arange(idx0, idx1 + 1)
+    lengths = np.minimum(end_completion[indices], end) - np.maximum(start_completion[indices], start)
+    if (lengths <= 0).any():
+        # _ = "equals" if length == 0 else "less than"
+        # _ = np.where(lengths == 0, "equals", 0)
+        # _2 = np.where(lengths < 0, "less than", 0)
+        # logger.warning(
+        #     f"Start depth less than or equals to stop depth,
+        #     for {df_completion[Headers.START_MEASURED_DEPTH][indices][warning_mask]}"
+        # )
+        logger.warning("Depths are incongruent.")
+    number_of_devices = np.sum((lengths / joint_length) * df_completion[Headers.VALVES_PER_JOINT].to_numpy()[indices])
 
-    for completion_idx in range(idx0, idx1 + 1):
-        completion_length = min(end_completion[completion_idx], end) - max(start_completion[completion_idx], start)
-        if completion_length <= 0:
-            _ = "equals" if completion_length == 0 else "less than"
-            logger.warning(
-                f"Start depth {_} stop depth, in row {completion_idx}, "
-                f"for well {df_completion[Headers.WELL][completion_idx]}"
-            )
-        # calculate cumulative parameter
-        num_device += (completion_length / joint_length) * df_completion[Headers.VALVES_PER_JOINT].iloc[completion_idx]
+    mask = lengths > shift_array(lengths, 1, fill_value=0)
+    inner_diameter = df_completion[Headers.INNER_DIAMETER].to_numpy()[indices][mask]
+    outer_diameter = df_completion[Headers.OUTER_DIAMETER].to_numpy()[indices][mask]
+    roughness = df_completion[Headers.ROUGHNESS].to_numpy()[indices][mask]
+    if (inner_diameter > outer_diameter).any():
+        raise ValueError("Check screen/tubing and well/casing ID in case file.")
+    outer_diameter = (outer_diameter**2 - inner_diameter**2) ** 0.5
+    device_type = df_completion[Headers.DEVICE_TYPE].to_numpy()[indices][mask]
+    device_number = df_completion[Headers.DEVICE_NUMBER].to_numpy()[indices][mask]
+    annulus_zone = df_completion[Headers.ANNULUS_ZONE].to_numpy()[indices][mask]
 
-        if completion_length > prev_length:
-            # get well geometry
-            inner_diameter = df_completion[Headers.INNER_DIAMETER].iloc[completion_idx]
-            outer_diameter = df_completion[Headers.OUTER_DIAMETER].iloc[completion_idx]
-            roughness = df_completion[Headers.ROUGHNESS].iloc[completion_idx]
-            if outer_diameter > inner_diameter:
-                outer_diameter = (outer_diameter**2 - inner_diameter**2) ** 0.5
-            else:
-                raise ValueError("Check screen/tubing and well/casing ID in case file.")
-
-            # get device information
-            device_type = df_completion[Headers.DEVICE_TYPE].iloc[completion_idx]
-            device_number = df_completion[Headers.DEVICE_NUMBER].iloc[completion_idx]
-            # other information
-            annulus_zone = df_completion[Headers.ANNULUS_ZONE].iloc[completion_idx]
-            # set prev_length to this segment
-            prev_length = completion_length
-
-        if all(
-            x is not None for x in [device_type, device_number, inner_diameter, outer_diameter, roughness, annulus_zone]
-        ):
-            information = Information(
-                num_device, device_type, device_number, inner_diameter, outer_diameter, roughness, annulus_zone
-            )
-        else:
-            # I.e. if completion_length > prev_length never happens
-            raise ValueError(
-                f"The completion data for well '{df_completion[Headers.WELL][completion_idx]}' "
-                "contains illegal / invalid row(s). "
-                "Please check their start mD / end mD columns, and ensure that they start before they end."
-            )
-    if information is None:
-        raise ValueError(
-            f"idx0 == idx1 + 1 (idx0={idx0}). For the time being, the reason is unknown. "
-            "Please reach out to the Equinor Inflow Control Team if you encounter this."
-        )
-    return information
+    return (
+        number_of_devices,
+        device_type[-1],
+        device_number[-1],
+        inner_diameter[-1],
+        outer_diameter[-1],
+        roughness[-1],
+        annulus_zone[-1],
+    )
 
 
 def complete_the_well(
@@ -536,13 +462,33 @@ def complete_the_well(
     Returns:
         Well information.
     """
+    number_of_devices = []
+    device_type = []
+    device_number = []
+    inner_diameter = []
+    outer_diameter = []
+    roughness = []
+    annulus_zone = []
+
     start = df_tubing_segments[Headers.START_MEASURED_DEPTH].to_numpy()
     end = df_tubing_segments[Headers.END_MEASURED_DEPTH].to_numpy()
-    # initiate completion
-    information = Information()
+
     # loop through the cells
     for i in range(df_tubing_segments.shape[0]):
-        information += get_completion(start[i], end[i], df_completion, joint_length)
+        indices = [np.array(completion_index(df_completion, s, e)) for s, e in zip(start, end)]
+
+        if any(idx0 == -1 or idx1 == -1 for idx0, idx1 in indices):
+            well_name = df_completion[Headers.WELL].iloc[0]
+            log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
+
+        completion_data = get_completion(start[i], end[i], df_completion, joint_length)
+        number_of_devices.append(completion_data[0])
+        device_type.append(completion_data[1])
+        device_number.append(completion_data[2])
+        inner_diameter.append(completion_data[3])
+        outer_diameter.append(completion_data[4])
+        roughness.append(completion_data[5])
+        annulus_zone.append(completion_data[6])
 
     df_well = pd.DataFrame(
         {
@@ -550,13 +496,13 @@ def complete_the_well(
             Headers.TRUE_VERTICAL_DEPTH: df_tubing_segments[Headers.TRUE_VERTICAL_DEPTH].to_numpy(),
             Headers.LENGTH: end - start,
             Headers.SEGMENT_DESC: df_tubing_segments[Headers.SEGMENT_DESC].to_numpy(),
-            Headers.NUMBER_OF_DEVICES: information.number_of_devices,
-            Headers.DEVICE_NUMBER: information.device_number,
-            Headers.DEVICE_TYPE: information.device_type,
-            Headers.INNER_DIAMETER: information.inner_diameter,
-            Headers.OUTER_DIAMETER: information.outer_diameter,
-            Headers.ROUGHNESS: information.roughness,
-            Headers.ANNULUS_ZONE: information.annulus_zone,
+            Headers.NUMBER_OF_DEVICES: number_of_devices,
+            Headers.DEVICE_NUMBER: device_number,
+            Headers.DEVICE_TYPE: device_type,
+            Headers.INNER_DIAMETER: inner_diameter,
+            Headers.OUTER_DIAMETER: outer_diameter,
+            Headers.ROUGHNESS: roughness,
+            Headers.ANNULUS_ZONE: annulus_zone,
         }
     )
 

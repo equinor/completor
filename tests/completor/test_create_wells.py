@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 import utils
 
+from completor import create_wells
 from completor.constants import Method  # type: ignore
-from completor.create_wells import CreateWells  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -28,19 +28,46 @@ def test_duplicates(tmpdir):
     utils.assert_results(true_file, _TEST_FILE)
 
 
-def test_segment_creation_method():
+@pytest.mark.parametrize(
+    "segment_length,expected",
+    [
+        pytest.param("", Method.CELLS, id="default"),
+        pytest.param("User", Method.USER, id="user"),
+        pytest.param("WELseGs", Method.WELSEGS, id="welsegs"),
+        pytest.param("infill", Method.WELSEGS, id="infill"),
+        pytest.param("Cell", Method.CELLS, id="cells"),
+        # Test number values (i.e. it can be cast to float).
+        pytest.param("22", Method.FIX, id="fix_float"),
+        pytest.param("-1", Method.USER, id="user_float)"),
+        pytest.param("0", Method.CELLS, id="cells_float"),
+    ],
+)
+def test_segment_creation_method(segment_length, expected):
     """Test _method maps string and number input to correct SegmentCreationMethod."""
 
-    def replace_segment_length_value(text: str, value_to_insert: str) -> CreateWells:
-        """Helper replacing segment length keyword's value and create well."""
-        lines = text.splitlines()
-        lines[-2] = value_to_insert
-        # Reintroduce linebreaks
-        text = "\n".join(lines)
-        case = ReadCasefile(text, "dummy_value.sch")
-        return CreateWells(case)
+    case_obj = f"""
+COMPLETION
+    A1  1     0   2000  0.150  0.216  0.123  GP  0  ICD  1
+    A1  1  2000  99999  0.150  0.216  0.123  GP  0  ICD  1
+/
+WSEGSICD
+    1  0.00123  1234.00  1.23  0.1
+/
+USE_STRICT
+    TRUE
+/
+SEGMENTLENGTH
+    {segment_length}
+/
+"""
+    # Test default value
+    case_obj = ReadCasefile(case_obj, "dummy_value.sch")
+    well = create_wells.CreateWells(case_obj)
+    assert well.method == expected
 
-    base_case = """
+
+def test_error_segment_creation_method():
+    case_obj = """
 COMPLETION
 A1  1     0   2000  0.150  0.216  0.123  GP  0  ICD  1
 A1  1  2000  99999  0.150  0.216  0.123  GP  0  ICD  1
@@ -51,43 +78,15 @@ WSEGSICD
 USE_STRICT
 TRUE
 /
-JOINTLENGTH
-14.0
-/
 SEGMENTLENGTH
-0
+NON_VALID_INPUT
 /
 """
     # Test default value
-    well = replace_segment_length_value(base_case, "")
-    assert well.method == Method.CELLS
-
-    # Test string values
-    well = replace_segment_length_value(base_case, "User")
-    assert well.method == Method.USER
-
-    well = replace_segment_length_value(base_case, "WELseGs")
-    assert well.method == Method.WELSEGS
-
-    well = replace_segment_length_value(base_case, "infill")
-    assert well.method == Method.WELSEGS
-
-    well = replace_segment_length_value(base_case, "Cell")
-    assert well.method == Method.CELLS
-
-    # Test number values (i.e. it can be cast to float)
-    well = replace_segment_length_value(base_case, "22")
-    assert well.method == Method.FIX
-
-    well = replace_segment_length_value(base_case, "-1")
-    assert well.method == Method.USER
-
-    well = replace_segment_length_value(base_case, "0")
-    assert well.method == Method.CELLS
-
-    with pytest.raises(ValueError):
-        well = replace_segment_length_value(base_case, "NON-VALID-INPUT")
-        assert well.method is None
+    case_obj = ReadCasefile(case_obj, "dummy_value.sch")
+    with pytest.raises(ValueError) as e:
+        create_wells.CreateWells(case_obj)
+    assert "Unrecognized method 'NON_VALID_INPUT' in SEGMENTLENGTH keyword" in str(e.value)
 
 
 def test_tubing_segment_icv(tmpdir):
