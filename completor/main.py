@@ -7,7 +7,6 @@ import os
 import re
 import time
 from collections.abc import Mapping
-from typing import Literal, overload
 
 import numpy as np
 from tqdm import tqdm
