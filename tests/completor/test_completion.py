@@ -1014,7 +1014,7 @@ def test_skin():
         ],
     )
     well_schedule = completion.WellSchedule(np.array(["A1"]))
-    well_schedule.handle_compdat(compdat)
+    well_schedule.msws = completion.handle_compdat(well_schedule.msws, set(well_schedule.active_wells), compdat)
     df_out = well_schedule.msws["A1"][Keywords.COMPDAT]
     pd.testing.assert_frame_equal(df_out, df_true)
 

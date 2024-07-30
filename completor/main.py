@@ -217,9 +217,11 @@ def create(
 
                 elif keyword == Keywords.COMPDAT:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    remains = schedule.handle_compdat(chunk)
-                    if remains:
-                        output_text += format_text(keyword, remains, end_of_record=True)  # Write non-active wells.
+                    untouched_wells = [rec for rec in chunk if rec[0] not in list(schedule.active_wells)]
+                    schedule.msws = completion.handle_compdat(schedule.msws, set(schedule.active_wells), chunk)
+                    if untouched_wells:
+                        # Write untouched wells back as-is.
+                        output_text += format_text(keyword, untouched_wells, end_of_record=True)
                     line_number = after_content_line_number + 1
                     continue
 

@@ -719,77 +719,65 @@ class WellSchedule:
             self.msws[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
             logger.debug("set_welspecs for %s", well_name)
 
-    def handle_compdat(self, records: list[list[str]]) -> list[list[str]]:
-        """Convert completion data (COMPDAT) record to a DataFrame.
 
-        * Sets DataFrame column titles.
-        * Pads missing values with default values (1*).
-        * Sets column data types.
+def handle_compdat(
+    multisegmented_well_segments: dict[str, dict[str, Any]], active_wells: set[str], records: list[list[str]]
+) -> dict[str, dict[str, Any]]:
+    """Convert completion data (COMPDAT) record to a DataFrame.
 
-        Args:
-            records: Record set of COMPDAT data.
+    * Sets DataFrame column titles.
+    * Pads missing values with default values (1*).
+    * Sets column data types.
 
-        Returns:
-            Records for inactive wells.
-        """
-        well_names = set()  # the active well-names found in this chunk
-        remains = []  # the other wells
-        for rec in records:
-            well_name = rec[0]
-            if well_name in list(self.active_wells):
-                well_names.add(well_name)
-            else:
-                remains.append(rec)
-        columns = [
-            Headers.WELL,
-            Headers.I,
-            Headers.J,
-            Headers.K,
-            Headers.K2,
-            Headers.STATUS,
-            Headers.SATURATION_FUNCTION_REGION_NUMBERS,
-            Headers.CONNECTION_FACTOR,
-            Headers.WELL_BORE_DIAMETER,
-            Headers.FORMATION_PERMEABILITY_THICKNESS,
-            Headers.SKIN,
-            Headers.D_FACTOR,
-            Headers.COMPDAT_DIRECTION,
-            Headers.RO,
-        ]
-        df = pd.DataFrame(records, columns=columns[0 : len(records[0])])
-        if Headers.RO in df.columns:
-            df[Headers.RO] = df[Headers.RO].fillna("1*")
-        for i in range(len(records[0]), len(columns)):
-            df[columns[i]] = ["1*"] * len(records)
-        # data types
-        df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
-        # Change default value '1*' to equivalent float
-        df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
-        df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]] = df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]].astype(
-            np.float64
-        )
-        # check if CONNECTION_FACTOR, FORMATION_PERMEABILITY_THICKNESS, and RO are defaulted by the users
-        try:
-            df[[Headers.CONNECTION_FACTOR]] = df[[Headers.CONNECTION_FACTOR]].astype(np.float64)
-        except ValueError:
-            pass
-        try:
-            df[[Headers.FORMATION_PERMEABILITY_THICKNESS]] = df[[Headers.FORMATION_PERMEABILITY_THICKNESS]].astype(
-                np.float64
-            )
-        except ValueError:
-            pass
-        try:
-            df[[Headers.RO]] = df[[Headers.RO]].astype(np.float64)
-        except ValueError:
-            pass
-        # compdat could be for multiple wells - split it
-        for well_name in well_names:
-            if well_name not in self.msws:
-                self.msws[well_name] = {}
-            self.msws[well_name][Keywords.COMPDAT] = df[df[Headers.WELL] == well_name]
-            logger.debug("handle_compdat for %s", well_name)
-        return remains
+    Args:
+        multisegmented_well_segments: Data containing multisegmented well schedules.
+        active_wells: Active wells, without duplicates.
+        records: Record set of COMPDAT data.
+
+    Returns:
+        Records for inactive wells.
+    """
+    columns = [
+        Headers.WELL,
+        Headers.I,
+        Headers.J,
+        Headers.K,
+        Headers.K2,
+        Headers.STATUS,
+        Headers.SATURATION_FUNCTION_REGION_NUMBERS,
+        Headers.CONNECTION_FACTOR,
+        Headers.WELL_BORE_DIAMETER,
+        Headers.FORMATION_PERMEABILITY_THICKNESS,
+        Headers.SKIN,
+        Headers.D_FACTOR,
+        Headers.COMPDAT_DIRECTION,
+        Headers.RO,
+    ]
+    df = pd.DataFrame(records, columns=columns[0 : len(records[0])])
+    if Headers.RO in df.columns:
+        df[Headers.RO] = df[Headers.RO].fillna("1*")
+    for i in range(len(records[0]), len(columns)):
+        df[columns[i]] = ["1*"] * len(records)
+    df[columns[1:5]] = df[columns[1:5]].astype(np.int64)
+    # Change default value '1*' to equivalent float
+    df["SKIN"] = df["SKIN"].replace(["1*"], 0.0)
+    df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]] = df[[Headers.WELL_BORE_DIAMETER, Headers.SKIN]].astype(np.float64)
+    # check if CONNECTION_FACTOR, FORMATION_PERMEABILITY_THICKNESS, and RO are defaulted by the users
+    df = df.astype(
+        {
+            Headers.CONNECTION_FACTOR: np.float64,
+            Headers.FORMATION_PERMEABILITY_THICKNESS: np.float64,
+            Headers.RO: np.float64,
+        },
+        errors="ignore",
+    )
+    # Compdat could be for multiple wells, split it.
+    for well_name in active_wells:
+        if well_name not in multisegmented_well_segments:
+            multisegmented_well_segments[well_name] = {}
+        multisegmented_well_segments[well_name][Keywords.COMPDAT] = df[df[Headers.WELL] == well_name]
+        logger.debug("handle_compdat for %s", well_name)
+    return multisegmented_well_segments
 
 
 def set_welsegs(
