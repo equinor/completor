@@ -8,9 +8,8 @@ from datetime import datetime
 import matplotlib  # type: ignore
 
 import completor
-from completor import completion
 from completor import prepare_outputs as po
-from completor.completion import WellSchedule
+from completor import wells2
 from completor.constants import Headers, Keywords
 from completor.create_wells import CreateWells
 from completor.logger import logger
@@ -41,7 +40,7 @@ class CreateOutput:
     def __init__(
         self,
         case: ReadCasefile,
-        schedule: WellSchedule,
+        schedule: wells2.WellSchedule,
         wells: CreateWells,
         well_name: str,
         well_number: int,
@@ -102,7 +101,7 @@ class CreateOutput:
         self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
         # Start printing per well.
-        self.welsegs_header, _ = completion.get_well_segments(schedule.msws, well_name, branch=1)
+        self.welsegs_header, _ = wells2.get_well_segments(schedule.msws, well_name, branch=1)
         self.check_welsegs1()
         self.print_welsegs = f"{Keywords.WELSEGS}\n{po.dataframe_tostring(self.welsegs_header, True)}\n"
         self.print_welsegsinit = self.print_welsegs

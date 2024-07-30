@@ -8,8 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor import completion
-from completor.completion import WellSchedule
+from completor import wells2
 from completor.constants import Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
@@ -203,7 +202,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
 
 def prepare_tubing_layer(
-    schedule: WellSchedule,
+    schedule: wells2.WellSchedule,
     well_name: str,
     lateral: int,
     df_well: pd.DataFrame,
@@ -244,7 +243,7 @@ def prepare_tubing_layer(
     )
 
     # handle overburden
-    well_segments = completion.get_well_segments(schedule.msws, well_name, lateral)[1]
+    well_segments = wells2.get_well_segments(schedule.msws, well_name, lateral)[1]
     md_input_welsegs = well_segments[Headers.TUBING_MEASURED_DEPTH]
     md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MEASURED_DEPTH]
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
@@ -269,7 +268,7 @@ def prepare_tubing_layer(
     )
     df_tubing_with_overburden[Headers.EMPTY] = "/"  # for printing
     # locate where it attached to (the top segment)
-    wsa = completion.get_well_segments(schedule.msws, well_name)[1]  # all laterals
+    wsa = wells2.get_well_segments(schedule.msws, well_name)[1]  # all laterals
     top = wsa[wsa.TUBINGSEGMENT == well_segments.iloc[0][Headers.TUBING_OUTLET]]  # could be empty
 
     return df_tubing_with_overburden, top

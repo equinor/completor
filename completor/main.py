@@ -12,8 +12,7 @@ import numpy as np
 from tqdm import tqdm
 
 import completor
-from completor import completion, create_wells, parse
-from completor.completion import WellSchedule
+from completor import create_wells, parse, wells2
 from completor.constants import Keywords
 from completor.create_output import CreateOutput
 from completor.create_wells import CreateWells
@@ -150,7 +149,10 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
 
 def create(
     input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
-) -> tuple[ReadCasefile, WellSchedule, CreateWells, CreateOutput] | tuple[ReadCasefile, WellSchedule, CreateWells]:
+) -> (
+    tuple[ReadCasefile, wells2.WellSchedule, CreateWells, CreateOutput]
+    | tuple[ReadCasefile, wells2.WellSchedule, CreateWells]
+):
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
@@ -169,7 +171,7 @@ def create(
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     wells = CreateWells(case)
     active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    schedule = WellSchedule(active_wells)  # container for MSW-data
+    schedule = wells2.WellSchedule(active_wells)  # container for MSW-data
 
     pdf_file = None
     if show_fig:
@@ -210,7 +212,7 @@ def create(
                 if keyword == Keywords.WELSPECS:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
 
-                    schedule.msws = completion.set_welspecs(schedule.msws, chunk)
+                    schedule.msws = wells2.set_welspecs(schedule.msws, chunk)
                     raw = lines[line_number:after_content_line_number]
                     output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
                     line_number = after_content_line_number + 1
@@ -219,7 +221,7 @@ def create(
                 elif keyword == Keywords.COMPDAT:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     untouched_wells = [rec for rec in chunk if rec[0] not in list(schedule.active_wells)]
-                    schedule.msws = completion.handle_compdat(schedule.msws, set(schedule.active_wells), chunk)
+                    schedule.msws = wells2.handle_compdat(schedule.msws, set(schedule.active_wells), chunk)
                     if untouched_wells:
                         # Write untouched wells back as-is.
                         output_text += format_text(keyword, untouched_wells, end_of_record=True)
@@ -232,7 +234,7 @@ def create(
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.msws = completion.set_welsegs(schedule.msws, schedule.active_wells, chunk)
+                    schedule.msws = wells2.set_welsegs(schedule.msws, schedule.active_wells, chunk)
                     line_number = after_content_line_number + 1
                     continue
 
@@ -244,7 +246,7 @@ def create(
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
 
                     try:
-                        schedule.msws = completion.set_compsegs(schedule.msws, schedule.active_wells, chunk)
+                        schedule.msws = wells2.set_compsegs(schedule.msws, schedule.active_wells, chunk)
                     except ValueError:
                         pass
 
@@ -259,7 +261,7 @@ def create(
                         write_welsegs = False
                     logger.debug("Writing new MSW info for well %s", well_name)
                     wells.update(well_name, schedule)
-                    well_number = completion.get_well_number(well_name, active_wells)
+                    well_number = wells2.get_well_number(well_name, active_wells)
                     output = CreateOutput(
                         case, schedule, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
                     )

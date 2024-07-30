@@ -11,11 +11,11 @@ import pandas as pd
 
 from completor import input_validation as val
 from completor import parse
-from completor.completion import WellSchedule
 from completor.constants import Headers, Keywords
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
 from completor.utils import clean_file_lines
+from completor.wells2 import WellSchedule
 
 
 def _mapper(map_file: str) -> dict[str, str]:

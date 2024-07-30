@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 import utils
 
-from completor import completion, prepare_outputs, read_casefile  # type:ignore
+from completor import prepare_outputs, read_casefile, wells2  # type:ignore
 from completor.constants import Headers, Keywords
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -105,8 +105,8 @@ def test_outlet_segment_2():
 
 def test_prepare_tubing_layer():
     """Test that the function does not create duplicate tubing segments."""
-    schedule_obj = completion.WellSchedule(["A1"])
-    schedule_obj.msws = completion.set_welsegs(
+    schedule_obj = wells2.WellSchedule(["A1"])
+    schedule_obj.msws = wells2.set_welsegs(
         schedule_obj.msws,
         schedule_obj.active_wells,
         [
