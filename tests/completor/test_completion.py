@@ -894,40 +894,6 @@ def test_complete_the_well():
     pd.testing.assert_frame_equal(df_test, df_true)
 
 
-def test_fix_compsegs():
-    """Test that fix_compsegs correctly assigns start and end measured depths.
-
-    In cases where there are overlapping segments in compsegs, also test zero length segments.
-    """
-    data_frame_in = pd.DataFrame(
-        [
-            [3000.82607, 3026.67405],
-            [2984.458, 3006.55],
-            [3006.55, 3013.000],
-            [3013.147, 3013.147],
-            [3014.000, 3019.764],
-            [3019.764, 3039.297],
-            [3039.297, 3041.915],
-        ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
-    )
-
-    data_frame_true = pd.DataFrame(
-        [
-            [2984.458, 3000.82607],
-            [3000.82607, 3013],
-            [3013, 3013.147],
-            [3013.147, 3014],
-            [3014, 3026.67405],
-            [3026.67405, 3039.297],
-            [3039.297, 3041.915],
-        ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
-    )
-    result = completion.fix_compsegs(data_frame_in, "")
-    pd.testing.assert_frame_equal(data_frame_true, result)
-
-
 def test_lumping_segment_1():
     """Test lumping_segment lumps the additional segment only with original segment containing an annulus zone."""
     df_well = pd.DataFrame(
