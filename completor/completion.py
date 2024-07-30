@@ -672,52 +672,53 @@ class WellSchedule:
         self.msws: dict[str, dict[str, Any]] = {}
         self.active_wells = active_wells
 
-    def set_welspecs(self, records: list[list[str]]) -> None:
-        """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
 
-        * Sets DataFrame column titles.
-        * Formats column values.
-        * Pads missing columns at the end of the DataFrame with default values (1*).
+def set_welspecs(
+    multisegmented_well_segments: dict[str, dict[str, Any]], records: list[list[str]]
+) -> dict[str, dict[str, Any]]:
+    """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
 
-        Args:
-            records: Raw well specification.
+    * Sets DataFrame column titles.
+    * Formats column values.
+    * Pads missing columns at the end of the DataFrame with default values (1*).
 
-        Returns:
-            Record of inactive wells (in `self.multisegmented_well_segments`).
-        """
-        columns = [
-            Headers.WELL,
-            Headers.GROUP,
-            Headers.I,
-            Headers.J,
-            Headers.BHP_DEPTH,
-            Headers.PHASE,
-            Headers.DR,
-            Headers.FLAG,
-            Headers.SHUT,
-            Headers.FLOW_CROSS_SECTIONAL_AREA,
-            Headers.PRESSURE_TABLE,
-            Headers.DENSITY_CALCULATION_TYPE,
-            Headers.REGION,
-            Headers.RESERVED_HEADER_1,
-            Headers.RESERVED_HEADER_2,
-            Headers.WELL_MODEL_TYPE,
-            Headers.POLYMER_MIXING_TABLE_NUMBER,
-        ]
-        _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
-        df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
-        #  datatypes
-        df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
-        try:
-            df[columns[4]] = df[columns[4]].astype(np.float64)
-        except ValueError:
-            pass
-        # welspecs could be for multiple wells - split it
-        for well_name in df[Headers.WELL].unique():
-            if well_name not in self.msws:
-                self.msws[well_name] = {}
-            self.msws[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
-            logger.debug("set_welspecs for %s", well_name)
+    Args:
+        multisegmented_well_segments: Data containing multisegmented well schedules.
+        records: Raw well specification.
+
+    Returns:
+        Multisegmented wells with updated welspecs records.
+    """
+    columns = [
+        Headers.WELL,
+        Headers.GROUP,
+        Headers.I,
+        Headers.J,
+        Headers.BHP_DEPTH,
+        Headers.PHASE,
+        Headers.DR,
+        Headers.FLAG,
+        Headers.SHUT,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
+        Headers.PRESSURE_TABLE,
+        Headers.DENSITY_CALCULATION_TYPE,
+        Headers.REGION,
+        Headers.RESERVED_HEADER_1,
+        Headers.RESERVED_HEADER_2,
+        Headers.WELL_MODEL_TYPE,
+        Headers.POLYMER_MIXING_TABLE_NUMBER,
+    ]
+    _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
+    df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
+    df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
+    df[columns[4]] = df[columns[4]].astype(np.float64, errors="ignore")
+    # welspecs could be for multiple wells - split it
+    for well_name in df[Headers.WELL].unique():
+        if well_name not in multisegmented_well_segments:
+            multisegmented_well_segments[well_name] = {}
+        multisegmented_well_segments[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
+        logger.debug("set_welspecs for %s", well_name)
+    return multisegmented_well_segments
 
 
 def handle_compdat(
