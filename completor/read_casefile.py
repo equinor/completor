@@ -3,8 +3,10 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping
 from io import StringIO
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation as val
@@ -127,7 +129,7 @@ class ReadCasefile:
         Raises:
             ValueError: If COMPLETION keyword is not defined in the case.
         """
-        start_index, end_index = self.locate_keyword(Keywords.COMPLETION)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.COMPLETION)
         if start_index == end_index:
             raise ValueError("No completion is defined in the case file.")
 
@@ -203,7 +205,7 @@ class ReadCasefile:
         /
         """
         header = [Headers.WELL, Headers.BRANCH]
-        start_index, end_index = self.locate_keyword("LATERAL_TO_DEVICE")
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.LATERAL_TO_DEVICE)
 
         if start_index == end_index:
             # set default behaviour (if keyword not in case file)
@@ -215,7 +217,7 @@ class ReadCasefile:
 
     def read_joint_length(self) -> None:
         """Read the JOINTLENGTH keyword in the case file."""
-        start_index, end_index = self.locate_keyword("JOINTLENGTH")
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.JOINT_LENGTH)
         if end_index == start_index + 2:
             self.joint_length = float(self.content[start_index + 1])
             if self.joint_length <= 0:
@@ -230,7 +232,7 @@ class ReadCasefile:
         Raises:
             CompletorError: If SEGMENTLENGTH is not float or string.
         """
-        start_index, end_index = self.locate_keyword("SEGMENTLENGTH")
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.SEGMENT_LENGTH)
         if end_index == start_index + 2:
             try:
                 self.segment_length = float(self.content[start_index + 1])
@@ -282,7 +284,7 @@ class ReadCasefile:
 
         Best practice: All branches in all wells should be defined in the case file.
         """
-        start_index, end_index = self.locate_keyword("USE_STRICT")
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.USE_STRICT)
         if end_index == start_index + 2:
             strict = self.content[start_index + 1]
             if strict.upper() == "FALSE":
@@ -297,7 +299,7 @@ class ReadCasefile:
         program does not add a device layer to the well. I.e. the well is
         untouched by the program. The default value is False.
         """
-        start_index, end_index = self.locate_keyword("GP_PERF_DEVICELAYER")
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.GP_PERF_DEVICELAYER)
         if end_index == start_index + 2:
             gp_perf_devicelayer = self.content[start_index + 1]
             self.gp_perf_devicelayer = gp_perf_devicelayer.upper() == "TRUE"
@@ -309,7 +311,7 @@ class ReadCasefile:
         The default value is 0.0, meaning that no segments are lumped by this keyword.
         The program will continue to coalesce segments until all segments are longer than the given minimum.
         """
-        start_index, end_index = self.locate_keyword("MINIMUM_SEGMENT_LENGTH")
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.MINIMUM_SEGMENT_LENGTH)
         if end_index == start_index + 2:
             min_seg_len = self.content[start_index + 1]
             self.minimum_segment_length = val.validate_minimum_segment_length(min_seg_len)
@@ -317,14 +319,11 @@ class ReadCasefile:
 
     def read_mapfile(self) -> None:
         """Read the MAPFILE keyword in the case file (if any) into a mapper."""
-        start_index, end_index = self.locate_keyword("MAPFILE")
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.MAPFILE)
         if end_index == start_index + 2:
             # the content is in between the keyword and the /
             self.mapfile = parse.remove_string_characters(self.content[start_index + 1])
             self.mapper = _mapper(self.mapfile)
-        else:
-            self.mapfile = None
-            self.mapper = None
 
     def read_wsegvalv(self) -> None:
         """Read the WSEGVALV keyword in the case file.
@@ -332,18 +331,23 @@ class ReadCasefile:
         Raises:
             CompletorError: If WESEGVALV is not defined and VALVE is used in COMPLETION. If the device number is not found.
         """
-        start_index, end_index = self.locate_keyword(Keywords.WSEGVALV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGVALV)
         if start_index == end_index:
             if "VALVE" in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L]
+            header = [
+                Headers.DEVICE_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            ]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp[Headers.AC_MAX] = np.nan
+                df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = np.nan
             except CaseReaderFormatError:
-                header += [Headers.AC_MAX]
+                header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
 
             self.wsegvalv_table = val.set_format_wsegvalv(df_temp)
@@ -360,7 +364,7 @@ class ReadCasefile:
             CompletorError: If WSEGSICD is not defined and ICD is used in COMPLETION, or if the device number is not found.
                 If not all devices in COMPLETION are specified in WSEGSICD.
         """
-        start_index, end_index = self.locate_keyword(Keywords.WSEGSICD)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGSICD)
         if start_index == end_index:
             if "ICD" in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGSICD keyword must be defined, if ICD is used in the completion.")
@@ -369,8 +373,8 @@ class ReadCasefile:
             header = [
                 Headers.DEVICE_NUMBER,
                 Headers.STRENGTH,
-                Headers.RHOCAL_ICD,
-                Headers.VISCAL_ICD,
+                Headers.CALIBRATION_FLUID_DENSITY,
+                Headers.CALIBRATION_FLUID_VISCOSITY,
                 Headers.WATER_CUT,
             ]
             self.wsegsicd_table = val.set_format_wsegsicd(
@@ -391,7 +395,7 @@ class ReadCasefile:
             CompletorError: If WSEGAICD is not defined and AICD is used in COMPLETION, or if the device number is not found.
                 If all devices in COMPLETION are not specified in WSEGAICD.
         """
-        start_index, end_index = self.locate_keyword(Keywords.WSEGAICD)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGAICD)
         if start_index == end_index:
             if "AICD" in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGAICD keyword must be defined, if AICD is used in the completion.")
@@ -399,7 +403,7 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.ALPHA,
+                Headers.STRENGTH,
                 Headers.X,
                 Headers.Y,
                 Headers.A,
@@ -408,8 +412,8 @@ class ReadCasefile:
                 Headers.D,
                 Headers.E,
                 Headers.F,
-                Headers.RHOCAL_AICD,
-                Headers.VISCAL_AICD,
+                Headers.AICD_CALIBRATION_FLUID_DENSITY,
+                Headers.AICD_FLUID_VISCOSITY,
             ]
             self.wsegaicd_table = val.set_format_wsegaicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
@@ -426,9 +430,9 @@ class ReadCasefile:
         Raises:
             ValueError: If there are invalid entries in WSEGDAR.
             CompletorError: If not all device in COMPLETION is specified in WSEGDAR.
-            If WSEGDAR keyword not defined, when DAR is used in the completion.
+                If WSEGDAR keyword not defined, when DAR is used in the completion.
         """
-        start_index, end_index = self.locate_keyword(Keywords.WSEGDAR)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGDAR)
         if start_index == end_index:
             if "DAR" in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGDAR keyword must be defined, if DAR is used in the completion")
@@ -436,14 +440,14 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.CV_DAR,
-                Headers.AC_OIL,
-                Headers.AC_GAS,
-                Headers.AC_WATER,
-                Headers.WHF_LCF_DAR,
-                Headers.WHF_HCF_DAR,
-                Headers.GHF_LCF_DAR,
-                Headers.GHF_HCF_DAR,
+                Headers.FLOW_COEFFICIENT,
+                Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+                Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+                Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+                Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
             ]
 
             # Fix table format
@@ -465,7 +469,7 @@ class ReadCasefile:
             CompletorError: WSEGAICV keyword not defined when AICV is used in completion.
                 If all devices in COMPLETION are not specified in WSEGAICV.
         """
-        start_index, end_index = self.locate_keyword(Keywords.WSEGAICV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGAICV)
         if start_index == end_index:
             if "AICV" in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGAICV keyword must be defined, if AICV is used in the completion.")
@@ -473,10 +477,10 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.WCT_AICV,
-                Headers.GHF_AICV,
-                Headers.RHOCAL_AICV,
-                Headers.VISCAL_AICV,
+                Headers.AICV_WATER_CUT,
+                Headers.AICV_GAS_HOLDUP_FRACTION,
+                Headers.AICV_CALIBRATION_FLUID_DENSITY,
+                Headers.AICV_FLUID_VISCOSITY,
                 Headers.ALPHA_MAIN,
                 Headers.X_MAIN,
                 Headers.Y_MAIN,
@@ -515,18 +519,18 @@ class ReadCasefile:
             CompletorError: WSEGICV keyword not defined when ICV is used in completion.
         """
 
-        start_index, end_index = self.locate_keyword(Keywords.WSEGICV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGICV)
         if start_index == end_index:
             if "ICV" in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGICV keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
-            header = [Headers.DEVICE_NUMBER, Headers.CV, Headers.AC]
+            header = [Headers.DEVICE_NUMBER, Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA]
             try:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
-                df_temp[Headers.AC_MAX] = np.nan
+                df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = np.nan
             except CaseReaderFormatError:
-                header += [Headers.AC_MAX]
+                header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
             # Fix format
             self.wsegicv_table = val.set_format_wsegicv(df_temp)
@@ -565,6 +569,9 @@ class ReadCasefile:
 
         Returns:
             COMPLETION for that well and branch.
+
+        Raises:
+            CompletorError: If strict is true and there are undefined branches.
         """
         msw = schedule.msws[well_name]
         compl = self.completion_table[self.completion_table.WELL == well_name]
@@ -606,9 +613,6 @@ class ReadCasefile:
         if lateral in laterals.to_numpy():
             return False
         return True
-
-    def locate_keyword(self, keyword: str) -> tuple[int, int]:
-        return parse.locate_keyword(self.content, keyword)
 
     def _create_dataframe_with_columns(
         self, header: list[str], start_index: int, end_index: int, keyword: str | None = None
@@ -664,14 +668,14 @@ class ReadCasefile:
         return parse.remove_string_characters(df_temp)
 
 
-def check_contents(values: np.ndarray, reference: np.ndarray) -> bool:
+def check_contents(values: npt.NDArray[Any], reference: npt.NDArray[Any]) -> bool:
     """Check if all members of a list is in another list.
 
     Args:
-        val_array: Array to be evaluated.
-        ref_array: Reference array.
+        values: Array to be evaluated.
+        reference: Reference array.
 
     Returns:
-        True if members of val_array are present in ref_array, false otherwise.
+        True if members of values are present in reference, false otherwise.
     """
     return all(comp in reference for comp in values)

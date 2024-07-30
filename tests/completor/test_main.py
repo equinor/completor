@@ -16,7 +16,7 @@ with open(Path(_TESTDIR / "welldefinition.testfile"), encoding="utf-8") as file:
 WB_PERF_TEST = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
   'A1'     1    0  3000  0.2      0.25    1.00E-4    GP      0     PERF     0
 /
@@ -28,7 +28,7 @@ GP_PERF_DEVICELAYER
 WB_PERF_TEST_MINIMUM_SEGMENT_LENGTH_13 = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
   'A1'     1    0  3000  0.2      0.25    1.00E-4    GP      0     PERF     0
 /
@@ -76,14 +76,14 @@ WSEGAICV = WSEGAICV_MAIN + WSEGAICV_PILOT
 
 WSEGVALV = """
 WSEGVALV
--- DeviceNumber     Cv      Ac      L
+-- DeviceNumber     Cv      Ac      ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
         1         0.85      0.01  5*
 /
 """
 
 WSEGICV = """
 WSEGICV
--- DEVICE   CV      AC      DEFAULTS  AC_MAX
+-- DEVICE   FLOW_COEFFICIENT      FLOW_CROSS_SECTIONAL_AREA      DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
 1           0.95    3       5*         4
 2           2       4       5*         4
 /
@@ -128,7 +128,7 @@ def test_aicd(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1     1    0   3000   0.2     0.25    1.00E-4    GP      1     AICD    1
 /
@@ -150,7 +150,7 @@ def test_oa(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1     0   3000   0.2     0.25    1.00E-4     OA     1     AICD    1
 /
@@ -172,7 +172,7 @@ def test_packer(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1       0 2024   0.2     0.25    1.00E-4    OA      1     AICD     1
    A1    1    2024 2024   0.2     0.25    1.00E-4    PA      1     AICD     1
@@ -197,7 +197,7 @@ def test_packer_aicdicd(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1       0 2024   0.2     0.25    1.00E-4    OA     0.5    VALVE    1
    A1    1    2024 2024   0.2     0.25    1.00E-4    PA     0      AICD     1
@@ -228,7 +228,7 @@ def test_packer_aicdvalve(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1       0 2024   0.2     0.25    1.00E-4     OA     2     VALVE    1
    A1    1    2024 2024   0.2     0.25    1.00E-4     PA     1     AICD     1
@@ -257,7 +257,7 @@ def test_packer_oagp(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1     1     0  2024   0.2     0.25    1.00E-4    GP      2     AICD     1
    A1     1  2024  2024   0.2     0.25    1.00E-4    PA      1     AICD     1
@@ -298,7 +298,7 @@ def test_dar(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    DAR      1
 /
@@ -321,7 +321,7 @@ def test_aicv(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1     0   3000   0.2     0.25    1.00E-4     GP     1     AICV    1
 /
@@ -345,7 +345,7 @@ def test_daraicv(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1       0 2024   0.2     0.25    1.00E-4     OA     1     DAR      1
    A1    1    2024 2024   0.2     0.25    1.00E-4     PA     1     AICD     1
@@ -371,7 +371,7 @@ def test_multilateral(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1     0   3000   0.2     0.25    1.00E-4    OA      1     AICD     1
    A1    2     0   3000   0.2     0.25    1.00E-4    OA      1     AICD     1
@@ -386,7 +386,7 @@ COMPLETION
 
 def test_nocf(tmpdir):
     """
-    Test completor case with CF and FORAMTION_PERMEABILITY_THICKNESS are not explicitly defined.
+    Test completor case with CF and FORMATION_PERMEABILITY_THICKNESS are not explicitly defined.
 
     1. 1 passive well & 1 active well
     2. Single lateral well
@@ -395,7 +395,7 @@ def test_nocf(tmpdir):
     case_file = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1     1    0   3000   0.2     0.25    1.00E-4    GP      1     PERF     0
 /
@@ -422,7 +422,7 @@ def test_segment_length(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1       0 2024   0.2     0.25    1.00E-4    OA      1     VALVE    1
    A1    1    2024 2024   0.2     0.25    1.00E-4    PA      1     AICD     1
@@ -455,7 +455,7 @@ def test_segment_comp(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1     1      0 2006   0.2     0.25    1.00E-4     OA      1   VALVE     1
    A1     1   2006 2008   0.2     0.25    1.00E-4     OA      1   VALVE     1
@@ -532,7 +532,7 @@ def test_wrong_well_id(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1     1    0  3000    0.3      0.2    1.00E-4    GP      1     AICD     1
 /
@@ -568,7 +568,7 @@ def test_well_name_with_slash(tmpdir):
     case_file = """
     COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
   'A/1'  1     0   3000   0.2     0.25    1.00E-4    GP      1      PERF    0
 /

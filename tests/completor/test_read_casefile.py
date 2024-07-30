@@ -67,7 +67,14 @@ def test_read_case_wsegvalv():
             ["VALVE", 1, 0.85, 0.01, "5*", 0.04],
             ["VALVE", 2, 0.95, 0.02, "5*", 0.04],
         ],
-        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.L, Headers.AC_MAX],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     )
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegvalv_table)
 
@@ -79,7 +86,13 @@ def test_read_case_wsegicv():
             ["ICV", 1, 1.0, 2.0, 2.0],
             ["ICV", 2, 3, 4, 1.0],
         ],
-        columns=[Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER, Headers.CV, Headers.AC, Headers.AC_MAX],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     )
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegicv_table)
 
@@ -94,7 +107,7 @@ def test_read_case_wsegaicd():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.ALPHA,
+            Headers.STRENGTH,
             Headers.X,
             Headers.Y,
             Headers.A,
@@ -103,8 +116,8 @@ def test_read_case_wsegaicd():
             Headers.D,
             Headers.E,
             Headers.F,
-            Headers.RHOCAL_AICD,
-            Headers.VISCAL_AICD,
+            Headers.AICD_CALIBRATION_FLUID_DENSITY,
+            Headers.AICD_FLUID_VISCOSITY,
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
@@ -123,8 +136,8 @@ def test_read_case_wsegsicd():
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
             Headers.STRENGTH,
-            Headers.RHOCAL_ICD,
-            Headers.VISCAL_ICD,
+            Headers.CALIBRATION_FLUID_DENSITY,
+            Headers.CALIBRATION_FLUID_VISCOSITY,
             Headers.WATER_CUT,
         ],
     )
@@ -142,14 +155,14 @@ def test_read_case_wsegdar():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.CV_DAR,
-            Headers.AC_OIL,
-            Headers.AC_GAS,
-            Headers.AC_WATER,
-            Headers.WHF_LCF_DAR,
-            Headers.WHF_HCF_DAR,
-            Headers.GHF_LCF_DAR,
-            Headers.GHF_HCF_DAR,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
@@ -229,10 +242,10 @@ def test_read_case_wsegaicv():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.WCT_AICV,
-            Headers.GHF_AICV,
-            Headers.RHOCAL_AICV,
-            Headers.VISCAL_AICV,
+            Headers.AICV_WATER_CUT,
+            Headers.AICV_GAS_HOLDUP_FRACTION,
+            Headers.AICV_CALIBRATION_FLUID_DENSITY,
+            Headers.AICV_FLUID_VISCOSITY,
             Headers.ALPHA_MAIN,
             Headers.X_MAIN,
             Headers.Y_MAIN,
@@ -346,8 +359,8 @@ WSEGAICD
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
             Headers.STRENGTH,
-            Headers.RHOCAL_ICD,
-            Headers.VISCAL_ICD,
+            Headers.CALIBRATION_FLUID_DENSITY,
+            Headers.CALIBRATION_FLUID_VISCOSITY,
             Headers.WATER_CUT,
         ],
     )
@@ -382,7 +395,7 @@ WSEGSICD
 
     case_content += """
 WSEGVALV
--- Device no    Cv     Ac           L
+-- Device no    Cv     Ac           ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
           1    1.0    9.62e-6      5*
 /
 

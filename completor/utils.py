@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
-from typing import Any, overload
+from typing import Any, Literal, NoReturn, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -12,11 +12,6 @@ import pandas as pd
 
 from completor.constants import Headers
 from completor.logger import logger
-
-try:
-    from typing import Literal, NoReturn
-except ImportError:
-    pass
 
 
 def abort(message: str, status: int = 1) -> SystemExit:
@@ -28,8 +23,8 @@ def abort(message: str, status: int = 1) -> SystemExit:
         I.e. there were no errors, while 1 or above indicates that an error occurred. The default code is 1.
 
     Returns:
-        SystemExit: Makes type checkers happy, when using the ``raise`` keyword with this function. I.e.
-            `>>> raise abort("Something when terribly wrong")`
+        SystemExit: Makes type checkers happy when using the ``raise`` keyword with this function. I.e.
+            `>>> raise abort("Something when terribly wrong.")`
     """
     if status == 0:
         logger.info(message)
@@ -58,20 +53,6 @@ def sort_by_midpoint(
     df[_temp_column] = df[[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]].mean(axis=1)
     df = df.sort_values(by=[_temp_column])
     return df.drop([_temp_column], axis=1)
-
-
-def as_data_frame(args: dict[str, Any] | None = None, **kwargs) -> pd.DataFrame:
-    """Helper function to create a data frame from a dictionary, or keywords."""
-    if (args is None and kwargs is None) or (not args and not kwargs):
-        raise ValueError("`as_data_frame` requires either a single dictionary, or keywords")
-
-    if args:
-        kwargs = args
-    data = pd.DataFrame()
-    for key, value in kwargs.items():
-        data[key] = value
-
-    return data
 
 
 @overload
@@ -183,3 +164,29 @@ def clean_file_lines(lines: list[str], comment_prefix: str = "--") -> list[str]:
         if cleaned_line:
             clean_lines.append(cleaned_line)
     return clean_lines
+
+
+def shift_array(array: npt.NDArray[Any], shift_by: int, fill_value: Any = np.nan) -> npt.NDArray[Any]:
+    """Shift an array to the left or right, similar to Pandas' shift.
+
+    Note: By chrisaycock https://stackoverflow.com/a/42642326.
+
+    Args:
+        array: Array to shift.
+        shift_by: The amount and direction (positive/negative) to shift by.
+        fill_value: The value to fill out of range values with. Defaults to np.nan.
+
+    Returns:
+        Shifted Numpy array.
+
+    """
+    result = np.empty_like(array)
+    if shift_by > 0:
+        result[:shift_by] = fill_value
+        result[shift_by:] = array[:-shift_by]
+    elif shift_by < 0:
+        result[shift_by:] = fill_value
+        result[:shift_by] = array[-shift_by:]
+    else:
+        result[:] = array
+    return result

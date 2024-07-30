@@ -40,7 +40,7 @@ A1  MYGRP 35  113  0.0  OIL  1*  STD  SHUT  YES  1  AVG  1* /
 /
 
 COMPDAT
---WELL I   J  K1 K2 OP/SH  SATN TRAN        WBDIA  KH         SKIN DFACT DIR PEQVR
+--WELL I   J  K1 K2 OP/SH  SATN TRAN        WBDIA  KH         SKIN D_FACTOR DIR PEQVR
  'A1'  35 113 72 72 OPEN   1*   298.626067  0.2159 196217.868 30   1*    Y   /
  'A1'  36 113 72 72 OPEN   1*   387.741486  0.2159 254075.894 30   1*    Y   /
 /
@@ -71,23 +71,23 @@ WELSPECS
 
 COMPDAT
 -- Well : A1 : Lateral : 1
--- WELL  I   J    K   K2 FLAG  SAT CF          DIAM   KH          SKIN DFACT DIR
+-- WELL  I   J    K   K2 FLAG  SAT CF          DIAM   KH          SKIN D_FACTOR DIR
     A1   35  113  72  72  OPEN  1* 298.626067  0.2159 196217.868  30.0  1*    Y   /
     A1   36  113  72  72  OPEN  1* 387.741486  0.2159 254075.894  30.0  1*    Y   /
 /
 
 
 WELSEGS
--- WELL  SEGMENTTVD  SEGMENTMD WBVOLUME INFOTYPE PDROPCOMP MPMODEL
+-- WELL  TRUE_VERTICAL_DEPTH  MEASURED_DEPTH WBVOLUME INFOTYPE PDROPCOMP MULTIPHASE_FLOW_MODEL
     A1   1565.2834   1893.0     1*       ABS      HF-       HO      /
 -- Tubing layer
---  SEG  SEG2  BRANCH  OUT MD       TVD       DIAM ROUGHNESS
+--  START_SEGMENT_NUMBER  END_SEGMENT_NUMBER  BRANCH  OUT MEASURED_DEPTH       TRUE_VERTICAL_DEPTH       DIAM ROUGHNESS
     2    2     1       1   2000.000 1566.407  0.1   0.003     /
     3    3     1       2   2167.246 1566.407  0.1   0.003     /
     4    4     1       3   2190.166 1566.315  0.1   0.003     /
     5    5     1       4   2228.008 1566.164  0.1   0.003     /
 -- Device layer
---  SEG  SEG2  BRANCH  OUT MD       TVD       DIAM ROUGHNESS
+--  START_SEGMENT_NUMBER  END_SEGMENT_NUMBER  BRANCH  OUT MEASURED_DEPTH       TRUE_VERTICAL_DEPTH       DIAM ROUGHNESS
     6    6     2       4   2190.266 1566.315  0.1  0.003      / -- AICD types
     7    7     3       5   2228.108 1566.164  0.1  0.003      / -- AICD types
 /
@@ -95,7 +95,7 @@ WELSEGS
 
 COMPSEGS
 A1 /
---  I   J    K  BRANCH STARTMD  ENDMD    DIR DEF  SEG
+--  I   J    K  BRANCH STARTMD  ENDMD    DIR DEF  START_SEGMENT_NUMBER
     35  113  72   2    2178.280 2202.052  1*  3*   6  /
     36  113  72   3    2202.052 2253.965  1*  3*   7  /
 /
@@ -105,11 +105,11 @@ WSEGAICD
 ------------------------------------------------------------------------------------------------
 -- Well : A1 : Lateral : 1
 ------------------------------------------------------------------------------------------------
--- WELL  SEG  SEG2   ALPHA  SF     RHO  VIS DEF   X   Y FLAG   A   B   C   D   E   F
+-- WELL  START_SEGMENT_NUMBER  END_SEGMENT_NUMBER  STRENGTH  SCALE_FACTOR  CALIBRATION_FLUID_DENSITY  VIS DEF  X  Y  FLAG  A  B  C  D  E  F
 'A1' 6 6 0.00021 -0.5047955578 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
 'A1' 7 7 0.00021 -0.2311559725 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
 /
 
-    """
+    """  # noqa: more human readable at this witdth.
     utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
     utils.assert_results(true_file, _TEST_FILE)

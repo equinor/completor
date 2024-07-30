@@ -183,10 +183,12 @@ def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
         Updated data with enforced data types and device type filled with default values.
     """
     df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
-    df_temp[[Headers.CV, Headers.AC, Headers.AC_MAX]] = df_temp[[Headers.CV, Headers.AC, Headers.AC_MAX]].astype(
-        np.float64
+    df_temp[[Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA, Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]] = (
+        df_temp[
+            [Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA, Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
+        ].astype(np.float64)
     )
-    # allows column L to have default value 1* thus it is not set to float
+    # allows column ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP to have default value 1* thus it is not set to float
     # Create ID device column
     df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], fill_value="VALVE"))
     return df_temp
@@ -278,8 +280,10 @@ def set_format_wsegicv(df_temp: pd.DataFrame) -> pd.DataFrame:
         Updated data.
     """
     df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
-    df_temp[[Headers.CV, Headers.AC, Headers.AC_MAX]] = df_temp[[Headers.CV, Headers.AC, Headers.AC_MAX]].astype(
-        np.float64
+    df_temp[[Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA, Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]] = (
+        df_temp[
+            [Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA, Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
+        ].astype(np.float64)
     )
     # allows column DEFAULTS to have default value 5*,  thus it is not set to float
     # Create ID device column
