@@ -13,7 +13,6 @@ from completor.constants import Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
-from completor.utils import as_data_frame
 
 
 def trim_pandas(df_temp: pd.DataFrame) -> pd.DataFrame:
@@ -101,27 +100,26 @@ def dataframe_tostring(
     if format_column:
         if formatters is None:
             formatters = {
-                Headers.ALPHA: "{:.10g}".format,
-                Headers.SF: "{:.10g}".format,
+                Headers.STRENGTH: "{:.10g}".format,
+                Headers.SCALE_FACTOR: "{:.10g}".format,
                 Headers.ROUGHNESS: "{:.10g}".format,
                 Headers.CONNECTION_FACTOR: "{:.10g}".format,
-                Headers.FORAMTION_PERMEABILITY_THICKNESS: "{:.10g}".format,
-                Headers.MD: "{:.3f}".format,
-                Headers.TVD: "{:.3f}".format,
+                Headers.FORMATION_PERMEABILITY_THICKNESS: "{:.10g}".format,
+                Headers.MEASURED_DEPTH: "{:.3f}".format,
+                Headers.TRUE_VERTICAL_DEPTH: "{:.3f}".format,
                 Headers.START_MEASURED_DEPTH: "{:.3f}".format,
                 Headers.END_MEASURED_DEPTH: "{:.3f}".format,
-                Headers.CV_DAR: "{:.10g}".format,
-                Headers.CV: "{:.10g}".format,
-                Headers.AC: "{:.3e}".format,
-                Headers.AC_OIL: "{:.3e}".format,
-                Headers.AC_GAS: "{:.3e}".format,
-                Headers.AC_WATER: "{:.3e}".format,
-                Headers.AC_MAX: "{:.3e}".format,
+                Headers.FLOW_COEFFICIENT: "{:.10g}".format,
+                Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+                Headers.OIL_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+                Headers.GAS_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+                Headers.WATER_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
                 Headers.DEFAULTS: "{:.10s}".format,
-                Headers.WHF_LCF_DAR: "{:.10g}".format,
-                Headers.WHF_HCF_DAR: "{:.10g}".format,
-                Headers.GHF_LCF_DAR: "{:.10g}".format,
-                Headers.GHF_HCF_DAR: "{:.10g}".format,
+                Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
+                Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
+                Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
+                Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
                 Headers.ALPHA_MAIN: "{:.10g}".format,
                 Headers.ALPHA_PILOT: "{:.10g}".format,
             }
@@ -152,14 +150,17 @@ def get_outlet_segment(
     Returns:
         The outlet segments.
     """
-    df_target_md = pd.DataFrame(target_md, columns=[Headers.MD])
+    df_target_md = pd.DataFrame(target_md, columns=[Headers.MEASURED_DEPTH])
     df_reference = pd.DataFrame(
-        np.column_stack((reference_md, reference_segment_number)), columns=[Headers.MD, Headers.SEG]
+        np.column_stack((reference_md, reference_segment_number)),
+        columns=[Headers.MEASURED_DEPTH, Headers.START_SEGMENT_NUMBER],
     )
-    df_reference[Headers.SEG] = df_reference[Headers.SEG].astype(np.int64)
-    df_reference.sort_values(by=[Headers.MD], inplace=True)
+    df_reference[Headers.START_SEGMENT_NUMBER] = df_reference[Headers.START_SEGMENT_NUMBER].astype(np.int64)
+    df_reference.sort_values(by=[Headers.MEASURED_DEPTH], inplace=True)
     return (
-        pd.merge_asof(left=df_target_md, right=df_reference, on=[Headers.MD], direction="nearest")[Headers.SEG]
+        pd.merge_asof(left=df_target_md, right=df_reference, on=[Headers.MEASURED_DEPTH], direction="nearest")[
+            Headers.START_SEGMENT_NUMBER
+        ]
         .to_numpy()
         .flatten()
     )
@@ -215,7 +216,7 @@ def prepare_tubing_layer(
         schedule: Schedule object.
         well_name: Well name.
         lateral: Lateral number.
-        df_well: Must contain column LATERAL, TUB_MD, TUB_TVD, INNER_DIAMETER, ROUGHNESS.
+        df_well: Must contain column LATERAL, TUBING_MEASURED_DEPTH, TRUE_VERTICAL_DEPTH, INNER_DIAMETER, ROUGHNESS.
         start_segment: Start number of the first tubing segment.
         branch_no: Branch number for this tubing layer.
         completion_table: DataFrame with completion data.
@@ -224,24 +225,27 @@ def prepare_tubing_layer(
         DataFrame for tubing layer.
     """
     rnm = {
-        Headers.TUBINGMD: Headers.MD,
-        Headers.TUBINGTVD: Headers.TVD,
-        Headers.TUBING_INNER_DIAMETER: Headers.DIAMETER,
+        Headers.TUBING_MEASURED_DEPTH: Headers.MEASURED_DEPTH,
+        Headers.TRUE_VERTICAL_DEPTH: Headers.TRUE_VERTICAL_DEPTH,
+        Headers.TUBING_INNER_DIAMETER: Headers.WELL_BORE_DIAMETER,
         Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
     df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_tubing_in_reservoir = as_data_frame(
-        MD=df_well[Headers.TUB_MD],
-        TVD=df_well[Headers.TUB_TVD],
-        DIAM=df_well[Headers.INNER_DIAMETER],
-        ROUGHNESS=df_well[Headers.ROUGHNESS],
+    df_tubing_in_reservoir = pd.DataFrame(
+        {
+            Headers.MEASURED_DEPTH: df_well[Headers.TUBING_MEASURED_DEPTH],
+            Headers.TRUE_VERTICAL_DEPTH: df_well[Headers.TRUE_VERTICAL_DEPTH],
+            "DIAM": df_well[Headers.INNER_DIAMETER],
+            "ROUGHNESS": df_well[Headers.ROUGHNESS],
+        }
     )
+
     # handle overburden
     well_segments = schedule.get_well_segments(well_name, lateral)[1]
-    md_input_welsegs = well_segments[Headers.TUBINGMD]
-    md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MD]
+    md_input_welsegs = well_segments[Headers.TUBING_MEASURED_DEPTH]
+    md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MEASURED_DEPTH]
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
     if not overburden.empty:
         overburden = overburden.rename(index=str, columns=rnm)
@@ -249,16 +253,18 @@ def prepare_tubing_layer(
         df_tubing_with_overburden = pd.concat([overburden_fixed[cols], df_tubing_in_reservoir])
     else:
         df_tubing_with_overburden = df_tubing_in_reservoir
-    df_tubing_with_overburden[Headers.SEG] = start_segment + np.arange(df_tubing_with_overburden.shape[0])
-    df_tubing_with_overburden[Headers.SEG2] = df_tubing_with_overburden[Headers.SEG]
+    df_tubing_with_overburden[Headers.START_SEGMENT_NUMBER] = start_segment + np.arange(
+        df_tubing_with_overburden.shape[0]
+    )
+    df_tubing_with_overburden[Headers.END_SEGMENT_NUMBER] = df_tubing_with_overburden[Headers.START_SEGMENT_NUMBER]
     df_tubing_with_overburden[Headers.BRANCH] = branch_no
     df_tubing_with_overburden.reset_index(drop=True, inplace=True)
     # set out-segment to be successive.
     # The first item will be updated in connect_lateral
-    df_tubing_with_overburden[Headers.OUT] = df_tubing_with_overburden[Headers.SEG] - 1
+    df_tubing_with_overburden[Headers.OUT] = df_tubing_with_overburden[Headers.START_SEGMENT_NUMBER] - 1
     # make sure order is correct
     df_tubing_with_overburden = df_tubing_with_overburden.reindex(
-        columns=[Headers.SEG, Headers.SEG2, Headers.BRANCH, Headers.OUT] + cols
+        columns=[Headers.START_SEGMENT_NUMBER, Headers.END_SEGMENT_NUMBER, Headers.BRANCH, Headers.OUT] + cols
     )
     df_tubing_with_overburden[Headers.EMPTY] = "/"  # for printing
     # locate where it attached to (the top segment)
@@ -289,19 +295,19 @@ def fix_tubing_inner_diam_roughness(
     overburden_out = overburden.copy(deep=True)
     completion_table_well = completion_table.loc[completion_table[Headers.WELL] == well_name]
     completion_table_well = completion_table_well.loc[
-        completion_table_well[Headers.BRANCH] == overburden_out[Headers.TUBINGBRANCH].iloc[0]
+        completion_table_well[Headers.BRANCH] == overburden_out[Headers.TUBING_BRANCH].iloc[0]
     ]
     overburden_found_in_completion = False
     overburden_md = None
 
     for idx_overburden in range(overburden_out.shape[0]):
-        overburden_md = overburden_out[Headers.MD].iloc[idx_overburden]
+        overburden_md = overburden_out[Headers.MEASURED_DEPTH].iloc[idx_overburden]
         overburden_found_in_completion = False
         for idx_completion_table_well in range(completion_table_well.shape[0]):
             completion_table_start = completion_table_well[Headers.START_MEASURED_DEPTH].iloc[idx_completion_table_well]
             completion_table_end = completion_table_well[Headers.END_MEASURED_DEPTH].iloc[idx_completion_table_well]
             if (completion_table_end >= overburden_md >= completion_table_start) and not overburden_found_in_completion:
-                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.DIAMETER)] = (
+                overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.WELL_BORE_DIAMETER)] = (
                     completion_table_well[Headers.INNER_DIAMETER].iloc[idx_completion_table_well]
                 )
                 overburden_out.iloc[idx_overburden, overburden_out.columns.get_loc(Headers.ROUGHNESS)] = (
@@ -347,9 +353,9 @@ def connect_lateral(
     """
     df_tubing, _, _, _, top = data[lateral]
     if not top.empty:
-        lateral0 = top.TUBINGBRANCH.to_numpy()[0]
-        md_junct = top.TUBINGMD.to_numpy()[0]
-        if md_junct > df_tubing[Headers.MD][0]:
+        lateral0 = top[Headers.TUBING_BRANCH].to_numpy()[0]
+        md_junct = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
+        if md_junct > df_tubing[Headers.MEASURED_DEPTH][0]:
             logger.warning(
                 "Found a junction above the start of the tubing layer, well %s, "
                 "branch %s. Check the depth of segments pointing at the main stem "
@@ -363,22 +369,22 @@ def connect_lateral(
             df_segm0 = data[lateral0][1]  # df_device
         try:
             if case.connect_to_tubing(well_name, lateral):
-                # Since md_junct (top.TUBINGMD) has segment tops and
-                # segm0.MD has grid block midpoints, a junction at the top of the
+                # Since md_junct (top.TUBING_MEASURED_DEPTH) has segment tops and
+                # segm0.MEASURED_DEPTH has grid block midpoints, a junction at the top of the
                 # well may not be found. Therefore, we try the following:
-                if (~(df_segm0.MD <= md_junct)).all():
-                    md_junct = df_segm0.MD.iloc[0]
-                    idx = np.where(df_segm0.MD <= md_junct)[0][-1]
+                if (~(df_segm0.MEASURED_DEPTH <= md_junct)).all():
+                    md_junct = df_segm0.MEASURED_DEPTH.iloc[0]
+                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
                 else:
-                    idx = np.where(df_segm0.MD <= md_junct)[0][-1]
+                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
             else:
                 # Add 0.1 to md_junct since md_junct refers to the tubing layer
                 # junction md and the device layer md is shifted 0.1 m to the
                 # tubing layer.
-                idx = np.where(df_segm0.MD <= md_junct + 0.1)[0][-1]
+                idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct + 0.1)[0][-1]
         except IndexError as err:
             raise CompletorError(f"Cannot find a device layer at junction of lateral {lateral} in {well_name}") from err
-        outsegm = df_segm0.at[idx, Headers.SEG]
+        outsegm = df_segm0.at[idx, Headers.START_SEGMENT_NUMBER]
     else:
         outsegm = 1  # default
     df_tubing.at[0, Headers.OUT] = outsegm
@@ -392,14 +398,15 @@ def prepare_device_layer(
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: Must contain LATERAL, TUB_MD, TUB_TVD, INNER_DIAMETER, ROUGHNESS, DEVICETYPE and NDEVICES.
+        df_well: Must contain LATERAL, TUBING_MEASURED_DEPTH, TRUE_VERTICAL_DEPTH,
+            INNER_DIAMETER, ROUGHNESS, DEVICE_TYPE and NDEVICES.
         df_tubing: Data frame from function prepare_tubing_layer for this well and this lateral.
         device_length: Segment length. Default to 0.1.
 
     Returns:
         DataFrame for device layer.
     """
-    start_segment = max(df_tubing[Headers.SEG].to_numpy()) + 1
+    start_segment = max(df_tubing[Headers.START_SEGMENT_NUMBER].to_numpy()) + 1
     start_branch = max(df_tubing[Headers.BRANCH].to_numpy()) + 1
     df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
@@ -412,15 +419,17 @@ def prepare_device_layer(
         return pd.DataFrame()
     # now create dataframe for device layer
     df_device = pd.DataFrame()
-    df_device[Headers.SEG] = start_segment + np.arange(df_well.shape[0])
-    df_device[Headers.SEG2] = df_device[Headers.SEG].to_numpy()
+    df_device[Headers.START_SEGMENT_NUMBER] = start_segment + np.arange(df_well.shape[0])
+    df_device[Headers.END_SEGMENT_NUMBER] = df_device[Headers.START_SEGMENT_NUMBER].to_numpy()
     df_device[Headers.BRANCH] = start_branch + np.arange(df_well.shape[0])
     df_device[Headers.OUT] = get_outlet_segment(
-        df_well[Headers.TUB_MD].to_numpy(), df_tubing[Headers.MD].to_numpy(), df_tubing[Headers.SEG].to_numpy()
+        df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
+        df_tubing[Headers.MEASURED_DEPTH].to_numpy(),
+        df_tubing[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
-    df_device[Headers.MD] = df_well[Headers.TUB_MD].to_numpy() + device_length
-    df_device[Headers.TVD] = df_well[Headers.TUB_TVD].to_numpy()
-    df_device[Headers.DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
+    df_device[Headers.MEASURED_DEPTH] = df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy() + device_length
+    df_device[Headers.TRUE_VERTICAL_DEPTH] = df_well[Headers.TRUE_VERTICAL_DEPTH].to_numpy()
+    df_device[Headers.WELL_BORE_DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
     df_device[Headers.ROUGHNESS] = df_well[Headers.ROUGHNESS].to_numpy()
     device_comment = np.where(
         df_well[Headers.DEVICE_TYPE] == "PERF",
@@ -459,7 +468,7 @@ def prepare_annulus_layer(
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: Must contain LATERAL, ANNULUS_ZONE, TUB_MD, TUB_TVD, OUTER_DIAMETER,
+        df_well: Must contain LATERAL, ANNULUS_ZONE, TUBING_MEASURED_DEPTH, TRUE_VERTICAL_DEPTH, OUTER_DIAMETER,
             ROUGHNESS, DEVICETYPE and NDEVICES.
         df_device: DataFrame from function prepare_device_layer for this well and this lateral.
         annulus_length: Annulus segment length increment. Default to 0.1.
@@ -489,10 +498,10 @@ def prepare_annulus_layer(
         ]
         # setting the start segment number and start branch number
         if izone == 0:
-            start_segment = max(df_device[Headers.SEG]) + 1
+            start_segment = max(df_device[Headers.START_SEGMENT_NUMBER]) + 1
             start_branch = max(df_device[Headers.BRANCH]) + 1
         else:
-            start_segment = max(df_annulus[Headers.SEG]) + 1
+            start_segment = max(df_annulus[Headers.START_SEGMENT_NUMBER]) + 1
             start_branch = max(df_annulus[Headers.BRANCH]) + 1
         # now find the most downstream connection of the annulus zone
         idx_connection = np.argwhere(
@@ -519,13 +528,19 @@ def prepare_annulus_layer(
                 )
             # downstream part
             df_annulus_downstream = pd.DataFrame()
-            df_annulus_downstream[Headers.SEG] = start_segment + np.arange(df_branch_downstream.shape[0])
-            df_annulus_downstream[Headers.SEG2] = df_annulus_downstream[Headers.SEG]
+            df_annulus_downstream[Headers.START_SEGMENT_NUMBER] = start_segment + np.arange(
+                df_branch_downstream.shape[0]
+            )
+            df_annulus_downstream[Headers.END_SEGMENT_NUMBER] = df_annulus_downstream[Headers.START_SEGMENT_NUMBER]
             df_annulus_downstream[Headers.BRANCH] = start_branch
-            df_annulus_downstream[Headers.OUT] = df_annulus_downstream[Headers.SEG] + 1
-            df_annulus_downstream[Headers.MD] = df_branch_downstream[Headers.TUB_MD].to_numpy() + annulus_length
-            df_annulus_downstream[Headers.TVD] = df_branch_downstream[Headers.TUB_TVD].to_numpy()
-            df_annulus_downstream[Headers.DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
+            df_annulus_downstream[Headers.OUT] = df_annulus_downstream[Headers.START_SEGMENT_NUMBER] + 1
+            df_annulus_downstream[Headers.MEASURED_DEPTH] = (
+                df_branch_downstream[Headers.TUBING_MEASURED_DEPTH].to_numpy() + annulus_length
+            )
+            df_annulus_downstream[Headers.TRUE_VERTICAL_DEPTH] = df_branch_downstream[
+                Headers.TRUE_VERTICAL_DEPTH
+            ].to_numpy()
+            df_annulus_downstream[Headers.WELL_BORE_DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
             df_annulus_downstream[Headers.ROUGHNESS] = df_branch_downstream[Headers.ROUGHNESS].to_numpy()
 
             # no WSEGLINK in the downstream part because
@@ -534,7 +549,7 @@ def prepare_annulus_layer(
 
             # upstream part
             # update the start segment and start branch
-            start_segment = max(df_annulus_downstream[Headers.SEG]) + 1
+            start_segment = max(df_annulus_downstream[Headers.START_SEGMENT_NUMBER]) + 1
             start_branch = max(df_annulus_downstream[Headers.BRANCH]) + 1
             # create dataframe for upstream part
             df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
@@ -586,49 +601,56 @@ def calculate_upstream(
         Annulus upstream and wseglink upstream.
     """
     df_annulus_upstream = pd.DataFrame()
-    df_annulus_upstream[Headers.SEG] = start_segment + np.arange(df_branch.shape[0])
-    df_annulus_upstream[Headers.SEG2] = df_annulus_upstream[Headers.SEG]
+    df_annulus_upstream[Headers.START_SEGMENT_NUMBER] = start_segment + np.arange(df_branch.shape[0])
+    df_annulus_upstream[Headers.END_SEGMENT_NUMBER] = df_annulus_upstream[Headers.START_SEGMENT_NUMBER]
     df_annulus_upstream[Headers.BRANCH] = start_branch
-    out_segment = df_annulus_upstream[Headers.SEG].to_numpy() - 1
+    out_segment = df_annulus_upstream[Headers.START_SEGMENT_NUMBER].to_numpy() - 1
     # determining the outlet segment of the annulus segment
     # if the annulus segment is not the most downstream which has connection
     # then the outlet is its adjacent annulus segment
     device_segment = get_outlet_segment(
-        df_branch[Headers.TUB_MD].to_numpy(), df_device[Headers.MD].to_numpy(), df_device[Headers.SEG].to_numpy()
+        df_branch[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
+        df_device[Headers.MEASURED_DEPTH].to_numpy(),
+        df_device[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
     # but for the most downstream annulus segment
     # its outlet is the device segment
     out_segment[0] = device_segment[0]
     # determining segment position
-    md_ = df_branch[Headers.TUB_MD].to_numpy() + annulus_length
+    md_ = df_branch[Headers.TUBING_MEASURED_DEPTH].to_numpy() + annulus_length
     md_[0] = md_[0] + annulus_length
     df_annulus_upstream[Headers.OUT] = out_segment
-    df_annulus_upstream[Headers.MD] = md_
-    df_annulus_upstream[Headers.TVD] = df_branch[Headers.TUB_TVD].to_numpy()
-    df_annulus_upstream[Headers.DIAMETER] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
+    df_annulus_upstream[Headers.MEASURED_DEPTH] = md_
+    df_annulus_upstream[Headers.TRUE_VERTICAL_DEPTH] = df_branch[Headers.TRUE_VERTICAL_DEPTH].to_numpy()
+    df_annulus_upstream[Headers.WELL_BORE_DIAMETER] = df_branch[Headers.OUTER_DIAMETER].to_numpy()
     df_annulus_upstream[Headers.ROUGHNESS] = df_branch[Headers.ROUGHNESS].to_numpy()
     device_segment = get_outlet_segment(
-        df_active[Headers.TUB_MD].to_numpy(), df_device[Headers.MD].to_numpy(), df_device[Headers.SEG].to_numpy()
+        df_active[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
+        df_device[Headers.MEASURED_DEPTH].to_numpy(),
+        df_device[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
     annulus_segment = get_outlet_segment(
-        df_active[Headers.TUB_MD].to_numpy(),
-        df_annulus_upstream[Headers.MD].to_numpy(),
-        df_annulus_upstream[Headers.SEG].to_numpy(),
+        df_active[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
+        df_annulus_upstream[Headers.MEASURED_DEPTH].to_numpy(),
+        df_annulus_upstream[Headers.START_SEGMENT_NUMBER].to_numpy(),
     )
     outlet_segment = get_outlet_segment(
-        df_active[Headers.TUB_MD].to_numpy(),
-        df_annulus_upstream[Headers.MD].to_numpy(),
+        df_active[Headers.TUBING_MEASURED_DEPTH].to_numpy(),
+        df_annulus_upstream[Headers.MEASURED_DEPTH].to_numpy(),
         df_annulus_upstream[Headers.OUT].to_numpy(),
     )
-    df_wseglink_upstream = as_data_frame(
-        WELL=[well_name] * device_segment.shape[0],
-        ANNULUS=annulus_segment,
-        DEVICE=device_segment,
-        OUTLET=outlet_segment,
+    df_wseglink_upstream = pd.DataFrame(
+        {
+            Headers.WELL: [well_name] * device_segment.shape[0],
+            Headers.ANNULUS: annulus_segment,
+            Headers.DEVICE: device_segment,
+            Headers.OUT: outlet_segment,
+        }
     )
-    # basically WSEGLINK is only for those segments
-    # whose its outlet segment is not a device segment
-    df_wseglink_upstream = df_wseglink_upstream[df_wseglink_upstream[Headers.DEVICE] != df_wseglink_upstream["OUTLET"]]
+    # WSEGLINK is only for those segments whose outlet segment is not a device segment.
+    df_wseglink_upstream = df_wseglink_upstream[
+        df_wseglink_upstream[Headers.DEVICE] != df_wseglink_upstream[Headers.OUT]
+    ]
     return df_annulus_upstream, df_wseglink_upstream
 
 
@@ -653,7 +675,7 @@ def connect_compseg_icv(
     df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
     df_res = df_reservoir.copy(deep=True)
 
-    df_res[_MARKER_MEASURED_DEPTH] = df_res[Headers.MD]
+    df_res[_MARKER_MEASURED_DEPTH] = df_res[Headers.MEASURED_DEPTH]
     starts = df_completion_table_clean[Headers.START_MEASURED_DEPTH].apply(
         lambda x: max(x, df_res[Headers.START_MEASURED_DEPTH].iloc[0])
     )
@@ -661,18 +683,29 @@ def connect_compseg_icv(
         lambda x: min(x, df_res[Headers.END_MEASURED_DEPTH].iloc[-1])
     )
     for start, end in zip(starts, ends):
-        condition = f"@df_res.MD >= {start} and @df_res.MD <= {end} and @df_res.DEVICETYPE == 'ICV'"
+        condition = (
+            f"@df_res.{Headers.MEASURED_DEPTH} >= {start} and @df_res.{Headers.MEASURED_DEPTH} <= {end} "
+            f"and @df_res.{Headers.DEVICE_TYPE} == 'ICV'"
+        )
         func = float(start + end) / 2
         column_index = df_res.query(condition).index
         df_res.loc[column_index, _MARKER_MEASURED_DEPTH] = func
 
     df_compseg_device = pd.merge_asof(
-        left=df_res, right=df_device, left_on=_MARKER_MEASURED_DEPTH, right_on=Headers.MD, direction="nearest"
+        left=df_res,
+        right=df_device,
+        left_on=_MARKER_MEASURED_DEPTH,
+        right_on=Headers.MEASURED_DEPTH,
+        direction="nearest",
     )
     df_compseg_annulus = pd.DataFrame()
     if (df_completion_table[Headers.ANNULUS] == "OA").any():
         df_compseg_annulus = pd.merge_asof(
-            left=df_res, right=df_annulus, left_on=_MARKER_MEASURED_DEPTH, right_on=Headers.MD, direction="nearest"
+            left=df_res,
+            right=df_annulus,
+            left_on=_MARKER_MEASURED_DEPTH,
+            right_on=Headers.MEASURED_DEPTH,
+            direction="nearest",
         ).drop(_MARKER_MEASURED_DEPTH, axis=1)
     return df_compseg_device.drop(_MARKER_MEASURED_DEPTH, axis=1), df_compseg_annulus
 
@@ -711,10 +744,10 @@ def prepare_compsegs(
         | (df_reservoir[Headers.NUMBER_OF_DEVICES] > 0)
         | (df_reservoir[Headers.DEVICE_TYPE] == "PERF")
     ]
-    # sort device dataframe by MD to be used for pd.merge_asof
+    # sort device dataframe by MEASURED_DEPTH to be used for pd.merge_asof
     if df_reservoir.shape[0] == 0:
         return pd.DataFrame()
-    df_device = df_device.sort_values(by=[Headers.MD])
+    df_device = df_device.sort_values(by=[Headers.MEASURED_DEPTH])
     if isinstance(segment_length, str):
         if segment_length.upper() == "USER":
             segment_length = -1.0
@@ -728,7 +761,7 @@ def prepare_compsegs(
         if isinstance(segment_length, float):
             if segment_length >= 0:
                 df_compseg_device = pd.merge_asof(
-                    left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest"
+                    left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
                 )
             else:
                 # Ensure that tubing segment boundaries as described in the case
@@ -739,7 +772,9 @@ def prepare_compsegs(
                     df_reservoir, df_device, df_annulus, df_completion_table
                 )
         else:
-            df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest")
+            df_compseg_device = pd.merge_asof(
+                left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
+            )
         if icv_segmenting:
             df_compseg_device, _ = connect_compseg_icv(df_reservoir, df_device, df_annulus, df_completion_table)
         compseg = pd.DataFrame()
@@ -750,20 +785,20 @@ def prepare_compsegs(
         compseg[Headers.BRANCH] = df_compseg_device[Headers.BRANCH].to_numpy()
         compseg[Headers.START_MEASURED_DEPTH] = df_compseg_device[Headers.START_MEASURED_DEPTH].to_numpy()
         compseg[Headers.END_MEASURED_DEPTH] = df_compseg_device[Headers.END_MEASURED_DEPTH].to_numpy()
-        compseg[Headers.DIRECTION] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
+        compseg[Headers.COMPSEGS_DIRECTION] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()
         compseg[Headers.DEF] = "3*"
-        compseg[Headers.SEG] = df_compseg_device[Headers.SEG].to_numpy()
+        compseg[Headers.START_SEGMENT_NUMBER] = df_compseg_device[Headers.START_SEGMENT_NUMBER].to_numpy()
     else:
         # sort the df_annulus and df_device
-        df_annulus = df_annulus.sort_values(by=[Headers.MD])
+        df_annulus = df_annulus.sort_values(by=[Headers.MEASURED_DEPTH])
         if isinstance(segment_length, float):
             # SEGMENTLENGTH = FIXED
             if segment_length >= 0:
                 df_compseg_annulus = pd.merge_asof(
-                    left=df_reservoir, right=df_annulus, on=[Headers.MD], direction="nearest"
+                    left=df_reservoir, right=df_annulus, on=[Headers.MEASURED_DEPTH], direction="nearest"
                 )
                 df_compseg_device = pd.merge_asof(
-                    left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest"
+                    left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
                 )
             else:
                 # Ensure that tubing segment boundaries as described in the case
@@ -780,9 +815,11 @@ def prepare_compsegs(
                 df_compseg_annulus.drop([Headers.MARKER], axis=1, inplace=True)
         else:
             df_compseg_annulus = pd.merge_asof(
-                left=df_reservoir, right=df_annulus, on=[Headers.MD], direction="nearest"
+                left=df_reservoir, right=df_annulus, on=[Headers.MEASURED_DEPTH], direction="nearest"
             )
-            df_compseg_device = pd.merge_asof(left=df_reservoir, right=df_device, on=[Headers.MD], direction="nearest")
+            df_compseg_device = pd.merge_asof(
+                left=df_reservoir, right=df_device, on=[Headers.MEASURED_DEPTH], direction="nearest"
+            )
         if icv_segmenting:
             df_compseg_device, df_compseg_annulus = connect_compseg_icv(
                 df_reservoir, df_device, df_annulus, df_completion_table
@@ -791,16 +828,18 @@ def prepare_compsegs(
         def _choose(parameter: str) -> np.ndarray:
             return choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, parameter)
 
-        compseg = as_data_frame(
-            I=_choose(Headers.I),
-            J=_choose(Headers.J),
-            K=_choose(Headers.K),
-            BRANCH=_choose(Headers.BRANCH),
-            STARTMD=_choose(Headers.START_MEASURED_DEPTH),
-            ENDMD=_choose(Headers.END_MEASURED_DEPTH),
-            DIR=_choose(Headers.COMPSEGS_DIRECTION),
-            DEF="3*",
-            SEG=_choose(Headers.SEG),
+        compseg = pd.DataFrame(
+            {
+                Headers.I: _choose(Headers.I),
+                Headers.J: _choose(Headers.J),
+                Headers.K: _choose(Headers.K),
+                Headers.BRANCH: _choose(Headers.BRANCH),
+                Headers.START_MEASURED_DEPTH: _choose(Headers.START_MEASURED_DEPTH),
+                Headers.END_MEASURED_DEPTH: _choose(Headers.END_MEASURED_DEPTH),
+                Headers.COMPSEGS_DIRECTION: _choose(Headers.COMPSEGS_DIRECTION),
+                Headers.DEF: "3*",
+                Headers.START_SEGMENT_NUMBER: _choose(Headers.START_SEGMENT_NUMBER),
+            }
         )
     compseg[Headers.EMPTY] = "/"
     return compseg
@@ -845,7 +884,7 @@ def connect_compseg_usersegment(
     )
     func = 1
     for start, end in zip(starts, ends):
-        condition = f"@df_res.MD >= {start} and @df_res.MD <= {end}"
+        condition = f"@df_res.{Headers.MEASURED_DEPTH} >= {start} and @df_res.{Headers.MEASURED_DEPTH} <= {end}"
         column_to_modify = Headers.MARKER
         column_index = df_res.query(condition).index
         df_res.loc[column_index, column_to_modify] = func
@@ -912,7 +951,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
     """
     df_reservoir = df_reservoir.copy(deep=True)
     completion_diameters = []
-    for md_reservoir in df_reservoir[Headers.MD]:
+    for md_reservoir in df_reservoir[Headers.MEASURED_DEPTH]:
         for start_completion, outer_inner_diameter_completion, end_completion in zip(
             df_completion[Headers.START_MEASURED_DEPTH],
             df_completion[Headers.OUTER_DIAMETER],
@@ -921,7 +960,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
             if start_completion <= md_reservoir <= end_completion:
                 completion_diameters.append(outer_inner_diameter_completion)
                 break
-    df_reservoir[Headers.DIAMETER] = completion_diameters
+    df_reservoir[Headers.WELL_BORE_DIAMETER] = completion_diameters
     return df_reservoir
 
 
@@ -954,15 +993,19 @@ def prepare_compdat(
     compdat[Headers.K] = df_reservoir[Headers.K].to_numpy()
     compdat[Headers.K2] = df_reservoir[Headers.K2].to_numpy()
     compdat[Headers.FLAG] = df_reservoir[Headers.STATUS].to_numpy()
-    compdat[Headers.SAT] = df_reservoir[Headers.SATURATION_FUNCTION_REGION_NUMBERS].to_numpy()
+    compdat[Headers.SATURATION_FUNCTION_REGION_NUMBERS] = df_reservoir[
+        Headers.SATURATION_FUNCTION_REGION_NUMBERS
+    ].to_numpy()
     compdat[Headers.CONNECTION_FACTOR] = df_reservoir[Headers.CONNECTION_FACTOR].to_numpy()
-    compdat[Headers.DIAMETER] = fix_well_id(df_reservoir, df_completion_table)[Headers.DIAMETER].to_numpy()
-    compdat[Headers.FORAMTION_PERMEABILITY_THICKNESS] = df_reservoir[
-        Headers.FORAMTION_PERMEABILITY_THICKNESS
+    compdat[Headers.WELL_BORE_DIAMETER] = fix_well_id(df_reservoir, df_completion_table)[
+        Headers.WELL_BORE_DIAMETER
+    ].to_numpy()
+    compdat[Headers.FORMATION_PERMEABILITY_THICKNESS] = df_reservoir[
+        Headers.FORMATION_PERMEABILITY_THICKNESS
     ].to_numpy()
     compdat[Headers.SKIN] = df_reservoir[Headers.SKIN].to_numpy()
-    compdat[Headers.DFACT] = df_reservoir[Headers.DFACT].to_numpy()
-    compdat[Headers.DIRECTION] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
+    compdat[Headers.D_FACTOR] = df_reservoir[Headers.D_FACTOR].to_numpy()
+    compdat[Headers.COMPDAT_DIRECTION] = df_reservoir[Headers.COMPDAT_DIRECTION].to_numpy()
     compdat[Headers.RO] = df_reservoir[Headers.RO].to_numpy()
     # remove default columns
     compdat = trim_pandas(compdat)
@@ -988,18 +1031,22 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
-        left=df_device, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+        left=df_device,
+        right=df_well,
+        left_on=[Headers.MEASURED_DEPTH],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
     )
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "AICD"]
     wsegaicd = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegaicd[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegaicd[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
-        wsegaicd[Headers.SEG2] = df_merge[Headers.SEG].to_numpy()
-        wsegaicd[Headers.ALPHA] = df_merge[Headers.ALPHA].to_numpy()
-        wsegaicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
-        wsegaicd[Headers.RHO] = df_merge[Headers.RHOCAL_AICD].to_numpy()
-        wsegaicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_AICD].to_numpy()
+        wsegaicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegaicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegaicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
+        wsegaicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
+        wsegaicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.AICD_CALIBRATION_FLUID_DENSITY].to_numpy()
+        wsegaicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.AICD_FLUID_VISCOSITY].to_numpy()
         wsegaicd[Headers.DEF] = ["5*"] * df_merge.shape[0]
         wsegaicd[Headers.X] = df_merge[Headers.X].to_numpy()
         wsegaicd[Headers.Y] = df_merge[Headers.Y].to_numpy()
@@ -1031,18 +1078,22 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
-        left=df_device, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+        left=df_device,
+        right=df_well,
+        left_on=[Headers.MEASURED_DEPTH],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
     )
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICD"]
     wsegsicd = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegsicd[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegsicd[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
-        wsegsicd[Headers.SEG2] = df_merge[Headers.SEG].to_numpy()
-        wsegsicd[Headers.ALPHA] = df_merge[Headers.STRENGTH].to_numpy()
-        wsegsicd[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
-        wsegsicd[Headers.RHO] = df_merge[Headers.RHOCAL_ICD].to_numpy()
-        wsegsicd[Headers.VISCOSITY] = df_merge[Headers.VISCAL_ICD].to_numpy()
+        wsegsicd[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegsicd[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegsicd[Headers.STRENGTH] = df_merge[Headers.STRENGTH].to_numpy()
+        wsegsicd[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
+        wsegsicd[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.CALIBRATION_FLUID_DENSITY].to_numpy()
+        wsegsicd[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.CALIBRATION_FLUID_VISCOSITY].to_numpy()
         wsegsicd[Headers.WATER_CUT] = df_merge[Headers.WATER_CUT].to_numpy()
         wsegsicd[Headers.EMPTY] = "/"
     return wsegsicd
@@ -1065,19 +1116,24 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
-        left=df_device, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+        left=df_device,
+        right=df_well,
+        left_on=[Headers.MEASURED_DEPTH],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
     )
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "VALVE"].reset_index(drop=True)
     wsegvalv = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegvalv[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegvalv[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
+        wsegvalv[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         # the Cv is already corrected by the scaling factor
-        wsegvalv[Headers.CV] = df_merge[Headers.CV].to_numpy()
-        wsegvalv[Headers.AC] = df_merge[Headers.AC].to_numpy()
-        wsegvalv[Headers.L] = "5*"
-        wsegvalv[Headers.AC_MAX] = df_merge[Headers.AC_MAX].to_numpy()
-        wsegvalv[Headers.AC_MAX] = wsegvalv[Headers.AC_MAX].fillna(df_merge[Headers.AC])
+        wsegvalv[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
+        wsegvalv[Headers.FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegvalv[Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP] = "5*"
+        wsegvalv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA].fillna(
+            df_merge[Headers.FLOW_CROSS_SECTIONAL_AREA]
+        )
         wsegvalv[Headers.EMPTY] = "/"
     return wsegvalv
 
@@ -1112,18 +1168,38 @@ def prepare_wsegicv(
     if df_well.empty:
         return df_well
     df_merge = pd.merge_asof(
-        left=df_device, right=df_well, left_on=Headers.MD, right_on=Headers.TUB_MD, direction="nearest"
+        left=df_device,
+        right=df_well,
+        left_on=Headers.MEASURED_DEPTH,
+        right_on=Headers.TUBING_MEASURED_DEPTH,
+        direction="nearest",
     )
     wsegicv = pd.DataFrame()
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICV"]
     if not df_merge.empty:
         wsegicv = df_merge.copy()
-        wsegicv = wsegicv[[Headers.SEG, Headers.CV, Headers.AC, Headers.AC_MAX]]
+        wsegicv = wsegicv[
+            [
+                Headers.START_SEGMENT_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            ]
+        ]
         wsegicv[Headers.WELL] = [well_name] * df_merge.shape[0]
         wsegicv[Headers.DEFAULTS] = "5*"
-        wsegicv[Headers.AC_MAX] = wsegicv[Headers.AC_MAX].fillna(df_merge[Headers.AC])
+        wsegicv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegicv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA].fillna(
+            df_merge[Headers.FLOW_CROSS_SECTIONAL_AREA]
+        )
         wsegicv = wsegicv.reindex(
-            columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX]
+            columns=[
+                Headers.WELL,
+                Headers.START_SEGMENT_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.DEFAULTS,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            ]
         )
         wsegicv[Headers.EMPTY] = "/"
         # create tubing icv table
@@ -1135,16 +1211,32 @@ def prepare_wsegicv(
             left=df_merge_tubing,
             right=df_tubing,
             left_on=Headers.START_MEASURED_DEPTH,
-            right_on=Headers.MD,
+            right_on=Headers.MEASURED_DEPTH,
             direction="nearest",
         )
         df_temp = df_merge_tubing.copy()
-        df_temp = df_temp[[Headers.SEG, Headers.CV, Headers.AC, Headers.AC_MAX]]
+        df_temp = df_temp[
+            [
+                Headers.START_SEGMENT_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            ]
+        ]
         df_temp[Headers.WELL] = [well_name] * df_merge_tubing.shape[0]
         df_temp[Headers.DEFAULTS] = "5*"
-        df_temp[Headers.AC_MAX] = df_temp[Headers.AC_MAX].fillna(math.pi * 0.5 * df_tubing[Headers.DIAMETER] ** 2)
+        df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = df_temp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA].fillna(
+            math.pi * 0.5 * df_tubing[Headers.WELL_BORE_DIAMETER] ** 2
+        )
         df_temp = df_temp.reindex(
-            columns=[Headers.WELL, Headers.SEG, Headers.CV, Headers.AC, Headers.DEFAULTS, Headers.AC_MAX]
+            columns=[
+                Headers.WELL,
+                Headers.START_SEGMENT_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.FLOW_CROSS_SECTIONAL_AREA,
+                Headers.DEFAULTS,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+            ]
         )
         df_temp[Headers.EMPTY] = "/"
         wsegicv = pd.concat([wsegicv, df_temp], axis=0).reset_index(drop=True)
@@ -1168,24 +1260,32 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
-        left=df_device, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+        left=df_device,
+        right=df_well,
+        left_on=[Headers.MEASURED_DEPTH],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
     )
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "DAR"]
     wsegdar = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegdar[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegdar[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
+        wsegdar[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         # the Cv is already corrected by the scaling factor
-        wsegdar[Headers.CV_DAR] = df_merge[Headers.CV_DAR].to_numpy()
-        wsegdar[Headers.AC_OIL] = df_merge[Headers.AC_OIL].to_numpy()
-        wsegdar[Headers.AC_GAS] = df_merge[Headers.AC_GAS].to_numpy()
-        wsegdar[Headers.AC_WATER] = df_merge[Headers.AC_WATER].to_numpy()
-        wsegdar[Headers.WHF_LCF_DAR] = df_merge[Headers.WHF_LCF_DAR].to_numpy()
-        wsegdar[Headers.WHF_HCF_DAR] = df_merge[Headers.WHF_HCF_DAR].to_numpy()
-        wsegdar[Headers.GHF_LCF_DAR] = df_merge[Headers.GHF_LCF_DAR].to_numpy()
-        wsegdar[Headers.GHF_HCF_DAR] = df_merge[Headers.GHF_HCF_DAR].to_numpy()
+        wsegdar[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
+        wsegdar[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdar[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdar[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdar[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF
+        ].to_numpy()
+        wsegdar[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF
+        ].to_numpy()
+        wsegdar[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].to_numpy()
+        wsegdar[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].to_numpy()
         wsegdar[Headers.DEFAULTS] = "5*"
-        wsegdar[Headers.AC_MAX] = wsegdar[Headers.AC_OIL].to_numpy()
+        wsegdar[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegdar[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
         wsegdar[Headers.EMPTY] = "/"
     return wsegdar
 
@@ -1207,18 +1307,22 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
-        left=df_device, right=df_well, left_on=[Headers.MD], right_on=[Headers.TUB_MD], direction="nearest"
+        left=df_device,
+        right=df_well,
+        left_on=[Headers.MEASURED_DEPTH],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
     )
     df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "AICV"]
     wsegaicv = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegaicv[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegaicv[Headers.SEG] = df_merge[Headers.SEG].to_numpy()
-        wsegaicv[Headers.SEG2] = df_merge[Headers.SEG].to_numpy()
+        wsegaicv[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegaicv[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         wsegaicv[Headers.ALPHA_MAIN] = df_merge[Headers.ALPHA_MAIN].to_numpy()
-        wsegaicv[Headers.SF] = df_merge[Headers.SCALING_FACTOR].to_numpy()
-        wsegaicv[Headers.RHO] = df_merge[Headers.RHOCAL_AICV].to_numpy()
-        wsegaicv[Headers.VISCOSITY] = df_merge[Headers.VISCAL_AICV].to_numpy()
+        wsegaicv[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
+        wsegaicv[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.AICV_CALIBRATION_FLUID_DENSITY].to_numpy()
+        wsegaicv[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.AICV_FLUID_VISCOSITY].to_numpy()
         wsegaicv[Headers.DEF] = ["5*"] * df_merge.shape[0]
         wsegaicv[Headers.X_MAIN] = df_merge[Headers.X_MAIN].to_numpy()
         wsegaicv[Headers.Y_MAIN] = df_merge[Headers.Y_MAIN].to_numpy()
@@ -1238,8 +1342,8 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         wsegaicv[Headers.D_PILOT] = df_merge[Headers.D_PILOT].to_numpy()
         wsegaicv[Headers.E_PILOT] = df_merge[Headers.E_PILOT].to_numpy()
         wsegaicv[Headers.F_PILOT] = df_merge[Headers.F_PILOT].to_numpy()
-        wsegaicv[Headers.WCT_AICV] = df_merge[Headers.WCT_AICV].to_numpy()
-        wsegaicv[Headers.GHF_AICV] = df_merge[Headers.GHF_AICV].to_numpy()
+        wsegaicv[Headers.AICV_WATER_CUT] = df_merge[Headers.AICV_WATER_CUT].to_numpy()
+        wsegaicv[Headers.AICV_GAS_HOLDUP_FRACTION] = df_merge[Headers.AICV_GAS_HOLDUP_FRACTION].to_numpy()
         wsegaicv[Headers.EMPTY] = "/"
     return wsegaicv
 
@@ -1258,17 +1362,45 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         CompletorError: If there are to many wells and/or segments with DAR.
     """
     header = [
-        [Headers.WELL, Headers.SEG, Headers.CV_DAR, Headers.AC_GAS, Headers.DEFAULTS, Headers.AC_MAX],
-        [Headers.WELL, Headers.SEG, Headers.CV_DAR, Headers.AC_WATER, Headers.DEFAULTS, Headers.AC_MAX],
-        [Headers.WELL, Headers.SEG, Headers.CV_DAR, Headers.AC_OIL, Headers.DEFAULTS, Headers.AC_MAX],
-        [Headers.WELL, Headers.SEG, Headers.CV_DAR, Headers.AC_OIL, Headers.DEFAULTS, Headers.AC_MAX],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     ]
     sign_water = ["<=", ">", "", "<"]
     sign_gas = [">", "<=", "<", ""]
     suvtrig = ["0", "0", "1", "2"]
     action = "UDQ\n"
     for idx in range(df_wsegdar.shape[0]):
-        segment_number = df_wsegdar[Headers.SEG].iloc[idx]
+        segment_number = df_wsegdar[Headers.START_SEGMENT_NUMBER].iloc[idx]
         well_name = df_wsegdar[Headers.WELL].iloc[idx]
         action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
     action += "/\n\n"
@@ -1279,19 +1411,19 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         header_string += "  " + itm
     action += header_string.rstrip() + "\n"
     for idx in range(df_wsegdar.shape[0]):
-        segment_number = df_wsegdar[Headers.SEG].iloc[idx]
-        print_df = df_wsegdar[df_wsegdar[Headers.SEG] == segment_number]
+        segment_number = df_wsegdar[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]
         print_df = dataframe_tostring(print_df, True, False, False) + "\n"
         action += print_df
     action += "/\n\n"
     for idx in range(df_wsegdar.shape[0]):
-        segment_number = df_wsegdar[Headers.SEG].iloc[idx]
+        segment_number = df_wsegdar[Headers.START_SEGMENT_NUMBER].iloc[idx]
         well_name = df_wsegdar[Headers.WELL].iloc[idx]
-        water_holdup_fraction_low_cutoff = df_wsegdar[Headers.WHF_LCF_DAR].iloc[idx]
-        water_holdup_fraction_high_cutoff = df_wsegdar[Headers.WHF_HCF_DAR].iloc[idx]
-        gas_holdup_fraction_low_cutoff = df_wsegdar[Headers.GHF_LCF_DAR].iloc[idx]
-        gas_holdup_fraction_high_cutoff = df_wsegdar[Headers.GHF_HCF_DAR].iloc[idx]
+        water_holdup_fraction_low_cutoff = df_wsegdar[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        water_holdup_fraction_high_cutoff = df_wsegdar[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
+        gas_holdup_fraction_low_cutoff = df_wsegdar[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        gas_holdup_fraction_high_cutoff = df_wsegdar[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
         for iaction in range(2):
             act_number = iaction + 1
             act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
@@ -1306,7 +1438,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
                 f"SUVTRIG '{well_name}' {segment_number} "
                 f"= {suvtrig[iaction]} /\n/\n\n"
             )
-            print_df = df_wsegdar[df_wsegdar[Headers.SEG] == segment_number]
+            print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]  # type: ignore
             header_string = Keywords.WSEGVALV + "\n--"
             for item in header[iaction]:
@@ -1332,7 +1464,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             f"SUVTRIG '{well_name}' {segment_number} "
             f"= {suvtrig[iaction]} /\n/\n\n"
         )
-        print_df = df_wsegdar[df_wsegdar[Headers.SEG] == segment_number]
+        print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WSEGVALV + "\n--"
         for item in header[iaction]:
@@ -1355,7 +1487,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             f"SUVTRIG '{well_name}' {segment_number} "
             f"= {suvtrig[iaction]} /\n/\n\n"
         )
-        print_df = df_wsegdar[df_wsegdar[Headers.SEG] == segment_number]
+        print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WSEGVALV + "\n--"
         for item in header[iaction]:
@@ -1384,12 +1516,12 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
     header = [
         [
             Headers.WELL,
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.ALPHA_MAIN,
-            Headers.SF,
-            Headers.RHO,
-            Headers.VISCOSITY,
+            Headers.SCALE_FACTOR,
+            Headers.CALIBRATION_FLUID_DENSITY,
+            Headers.CALIBRATION_FLUID_VISCOSITY,
             Headers.DEF,
             Headers.X_MAIN,
             Headers.Y_MAIN,
@@ -1404,12 +1536,12 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
         ],
         [
             Headers.WELL,
-            Headers.SEG,
-            Headers.SEG2,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.END_SEGMENT_NUMBER,
             Headers.ALPHA_PILOT,
-            Headers.SF,
-            Headers.RHO,
-            Headers.VISCOSITY,
+            Headers.SCALE_FACTOR,
+            Headers.CALIBRATION_FLUID_DENSITY,
+            Headers.CALIBRATION_FLUID_VISCOSITY,
             Headers.DEF,
             Headers.X_PILOT,
             Headers.Y_PILOT,
@@ -1425,12 +1557,12 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
     ]
     new_column = [
         Headers.WELL,
-        Headers.SEG,
-        Headers.SEG2,
-        Headers.ALPHA,
-        Headers.SF,
-        Headers.RHO,
-        Headers.VISCOSITY,
+        Headers.START_SEGMENT_NUMBER,
+        Headers.END_SEGMENT_NUMBER,
+        Headers.STRENGTH,
+        Headers.SCALE_FACTOR,
+        Headers.CALIBRATION_FLUID_DENSITY,
+        Headers.CALIBRATION_FLUID_VISCOSITY,
         Headers.DEF,
         Headers.X,
         Headers.Y,
@@ -1448,10 +1580,10 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
     operator = ["AND", "OR"]
     action = ""
     for idx in range(df_wsegaicv.shape[0]):
-        segment_number = df_wsegaicv[Headers.SEG].iloc[idx]
+        segment_number = df_wsegaicv[Headers.START_SEGMENT_NUMBER].iloc[idx]
         well_name = df_wsegaicv[Headers.WELL].iloc[idx]
-        wct = df_wsegaicv[Headers.WCT_AICV].iloc[idx]
-        ghf = df_wsegaicv[Headers.GHF_AICV].iloc[idx]
+        wct = df_wsegaicv[Headers.AICV_WATER_CUT].iloc[idx]
+        ghf = df_wsegaicv[Headers.AICV_GAS_HOLDUP_FRACTION].iloc[idx]
         # LOWWCT_LOWGHF
         for iaction in range(2):
             act_number = iaction + 1
@@ -1465,7 +1597,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
                 f"SGHF '{well_name}' {segment_number} {sign_gas[iaction]} {ghf} /\n/\n"
             )
 
-            print_df = df_wsegaicv[df_wsegaicv[Headers.SEG] == segment_number]
+            print_df = df_wsegaicv[df_wsegaicv[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]
             print_df.columns = new_column
             print_df = Keywords.WSEGAICD + "\n" + dataframe_tostring(print_df, True)

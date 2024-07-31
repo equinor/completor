@@ -192,7 +192,8 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
 def complete_wsegvalv_record(record: list[str]) -> list[str]:
     """Complete the WSEGVALV record.
 
-    Columns DEFAULT_1 - DEFAULT_4, STATE and AC_MAX might not be provided and need to be filled in with default values.
+    Columns PIPE_DIAMETER, ABSOLUTE_PIPE_ROUGHNESS, PIPE_CROSS_SECTION_AREA, FLAG, and MAX_FLOW_CROSS_SECTIONAL_AREA
+    might not be provided and need to be filled in with default values.
 
     Args:
         record: List of strings.
@@ -200,9 +201,9 @@ def complete_wsegvalv_record(record: list[str]) -> list[str]:
     Returns:
         Completed list of strings.
     """
-    WSEGVALV_COLUMNS = 10
-    AC_INDEX = 3
-    DEFAULT_STATE = "OPEN"
+    wsegvalv_columns = 10
+    ac_index = 3
+    default_state = "OPEN"
 
     if len(record) < 8:
         # add defaults
@@ -210,14 +211,14 @@ def complete_wsegvalv_record(record: list[str]) -> list[str]:
 
     if len(record) < 9:
         # append default state
-        record.append(DEFAULT_STATE)
+        record.append(default_state)
 
-    if len(record) < WSEGVALV_COLUMNS:
+    if len(record) < wsegvalv_columns:
         # append default ac_max
-        record.append(record[AC_INDEX])
+        record.append(record[ac_index])
 
-    if len(record) > WSEGVALV_COLUMNS:
-        record = record[:WSEGVALV_COLUMNS]
+    if len(record) > wsegvalv_columns:
+        record = record[:wsegvalv_columns]
 
     return record
 
@@ -244,7 +245,7 @@ def read_schedule_keywords(
     content = deepcopy(content)
     used_index = np.asarray([-1])
     collections = []
-    # get the contents correspond to the list_keywords
+    # get the contents that correspond with the list_keywords
     for keyword in keywords + optional_keywords:
         start_index, end_index = locate_keyword(content, keyword, take_first=False)
         if start_index[0] == end_index[0] and keyword not in optional_keywords:
@@ -296,35 +297,35 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
     """
     header_columns = [
         Headers.WELL,
-        Headers.SEGMENTTVD,
-        Headers.SEGMENTMD,
-        Headers.WBVOLUME,
+        Headers.TRUE_VERTICAL_DEPTH,
+        Headers.MEASURED_DEPTH,
+        Headers.WELLBORE_VOLUME,
         Headers.INFO_TYPE,
-        Headers.PDROPCOMP,
-        Headers.MPMODEL,
-        Headers.ITEM_8,
-        Headers.ITEM_9,
-        Headers.ITEM_10,
-        Headers.ITEM_11,
-        Headers.ITEM_12,
+        Headers.PRESSURE_DROP_COMPLETION,
+        Headers.MULTIPHASE_FLOW_MODEL,
+        Headers.X_COORDINATE_TOP_SEGMENT,
+        Headers.Y_COORDINATE_TOP_SEGMENT,
+        Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+        Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+        Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
     ]
     content_columns = [
         Headers.WELL,
         Headers.TUBING_SEGMENT,
         Headers.TUBING_SEGMENT_2,
-        Headers.TUBINGBRANCH,
+        Headers.TUBING_BRANCH,
         Headers.TUBING_OUTLET,
-        Headers.TUBINGMD,
-        Headers.TUBINGTVD,
+        Headers.TUBING_MEASURED_DEPTH,
+        Headers.TRUE_VERTICAL_DEPTH,
         Headers.TUBING_INNER_DIAMETER,
         Headers.TUBING_ROUGHNESS,
-        Headers.CROSS,
-        Headers.VSEG,
-        Headers.ITEM_11,
-        Headers.ITEM_12,
-        Headers.ITEM_13,
-        Headers.ITEM_14,
-        Headers.ITEM_15,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
+        Headers.SEGMENT_VOLUME,
+        Headers.X_COORDINATE_LAST_SEGMENT,
+        Headers.Y_COORDINATE_LAST_SEGMENT,
+        Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+        Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+        Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
     ]
     for collection in collections:
         if collection.name == Keywords.WELSEGS:
@@ -376,14 +377,14 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
         Headers.DR,
         Headers.FLAG,
         Headers.SHUT,
-        Headers.CROSS,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
         Headers.PRESSURE_TABLE,
-        Headers.DENSCAL,
+        Headers.DENSITY_CALCULATION_TYPE,
         Headers.REGION,
-        Headers.ITEM_14,
-        Headers.ITEM_15,
-        Headers.ITEM_16,
-        Headers.ITEM_17,
+        Headers.RESERVED_HEADER_1,
+        Headers.RESERVED_HEADER_2,
+        Headers.WELL_MODEL_TYPE,
+        Headers.POLYMER_MIXING_TABLE_NUMBER,
     ]
     welspecs_table = None
     for collection in collections:
@@ -436,10 +437,10 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
             Headers.STATUS,
             Headers.SATURATION_FUNCTION_REGION_NUMBERS,
             Headers.CONNECTION_FACTOR,
-            Headers.DIAMETER,
-            Headers.FORAMTION_PERMEABILITY_THICKNESS,
+            Headers.WELL_BORE_DIAMETER,
+            Headers.FORMATION_PERMEABILITY_THICKNESS,
             Headers.SKIN,
-            Headers.DFACT,
+            Headers.D_FACTOR,
             Headers.COMPDAT_DIRECTION,
             Headers.RO,
         ],
@@ -489,8 +490,8 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
             Headers.END_MEASURED_DEPTH,
             Headers.COMPSEGS_DIRECTION,
             Headers.ENDGRID,
-            Headers.PERFDEPTH,
-            Headers.THERM,
+            Headers.PERFORATION_DEPTH,
+            Headers.THERMAL_CONTACT_LENGTH,
             Headers.SEGMENT,
         ],
     )
@@ -508,7 +509,18 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
     Returns:
         WSEGVALV table.
     """
-    columns = ["WELL", "SEGMENT", "CD", "AC", "DEFAULT_1", "DEFAULT_2", "DEFAULT_3", "DEFAULT_4", "STATE", "AC_MAX"]
+    columns = [
+        Headers.WELL,
+        Headers.SEGMENT,
+        Headers.FLOW_COEFFICIENT,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
+        Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+        Headers.PIPE_DIAMETER,
+        Headers.ABSOLUTE_PIPE_ROUGHNESS,
+        Headers.PIPE_CROSS_SECTION_AREA,
+        Headers.FLAG,
+        Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+    ]
 
     wsegvalv_collections = [np.asarray(collection) for collection in collections if collection.name == "WSEGVALV"]
     wsegvalv_table = np.vstack(wsegvalv_collections)
@@ -519,16 +531,16 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
     wsegvalv_table = pd.DataFrame(wsegvalv_table, columns=columns)
     wsegvalv_table = wsegvalv_table.astype(
         {
-            "WELL": "string",
-            "SEGMENT": "int",
-            "CD": "float",
-            "AC": "float",
-            "DEFAULT_1": "string",
-            "DEFAULT_2": "string",
-            "DEFAULT_3": "string",
-            "DEFAULT_4": "string",
-            "STATE": "string",
-            "AC_MAX": "float",
+            Headers.WELL: "string",
+            Headers.SEGMENT: "int",
+            Headers.FLOW_COEFFICIENT: "float",
+            Headers.FLOW_CROSS_SECTIONAL_AREA: "float",
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP: "string",
+            Headers.PIPE_DIAMETER: "string",
+            Headers.ABSOLUTE_PIPE_ROUGHNESS: "string",
+            Headers.PIPE_CROSS_SECTION_AREA: "string",
+            Headers.FLAG: "string",
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "float",
         }
     )
     return remove_string_characters(wsegvalv_table)

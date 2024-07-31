@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.3](https://github.com/equinor/completor/compare/v0.1.2...v0.1.3) (2024-07-04)
+
+
+### 🧹 Chores
+
+* Bump ws from 7.5.9 to 7.5.10 in /documentation in the npm_and_yarn group across 1 directory ([#104](https://github.com/equinor/completor/issues/104)) ([2e3e82a](https://github.com/equinor/completor/commit/2e3e82a1a39d941931697956edd15f5ef6111c0d))
+* Downgrade pandas ([#118](https://github.com/equinor/completor/issues/118)) ([a8a7c2e](https://github.com/equinor/completor/commit/a8a7c2ed036c1a7553a9553986fb250947f907ea))
+* **main:** release 0.1.3 ([3564fe7](https://github.com/equinor/completor/commit/3564fe737d6f3643ed7ed539de23d7437fd3d699))
+* **main:** Release 0.1.3 ([#124](https://github.com/equinor/completor/issues/124)) ([3564fe7](https://github.com/equinor/completor/commit/3564fe737d6f3643ed7ed539de23d7437fd3d699))
+* Release 0.1.3 ([#123](https://github.com/equinor/completor/issues/123)) ([b97787e](https://github.com/equinor/completor/commit/b97787e074f43148f098ee10cca8709e1d12d5d7))
+
+## [0.1.3](https://github.com/equinor/completor/compare/v0.1.2...v0.1.3) (2024-07-03)
+
+
+### Miscellaneous Chores
+
+* Release 0.1.3 ([#123](https://github.com/equinor/completor/issues/123)) ([b97787e](https://github.com/equinor/completor/commit/b97787e074f43148f098ee10cca8709e1d12d5d7))
+
 ## [0.1.2](https://github.com/equinor/completor/compare/v0.1.1...v0.1.2) (2024-06-18)
 
 

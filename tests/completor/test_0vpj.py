@@ -706,7 +706,6 @@ def test_oa_oneliner(tmpdir):
     Include 0 - x and y - 99999.
     """
     tmpdir.chdir()
-    print(tmpdir)
     case_file = CASE_OA_ONELINER
     true_file = Path(_TESTDIR / "oa_user_oneliner.true")
     utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)

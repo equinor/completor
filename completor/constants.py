@@ -9,60 +9,82 @@ from enum import Enum, auto
 class Headers:
     """Headers for DataFrames."""
 
-    WATER_CUT = "WCT"
-    OPEN = "OPEN"
-    RHO = "RHO"
-    VISCOSITY = "VIS"
-    DEVICE = "DEVICE"
-    SF = "SF"  # Saturation functions?
-    THERM = "THERM"
-    PERFDEPTH = "PERFDEPTH"  # Perforation depth?
-    ENDGRID = "ENDGRID"
-    VSEG = "VSEG"  # Vertical Segments?
-    TUBING_INNER_DIAMETER = "TUBINGID"
-    MPMODEL = "MPMODEL"
-    PDROPCOMP = "PDROPCOMP"  # Pressure drop completion?
-    WBVOLUME = "WBVOLUME"  # Well bore volume?
-    ITEM_8 = "ITEM8"
-    ITEM_9 = "ITEM9"
-    ITEM_10 = "ITEM10"
-    ITEM_11 = "ITEM11"
-    ITEM_12 = "ITEM12"
-    ITEM_13 = "ITEM13"
-    ITEM_14 = "ITEM14"
-    ITEM_15 = "ITEM15"
-    ITEM_16 = "ITEM16"
-    ITEM_17 = "ITEM17"
-    REGION = "REGION"
-    DENSCAL = "DENSCAL"  # Calculated density / Density calculated?
-    PRESSURE_TABLE = "PRESSURETABLE"
-    CROSS = "CROSS"
-    SHUT = "SHUT"
-    DR = "DR"
-    PHASE = "PHASE"
-    BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
-    GROUP = "GROUP"
-    MARKER = "MARKER"
-    SCALING_FACTOR = "SCALINGFACTOR"
-    LENGTH = "LENGTH"
-    ADDITIONAL_SEGMENT = "AdditionalSegment"
-    ORIGINAL_SEGMENT = "OriginalSegment"
-    TUBING_SEGMENT_2 = "TUBINGSEGMENT2"
-    INFO_TYPE = "INFOTYPE"
+    # Well Segments Record 1 (WELSEGS)
+    WELL = "WELL"
+    TRUE_VERTICAL_DEPTH = "TRUE_VERTICAL_DEPTH"
+    # MEASURED_DEPTH = "SEGMENTMD"
+    WELLBORE_VOLUME = "WBVOLUME"  # Effective wellbore volume of the top segment.
+    # This quantity is used to calculate wellbore storage effects in the top segment.
+    INFO_TYPE = "INFOTYPE"  # Either 'INC' for incremental values (not supported in completor) or 'ABS' absolute values.
+    PRESSURE_DROP_COMPLETION = "PDROPCOMP"  # Components of the pressure drop to be included in the calculation for
+    # each of the well’s segments, defaults to 'HFA' Hydrostatic + friction + acceleration.
+    MULTIPHASE_FLOW_MODEL = "MPMODEL"
+    # How to handle these, they are just placeholders for real things, but are entirely unused?
+    X_COORDINATE_TOP_SEGMENT = (
+        "DEFAULT_1"  # X coordinate of the top nodal point, relative to the grid origin. Default 0.0.
+    )
+    Y_COORDINATE_TOP_SEGMENT = (
+        "DEFAULT_2"  # Y coordinate of the top nodal point, relative to the grid origin. Default 0.0.
+    )
+    THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA = "DEFAULT_3"  # Cross-sectional area of the pipe wall used in thermal
+    # conductivity calculation. Default 0.0.
+    VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL = "DEFAULT_4"  # Volumetric heat capacity of the pipe wall. Default 0.0.
+    THERMAL_CONDUCTIVITY_PIPE_WALL = "DEFAULT_5"  # Thermal conductivity of the pipe wall. Default 0.0.
+
+    # Well Segments Record 2 (WELSEGS)
+    TUBING_SEGMENT = "TUBINGSEGMENT"  # Segment number at the start of the range (nearest the top segment).
+    TUBING_SEGMENT_2 = "TUBINGSEGMENT2"  # Segment number at the far end of the range.
+    TUBING_BRANCH = "TUBINGBRANCH"  # Branch number.
     TUBING_OUTLET = "TUBINGOUTLET"
-    SAT = "SAT"  # Saturation?
-    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
-    DEF = "DEF"
-    DIRECTION = "DIR"
-    SEG = "SEG"  # Duplicate, ish
-    SEG2 = "SEG2"
-    OUT = "OUT"
-    COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"
-    LATERAL = "LATERAL"
-    NUMBER_OF_DEVICES = "NDEVICES"
+    TUBING_MEASURED_DEPTH = "TUBING_MEASURED_DEPTH"
+    # TUBING_TRUE_VERTICAL_DEPTH = "TUBINGTVD"
+    TUBING_INNER_DIAMETER = "TUBINGID"
+    TUBING_ROUGHNESS = "TUBINGROUGHNESS"
+    FLOW_CROSS_SECTIONAL_AREA = "CROSS"  # Cross-sectional area for fluid flow.
+    SEGMENT_VOLUME = "VSEG"
+    X_COORDINATE_LAST_SEGMENT = "DEFAULT_6"  # X coordinate of the last nodal point in the range.
+    Y_COORDINATE_LAST_SEGMENT = "DEFAULT_7"  # Y coordinate of the last nodal point in the range.
+
+    # Completion segments (COMPSEGS)
     I = "I"  # noqa: E741
     J = "J"
     K = "K"
+    BRANCH = "BRANCH"
+    START_MEASURED_DEPTH = "START_MEASURED_DEPTH"
+    END_MEASURED_DEPTH = "END_MEASURED_DEPTH"
+    COMPSEGS_DIRECTION = "COMPSEGS_DIRECTION"  # Direction of penetration through the grid block or the range.
+    # X or I for horizontal penetration in the x-direction, Y or J for horizontal penetration in the y-direction,
+    # Z or K for vertical penetration.
+    ENDGRID = "ENDGRID"
+    PERFORATION_DEPTH = "PERFDEPTH"  # Depth of the well connections within the range,
+    # that is the depth of the center of the perforations within each grid block in the range.
+    THERMAL_CONTACT_LENGTH = "THERM"  # Thermal contact length, that is, the length of the well in the completion cell.
+    SEGMENT = "SEGMENT"
+
+    # Well specifications (WELSPECS)
+    # WELL = "WELL"
+    GROUP = "GROUP"
+    # I = "I"  # noqa: E741
+    # J = "J"
+    BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
+    PHASE = "PHASE"
+    DR = "DR"
+    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
+    SHUT = "SHUT"
+    # CROSS = "CROSS"
+    PRESSURE_TABLE = "PRESSURETABLE"
+    DENSITY_CALCULATION_TYPE = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
+    REGION = "REGION"
+    RESERVED_HEADER_1 = "RESERVED_1"
+    RESERVED_HEADER_2 = "RESERVED_2"
+    WELL_MODEL_TYPE = "WELL_MODEL_TYPE"
+    POLYMER_MIXING_TABLE_NUMBER = "POLYMER_MIXING_TABLE_NUMBER"
+
+    # Completion Data (COMPDAT)
+    # WELL NAME
+    # I
+    # J
+    # K
     K2 = "K2"
     STATUS = "STATUS"
     SATURATION_FUNCTION_REGION_NUMBERS = "SATNUM"
@@ -70,34 +92,99 @@ class Headers:
     # the connection transmissibility factor is calculated using the remaining items of data in this record. See "The
     # connection transmissibility factor" in the ECLIPSE Technical Description for an account of the methods used in
     # Cartesian and radial geometries. The well bore diameter must be set in item 9.
-
-    DIAMETER = "DIAM"
-    FORAMTION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
+    WELL_BORE_DIAMETER = "DIAM"
+    FORMATION_PERMEABILITY_THICKNESS = "KH"  # The product of formation permeability, k, and producing formation
     # thickness, h, in a producing well, referred to as kh.
     SKIN = "SKIN"  # A dimensionless factor calculated to determine the production efficiency of a well by comparing
     # actual conditions with theoretical or ideal conditions. A positive skin value indicates some damage or
     # influences that are impairing well productivity. A negative skin value indicates enhanced productivity,
     # typically resulting from stimulation.
-    DFACT = "DFACT"
+    D_FACTOR = "DFACT"  # Non-darcy flow of free gas.
     COMPDAT_DIRECTION = "COMPDAT_DIRECTION"
-    RO = "RO"
+    RO = "RO"  # Pressure equivalent radius, R_o.
 
-    TUB_TVD = "TUB_TVD"  # Same as TUBINGTVD
-    TVD = "TVD"
-    TUBINGMD = "TUBINGMD"
-    TUBINGTVD = "TUBINGTVD"
-    SEGMENTTVD = "SEGMENTTVD"
-    SEGMENTMD = "SEGMENTMD"
-    SEGMENT_DESC = "SEGMENT_DESC"
-    SEGMENT = "SEGMENT"
-    VISCAL_ICD = "VISCAL_ICD"
-    RHOCAL_ICD = "RHOCAL_ICD"
+    # Inflow Control Device Well Segments (WSEGSICD) and Autonomous (WSEGAICD)
+    # Well name
+    DEVICE_NUMBER = "DEVICENUMBER"
+    START_SEGMENT_NUMBER = "START_SEGMENT_NUMBER"  # Duplicate, ish
+    END_SEGMENT_NUMBER = "END_SEGMENT_NUMBER"
     STRENGTH = "STRENGTH"
+    SCALE_FACTOR = "SCALE_FACTOR"
+    CALIBRATION_FLUID_DENSITY = "CALIBRATION_FLUID_DENSITY"
+    CALIBRATION_FLUID_VISCOSITY = "CALIBRATION_FLUID_VISCOSITY"
+    DEF = "DEF"  # The critical value of the local water in liquid fraction
+    # used to select between a water-in-oil or oil-in-water equation for the emulsion viscosity;
+    # this is described in Emulsion viscosity.
 
-    WCT_AICV = "WCT_AICV"
-    GHF_AICV = "GHF_AICV"
-    RHOCAL_AICV = "RHOCAL_AICV"
-    VISCAL_AICV = "VISCAL_AICV"
+    # This stops making sense from here on out?
+    X = "X"
+    Y = "Y"
+    # FLAG
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    F = "F"
+    EMPTY = ""
+
+    # Sub critical valve well segment (WSEGVALV)
+    # 1. WELL_NAME
+    # 2. START_SEGMENT_NUMBER
+    FLOW_COEFFICIENT = "FLOW_COEFFICIENT"  # The dimensionless flow coefficient for the valve, Cv.
+    # FLOW_CROSS_SECTIONAL_AREA # Cross-section area for flow in the constriction, Ac.
+    ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP = (
+        "ADDITIONAL_PIPE_LENGTH"  # Additional length of pipe for the friction pressure drop, L.
+    )
+    PIPE_DIAMETER = "PIPE_DIAMETER"  # The pipe diameter, D, for the frictional pressure drop calculation.
+    ABSOLUTE_PIPE_ROUGHNESS = "ABSOLUTE_PIPE_ROUGHNESS"  # The absolute roughness of the pipe wall.
+    PIPE_CROSS_SECTION_AREA = "PIPE_CROSS_SECTION_AREA"  # The pipe cross-section area, Ap.
+    # FLAG # Flag to indicate whether the device is open or shut.
+    MAX_FLOW_CROSS_SECTIONAL_AREA = (
+        "MAX_FLOW_CROSS_SECTIONAL_AREA"  # The maximum cross-sectional area for flow in the constriction, Amax.
+    )
+    # 11. The length of the valve, lVAL (Scale factor).
+    # 12. An integer which determines how the flow scaling factor is calculated.
+
+    # Density Activated Recovery Well Segments (WSEGDAR)
+    # DEVICE_NUMBER
+    # FLOW_COEFFICIENT / Cv
+    # FLOW_CROSS_SECTIONAL_AREA
+    OIL_FLOW_CROSS_SECTIONAL_AREA = "OIL_FLOW_CROSS_SECTIONAL_AREA"
+    GAS_FLOW_CROSS_SECTIONAL_AREA = "GAS_FLOW_CROSS_SECTIONAL_AREA"
+    WATER_FLOW_CROSS_SECTIONAL_AREA = "WATER_FLOW_CROSS_SECTIONAL_AREA"
+    WATER_HOLDUP_FRACTION_LOW_CUTOFF = "WATER_HOLDUP_FRACTION_LOW_CUTOFF"
+    WATER_HOLDUP_FRACTION_HIGH_CUTOFF = "WATER_HOLDUP_FRACTION_HIGH_CUTOFF"
+    GAS_HOLDUP_FRACTION_LOW_CUTOFF = "GAS_HOLDUP_FRACTION_LOW_CUTOFF"
+    GAS_HOLDUP_FRACTION_HIGH_CUTOFF = "GAS_HOLDUP_FRACTION_HIGH_CUTOFF"
+
+    # Miscellaneous
+    DEFAULTS = "DEFAULTS"
+    MEASURED_DEPTH = "MEASURED_DEPTH"
+    ANNULUS = "ANNULUS"
+    ANNULUS_ZONE = "ANNULUS_ZONE"
+    VALVES_PER_JOINT = "VALVES_PER_JOINT"
+    INNER_DIAMETER = "INNER_DIAMETER"
+    OUTER_DIAMETER = "OUTER_DIAMETER"
+    ROUGHNESS = "ROUGHNESS"
+    DEVICE_TYPE = "DEVICETYPE"
+    WATER_CUT = "WATER_CUT"
+    OPEN = "OPEN"
+    DEVICE = "DEVICE"
+    MARKER = "MARKER"
+    LENGTH = "LENGTH"
+    ADDITIONAL_SEGMENT = "AdditionalSegment"
+    ORIGINAL_SEGMENT = "OriginalSegment"
+    OUT = "OUT"
+    LATERAL = "LATERAL"
+    NUMBER_OF_DEVICES = "NUMBER_OF_DEVICES"
+    SEGMENT_DESC = "SEGMENT_DESC"
+    AICV_WATER_CUT = "AICV_WATER_CUT"
+    AICV_GAS_HOLDUP_FRACTION = "AICV_GAS_HOLDUP_FRACTION"
+    AICV_CALIBRATION_FLUID_DENSITY = "AICV_CALIBRATION_FLUID_DENSITY"
+    AICV_FLUID_VISCOSITY = "AICV_FLUID_VISCOSITY"
+    AICD_CALIBRATION_FLUID_DENSITY = "AICD_CALIBRATION_FLUID_DENSITY"
+    AICD_FLUID_VISCOSITY = "AICD_FLUID_VISCOSITY"
     ALPHA_MAIN = "ALPHA_MAIN"
     X_MAIN = "X_MAIN"
     Y_MAIN = "Y_MAIN"
@@ -116,67 +203,6 @@ class Headers:
     D_PILOT = "D_PILOT"
     E_PILOT = "E_PILOT"
     F_PILOT = "F_PILOT"
-
-    CV_DAR = "CV_DAR"
-    AC_OIL = "AC_OIL"
-    AC_GAS = "AC_GAS"
-    AC_WATER = "AC_WATER"
-    WHF_LCF_DAR = "WHF_LCF_DAR"
-    WHF_HCF_DAR = "WHF_HCF_DAR"
-    GHF_LCF_DAR = "GHF_LCF_DAR"
-    GHF_HCF_DAR = "GHF_HCF_DAR"
-
-    ALPHA = "ALPHA"
-    X = "X"
-    Y = "Y"
-    A = "A"
-    B = "B"
-    C = "C"
-    D = "D"
-    E = "E"
-    F = "F"
-    RHOCAL_AICD = "RHOCAL_AICD"
-    VISCAL_AICD = "VISCAL_AICD"
-
-    DEFAULTS = "DEFAULTS"
-    AC_MAX = "AC_MAX"
-
-    CV = "CV"
-    AC = "AC"
-    L = "L"
-
-    BRANCH = "BRANCH"
-
-    TUBINGBRANCH = "TUBINGBRANCH"
-    MD = "MD"
-
-    # from `test_completion.py`
-    TUB_MD = "TUB_MD"
-
-    # Completion
-    START_MEASURED_DEPTH = "STARTMD"
-    END_MEASURED_DEPTH = "ENDMD"
-    ANNULUS = "ANNULUS"
-    ANNULUS_ZONE = "ANNULUS_ZONE"
-    VALVES_PER_JOINT = "NVALVEPERJOINT"
-    INNER_DIAMETER = "INNER_DIAMETER"
-    OUTER_DIAMETER = "OUTER_DIAMETER"
-    ROUGHNESS = "ROUGHNESS"
-    DEVICE_TYPE = "DEVICETYPE"
-    DEVICE_NUMBER = "DEVICENUMBER"
-    WELL = "WELL"
-
-    # Well segments
-    TUBING_MD = "TUBINGMD"
-    TUBING_TVD = "TUBINGTVD"
-    SEGMENT_MD = "SEGMENTMD"
-    SEGMENT_TVD = "SEGMENTTVD"
-    TUBING_SEGMENT = "TUBINGSEGMENT"
-    TUBING_SEGMENT2 = "TUBINGSEGMENT2"
-    TUBING_BRANCH = "TUBINGBRANCH"
-    TUBING_ROUGHNESS = "TUBINGROUGHNESS"
-
-    EMPTY = ""
 
 
 @dataclass(frozen=True)
@@ -207,6 +233,13 @@ class _Keywords:
     WSEGICV = "WSEGICV"
     WSEGSICD = "WSEGSICD"
     WSEGDAR = "WSEGDAR"
+    LATERAL_TO_DEVICE = "LATERAL_TO_DEVICE"
+    JOINT_LENGTH = "JOINTLENGTH"
+    SEGMENT_LENGTH = "SEGMENTLENGTH"
+    USE_STRICT = "USE_STRICT"
+    GP_PERF_DEVICELAYER = "GP_PERF_DEVICELAYER"  # suggestion: GRAVEL_PACKED_PERFORATION_DEVICE_LAYER
+    MINIMUM_SEGMENT_LENGTH = "MINIMUM_SEGMENT_LENGTH"
+    MAPFILE = "MAPFILE"
 
     SCHFILE = "SCHFILE"
     OUTFILE = "OUTFILE"

@@ -18,7 +18,7 @@ with open(Path(_TESTDIR / "B-1.SCH"), encoding="utf-8") as file:
 A1_LUMPING_WITH_TOPBOTTOM = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
 A-1 1    0  2196 0.150 0.216 1.5E-5 GP   0 ICD  1
 A-1 1 2196  2500 0.150 0.216 1.5E-5 GP 0.5 ICD  1
@@ -50,7 +50,7 @@ USE_STRICT
 A1_LUMPING_WITHOUT_TOPBOTTOM = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
 A-1 1 2196  2500 0.150 0.216 1.5E-5 GP 0.5 ICD  1
 A-1 1 2500  2600 0.150 0.216 1.5E-5 GP   1 ICD  1
@@ -79,7 +79,7 @@ USE_STRICT
 A1_CELLS_WITH_TOPBOTTOM = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
 A-1 1    0  2196 0.150 0.216 1.5E-5 GP   0 ICD  1
 A-1 1 2196  2500 0.150 0.216 1.5E-5 GP 0.5 ICD  1
@@ -111,7 +111,7 @@ USE_STRICT
 B1_LUMPING_WITH_TOPBOTTOM = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
 B-1 1    0  3573 0.150 0.216 1.5E-5 GP    0 VALVE 1
 B-1 1 3573  3672 0.150 0.216 1.5E-5 GP 0.50 VALVE 1
@@ -141,7 +141,7 @@ B-1 3 5115 99999 0.150 0.216 1.5E-5 GP    0 VALVE 1
 /
 
 WSEGVALV
--- Device no    Cv     Ac           L
+-- Device no    Cv     Ac           ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
 1    0.85    1.00e-5      5*
 2    0.85    2.00e-5      5*
 3    0.85    3.00e-5      5*
@@ -160,7 +160,7 @@ USE_STRICT
 B1_LUMPING_WITHOUT_TOPBOTTOM = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
 B-1 1 3573  3672 0.150 0.216 1.5E-5 GP 0.50 VALVE 1
 -- No grid blocks to be assigned to this completion interval (0 VPJ)
@@ -185,7 +185,7 @@ B-1 3 4922  5115 0.150 0.216 1.5E-5 GP 0.67 VALVE 1
 /
 
 WSEGVALV
--- Device no    Cv     Ac   L
+-- Device no    Cv     Ac   ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
 1    0.85    1.00e-5      5*
 2    0.85    2.00e-5      5*
 3    0.85    3.00e-5      5*

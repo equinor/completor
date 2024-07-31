@@ -1,8 +1,6 @@
 name: Publish Python 🐍 distributions 📦 to PyPI
 
 on:
-  release: # Trigger when a new release is made.
-    types: [published]
   push:
     tags: [ "v*" ]
 
