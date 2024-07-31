@@ -8,8 +8,8 @@ from datetime import datetime
 import matplotlib  # type: ignore
 
 import completor
+from completor import completion
 from completor import prepare_outputs as po
-from completor.import WellSchedule
 from completor.constants import Headers, Keywords
 from completor.create_wells import CreateWells
 from completor.logger import logger
@@ -40,7 +40,7 @@ class CreateOutput:
     def __init__(
         self,
         case: ReadCasefile,
-        schedule: WellSchedule,
+        schedule: completion.WellSchedule,
         wells: CreateWells,
         well_name: str,
         well_number: int,
