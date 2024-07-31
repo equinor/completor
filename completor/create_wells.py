@@ -65,7 +65,9 @@ class CreateWells:
         active_laterals = _get_active_laterals(well_name, self.case.completion_table)
         for lateral in active_laterals:
             self.df_completion = self.case.get_completion(well_name, lateral)
-            self.df_welsegs_header, self.df_welsegs_content = schedule.get_well_segments(well_name, lateral)
+            self.df_welsegs_header, self.df_welsegs_content = completion.get_well_segments(
+                schedule.msws, well_name, lateral
+            )
 
             self.df_reservoir = _select_well(well_name, schedule, lateral)
 
@@ -195,8 +197,8 @@ def _select_well(well_name: str, schedule: completion.WellSchedule, lateral: int
     Returns:
         Filtered reservoir data.
     """
-    df_compsegs = schedule.get_compsegs(well_name, lateral)
-    df_compdat = schedule.get_compdat(well_name)
+    df_compsegs = completion.get_completion_segments(schedule.msws, well_name, lateral)
+    df_compdat = completion.get_completion_data(schedule.msws, well_name)
     df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
     # Remove WELL column in the df_reservoir.

@@ -9,10 +9,10 @@ import time
 from collections.abc import Mapping
 
 import numpy as np
-import tqdm
+from tqdm import tqdm
 
 import completor
-from completor import create_wells, parse
+from completor import completion, create_wells, parse
 from completor.completion import WellSchedule
 from completor.constants import Keywords
 from completor.create_output import CreateOutput
@@ -192,7 +192,7 @@ def create(
     line_number = 0
     prev_line_number = 0
     try:
-        with tqdm.tqdm(total=len(lines)) as progress_bar:
+        with tqdm(total=len(lines)) as progress_bar:
             while line_number < len(lines):
                 progress_bar.update(line_number - prev_line_number)
                 prev_line_number = line_number
@@ -209,7 +209,7 @@ def create(
 
                 if keyword == Keywords.WELSPECS:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.set_welspecs(chunk)
+                    schedule.msws = completion.set_welspecs(schedule.msws, chunk)
                     raw = lines[line_number:after_content_line_number]
                     output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
                     line_number = after_content_line_number + 1
@@ -217,9 +217,11 @@ def create(
 
                 elif keyword == Keywords.COMPDAT:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    remains = schedule.handle_compdat(chunk)
-                    if remains:
-                        output_text += format_text(keyword, remains, end_of_record=True)  # Write non-active wells.
+                    untouched_wells = [rec for rec in chunk if rec[0] not in list(schedule.active_wells)]
+                    schedule.msws = completion.handle_compdat(schedule.msws, set(schedule.active_wells), chunk)
+                    if untouched_wells:
+                        # Write untouched wells back as-is.
+                        output_text += format_text(keyword, untouched_wells, end_of_record=True)
                     line_number = after_content_line_number + 1
                     continue
 
@@ -229,7 +231,7 @@ def create(
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.set_welsegs(chunk)  # update with new data
+                    schedule.msws = completion.set_welsegs(schedule.msws, schedule.active_wells, chunk)
                     line_number = after_content_line_number + 1
                     continue
 
@@ -239,7 +241,12 @@ def create(
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.set_compsegs(chunk)
+
+                    try:
+                        schedule.msws = completion.set_compsegs(schedule.msws, schedule.active_wells, chunk)
+                    except ValueError:
+                        pass
+
                     line_number = after_content_line_number + 1
 
                     case.check_input(well_name, schedule)
@@ -251,7 +258,7 @@ def create(
                         write_welsegs = False
                     logger.debug("Writing new MSW info for well %s", well_name)
                     wells.update(well_name, schedule)
-                    well_number = schedule.get_well_number(well_name)
+                    well_number = completion.get_well_number(well_name, active_wells)
                     output = CreateOutput(
                         case, schedule, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
                     )
