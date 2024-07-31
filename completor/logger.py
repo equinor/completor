@@ -52,7 +52,7 @@ def handle_error_messages(func):
     * The content of any files passed.
       For the main method of Completor, these are (if provided).
       * input_file.txt - The case file.
-      * schedule_file.txt  - The schedule file.
+      * schedule_file.txt - The schedule file.
       * new_file.txt - The output file.
     """
 
