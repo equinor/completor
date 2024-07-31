@@ -7,6 +7,7 @@ from datetime import datetime
 
 import matplotlib  # type: ignore
 
+import completor
 from completor import prepare_outputs as po
 from completor.completion import WellSchedule
 from completor.constants import Headers, Keywords
@@ -29,10 +30,10 @@ class CreateOutput:
         schedule: ReadSchedule object.
         wells: CreateWells object.
         well_name: Well name.
-        iwell: Well number used in creating WSEGAICV and WSEGDAR output.
-        version: Completor version information.
+        well_number: Well number used in creating WSEGAICV and WSEGDAR output.
         show_figure: Flag for pdf export of well completion schematic.
         figure_no: Figure number.
+
         write_welsegs: Flag to write WELSEGS.
     """
 
@@ -42,8 +43,7 @@ class CreateOutput:
         schedule: WellSchedule,
         wells: CreateWells,
         well_name: str,
-        iwell: int,
-        completor_version: str,
+        well_number: int,
         show_figure: bool = False,
         figure_name: matplotlib.backends.backend_pdf.PdfPages | None = None,  # type: ignore
         write_welsegs: bool = True,
@@ -55,7 +55,6 @@ class CreateOutput:
             case: ReadCasefile object.
             schedule: ReadSchedule object.
             wells: CreateWells object.
-            completor_version: Completor version information.
             figure_no: Must be set if show_figure.
             show_figure: True if the user wants to create well diagram file.
         """
@@ -70,8 +69,7 @@ class CreateOutput:
             self.schedule_path = None
         self.wells = wells
         self.well_name = well_name
-        self.iwell = iwell
-        self.version = completor_version
+        self.well_number = well_number
         self.write_welsegs = write_welsegs
         self.show_figure = show_figure
 
@@ -221,8 +219,7 @@ class CreateOutput:
 
     def make_completor_header(self) -> str:
         """Print header note."""
-        header = f"{'-' * 100}\n"
-        header += f"-- Output from completor {self.version}\n"
+        header = f"{'-' * 100}\n-- Output from completor {completor.__version__}\n"
         try:
             header += f"-- Case file : {self.case_path}\n"
         except AttributeError:
@@ -363,12 +360,12 @@ class CreateOutput:
     def make_wsegdar(self) -> None:
         """Print WSEGDAR to file."""
         if self.df_wsegdar.shape[0] > 0:
-            self.print_wsegdar += po.print_wsegdar(self.df_wsegdar, self.iwell + 1) + "\n"
+            self.print_wsegdar += po.print_wsegdar(self.df_wsegdar, self.well_number + 1) + "\n"
 
     def make_wsegaicv(self) -> None:
         """Print WSEGAICV to file."""
         if self.df_wsegaicv.shape[0] > 0:
-            self.print_wsegaicv += po.print_wsegaicv(self.df_wsegaicv, self.iwell + 1) + "\n"
+            self.print_wsegaicv += po.print_wsegaicv(self.df_wsegaicv, self.well_number + 1) + "\n"
 
     def fix_printing(self) -> None:
         """Avoid printing non-existing keywords."""
