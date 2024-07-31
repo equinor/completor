@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from argparse import Namespace
 from pathlib import Path
 
@@ -22,6 +23,7 @@ def open_files_run_create(
 
     Then run main.py's create function with the data.
     """
+    os.environ["TQDM_DISABLE"] = "1"
     if isinstance(case, Path):
         with open(case, encoding="utf-8") as file:
             case = file.read()
@@ -111,11 +113,7 @@ class ReadSchedule:
         compsegs (pd.DataFrame): Table of COMPSEGS keyword.
     """
 
-    def __init__(
-        self,
-        schedule_file: str,
-        optional_keywords: list[str] = ["WSEGVALV"],
-    ):
+    def __init__(self, schedule_file: str, optional_keywords: list[str] | None = None):
         """Initialize the class.
 
         Args:
@@ -127,6 +125,8 @@ class ReadSchedule:
 
         # get contents of the listed keywords
         # and the content of the not listed keywords
+        if optional_keywords is None:
+            optional_keywords = ["WSEGVALV"]
         self.collections, self.unused_keywords = parse.read_schedule_keywords(
             self.content, Keywords.main_keywords, optional_keywords
         )

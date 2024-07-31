@@ -575,7 +575,6 @@ class ReadCasefile:
         """
         msw = schedule.msws[well_name]
         compl = self.completion_table[self.completion_table.WELL == well_name]
-
         # check that all branches are defined in case-file
         branch_nos = set(msw[Keywords.COMPSEGS].BRANCH).difference(set(compl.BRANCH))
         if len(branch_nos):
