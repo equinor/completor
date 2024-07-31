@@ -8,9 +8,8 @@ from datetime import datetime
 import matplotlib  # type: ignore
 
 import completor
-from completor import completion
 from completor import prepare_outputs as po
-from completor.completion import WellSchedule
+from completor.import WellSchedule
 from completor.constants import Headers, Keywords
 from completor.create_wells import CreateWells
 from completor.logger import logger
