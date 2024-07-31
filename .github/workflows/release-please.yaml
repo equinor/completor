@@ -3,13 +3,17 @@ name: 🔖 Release please
 on:
   workflow_dispatch: # Enable manual triggers.
   workflow_call: # Enables workflow to be called from another workflow.
+    secrets:
+      RELEASE_PLEASE_TOKEN:
+        description: A PAT for the release-please action. Requires 'RW' for 'Pull requests' and 'Contents'.
+        required: true
     outputs:
       release_created:
         description: "If true, a release PR has been merged"
-        value: ${{ jobs.release-please.outputs.release_created }}
+        value: ${{ jobs.release_please.outputs.release_created }}
       tag_name:
         description: "The release tag. Ex v1.4.0"
-        value: ${{ jobs.release-please.outputs.tag_name }}
+        value: ${{ jobs.release_please.outputs.tag_name }}
 
 jobs:
   release_please:
@@ -18,8 +22,7 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          release-type: python
-          target-branch: main
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}

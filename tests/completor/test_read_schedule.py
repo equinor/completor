@@ -1,6 +1,5 @@
 """Test functions for the Completor read_schedule module."""
 
-from io import StringIO
 from pathlib import Path
 
 import numpy as np
@@ -19,24 +18,42 @@ with open(Path(_TESTDIR / "schedule.testfile"), encoding="utf-8") as file:
 
 def test_reading_welspecs():
     """Test the functions which read the WELSPECS keyword."""
-    true_welspecs = StringIO(
-        """
-WELL,GROUP,I,J,BHP_DEPTH,PHASE,DR,FLAG,SHUT,CROSS,PRESSURETABLE,DENSCAL,REGION,ITEM14,ITEM15,ITEM16,ITEM17
-'WELL1','GROUP1',13,75,1200,GAS,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL2','GROUP1',18,37,1200,GAS,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL3','GROUP1',23,40,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL4','GROUP1',18,32,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL5','GROUP1',16,47,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL6','GROUP1',20,91,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL7','GROUP2',12,75,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL8','GROUP2',16,73,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL9','GROUP2',17,102,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL10','GROUP2',20,31,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL11','GROUP2',12,44,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-'WELL12','GROUP2',9,41,1200,OIL,1*,1*,SHUT,1*,1*,1*,1*,1*,1*,1*,1*
-    """
+    data = [
+        ["WELL1", "GROUP1", 13, 75, 1200, "GAS", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL2", "GROUP1", 18, 37, 1200, "GAS", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL3", "GROUP1", 23, 40, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL4", "GROUP1", 18, 32, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL5", "GROUP1", 16, 47, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL6", "GROUP1", 20, 91, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL7", "GROUP2", 12, 75, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL8", "GROUP2", 16, 73, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL9", "GROUP2", 17, 102, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL10", "GROUP2", 20, 31, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL11", "GROUP2", 12, 44, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ["WELL12", "GROUP2", 9, 41, 1200, "OIL", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
+    ]
+    df_true = pd.DataFrame(
+        data=data,
+        columns=[
+            Headers.WELL,
+            Headers.GROUP,
+            Headers.I,
+            Headers.J,
+            Headers.BHP_DEPTH,
+            Headers.PHASE,
+            Headers.DR,
+            Headers.FLAG,
+            Headers.SHUT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.PRESSURE_TABLE,
+            Headers.DENSITY_CALCULATION_TYPE,
+            Headers.REGION,
+            Headers.RESERVED_HEADER_1,
+            Headers.RESERVED_HEADER_2,
+            Headers.WELL_MODEL_TYPE,
+            Headers.POLYMER_MIXING_TABLE_NUMBER,
+        ],
     )
-    df_true = pd.read_csv(true_welspecs, sep=",")
     df_true = fr.remove_string_characters(df_true)
     df_true = df_true.astype(str)
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.welspecs)
@@ -77,7 +94,7 @@ def test_reading_compdat():
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
     df_true = fr.remove_string_characters(df_true)
     columns1 = [Headers.I, Headers.J, Headers.K, Headers.K2]
-    columns2 = [Headers.CONNECTION_FACTOR, Headers.FORAMTION_PERMEABILITY_THICKNESS, Headers.SKIN]
+    columns2 = [Headers.CONNECTION_FACTOR, Headers.FORMATION_PERMEABILITY_THICKNESS, Headers.SKIN]
     df_true[columns1] = df_true[columns1].astype(np.int64)
     df_true[columns2] = df_true[columns2].astype(np.float64)
     df_well10 = df_true[df_true[Headers.WELL] == "WELL10"]
@@ -106,24 +123,36 @@ def test_reading_welsegs():
     Both the first and the second record.
     Check WELL4 for the second record.
     """
-    true_welsegs1 = StringIO(
-        """
-WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10,ITEM11,ITEM12
-'WELL3',1328,1328,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL4',1316,1316,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL5',1326.8,1326.8,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL6',1350,1350,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL7',1342.49,1342.49,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL8',1340.6,1340.6,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL9',1336,1336,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL10',1331,1331,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL11',1325,1325,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-'WELL12',1335,1335,1*,ABS,HFA,1*,1*,1*,1*,1*,1*
-    """
+    true_welsegs1 = pd.DataFrame(
+        [
+            ["WELL3", 1328, 1328, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL4", 1316, 1316, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL5", 1326.8, 1326.8, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL6", 1350, 1350, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL7", 1342.49, 1342.49, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL8", 1340.6, 1340.6, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL9", 1336, 1336, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL10", 1331, 1331, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL11", 1325, 1325, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+            ["WELL12", 1335, 1335, "1*", "ABS", "HFA", "1*", "1*", "1*", "1*", "1*", "1*"],
+        ],
+        columns=[
+            Headers.WELL,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.MEASURED_DEPTH,
+            Headers.WELLBORE_VOLUME,
+            Headers.INFO_TYPE,
+            Headers.PRESSURE_DROP_COMPLETION,
+            Headers.MULTIPHASE_FLOW_MODEL,
+            Headers.X_COORDINATE_TOP_SEGMENT,
+            Headers.Y_COORDINATE_TOP_SEGMENT,
+            Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
+            Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
+            Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
+        ],
     )
-    true_welsegs1 = pd.read_csv(true_welsegs1, sep=",", dtype=object)
     true_welsegs1 = fr.remove_string_characters(true_welsegs1)
-    true_welsegs1 = true_welsegs1.astype({Headers.SEGMENTTVD: np.float64, Headers.SEGMENTMD: np.float64})
+    true_welsegs1 = true_welsegs1.astype({Headers.TRUE_VERTICAL_DEPTH: np.float64, Headers.MEASURED_DEPTH: np.float64})
     true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_well4 = pd.read_csv(true_well4, sep=",", dtype=object)
     true_well4 = fr.remove_string_characters(true_well4)
@@ -131,15 +160,15 @@ WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10
         {
             Headers.TUBING_SEGMENT: np.int64,
             Headers.TUBING_SEGMENT_2: np.int64,
-            Headers.TUBINGBRANCH: np.int64,
+            Headers.TUBING_BRANCH: np.int64,
             Headers.TUBING_OUTLET: np.int64,
-            Headers.TUBINGMD: np.float64,
-            Headers.TUBINGTVD: np.float64,
+            Headers.TUBING_MEASURED_DEPTH: np.float64,
+            Headers.TRUE_VERTICAL_DEPTH: np.float64,
             Headers.TUBING_ROUGHNESS: np.float64,
         }
     )
     true_welsegs1_well4 = true_welsegs1[true_welsegs1[Headers.WELL] == "WELL4"]
-    true_welsegs1_well4.reset_index(drop=True, inplace=True)
+    true_welsegs1_well4 = true_welsegs1_well4.reset_index(drop=True)
 
     # get the program reading
     well4_first, well4_second = _SCHEDULE.get_welsegs("WELL4", 1)
@@ -151,32 +180,42 @@ WELL,SEGMENTTVD,SEGMENTMD,WBVOLUME,INFOTYPE,PDROPCOMP,MPMODEL,ITEM8,ITEM9,ITEM10
 
 def test_reading_wsegvalv():
     """Test the functions which read the WSEGVALV keyword."""
-    true_wsegvalv = StringIO(
-        """
-WELL,SEGMENT,CD,AC,DEFAULT_1,DEFAULT_2,DEFAULT_3,DEFAULT_4,STATE,AC_MAX
-WELL1,0,0.830,1.0000E-03,1*,1*,1*,1*,OPEN,1.0000E-03
-WELL1,1,0.830,1.0000E-02,1*,1*,1*,1*,SHUT,2.0000E-02
-WELL2,5,1,5e-3,1*,1*,1*,1*,OPEN,6e-3
-WELL2,56,1,5e-4,1*,1*,1*,1*,OPEN,7e-4
-WELL3,12,0.830,1.2E-03,1*,1*,1*,1*,OPEN,1.2E-03
-WELL3,87,0.830,1.2E-03,1*,1*,1*,1*,OPEN,1.2E-03
-WELL3,145,0.830,6.0E-03,1*,1*,1*,1*,OPEN,6E-03
-        """
+    df_true = pd.DataFrame(
+        [
+            ["WELL1", 0, 0.830, 1.0000e-03, "1*", "1*", "1*", "1*", "OPEN", 1.0000e-03],
+            ["WELL1", 1, 0.830, 1.0000e-02, "1*", "1*", "1*", "1*", "SHUT", 2.0000e-02],
+            ["WELL2", 5, 1, 5e-3, "1*", "1*", "1*", "1*", "OPEN", 6e-3],
+            ["WELL2", 56, 1, 5e-4, "1*", "1*", "1*", "1*", "OPEN", 7e-4],
+            ["WELL3", 12, 0.830, 1.2e-03, "1*", "1*", "1*", "1*", "OPEN", 1.2e-03],
+            ["WELL3", 87, 0.830, 1.2e-03, "1*", "1*", "1*", "1*", "OPEN", 1.2e-03],
+            ["WELL3", 145, 0.830, 6.0e-03, "1*", "1*", "1*", "1*", "OPEN", 6e-03],
+        ],
+        columns=[
+            Headers.WELL,
+            Headers.SEGMENT,
+            Headers.FLOW_COEFFICIENT,
+            Headers.FLOW_CROSS_SECTIONAL_AREA,
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP,
+            Headers.PIPE_DIAMETER,
+            Headers.ABSOLUTE_PIPE_ROUGHNESS,
+            Headers.PIPE_CROSS_SECTION_AREA,
+            Headers.FLAG,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
     )
-    df_true = pd.read_csv(true_wsegvalv, sep=",")
     df_true = fr.remove_string_characters(df_true)
     df_true = df_true.astype(
         {
-            "WELL": "string",
-            "SEGMENT": "int",
-            "CD": "float",
-            "AC": "float",
-            "DEFAULT_1": "string",
-            "DEFAULT_2": "string",
-            "DEFAULT_3": "string",
-            "DEFAULT_4": "string",
-            "STATE": "string",
-            "AC_MAX": "float",
+            Headers.WELL: "string",
+            Headers.SEGMENT: "int",
+            Headers.FLOW_COEFFICIENT: "float",
+            Headers.FLOW_CROSS_SECTIONAL_AREA: "float",
+            Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP: "string",
+            Headers.PIPE_DIAMETER: "string",
+            Headers.ABSOLUTE_PIPE_ROUGHNESS: "string",
+            Headers.PIPE_CROSS_SECTION_AREA: "string",
+            Headers.FLAG: "string",
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "float",
         }
     )
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.wsegvalv)
@@ -224,7 +263,7 @@ def test_fix_welsegs():
     """
     df_header = pd.DataFrame(
         [[1000.0, 1500.0, "INC"]],
-        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFO_TYPE],
+        columns=[Headers.TRUE_VERTICAL_DEPTH, Headers.MEASURED_DEPTH, Headers.INFO_TYPE],
     )
     df_content = pd.DataFrame(
         [
@@ -233,12 +272,17 @@ def test_fix_welsegs():
             [4, 3, 30.0, 30.0],
             [5, 4, 40.0, 40.0],
         ],
-        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBINGTVD, Headers.TUBINGMD],
+        columns=[
+            Headers.TUBING_SEGMENT,
+            Headers.TUBING_OUTLET,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+        ],
     )
 
     df_header_true = pd.DataFrame(
         [[1000.0, 1500.0, "ABS"]],
-        columns=[Headers.SEGMENTTVD, Headers.SEGMENTMD, Headers.INFO_TYPE],
+        columns=[Headers.TRUE_VERTICAL_DEPTH, Headers.MEASURED_DEPTH, Headers.INFO_TYPE],
     )
     df_content_true = pd.DataFrame(
         [
@@ -247,7 +291,12 @@ def test_fix_welsegs():
             [4, 3, 1060.0, 1600.0],
             [5, 4, 1100.0, 1640.0],
         ],
-        columns=[Headers.TUBING_SEGMENT, Headers.TUBING_OUTLET, Headers.TUBING_TVD, Headers.TUBING_MD],
+        columns=[
+            Headers.TUBING_SEGMENT,
+            Headers.TUBING_OUTLET,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.TUBING_MEASURED_DEPTH,
+        ],
     )
 
     df_header, df_content = fix_welsegs(df_header, df_content)

@@ -14,3 +14,4 @@ jobs:
   release-please:
     name: Run release please
     uses: ./.github/workflows/release-please.yaml
+    secrets: inherit
