@@ -979,19 +979,20 @@ def test_skin():
             Headers.RO,
         ],
     )
-    well_schedule = wells2.WellSchedule(np.array(["A1"]))
-    well_schedule.msws = wells2.handle_compdat(well_schedule.msws, set(well_schedule.active_wells), compdat)
-    df_out = well_schedule.msws["A1"][Keywords.COMPDAT]
+    active_wells = np.array(["A1"])
+    msws = {}
+    msws = wells2.handle_compdat(msws, active_wells, compdat)
+    df_out = msws["A1"][Keywords.COMPDAT]
     pd.testing.assert_frame_equal(df_out, df_true)
 
 
 def test_set_welsegs_negative_length_segments(caplog):
     """Test that negative segments inside a branch give a warning."""
-    schedule = wells2.WellSchedule(np.array(["A1"]))
-
-    schedule.msws = wells2.set_welsegs(
-        schedule.msws,
-        schedule.active_wells,
+    active_wells = np.array(["A1"])
+    msws = {}
+    msws = wells2.set_welsegs(
+        msws,
+        active_wells,
         [
             ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],
             [2, 2, 1, 1, 2202.75139, 2005.28911, 0.15200, 0.0000100],

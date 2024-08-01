@@ -15,7 +15,6 @@ from completor.constants import Headers, Keywords
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
 from completor.utils import clean_file_lines
-from completor.wells2 import WellSchedule
 
 
 def _mapper(map_file: str) -> dict[str, str]:
@@ -555,7 +554,7 @@ class ReadCasefile:
         df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
-    def check_input(self, well_name: str, schedule: WellSchedule) -> None:
+    def check_input(self, well_name: str, msws: dict[str, dict[str, Any]]) -> None:
         """Ensure that the completion table (given in the case-file) is complete.
 
         If one branch is completed, all branches must be completed, unless not 'strict'.
@@ -573,7 +572,7 @@ class ReadCasefile:
         Raises:
             CompletorError: If strict is true and there are undefined branches.
         """
-        msw = schedule.msws[well_name]
+        msw = msws[well_name]
         compl = self.completion_table[self.completion_table.WELL == well_name]
         # check that all branches are defined in case-file
         branch_nos = set(msw[Keywords.COMPSEGS].BRANCH).difference(set(compl.BRANCH))

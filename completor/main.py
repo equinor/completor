@@ -7,6 +7,7 @@ import os
 import re
 import time
 from collections.abc import Mapping
+from typing import Any
 
 import numpy as np
 from tqdm import tqdm
@@ -149,10 +150,7 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
 
 def create(
     input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
-) -> (
-    tuple[ReadCasefile, wells2.WellSchedule, CreateWells, CreateOutput]
-    | tuple[ReadCasefile, wells2.WellSchedule, CreateWells]
-):
+) -> tuple[ReadCasefile, CreateWells, CreateOutput] | tuple[ReadCasefile, CreateWells]:
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
@@ -171,7 +169,7 @@ def create(
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     wells = CreateWells(case)
     active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    schedule = wells2.WellSchedule(active_wells)  # container for MSW-data
+    msws: dict[str, dict[str, Any]] = {}
 
     pdf_file = None
     if show_fig:
@@ -212,7 +210,7 @@ def create(
                 if keyword == Keywords.WELSPECS:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
 
-                    schedule.msws = wells2.set_welspecs(schedule.msws, chunk)
+                    msws = wells2.set_welspecs(msws, chunk)
                     raw = lines[line_number:after_content_line_number]
                     output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
                     line_number = after_content_line_number + 1
@@ -220,8 +218,8 @@ def create(
 
                 elif keyword == Keywords.COMPDAT:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    untouched_wells = [rec for rec in chunk if rec[0] not in list(schedule.active_wells)]
-                    schedule.msws = wells2.handle_compdat(schedule.msws, set(schedule.active_wells), chunk)
+                    untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
+                    msws = wells2.handle_compdat(msws, active_wells, chunk)
                     if untouched_wells:
                         # Write untouched wells back as-is.
                         output_text += format_text(keyword, untouched_wells, end_of_record=True)
@@ -229,30 +227,30 @@ def create(
                     continue
 
                 elif keyword == Keywords.WELSEGS:
-                    if well_name not in list(schedule.active_wells):
+                    if well_name not in list(active_wells):
                         output_text += format_text(keyword, "")
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule.msws = wells2.set_welsegs(schedule.msws, schedule.active_wells, chunk)
+                    msws = wells2.set_welsegs(msws, active_wells, chunk)
                     line_number = after_content_line_number + 1
                     continue
 
                 elif keyword == Keywords.COMPSEGS:
-                    if well_name not in list(schedule.active_wells):
+                    if well_name not in list(active_wells):
                         output_text += format_text(keyword, "")
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
 
                     try:
-                        schedule.msws = wells2.set_compsegs(schedule.msws, schedule.active_wells, chunk)
+                        msws = wells2.set_compsegs(msws, active_wells, chunk)
                     except ValueError:
                         pass
 
                     line_number = after_content_line_number + 1
 
-                    case.check_input(well_name, schedule)
+                    case.check_input(well_name, msws)
 
                     if well_name not in written_wells:
                         write_welsegs = True  # will only write WELSEGS once
@@ -260,10 +258,10 @@ def create(
                     else:
                         write_welsegs = False
                     logger.debug("Writing new MSW info for well %s", well_name)
-                    wells.update(well_name, schedule)
+                    wells.update(well_name, msws)
                     well_number = wells2.get_well_number(well_name, active_wells)
                     output = CreateOutput(
-                        case, schedule, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
+                        case, msws, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
                     )
                     output_text += format_text(None, output.finalprint)
                     continue
@@ -290,12 +288,12 @@ def create(
         raise err
 
     if output is None:
-        if len(schedule.active_wells) != 0:
+        if len(active_wells) != 0:
             raise ValueError(
                 "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
             )
-        return case, schedule, wells
-    return case, schedule, wells, output
+        return case, wells
+    return case, wells, output
 
 
 def main() -> None:

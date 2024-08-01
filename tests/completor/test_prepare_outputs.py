@@ -105,10 +105,11 @@ def test_outlet_segment_2():
 
 def test_prepare_tubing_layer():
     """Test that the function does not create duplicate tubing segments."""
-    schedule_obj = wells2.WellSchedule(["A1"])
-    schedule_obj.msws = wells2.set_welsegs(
-        schedule_obj.msws,
-        schedule_obj.active_wells,
+    active_wells = np.array(["A1"])
+    msws = {}
+    msws = wells2.set_welsegs(
+        msws,
+        active_wells,
         [
             ["A1", "2148.00", "3422", "1*", "ABS", "HFA", "HO"],
             ["2", "2", "1", "1", "3428.66288", "2247.36764", "0.1242", "0.0123"],
@@ -118,7 +119,7 @@ def test_prepare_tubing_layer():
         ],
     )
     df_test, _ = prepare_outputs.prepare_tubing_layer(
-        schedule=schedule_obj,
+        msws=msws,
         well_name="A1",
         lateral=1,
         df_well=pd.DataFrame(

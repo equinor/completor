@@ -40,7 +40,7 @@ class CreateOutput:
     def __init__(
         self,
         case: ReadCasefile,
-        schedule: wells2.WellSchedule,
+        msws: dict,
         wells: CreateWells,
         well_name: str,
         well_number: int,
@@ -59,7 +59,6 @@ class CreateOutput:
             show_figure: True if the user wants to create well diagram file.
         """
         self.case = case
-        self.schedule = schedule
         self.case_path: str | None
         self.schedule_path: str | None
         if paths:
@@ -101,7 +100,7 @@ class CreateOutput:
         self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
         # Start printing per well.
-        self.welsegs_header, _ = wells2.get_well_segments(schedule.msws, well_name, branch=1)
+        self.welsegs_header, _ = wells2.get_well_segments(msws, well_name, branch=1)
         self.check_welsegs1()
         self.print_welsegs = f"{Keywords.WELSEGS}\n{po.dataframe_tostring(self.welsegs_header, True)}\n"
         self.print_welsegsinit = self.print_welsegs
@@ -144,7 +143,7 @@ class CreateOutput:
         data = {}  # just a container. need to to loop twice to make connect_lateral work
         for lateral in self.laterals:
             self.df_tubing, top = po.prepare_tubing_layer(
-                self.schedule,
+                msws,
                 self.well_name,
                 lateral,
                 self.df_well,

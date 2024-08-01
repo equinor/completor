@@ -13,34 +13,21 @@ from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 
 
-class WellSchedule:
-    """A collection of all the active multi-segment wells.
-
-    Attributes:
-        msws: Multisegmented well segments.
-        active_wells: The active wells for completor to work on.
-
-    Args:
-        active_wells: Active multi-segment wells defined in a case file.
-    """
-
-    def __init__(self, active_wells: npt.NDArray[np.unicode_]):
-        """Initialize WellSchedule."""
-        self.msws: dict[str, dict[str, Any]] = {}
-        self.active_wells = active_wells
-
-
 class Wells:
     well_list: list[Well]
     # List or dict, if list - make getter.
+    # Hippety Hoppety Andre wants a @property!
     well_dict: dict[str, Well]
 
-    def __init__(self):
-        well_list = []
+    def __init__(self, active_wells: npt.NDArray[np.str_]):
+        """Initialize WellSchedule."""
+        self.active_wells = active_wells
 
-        ...
+        # self.msws2 = {}
+        # well_list = []
 
-    def get_active(self): ...
+    def get_active(self):
+        return self.active_wells
 
 
 class Well:
@@ -60,191 +47,53 @@ class Well:
         # COMPSEGS
         self.completion_segments = pd.DataFrame()
 
-    @staticmethod
-    def set_welspecs(well_name: str, records: list[list[str]]) -> pd.DataFrame:
-        """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
 
-        * Sets DataFrame column titles.
-        * Formats column values.
-        * Pads missing columns at the end of the DataFrame with default values (1*).
+def set_welspecs(
+    multisegmented_well_segments: dict[str, dict[str, Any]], records: list[list[str]]
+) -> dict[str, dict[str, Any]]:
+    """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
 
-        Args:
-            : Data containing multisegmented well schedules.
-            records: Raw well specification.
+    * Sets DataFrame column titles.
+    * Formats column values.
+    * Pads missing columns at the end of the DataFrame with default values (1*).
 
-        Returns:
-            Multisegmented wells with updated welspecs records.
-        """
-        columns = [
-            Headers.WELL,
-            Headers.GROUP,
-            Headers.I,
-            Headers.J,
-            Headers.BHP_DEPTH,
-            Headers.PHASE,
-            Headers.DR,
-            Headers.FLAG,
-            Headers.SHUT,
-            Headers.FLOW_CROSS_SECTIONAL_AREA,
-            Headers.PRESSURE_TABLE,
-            Headers.DENSITY_CALCULATION_TYPE,
-            Headers.REGION,
-            Headers.RESERVED_HEADER_1,
-            Headers.RESERVED_HEADER_2,
-            Headers.WELL_MODEL_TYPE,
-            Headers.POLYMER_MIXING_TABLE_NUMBER,
-        ]
-        _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
-        df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
-        df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
-        df[columns[4]] = df[columns[4]].astype(np.float64, errors="ignore")
-        # welspecs could be for multiple wells - split it
-        # for well_name in df[Headers.WELL].unique():
-        #     if well_name not in multisegmented_well_segments:
-        #         multisegmented_well_segments[well_name] = {}
-        #     logger.debug("set_welspecs for %s", well_name)
-        return df[df[Headers.WELL] == well_name]
+    Args:
+        multisegmented_well_segments: Data containing multisegmented well schedules.
+        records: Raw well specification.
 
-    @staticmethod
-    def set_welsegs(
-        well_name2: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
-    ) -> dict[str, dict[str, Any]]:
-        """Update the well segments (WELSEGS) for a given well if it is an active well.
-
-        * Pads missing record columns in header and contents with default values.
-        * Convert header and column records to DataFrames.
-        * Sets proper DataFrame column types and titles.
-        * Converts segment depth specified in incremental (INC) to absolute (ABS) values using fix_welsegs.
-
-        Args:
-            multisegmented_well_segments: Data containing multisegmented well schedules.
-            active_wells: Active wells.
-            recs: Record set of header and contents data.
-
-        Returns:
-            Name of well if it was updated, or None if it is not in the active_wells list.
-
-        Raises:
-            ValueError: If a well is not an active well.
-        """
-        well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
-        # if well_name not in active_wells:
-        #     raise ValueError("The well must be active!")
-
-        # make df for header record
-        columns_header = [
-            Headers.WELL,
-            Headers.TRUE_VERTICAL_DEPTH,
-            Headers.MEASURED_DEPTH,
-            Headers.WELLBORE_VOLUME,
-            Headers.INFO_TYPE,
-            Headers.PRESSURE_DROP_COMPLETION,
-            Headers.MULTIPHASE_FLOW_MODEL,
-            Headers.X_COORDINATE_TOP_SEGMENT,
-            Headers.Y_COORDINATE_TOP_SEGMENT,
-            Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
-            Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
-            Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
-        ]
-        # pad header with default values (1*)
-        header = recs[0] + ["1*"] * (len(columns_header) - len(recs[0]))
-        df_header = pd.DataFrame(np.array(header).reshape((1, len(columns_header))), columns=columns_header)
-        df_header[columns_header[1:3]] = df_header[columns_header[1:3]].astype(np.float64)  # data types
-
-        # make df for data records
-        columns_data = [
-            Headers.TUBING_SEGMENT,
-            Headers.TUBING_SEGMENT_2,
-            Headers.TUBING_BRANCH,
-            Headers.TUBING_OUTLET,
-            Headers.TUBING_MEASURED_DEPTH,
-            Headers.TRUE_VERTICAL_DEPTH,
-            Headers.TUBING_INNER_DIAMETER,
-            Headers.TUBING_ROUGHNESS,
-            Headers.FLOW_CROSS_SECTIONAL_AREA,
-            Headers.SEGMENT_VOLUME,
-            Headers.X_COORDINATE_LAST_SEGMENT,
-            Headers.Y_COORDINATE_LAST_SEGMENT,
-            Headers.THERMAL_CONDUCTIVITY_CROSS_SECTIONAL_AREA,
-            Headers.VOLUMETRIC_HEAT_CAPACITY_PIPE_WALL,
-            Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
-        ]
-        # pad with default values (1*)
-        recs = [rec + ["1*"] * (len(columns_data) - len(rec)) for rec in recs[1:]]
-        df_records = pd.DataFrame(recs, columns=columns_data)
-        # data types
-        df_records[columns_data[:4]] = df_records[columns_data[:4]].astype(np.int64)
-        df_records[columns_data[4:7]] = df_records[columns_data[4:7]].astype(np.float64)
-        # fix abs/inc issue with welsegs
-        df_header, df_records = fix_welsegs(df_header, df_records)
-
-        # Warn user if the tubing segments' measured depth for a branch
-        # is not sorted in ascending order (monotonic)
-        for branch_num in df_records[Headers.TUBING_BRANCH].unique():
-            if (
-                not df_records[Headers.TUBING_MEASURED_DEPTH]
-                .loc[df_records[Headers.TUBING_BRANCH] == branch_num]
-                .is_monotonic_increasing
-            ):
-                logger.warning(
-                    "The branch %s in well %s contains negative length segments. "
-                    "Check the input schedulefile WELSEGS keyword for inconsistencies "
-                    "in measured depth (MEASURED_DEPTH) of Tubing layer.",
-                    branch_num,
-                    well_name,
-                )
-
-        # if well_name not in multisegmented_well_segments:
-        #     multisegmented_well_segments[well_name] = {}
-        # multisegmented_well_segments[well_name][Keywords.WELSEGS] = df_header, df_records
-        # return multisegmented_well_segments
-
-    def set_welspecs(
-        multisegmented_well_segments: dict[str, dict[str, Any]], records: list[list[str]]
-    ) -> dict[str, dict[str, Any]]:
-        """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
-
-        * Sets DataFrame column titles.
-        * Formats column values.
-        * Pads missing columns at the end of the DataFrame with default values (1*).
-
-        Args:
-            multisegmented_well_segments: Data containing multisegmented well schedules.
-            records: Raw well specification.
-
-        Returns:
-            Multisegmented wells with updated welspecs records.
-        """
-        columns = [
-            Headers.WELL,
-            Headers.GROUP,
-            Headers.I,
-            Headers.J,
-            Headers.BHP_DEPTH,
-            Headers.PHASE,
-            Headers.DR,
-            Headers.FLAG,
-            Headers.SHUT,
-            Headers.FLOW_CROSS_SECTIONAL_AREA,
-            Headers.PRESSURE_TABLE,
-            Headers.DENSITY_CALCULATION_TYPE,
-            Headers.REGION,
-            Headers.RESERVED_HEADER_1,
-            Headers.RESERVED_HEADER_2,
-            Headers.WELL_MODEL_TYPE,
-            Headers.POLYMER_MIXING_TABLE_NUMBER,
-        ]
-        _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
-        df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
-        df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
-        df[columns[4]] = df[columns[4]].astype(np.float64, errors="ignore")
-        # welspecs could be for multiple wells - split it
-        for well_name in df[Headers.WELL].unique():
-            if well_name not in multisegmented_well_segments:
-                multisegmented_well_segments[well_name] = {}
-            multisegmented_well_segments[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
-            logger.debug("set_welspecs for %s", well_name)
-        return multisegmented_well_segments
+    Returns:
+        Multisegmented wells with updated welspecs records.
+    """
+    columns = [
+        Headers.WELL,
+        Headers.GROUP,
+        Headers.I,
+        Headers.J,
+        Headers.BHP_DEPTH,
+        Headers.PHASE,
+        Headers.DR,
+        Headers.FLAG,
+        Headers.SHUT,
+        Headers.FLOW_CROSS_SECTIONAL_AREA,
+        Headers.PRESSURE_TABLE,
+        Headers.DENSITY_CALCULATION_TYPE,
+        Headers.REGION,
+        Headers.RESERVED_HEADER_1,
+        Headers.RESERVED_HEADER_2,
+        Headers.WELL_MODEL_TYPE,
+        Headers.POLYMER_MIXING_TABLE_NUMBER,
+    ]
+    _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
+    df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
+    df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
+    df[columns[4]] = df[columns[4]].astype(np.float64, errors="ignore")
+    # welspecs could be for multiple wells - split it
+    for well_name in df[Headers.WELL].unique():
+        if well_name not in multisegmented_well_segments:
+            multisegmented_well_segments[well_name] = {}
+        multisegmented_well_segments[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
+        logger.debug("set_welspecs for %s", well_name)
+    return multisegmented_well_segments
 
 
 def set_welsegs(
@@ -390,7 +239,9 @@ def set_compsegs(
 
 
 def handle_compdat(
-    multisegmented_well_segments: dict[str, dict[str, Any]], active_wells: set[str], records: list[list[str]]
+    multisegmented_well_segments: dict[str, dict[str, Any]],
+    active_wells: npt.NDArray[np.str_],
+    records: list[list[str]],
 ) -> dict[str, dict[str, Any]]:
     """Convert completion data (COMPDAT) record to a DataFrame.
 
