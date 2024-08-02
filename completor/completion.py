@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, overload
+from typing import Any, Literal, overload
 
 import numpy as np
 import numpy.typing as npt

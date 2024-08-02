@@ -180,6 +180,15 @@ def create(
             figure_name = f"Well_schematic_{figure_no:03d}.pdf"
         pdf_file = create_pdfpages(figure_name)
 
+    pdf_file = None
+    if show_fig:
+        figure_no = 1
+        figure_name = f"Well_schematic_{figure_no:03d}.pdf"
+        while os.path.isfile(figure_name):
+            figure_no += 1
+            figure_name = f"Well_schematic_{figure_no:03d}.pdf"
+        pdf_file = create_pdfpages(figure_name)
+
     lines = schedule_file.splitlines()
     clean_lines_map = {}
     for line_number, line in enumerate(lines):
@@ -209,7 +218,6 @@ def create(
 
                 if keyword == Keywords.WELSPECS:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-
                     msws = wells2.set_welspecs(msws, chunk)
                     raw = lines[line_number:after_content_line_number]
                     output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
