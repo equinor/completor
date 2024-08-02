@@ -50,7 +50,7 @@ class CreateWells:
         self.df_welsegs_content = pd.DataFrame()
         self.laterals: list[int] = []
         self.case: ReadCasefile = case
-        self.method = _get_method(self.case)
+        # self.method = _get_method(self.case)
 
     def update(self, well_name: str, msws: dict) -> None:
         """Update class variables in CreateWells.
@@ -72,7 +72,7 @@ class CreateWells:
             self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
             self.df_completion = completion.define_annulus_zone(self.df_completion)
             self.df_tubing_segments = _create_tubing_segments(
-                self.df_reservoir, self.df_completion, self.df_mdtvd, self.method, self.case
+                self.df_reservoir, self.df_completion, self.df_mdtvd, self.case.method, self.case
             )
             self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, well_name)
             self.df_well = completion.complete_the_well(
@@ -82,7 +82,7 @@ class CreateWells:
             self.df_well = _get_devices(self.df_completion, self.df_well, self.case)
             self.df_well = completion.correct_annulus_zone(self.df_well)
             self.df_reservoir = _connect_cells_to_segments(
-                self.df_reservoir, self.df_well, self.df_tubing_segments, self.method
+                self.df_reservoir, self.df_well, self.df_tubing_segments, self.case.method
             )
             self.df_well[Headers.WELL] = well_name
             self.df_reservoir[Headers.WELL] = well_name
@@ -126,49 +126,6 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
             )
         return np.array(completion_table[Headers.WELL][mask].unique())
     return np.array(completion_table[Headers.WELL].unique())
-
-
-def _get_method(case: ReadCasefile) -> Method:
-    """Define how the user wants to create segments.
-
-    Args:
-        case: Case data.
-
-    Returns:
-        Creation method enum.
-
-    Raises:
-        ValueError: If method is not one of the defined methods.
-    """
-    if isinstance(case.segment_length, float):
-        if float(case.segment_length) > 0.0:
-            return Method.FIX
-        if float(case.segment_length) == 0.0:
-            return Method.CELLS
-        if case.segment_length < 0.0:
-            return Method.USER
-        raise ValueError(
-            f"Unrecognized method '{case.segment_length}' in SEGMENTLENGTH keyword. "
-            "The value should be one of: 'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', "
-            "0 for 'CELLS', or a positive number for 'FIX'."
-        )
-
-    if isinstance(case.segment_length, str):
-        if "welsegs" in case.segment_length.lower() or "infill" in case.segment_length.lower():
-            return Method.WELSEGS
-        if "cell" in case.segment_length.lower():
-            return Method.CELLS
-        if "user" in case.segment_length.lower():
-            return Method.USER
-        raise ValueError(
-            f"Unrecognized method '{case.segment_length}' in SEGMENTLENGTH keyword. The value should be one of: "
-            "'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', 0 for 'CELLS', positive number for 'FIX'."
-        )
-
-    raise ValueError(
-        f"Unrecognized type of '{case.segment_length}' in SEGMENTLENGTH keyword. "
-        "The keyword must either be float or string."
-    )
 
 
 def _get_active_laterals(well_name: str, df_completion: pd.DataFrame) -> npt.NDArray[np.int_]:
