@@ -9,8 +9,8 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor import input_validation as val
-from completor import parse
+from completor import input_validation, parse
+from completor.completion import WellSchedule
 from completor.constants import Headers, Keywords, Method
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
@@ -148,15 +148,15 @@ class ReadCasefile:
         ]
         df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
         # Set default value for packer segment
-        df_temp = val.set_default_packer_section(df_temp)
+        df_temp = input_validation.set_default_packer_section(df_temp)
         # Set default value for PERF segments
-        df_temp = val.set_default_perf_section(df_temp)
+        df_temp = input_validation.set_default_perf_section(df_temp)
         # Give errors if 1* is found for non packer segments
-        df_temp = val.check_default_non_packer(df_temp)
+        df_temp = input_validation.check_default_non_packer(df_temp)
         # Fix the data types format
-        df_temp = val.set_format_completion(df_temp)
+        df_temp = input_validation.set_format_completion(df_temp)
         # Check overall user inputs on completion
-        val.assess_completion(df_temp)
+        input_validation.assess_completion(df_temp)
         df_temp = self.read_icv_tubing(df_temp)
         self.completion_table = df_temp.copy(deep=True)
 
@@ -211,7 +211,7 @@ class ReadCasefile:
             self.lat2device = pd.DataFrame([], columns=header)  # empty df
             return
         self.lat2device = self._create_dataframe_with_columns(header, start_index, end_index)
-        val.validate_lateral_to_device(self.lat2device, self.completion_table)
+        input_validation.validate_lateral_to_device(self.lat2device, self.completion_table)
         self.lat2device[Headers.BRANCH] = self.lat2device[Headers.BRANCH].astype(np.int64)
 
     def read_joint_length(self) -> None:
@@ -335,7 +335,7 @@ class ReadCasefile:
         start_index, end_index = parse.locate_keyword(self.content, Keywords.MINIMUM_SEGMENT_LENGTH)
         if end_index == start_index + 2:
             min_seg_len = self.content[start_index + 1]
-            self.minimum_segment_length = val.validate_minimum_segment_length(min_seg_len)
+            self.minimum_segment_length = input_validation.validate_minimum_segment_length(min_seg_len)
         logger.info("minimum_segment_length is set to %s", self.minimum_segment_length)
 
     def read_mapfile(self) -> None:
@@ -371,7 +371,7 @@ class ReadCasefile:
                 header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
 
-            self.wsegvalv_table = val.set_format_wsegvalv(df_temp)
+            self.wsegvalv_table = input_validation.set_format_wsegvalv(df_temp)
             device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "VALVE"][
                 Headers.DEVICE_NUMBER
             ].to_numpy()
@@ -398,7 +398,7 @@ class ReadCasefile:
                 Headers.CALIBRATION_FLUID_VISCOSITY,
                 Headers.WATER_CUT,
             ]
-            self.wsegsicd_table = val.set_format_wsegsicd(
+            self.wsegsicd_table = input_validation.set_format_wsegsicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
             # Check if the device in COMPLETION is exist in WSEGSICD
@@ -436,7 +436,7 @@ class ReadCasefile:
                 Headers.AICD_CALIBRATION_FLUID_DENSITY,
                 Headers.AICD_FLUID_VISCOSITY,
             ]
-            self.wsegaicd_table = val.set_format_wsegaicd(
+            self.wsegaicd_table = input_validation.set_format_wsegaicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
             device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "AICD"][
@@ -473,7 +473,7 @@ class ReadCasefile:
 
             # Fix table format
             if self.completion_table[Headers.DEVICE_TYPE].str.contains("DAR").any():
-                self.wsegdar_table = val.set_format_wsegdar(
+                self.wsegdar_table = input_validation.set_format_wsegdar(
                     self._create_dataframe_with_columns(header, start_index, end_index)
                 )
                 device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "DAR"][
@@ -522,7 +522,7 @@ class ReadCasefile:
                 Headers.F_PILOT,
             ]
             # Fix table format
-            self.wsegaicv_table = val.set_format_wsegaicv(
+            self.wsegaicv_table = input_validation.set_format_wsegaicv(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
             # Check if the device in COMPLETION is exist in WSEGAICV
@@ -554,7 +554,7 @@ class ReadCasefile:
                 header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
             # Fix format
-            self.wsegicv_table = val.set_format_wsegicv(df_temp)
+            self.wsegicv_table = input_validation.set_format_wsegicv(df_temp)
             # Check if the device in COMPLETION exists in WSEGICV
             device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "ICV"][
                 Headers.DEVICE_NUMBER

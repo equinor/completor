@@ -22,7 +22,6 @@ from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
-from completor.visualization import close_figure, create_pdfpages
 
 
 def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
@@ -170,14 +169,13 @@ def create(
     schedule_data: dict[str, dict[str, Any]] = {}
     wells = None
 
-    pdf_file = None
+    figure_name = None
     if show_fig:
         figure_no = 1
         figure_name = f"Well_schematic_{figure_no:03d}.pdf"
         while os.path.isfile(figure_name):
             figure_no += 1
             figure_name = f"Well_schematic_{figure_no:03d}.pdf"
-        pdf_file = create_pdfpages(figure_name)
 
     lines = schedule_file.splitlines()
     clean_lines_map = {}
@@ -248,7 +246,6 @@ def create(
                         pass
 
                     line_number = after_content_line_number + 1
-
                     case.check_input(well_name, schedule_data)
 
                 well_names.append(well_name)
@@ -270,10 +267,6 @@ def create(
         output_text = _replace_preprocessing_names(output_text, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
             file.write(output_text)
-
-        close_figure()
-        if pdf_file is not None:
-            pdf_file.close()
 
     if err is not None:
         raise err

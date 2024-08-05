@@ -6,11 +6,11 @@ import getpass
 from datetime import datetime
 from typing import Any
 
-import matplotlib  # type: ignore
+from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 import completor
-from completor import prepare_outputs as po
 from completor import read_schedule
+from completor import completion, prepare_outputs
 from completor.constants import Headers, Keywords
 from completor.create_wells import Wells
 from completor.logger import logger
@@ -36,7 +36,7 @@ class CreateOutput:
         well_name: str,
         well_number: int,
         show_figure: bool = False,
-        figure_name: matplotlib.backends.backend_pdf.PdfPages | None = None,  # type: ignore
+        figure_name: str | None = None,
         paths: tuple[str, str] | None = None,
     ):
         """Initialize CreateOutput class.
@@ -95,7 +95,7 @@ class CreateOutput:
         # Start printing per well.
         self.welsegs_header, _ = read_schedule.get_well_segments(schedule_data, well_name, branch=1)
         self.check_welsegs1()
-        self.print_welsegs = f"{Keywords.WELSEGS}\n{po.dataframe_tostring(self.welsegs_header, True)}\n"
+        self.print_welsegs = f"{Keywords.WELSEGS}\n{prepare_outputs.dataframe_tostring(self.welsegs_header, True)}\n"
         self.print_welsegsinit = self.print_welsegs
         self.print_wseglink = f"{Keywords.WSEGLINK}\n"
         self.print_wseglinkinit = self.print_wseglink
@@ -135,7 +135,7 @@ class CreateOutput:
         # pre-preparations
         data = {}  # just a container. need to to loop twice to make connect_lateral work
         for lateral in self.laterals:
-            self.df_tubing, top = po.prepare_tubing_layer(
+            self.df_tubing, top = prepare_outputs.prepare_tubing_layer(
                 schedule_data,
                 self.well_name,
                 lateral,
@@ -144,8 +144,8 @@ class CreateOutput:
                 self.start_branch,
                 self.case.completion_table,
             )
-            self.df_device = po.prepare_device_layer(self.well_name, lateral, self.df_well, self.df_tubing)
-            self.df_annulus, self.df_wseglink = po.prepare_annulus_layer(
+            self.df_device = prepare_outputs.prepare_device_layer(self.well_name, lateral, self.df_well, self.df_tubing)
+            self.df_annulus, self.df_wseglink = prepare_outputs.prepare_annulus_layer(
                 self.well_name, lateral, self.df_well, self.df_device
             )
             self.update_segmentbranch()
@@ -153,7 +153,7 @@ class CreateOutput:
             data[lateral] = (self.df_tubing, self.df_device, self.df_annulus, self.df_wseglink, top)
         # attach lateral to their proper segments (in overburden, potentially)
         for lateral in data:
-            po.connect_lateral(self.well_name, lateral, data, self.case)
+            prepare_outputs.connect_lateral(self.well_name, lateral, data, self.case)
         # main preparations
         for lateral in self.laterals:
             self.df_tubing, self.df_device, self.df_annulus, self.df_wseglink = data[lateral][:4]
@@ -162,7 +162,7 @@ class CreateOutput:
 
             completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == self.well_name]
             completion_table_lateral = completion_table_well[completion_table_well[Headers.BRANCH] == lateral]
-            self.df_compsegs = po.prepare_compsegs(
+            self.df_compsegs = prepare_outputs.prepare_compsegs(
                 self.well_name,
                 lateral,
                 self.df_reservoir,
@@ -171,13 +171,15 @@ class CreateOutput:
                 completion_table_lateral,
                 self.case.segment_length,
             )
-            self.df_compdat = po.prepare_compdat(self.well_name, lateral, self.df_reservoir, completion_table_lateral)
-            self.df_wsegvalv = po.prepare_wsegvalv(self.well_name, lateral, self.df_well, self.df_device)
-            self.df_wsegsicd = po.prepare_wsegsicd(self.well_name, lateral, self.df_well, self.df_device)
-            self.df_wsegaicd = po.prepare_wsegaicd(self.well_name, lateral, self.df_well, self.df_device)
-            self.df_wsegdar = po.prepare_wsegdar(self.well_name, lateral, self.df_well, self.df_device)
-            self.df_wsegaicv = po.prepare_wsegaicv(self.well_name, lateral, self.df_well, self.df_device)
-            self.df_wsegicv = po.prepare_wsegicv(
+            self.df_compdat = prepare_outputs.prepare_compdat(
+                self.well_name, lateral, self.df_reservoir, completion_table_lateral
+            )
+            self.df_wsegvalv = prepare_outputs.prepare_wsegvalv(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegsicd = prepare_outputs.prepare_wsegsicd(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegaicd = prepare_outputs.prepare_wsegaicd(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegdar = prepare_outputs.prepare_wsegdar(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegaicv = prepare_outputs.prepare_wsegaicv(self.well_name, lateral, self.df_well, self.df_device)
+            self.df_wsegicv = prepare_outputs.prepare_wsegicv(
                 self.well_name,
                 lateral,
                 self.df_well,
@@ -199,10 +201,11 @@ class CreateOutput:
 
             if show_figure and figure_name is not None:
                 logger.info(f"Creating figure for lateral {lateral}.")
-                figure_name.savefig(
-                    visualize_well(self.well_name, self.df_well, self.df_reservoir, self.case.segment_length),
-                    orientation="landscape",
-                )
+                with PdfPages(figure_name) as figure:
+                    figure.savefig(
+                        visualize_well(self.well_name, self.df_well, self.df_reservoir, self.case.segment_length),
+                        orientation="landscape",
+                    )
                 logger.info("creating schematics: %s.pdf", figure_name)
             elif show_figure and figure_name is None:
                 raise ValueError("Cannot show figure without filename supplied.")
@@ -257,107 +260,107 @@ class CreateOutput:
 
     def make_compdat(self, lateral: int) -> None:
         """Print completion data to file."""
-        nchar = po.get_number_of_characters(self.df_compdat)
+        nchar = prepare_outputs.get_number_of_characters(self.df_compdat)
         if self.df_compdat.shape[0] > 0:
             self.print_compdat += (
-                po.get_header(self.well_name, Keywords.COMPDAT, lateral, "", nchar)
-                + po.dataframe_tostring(self.df_compdat, True)
+                prepare_outputs.get_header(self.well_name, Keywords.COMPDAT, lateral, "", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_compdat, True)
                 + "\n"
             )
 
     def make_welsegs(self, lateral: int) -> None:
         """Print well segments to file."""
-        nchar = po.get_number_of_characters(self.df_tubing)
+        nchar = prepare_outputs.get_number_of_characters(self.df_tubing)
         if self.df_device.shape[0] > 0:
             self.print_welsegs += (
-                po.get_header(self.well_name, Keywords.WELSEGS, lateral, "Tubing", nchar)
-                + po.dataframe_tostring(self.df_tubing, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WELSEGS, lateral, "Tubing", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_tubing, True)
                 + "\n"
             )
         if self.df_device.shape[0] > 0:
-            nchar = po.get_number_of_characters(self.df_tubing)
+            nchar = prepare_outputs.get_number_of_characters(self.df_tubing)
             self.print_welsegs += (
-                po.get_header(self.well_name, Keywords.WELSEGS, lateral, "Device", nchar)
-                + po.dataframe_tostring(self.df_device, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WELSEGS, lateral, "Device", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_device, True)
                 + "\n"
             )
         if self.df_annulus.shape[0] > 0:
-            nchar = po.get_number_of_characters(self.df_tubing)
+            nchar = prepare_outputs.get_number_of_characters(self.df_tubing)
             self.print_welsegs += (
-                po.get_header(self.well_name, Keywords.WELSEGS, lateral, "Annulus", nchar)
-                + po.dataframe_tostring(self.df_annulus, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WELSEGS, lateral, "Annulus", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_annulus, True)
                 + "\n"
             )
 
     def make_wseglink(self, lateral: int) -> None:
         """Print WSEGLINK to file."""
         if self.df_wseglink.shape[0] > 0:
-            nchar = po.get_number_of_characters(self.df_wseglink)
+            nchar = prepare_outputs.get_number_of_characters(self.df_wseglink)
             self.print_wseglink += (
-                po.get_header(self.well_name, Keywords.WSEGLINK, lateral, "", nchar)
-                + po.dataframe_tostring(self.df_wseglink, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WSEGLINK, lateral, "", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_wseglink, True)
                 + "\n"
             )
 
     def make_compsegs(self, lateral: int) -> None:
         """Print completion segments to file."""
-        nchar = po.get_number_of_characters(self.df_compsegs)
+        nchar = prepare_outputs.get_number_of_characters(self.df_compsegs)
         if self.df_compsegs.shape[0] > 0:
             self.print_compsegs += (
-                po.get_header(self.well_name, Keywords.COMPSEGS, lateral, "", nchar)
-                + po.dataframe_tostring(self.df_compsegs, True)
+                prepare_outputs.get_header(self.well_name, Keywords.COMPSEGS, lateral, "", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_compsegs, True)
                 + "\n"
             )
 
     def make_wsegaicd(self, lateral: int) -> None:
         """Print WSEGAICD to file."""
         if self.df_wsegaicd.shape[0] > 0:
-            nchar = po.get_number_of_characters(self.df_wsegaicd)
+            nchar = prepare_outputs.get_number_of_characters(self.df_wsegaicd)
             self.print_wsegaicd += (
-                po.get_header(self.well_name, Keywords.WSEGAICD, lateral, "", nchar)
-                + po.dataframe_tostring(self.df_wsegaicd, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WSEGAICD, lateral, "", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_wsegaicd, True)
                 + "\n"
             )
 
     def make_wsegsicd(self, lateral: int) -> None:
         """Print WSEGSICD to file."""
         if self.df_wsegsicd.shape[0] > 0:
-            nchar = po.get_number_of_characters(self.df_wsegsicd)
+            nchar = prepare_outputs.get_number_of_characters(self.df_wsegsicd)
             self.print_wsegsicd += (
-                po.get_header(self.well_name, Keywords.WSEGSICD, lateral, "", nchar)
-                + po.dataframe_tostring(self.df_wsegsicd, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WSEGSICD, lateral, "", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_wsegsicd, True)
                 + "\n"
             )
 
     def make_wsegvalv(self, lateral: int) -> None:
         """Print WSEGVALV to file."""
         if self.df_wsegvalv.shape[0] > 0:
-            nchar = po.get_number_of_characters(self.df_wsegvalv)
+            nchar = prepare_outputs.get_number_of_characters(self.df_wsegvalv)
             self.print_wsegvalv += (
-                po.get_header(self.well_name, Keywords.WSEGVALV, lateral, "", nchar)
-                + po.dataframe_tostring(self.df_wsegvalv, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WSEGVALV, lateral, "", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_wsegvalv, True)
                 + "\n"
             )
 
     def make_wsegicv(self, lateral: int) -> None:
         """Print WSEGICV to file."""
         if self.df_wsegicv.shape[0] > 0:
-            nchar = po.get_number_of_characters(self.df_wsegicv)
+            nchar = prepare_outputs.get_number_of_characters(self.df_wsegicv)
             self.print_wsegicv += (
-                po.get_header(self.well_name, Keywords.WSEGVALV, lateral, "", nchar)
-                + po.dataframe_tostring(self.df_wsegicv, True)
+                prepare_outputs.get_header(self.well_name, Keywords.WSEGVALV, lateral, "", nchar)
+                + prepare_outputs.dataframe_tostring(self.df_wsegicv, True)
                 + "\n"
             )
 
     def make_wsegdar(self) -> None:
         """Print WSEGDAR to file."""
         if self.df_wsegdar.shape[0] > 0:
-            self.print_wsegdar += po.print_wsegdar(self.df_wsegdar, self.well_number + 1) + "\n"
+            self.print_wsegdar += prepare_outputs.print_wsegdar(self.df_wsegdar, self.well_number + 1) + "\n"
 
     def make_wsegaicv(self) -> None:
         """Print WSEGAICV to file."""
         if self.df_wsegaicv.shape[0] > 0:
-            self.print_wsegaicv += po.print_wsegaicv(self.df_wsegaicv, self.well_number + 1) + "\n"
+            self.print_wsegaicv += prepare_outputs.print_wsegaicv(self.df_wsegaicv, self.well_number + 1) + "\n"
 
     def fix_printing(self) -> None:
         """Avoid printing non-existing keywords."""
