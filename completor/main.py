@@ -165,7 +165,6 @@ def create(
     """
     output_text = ""
     output = None
-    written_wells = set()  # Keep track of which wells has been written.
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
     schedule_data: dict[str, dict[str, Any]] = {}
@@ -252,12 +251,6 @@ def create(
 
                     case.check_input(well_name, schedule_data)
 
-                    if well_name not in written_wells:
-                        write_welsegs = True  # will only write WELSEGS once
-                        written_wells.add(well_name)
-                    else:
-                        write_welsegs = False
-
                 well_names.append(well_name)
 
             else:
@@ -265,12 +258,9 @@ def create(
 
         for well_name_ in well_names:
             logger.debug("Writing new MSW info for well %s", well_name_)
-            # wells.update(well_name_, schedule_data)
             wells = Wells(well_name_, case, schedule_data)
             well_number = read_schedule.get_well_number(well_name_, active_wells)
-            output = CreateOutput(
-                case, schedule_data, wells, well_name_, well_number, show_fig, pdf_file, write_welsegs, paths
-            )
+            output = CreateOutput(case, schedule_data, wells, well_name_, well_number, show_fig, pdf_file, paths)
             output_text += format_text(None, output.finalprint)
 
     except Exception as e_:

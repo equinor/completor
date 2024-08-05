@@ -26,16 +26,6 @@ class CreateOutput:
         1. Well schedule file (text file) for input to reservoir simulator.
         2. Well diagram (pdf file), i.e. a well completion schematic.
 
-    Args:
-        case: ReadCasefile object.
-        schedule: ReadSchedule object.
-        wells: Wells object.
-        well_name: Well name.
-        well_number: Well number used in creating WSEGAICV and WSEGDAR output.
-        show_figure: Flag for pdf export of well completion schematic.
-        figure_no: Figure number.
-
-        write_welsegs: Flag to write WELSEGS.
     """
 
     def __init__(
@@ -47,17 +37,20 @@ class CreateOutput:
         well_number: int,
         show_figure: bool = False,
         figure_name: matplotlib.backends.backend_pdf.PdfPages | None = None,  # type: ignore
-        write_welsegs: bool = True,
         paths: tuple[str, str] | None = None,
     ):
         """Initialize CreateOutput class.
 
         Args:
-            case: ReadCasefile object.
+            case: Case file object.
             schedule_data: Data from schedule file.
             wells: Wells object.
-            figure_no: Must be set if show_figure.
-            show_figure: True if the user wants to create well diagram file.
+            well_name: Name of well.
+            well_number: Well number.
+            show_figure: True if the user wants to create well diagram file. Defaults to False.
+            figure_name: File name of the figure.
+            paths: Paths to the original input case and schedule file.
+
         """
         self.case = case
         self.case_path: str | None
@@ -70,7 +63,6 @@ class CreateOutput:
         self.wells = wells
         self.well_name = well_name
         self.well_number = well_number
-        self.write_welsegs = write_welsegs
         self.show_figure = show_figure
 
         # different line connection
@@ -424,8 +416,7 @@ class CreateOutput:
         """Collect final printing for all wells."""
         # here starts active wells
         finalprint = self.finalprint + self.print_compdat
-        if self.write_welsegs:
-            finalprint += self.print_welsegs
+        finalprint += self.print_welsegs
         finalprint += self.print_wseglink
         finalprint += self.print_compsegs
         # print udq parameter if relevant
