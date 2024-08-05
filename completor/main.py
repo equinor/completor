@@ -257,7 +257,7 @@ def create(
             logger.debug("Writing new MSW info for well %s", well_name_)
             wells = Wells(well_name_, case, schedule_data)
             well_number = read_schedule.get_well_number(well_name_, active_wells)
-            output = CreateOutput(case, schedule_data, wells, well_name_, well_number, show_fig, pdf_file, paths)
+            output = CreateOutput(case, schedule_data, wells, well_name_, well_number, show_fig, figure_name, paths)
             output_text += format_text(None, output.finalprint)
 
     except Exception as e_:

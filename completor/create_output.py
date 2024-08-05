@@ -9,8 +9,7 @@ from typing import Any
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 import completor
-from completor import read_schedule
-from completor import completion, prepare_outputs
+from completor import prepare_outputs, read_schedule
 from completor.constants import Headers, Keywords
 from completor.create_wells import Wells
 from completor.logger import logger

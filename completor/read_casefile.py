@@ -10,7 +10,6 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.completion import WellSchedule
 from completor.constants import Headers, Keywords, Method
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
