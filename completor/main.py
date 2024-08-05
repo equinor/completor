@@ -22,7 +22,6 @@ from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
-from completor.visualization import close_figure, create_pdfpages
 
 
 def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
@@ -171,14 +170,13 @@ def create(
     active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
     schedule = WellSchedule(active_wells)  # container for MSW-data
 
-    pdf_file = None
+    figure_name = None
     if show_fig:
         figure_no = 1
         figure_name = f"Well_schematic_{figure_no:03d}.pdf"
         while os.path.isfile(figure_name):
             figure_no += 1
             figure_name = f"Well_schematic_{figure_no:03d}.pdf"
-        pdf_file = create_pdfpages(figure_name)
 
     lines = schedule_file.splitlines()
     clean_lines_map = {}
@@ -260,7 +258,7 @@ def create(
                     wells.update(well_name, schedule)
                     well_number = completion.get_well_number(well_name, active_wells)
                     output = CreateOutput(
-                        case, schedule, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
+                        case, schedule, wells, well_name, well_number, show_fig, figure_name, write_welsegs, paths
                     )
                     output_text += format_text(None, output.finalprint)
                     continue
@@ -278,10 +276,6 @@ def create(
         output_text = _replace_preprocessing_names(output_text, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
             file.write(output_text)
-
-        close_figure()
-        if pdf_file is not None:
-            pdf_file.close()
 
     if err is not None:
         raise err

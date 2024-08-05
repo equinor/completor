@@ -5,7 +5,7 @@ from __future__ import annotations
 import getpass
 from datetime import datetime
 
-import matplotlib  # type: ignore
+from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 import completor
 from completor import completion
@@ -45,7 +45,7 @@ class CreateOutput:
         well_name: str,
         well_number: int,
         show_figure: bool = False,
-        figure_name: matplotlib.backends.backend_pdf.PdfPages | None = None,  # type: ignore
+        figure_name: str | None = None,
         write_welsegs: bool = True,
         paths: tuple[str, str] | None = None,
     ):
@@ -207,10 +207,11 @@ class CreateOutput:
 
             if show_figure and figure_name is not None:
                 logger.info(f"Creating figure for lateral {lateral}.")
-                figure_name.savefig(
-                    visualize_well(self.well_name, self.df_well, self.df_reservoir, self.case.segment_length),
-                    orientation="landscape",
-                )
+                with PdfPages(figure_name) as figure:
+                    figure.savefig(
+                        visualize_well(self.well_name, self.df_well, self.df_reservoir, self.case.segment_length),
+                        orientation="landscape",
+                    )
                 logger.info("creating schematics: %s.pdf", figure_name)
             elif show_figure and figure_name is None:
                 raise ValueError("Cannot show figure without filename supplied.")
