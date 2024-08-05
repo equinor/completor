@@ -13,10 +13,10 @@ import numpy as np
 from tqdm import tqdm
 
 import completor
-from completor import create_wells, parse, wells2
+from completor import create_wells, parse, read_schedule
 from completor.constants import Keywords
 from completor.create_output import CreateOutput
-from completor.create_wells import CreateWells
+from completor.create_wells import Wells
 from completor.exceptions import CompletorError
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
@@ -150,7 +150,7 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
 
 def create(
     input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
-) -> tuple[ReadCasefile, CreateWells, CreateOutput] | tuple[ReadCasefile, CreateWells]:
+) -> tuple[ReadCasefile, Wells | None, CreateOutput] | tuple[ReadCasefile, Wells | None]:
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
@@ -167,18 +167,9 @@ def create(
     output = None
     written_wells = set()  # Keep track of which wells has been written.
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
-    wells = CreateWells(case)
     active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    msws: dict[str, dict[str, Any]] = {}
-
-    pdf_file = None
-    if show_fig:
-        figure_no = 1
-        figure_name = f"Well_schematic_{figure_no:03d}.pdf"
-        while os.path.isfile(figure_name):
-            figure_no += 1
-            figure_name = f"Well_schematic_{figure_no:03d}.pdf"
-        pdf_file = create_pdfpages(figure_name)
+    schedule_data: dict[str, dict[str, Any]] = {}
+    wells = None
 
     pdf_file = None
     if show_fig:
@@ -200,6 +191,7 @@ def create(
 
     line_number = 0
     prev_line_number = 0
+    well_names = []
     try:
         with tqdm(total=len(lines)) as progress_bar:
             while line_number < len(lines):
@@ -218,7 +210,7 @@ def create(
 
                 if keyword == Keywords.WELSPECS:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    msws = wells2.set_welspecs(msws, chunk)
+                    schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]
                     output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
                     line_number = after_content_line_number + 1
@@ -227,7 +219,7 @@ def create(
                 elif keyword == Keywords.COMPDAT:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
-                    msws = wells2.handle_compdat(msws, active_wells, chunk)
+                    schedule_data = read_schedule.handle_compdat(schedule_data, active_wells, chunk)
                     if untouched_wells:
                         # Write untouched wells back as-is.
                         output_text += format_text(keyword, untouched_wells, end_of_record=True)
@@ -240,7 +232,7 @@ def create(
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    msws = wells2.set_welsegs(msws, active_wells, chunk)
+                    schedule_data = read_schedule.set_welsegs(schedule_data, active_wells, chunk)
                     line_number = after_content_line_number + 1
                     continue
 
@@ -252,33 +244,34 @@ def create(
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
 
                     try:
-                        msws = wells2.set_compsegs(msws, active_wells, chunk)
+                        schedule_data = read_schedule.set_compsegs(schedule_data, active_wells, chunk)
                     except ValueError:
                         pass
 
                     line_number = after_content_line_number + 1
 
-                    case.check_input(well_name, msws)
+                    case.check_input(well_name, schedule_data)
 
                     if well_name not in written_wells:
                         write_welsegs = True  # will only write WELSEGS once
                         written_wells.add(well_name)
                     else:
                         write_welsegs = False
-                    logger.debug("Writing new MSW info for well %s", well_name)
-                    wells.update(well_name, msws)
-                    well_number = wells2.get_well_number(well_name, active_wells)
-                    output = CreateOutput(
-                        case, msws, wells, well_name, well_number, show_fig, pdf_file, write_welsegs, paths
-                    )
-                    output_text += format_text(None, output.finalprint)
-                    continue
-                raise CompletorError(
-                    f"Unrecognized content at line number {line_number} with content:\n{line}\n"
-                    "If you encounter this, please contact the team as this might be a mistake with the software."
-                )
+
+                well_names.append(well_name)
+
             else:
                 progress_bar.update(len(lines) - prev_line_number)
+
+        for well_name_ in well_names:
+            logger.debug("Writing new MSW info for well %s", well_name_)
+            # wells.update(well_name_, schedule_data)
+            wells = Wells(well_name_, case, schedule_data)
+            well_number = read_schedule.get_well_number(well_name_, active_wells)
+            output = CreateOutput(
+                case, schedule_data, wells, well_name_, well_number, show_fig, pdf_file, write_welsegs, paths
+            )
+            output_text += format_text(None, output.finalprint)
 
     except Exception as e_:
         err = e_  # type: ignore

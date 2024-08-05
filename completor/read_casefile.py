@@ -576,7 +576,7 @@ class ReadCasefile:
         df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
-    def check_input(self, well_name: str, msws: dict[str, dict[str, Any]]) -> None:
+    def check_input(self, well_name: str, schedule_data: dict[str, dict[str, Any]]) -> None:
         """Ensure that the completion table (given in the case-file) is complete.
 
         If one branch is completed, all branches must be completed, unless not 'strict'.
@@ -586,7 +586,7 @@ class ReadCasefile:
 
         Args:
             well_name: Well name.
-            schedule: Schedule object.
+            schedule_data: Schedule file data.
 
         Returns:
             COMPLETION for that well and branch.
@@ -594,10 +594,10 @@ class ReadCasefile:
         Raises:
             CompletorError: If strict is true and there are undefined branches.
         """
-        msw = msws[well_name]
-        compl = self.completion_table[self.completion_table.WELL == well_name]
+        well_data = schedule_data[well_name]
+        df_completion = self.completion_table[self.completion_table.WELL == well_name]
         # check that all branches are defined in case-file
-        branch_nos = set(msw[Keywords.COMPSEGS].BRANCH).difference(set(compl.BRANCH))
+        branch_nos = set(well_data[Keywords.COMPSEGS].BRANCH).difference(set(df_completion.BRANCH))
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:

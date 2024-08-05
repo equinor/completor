@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from completor import completion, wells2
+import completor.read_schedule
+from completor import completion
 from completor.constants import Headers, Keywords, Method
 from completor.exceptions import CompletorError
 
@@ -980,18 +981,16 @@ def test_skin():
         ],
     )
     active_wells = np.array(["A1"])
-    msws = {}
-    msws = wells2.handle_compdat(msws, active_wells, compdat)
-    df_out = msws["A1"][Keywords.COMPDAT]
+    schedule_data = completor.read_schedule.handle_compdat({}, active_wells, compdat)
+    df_out = schedule_data["A1"][Keywords.COMPDAT]
     pd.testing.assert_frame_equal(df_out, df_true)
 
 
 def test_set_welsegs_negative_length_segments(caplog):
     """Test that negative segments inside a branch give a warning."""
     active_wells = np.array(["A1"])
-    msws = {}
-    msws = wells2.set_welsegs(
-        msws,
+    completor.read_schedule.set_welsegs(
+        {},
         active_wells,
         [
             ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],

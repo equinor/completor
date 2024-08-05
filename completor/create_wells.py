@@ -2,28 +2,22 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor import completion, wells2
+from completor import completion, read_schedule
 from completor.constants import Headers, Method
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
-from completor.read_schedule import fix_compsegs_by_priority
 
 
-class CreateWells:
+class Wells:
     """Class for creating well completion structure.
 
-    Args:
-        case: ReadCasefile class.
-
     Attributes:
-        active_wells: Active wells defined in the case file.
-        method: Method for segment creation.
-        well_name: Well name (in loop).
-        laterals: List of lateral number of the well in loop.
         df_completion: Completion data frame in loop.
         df_reservoir: COMPDAT and COMPSEGS data frame fusion in loop.
         df_welsegs_header: WELSEGS first record.
@@ -35,39 +29,26 @@ class CreateWells:
         df_reservoir_all: df_reservoir for all laterals.
     """
 
-    def __init__(self, case: ReadCasefile):
-        """Initialize CreateWells."""
-        self.well_name: str | None = None
-        self.df_reservoir = pd.DataFrame()
-        self.df_mdtvd = pd.DataFrame()
-        self.df_completion = pd.DataFrame()
-        self.df_tubing_segments = pd.DataFrame()
-        self.df_well = pd.DataFrame()
-        self.df_compdat = pd.DataFrame()
-        self.df_well_all = pd.DataFrame()
-        self.df_reservoir_all = pd.DataFrame()
-        self.df_welsegs_header = pd.DataFrame()
-        self.df_welsegs_content = pd.DataFrame()
-        self.laterals: list[int] = []
-        self.case: ReadCasefile = case
-        # self.method = _get_method(self.case)
-
-    def update(self, well_name: str, msws: dict) -> None:
-        """Update class variables in CreateWells.
+    def __init__(self, well_name: str, case: ReadCasefile, schedule_data: dict[str, dict[str, Any]]):
+        """Create completion structure.
 
         Args:
             well_name: Well name.
-            schedule: ReadSchedule object.
+            case: Data from case file.
+            schedule_data: Data from schedule file.
         """
-        if well_name is None:
-            raise ValueError("Cannot update well without well name.")
-        self.well_name = well_name
+        self.case: ReadCasefile = case
+        self.df_well_all = pd.DataFrame()
+        self.df_reservoir_all = pd.DataFrame()
+
         active_laterals = _get_active_laterals(well_name, self.case.completion_table)
         for lateral in active_laterals:
             self.df_completion = self.case.get_completion(well_name, lateral)
-            self.df_welsegs_header, self.df_welsegs_content = wells2.get_well_segments(msws, well_name, lateral)
+            self.df_welsegs_header, self.df_welsegs_content = read_schedule.get_well_segments(
+                schedule_data, well_name, lateral
+            )
 
-            self.df_reservoir = _select_well(well_name, msws, lateral)
+            self.df_reservoir = _select_well(well_name, schedule_data, lateral)
 
             self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
             self.df_completion = completion.define_annulus_zone(self.df_completion)
@@ -141,19 +122,19 @@ def _get_active_laterals(well_name: str, df_completion: pd.DataFrame) -> npt.NDA
     return np.array(df_completion[df_completion[Headers.WELL] == well_name][Headers.BRANCH].unique())
 
 
-def _select_well(well_name: str, msws: dict, lateral: int) -> pd.DataFrame:
+def _select_well(well_name: str, schedule_data: dict[str, dict[str, Any]], lateral: int) -> pd.DataFrame:
     """Filter the reservoir data for this well and its laterals.
 
     Args:
         well_name: The name of the well.
-        schedule: Schedule data.
+        schedule_data: Multisegmented well segment data.
         lateral: The lateral number.
 
     Returns:
         Filtered reservoir data.
     """
-    df_compsegs = wells2.get_completion_segments(msws, well_name, lateral)
-    df_compdat = wells2.get_completion_data(msws, well_name)
+    df_compsegs = read_schedule.get_completion_segments(schedule_data, well_name, lateral)
+    df_compdat = read_schedule.get_completion_data(schedule_data, well_name)
     df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
     # Remove WELL column in the df_reservoir.
@@ -196,7 +177,7 @@ def _create_tubing_segments(
     if (pd.unique(df_completion[Headers.DEVICE_TYPE]).size > 1) & (
         (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
     ).any():
-        return fix_compsegs_by_priority(df_completion, df_tubing_segments_cells, df_tubing_segments_user)
+        return read_schedule.fix_compsegs_by_priority(df_completion, df_tubing_segments_cells, df_tubing_segments_user)
 
     # If all the devices are ICVs, lump the segments.
     if (df_completion[Headers.DEVICE_TYPE] == "ICV").all():

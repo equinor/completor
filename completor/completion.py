@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, overload
+from typing import Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -168,7 +168,7 @@ def create_tubing_segments(
         cells: Create one segment per cell.
         user: Create segment based on the completion definition.
         fix: Create segment based on a fixed interval.
-        multisegmented_well_segments: Create segment based on well segments keyword.
+        schedule_data: Create segment based on well segments keyword.
 
     Returns:
         DataFrame with start and end measured depth, tubing measured depth, and tubing true vertical depth.
@@ -249,15 +249,15 @@ def create_tubing_segments(
         # Create the tubing layer from segment measured depths in the WELSEGS keyword that are missing from COMPSEGS.
         # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
         # Completor interprets WELSEGS depths as segment midpoint depths.
-        # Obtain the multisegmented_well_segments segment midpoint depth.
+        # Obtain the multisegmented well segments midpoint depth.
         well_segments = df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy()
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
         start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir[Headers.START_MEASURED_DEPTH].to_numpy()
         end_compsegs_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
-        # If there are gaps in compsegs and there are multisegmented_well_segments segments that fit in the gaps,
-        # insert multisegmented_well_segments segments into the compsegs gaps.
+        # If there are gaps in compsegs and there are schedule segments that fit in the gaps,
+        # insert segments into the compsegs gaps.
         gaps_compsegs = start_compsegs_depth[1:] - end_compsegs_depth[:-1]
         # Indices of gaps in compsegs.
         indices_gaps = np.nonzero(gaps_compsegs)
@@ -273,7 +273,7 @@ def create_tubing_segments(
         end_welsegs_outside = end_welsegs_depth[np.argwhere(end_welsegs_depth > end_compsegs_depth[-1])]
         welsegs_to_add = np.append(welsegs_to_add, start_welsegs_outside)
         welsegs_to_add = np.append(welsegs_to_add, end_welsegs_outside)
-        # Find multisegmented_well_segments start and end in gaps.
+        # Find schedule segments start and end in gaps.
         start_compsegs_depth = np.append(start_compsegs_depth, welsegs_to_add)
         end_compsegs_depth = np.append(end_compsegs_depth, welsegs_to_add)
         start_measured_depth = np.sort(start_compsegs_depth)

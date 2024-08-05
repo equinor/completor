@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import getpass
 from datetime import datetime
+from typing import Any
 
 import matplotlib  # type: ignore
 
 import completor
 from completor import prepare_outputs as po
-from completor import wells2
+from completor import read_schedule
 from completor.constants import Headers, Keywords
-from completor.create_wells import CreateWells
+from completor.create_wells import Wells
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
 from completor.read_casefile import ReadCasefile
@@ -28,7 +29,7 @@ class CreateOutput:
     Args:
         case: ReadCasefile object.
         schedule: ReadSchedule object.
-        wells: CreateWells object.
+        wells: Wells object.
         well_name: Well name.
         well_number: Well number used in creating WSEGAICV and WSEGDAR output.
         show_figure: Flag for pdf export of well completion schematic.
@@ -40,8 +41,8 @@ class CreateOutput:
     def __init__(
         self,
         case: ReadCasefile,
-        msws: dict,
-        wells: CreateWells,
+        schedule_data: dict[str, dict[str, Any]],
+        wells: Wells,
         well_name: str,
         well_number: int,
         show_figure: bool = False,
@@ -53,8 +54,8 @@ class CreateOutput:
 
         Args:
             case: ReadCasefile object.
-            schedule: ReadSchedule object.
-            wells: CreateWells object.
+            schedule_data: Data from schedule file.
+            wells: Wells object.
             figure_no: Must be set if show_figure.
             show_figure: True if the user wants to create well diagram file.
         """
@@ -100,7 +101,7 @@ class CreateOutput:
         self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
         # Start printing per well.
-        self.welsegs_header, _ = wells2.get_well_segments(msws, well_name, branch=1)
+        self.welsegs_header, _ = read_schedule.get_well_segments(schedule_data, well_name, branch=1)
         self.check_welsegs1()
         self.print_welsegs = f"{Keywords.WELSEGS}\n{po.dataframe_tostring(self.welsegs_header, True)}\n"
         self.print_welsegsinit = self.print_welsegs
@@ -143,7 +144,7 @@ class CreateOutput:
         data = {}  # just a container. need to to loop twice to make connect_lateral work
         for lateral in self.laterals:
             self.df_tubing, top = po.prepare_tubing_layer(
-                msws,
+                schedule_data,
                 self.well_name,
                 lateral,
                 self.df_well,
