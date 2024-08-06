@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 
-class Headers:
+@dataclass(frozen=True)
+class _Headers:
     """Headers for DataFrames."""
 
     # Well Segments Record 1 (WELSEGS)
@@ -203,6 +204,9 @@ class Headers:
     D_PILOT = "D_PILOT"
     E_PILOT = "E_PILOT"
     F_PILOT = "F_PILOT"
+
+
+Headers = _Headers()
 
 
 @dataclass(frozen=True)
