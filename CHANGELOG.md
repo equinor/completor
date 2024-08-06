@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.4](https://github.com/equinor/completor/compare/v0.1.3...v0.1.4) (2024-08-06)
+
+
+### 🐛 Bug Fixes
+
+* **security:** Update dependencies for documentation build ([#135](https://github.com/equinor/completor/issues/135)) ([5c51da4](https://github.com/equinor/completor/commit/5c51da4f8c9566aa4cbd51ab2ac891273ebbfb53))
+
+
+### 🧹 Chores
+
+* Bump certifi from 2024.6.2 to 2024.7.4 in the pip group across 1 directory ([#129](https://github.com/equinor/completor/issues/129)) ([75d0dce](https://github.com/equinor/completor/commit/75d0dce54a7e7c8009075ee963986651cd03fa21))
+* Class-structure ([#136](https://github.com/equinor/completor/issues/136)) ([9e5fae2](https://github.com/equinor/completor/commit/9e5fae2be48daeae24fdd3a1a551eb920a01fe9a))
+* Make pdf figure context managed ([#138](https://github.com/equinor/completor/issues/138)) ([5681387](https://github.com/equinor/completor/commit/5681387e353cd24213244d5e13a5e67f8a46f5ac))
+
 ## [0.1.3](https://github.com/equinor/completor/compare/v0.1.2...v0.1.3) (2024-07-04)
 
 
