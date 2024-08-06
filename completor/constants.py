@@ -265,6 +265,36 @@ class _Keywords:
 Keywords = _Keywords()
 
 
+@dataclass(frozen=True)
+class _Content:
+    """ """
+
+    PACKER = "PA"
+    GRAVEL_PACKED = "GP"
+    OPEN_ANNULUS = "OA"
+    ANNULUS_TYPES = [GRAVEL_PACKED, OPEN_ANNULUS, PACKER]
+
+    PERFORATED = "PERF"
+    INFLOW_CONTROL_VALVE = "ICV"
+    AUTONOMOUS_INFLOW_CONTROL_VALVE = "AICV"
+    INFLOW_CONTROL_DEVICE = "ICD"
+    AUTONOMOUS_INFLOW_CONTROL_DEVICE = "AICD"
+    DENSITY_ACTIVATED_RECOVERY = "DAR"
+    VALVE = "VALVE"
+    DEVICE_TYPES = [
+        AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+        AUTONOMOUS_INFLOW_CONTROL_VALVE,
+        DENSITY_ACTIVATED_RECOVERY,
+        INFLOW_CONTROL_DEVICE,
+        VALVE,
+        INFLOW_CONTROL_VALVE,
+        PERFORATED,
+    ]
+
+
+Content = _Content()
+
+
 class Method(Enum):
     """An enumeration of legal methods to create wells."""
 
