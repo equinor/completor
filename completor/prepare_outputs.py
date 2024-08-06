@@ -8,8 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor import completion
-from completor.completion import WellSchedule
+from completor import read_schedule
 from completor.constants import Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
@@ -203,7 +202,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
 
 def prepare_tubing_layer(
-    schedule: WellSchedule,
+    schedule_data: dict[str, dict[str, Any]],
     well_name: str,
     lateral: int,
     df_well: pd.DataFrame,
@@ -214,7 +213,7 @@ def prepare_tubing_layer(
     """Prepare tubing layer data frame.
 
     Args:
-        schedule: Schedule object.
+        schedule_data: Well data.
         well_name: Well name.
         lateral: Lateral number.
         df_well: Must contain column LATERAL, TUBING_MEASURED_DEPTH, TRUE_VERTICAL_DEPTH, INNER_DIAMETER, ROUGHNESS.
@@ -244,7 +243,7 @@ def prepare_tubing_layer(
     )
 
     # handle overburden
-    well_segments = completion.get_well_segments(schedule.msws, well_name, lateral)[1]
+    well_segments = read_schedule.get_well_segments(schedule_data, well_name, lateral)[1]
     md_input_welsegs = well_segments[Headers.TUBING_MEASURED_DEPTH]
     md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MEASURED_DEPTH]
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
@@ -269,7 +268,7 @@ def prepare_tubing_layer(
     )
     df_tubing_with_overburden[Headers.EMPTY] = "/"  # for printing
     # locate where it attached to (the top segment)
-    wsa = completion.get_well_segments(schedule.msws, well_name)[1]  # all laterals
+    wsa = read_schedule.get_well_segments(schedule_data, well_name)[1]  # all laterals
     top = wsa[wsa.TUBINGSEGMENT == well_segments.iloc[0][Headers.TUBING_OUTLET]]  # could be empty
 
     return df_tubing_with_overburden, top
@@ -656,22 +655,22 @@ def calculate_upstream(
 
 
 def connect_compseg_icv(
-    df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion_table: pd.DataFrame
+    df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Connect COMPSEGS with the correct depth due to ICV segmenting combination.
 
     Args:
-        df_reservoir: The df_reservoir from class object CreateWells.
-        df_device: DataFrame from function prepare_device_layer for this well and lateral.
-        df_annulus: DataFrame from function prepare_annulus_layer for this well and lateral.
-        df_completion_table: DataFrame.
+        df_reservoir: Reservoir data.
+        df_device: Device data for this well and lateral.
+        df_annulus: Annulus data for this well and lateral.
+        df_completion: Completion data.
 
     Returns:
-        df_compseg_device, df_compseg_annulus.
+        Completion segments for devices and completion segments for annulus.
     """
     _MARKER_MEASURED_DEPTH = "TEMPORARY_MARKER_MEASURED_DEPTH"
-    df_temp = df_completion_table[
-        (df_completion_table[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
+    df_temp = df_completion[
+        (df_completion[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion[Headers.DEVICE_TYPE] == "PERF")
     ]
     df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
     df_res = df_reservoir.copy(deep=True)
@@ -700,7 +699,7 @@ def connect_compseg_icv(
         direction="nearest",
     )
     df_compseg_annulus = pd.DataFrame()
-    if (df_completion_table[Headers.ANNULUS] == "OA").any():
+    if (df_completion[Headers.ANNULUS] == "OA").any():
         df_compseg_annulus = pd.merge_asof(
             left=df_res,
             right=df_annulus,
@@ -725,9 +724,9 @@ def prepare_compsegs(
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_reservoir: The df_reservoir from class object CreateWells.
-        df_device: DataFrame from function prepare_device_layer for this well and this lateral.
-        df_annulus: DataFrame from function prepare_annulus_layer for this well and this lateral.
+        df_reservoir: The reservoir data.
+        df_device:  Device data for this well and lateral.
+        df_annulus: Annulus data for this well and lateral.
         df_completion_table: DataFrame.
         segment_length: Segment length.
 
@@ -826,20 +825,25 @@ def prepare_compsegs(
                 df_reservoir, df_device, df_annulus, df_completion_table
             )
 
-        def _choose(parameter: str) -> np.ndarray:
-            return choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, parameter)
-
         compseg = pd.DataFrame(
             {
-                Headers.I: _choose(Headers.I),
-                Headers.J: _choose(Headers.J),
-                Headers.K: _choose(Headers.K),
-                Headers.BRANCH: _choose(Headers.BRANCH),
-                Headers.START_MEASURED_DEPTH: _choose(Headers.START_MEASURED_DEPTH),
-                Headers.END_MEASURED_DEPTH: _choose(Headers.END_MEASURED_DEPTH),
-                Headers.COMPSEGS_DIRECTION: _choose(Headers.COMPSEGS_DIRECTION),
+                Headers.I: choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, Headers.I),
+                Headers.J: choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, Headers.J),
+                Headers.K: choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, Headers.K),
+                Headers.BRANCH: choose_layer(df_reservoir, df_compseg_annulus, df_compseg_device, Headers.BRANCH),
+                Headers.START_MEASURED_DEPTH: choose_layer(
+                    df_reservoir, df_compseg_annulus, df_compseg_device, Headers.START_MEASURED_DEPTH
+                ),
+                Headers.END_MEASURED_DEPTH: choose_layer(
+                    df_reservoir, df_compseg_annulus, df_compseg_device, Headers.END_MEASURED_DEPTH
+                ),
+                Headers.COMPSEGS_DIRECTION: choose_layer(
+                    df_reservoir, df_compseg_annulus, df_compseg_device, Headers.COMPSEGS_DIRECTION
+                ),
                 Headers.DEF: "3*",
-                Headers.START_SEGMENT_NUMBER: _choose(Headers.START_SEGMENT_NUMBER),
+                Headers.START_SEGMENT_NUMBER: choose_layer(
+                    df_reservoir, df_compseg_annulus, df_compseg_device, Headers.START_SEGMENT_NUMBER
+                ),
             }
         )
     compseg[Headers.EMPTY] = "/"
@@ -852,16 +856,16 @@ def connect_compseg_usersegment(
     """Connect COMPSEGS with user segmentation.
 
     This method will connect df_reservoir with df_device and df_annulus in accordance with its
-    depth in the df_completion_table due to user segmentation method.
+    depth in the df_completion due to user segmentation method.
 
     Args:
-        df_reservoir: The df_reservoir from class object CreateWells.
-        df_device: DataFrame from function prepare_device_layer for this well and lateral.
-        df_annulus: DataFrame from function prepare_annulus_layer for this well and lateral.
-        df_completion_table: DataFrame.
+        df_reservoir: The reservoir data.
+        df_device: Device data for this well and lateral.
+        df_annulus: Annulus data for this well and lateral.
+        df_completion_table: Completion data.
 
     Returns:
-        df_compseg_device, df_compseg_annulus.
+        Completion segments for devices and completion segments for annulus.
     """
     # check on top of df_res if the completion table is feasible
     df_temp = df_completion_table[
@@ -917,8 +921,8 @@ def connect_compseg_usersegment(
 
 def choose_layer(
     df_reservoir: pd.DataFrame, df_compseg_annulus: pd.DataFrame, df_compseg_device: pd.DataFrame, parameter: str
-) -> np.ndarray:
-    """Choose relevant parameters from either df_compseg_annulus or df_compseg_device.
+) -> npt.NDArray[np.float64 | np.int64]:
+    """Choose relevant parameters from either completion segments annulus or completion segments device.
 
     Args:
         df_reservoir:
@@ -944,11 +948,11 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
     the case/config file and not the input schedule file.
 
     Args:
-        df_reservoir: Reservoir dataframe.
-        df_completion_table: ReadCasefile object for current well/lateral.
+        df_reservoir: Reservoir data.
+        df_completion: Completion data for current well/lateral.
 
     Returns:
-        Corrected DataFrame for current well/lateral with inner diameter taken from the ReadCasefile object.
+        Corrected DataFrame for current well/lateral with inner diameter taken from the casefile object.
     """
     df_reservoir = df_reservoir.copy(deep=True)
     completion_diameters = []
@@ -966,15 +970,15 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
 
 
 def prepare_compdat(
-    well_name: str, lateral: int, df_reservoir: pd.DataFrame, df_completion_table: pd.DataFrame
+    well_name: str, lateral: int, df_reservoir: pd.DataFrame, df_completion: pd.DataFrame
 ) -> pd.DataFrame:
     """Prepare COMPDAT data frame.
 
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_reservoir: df_reservoir from class CreateWells.
-        df_completion_table: From class ReadCasefile.
+        df_reservoir: Reservoir data.
+        df_completion: Completion data.
 
     Returns:
         COMPDAT.
@@ -998,7 +1002,7 @@ def prepare_compdat(
         Headers.SATURATION_FUNCTION_REGION_NUMBERS
     ].to_numpy()
     compdat[Headers.CONNECTION_FACTOR] = df_reservoir[Headers.CONNECTION_FACTOR].to_numpy()
-    compdat[Headers.WELL_BORE_DIAMETER] = fix_well_id(df_reservoir, df_completion_table)[
+    compdat[Headers.WELL_BORE_DIAMETER] = fix_well_id(df_reservoir, df_completion)[
         Headers.WELL_BORE_DIAMETER
     ].to_numpy()
     compdat[Headers.FORMATION_PERMEABILITY_THICKNESS] = df_reservoir[
@@ -1020,7 +1024,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: df_well from class CreateWells.
+        df_well: Well data.
         df_device: From function prepare_device_layer for this well and this lateral.
 
     Returns:
@@ -1068,8 +1072,8 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: df_well from class CreateWells.
-        df_device: From function prepare_device_layer for this well and this lateral.
+        df_well: Well data.
+        df_device: Device data for this well and lateral.
 
     Returns:
         WSEGSICD.
@@ -1106,7 +1110,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: df_well from class CreateWells.
+        df_well: Well data.
         df_device: From function prepare_device_layer for this well and this lateral.
 
     Returns:
@@ -1153,7 +1157,7 @@ def prepare_wsegicv(
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: df_well from class CreateWells.
+        df_well: Well data.
         df_device: From function prepare_device_layer for this well and this lateral.
         df_tubing: From function prepare_tubing_layer for this well and this lateral.
         df_icv_tubing: df_icv_tubing completion from class ReadCaseFile.
@@ -1250,8 +1254,8 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: df_well from class CreateWells.
-        df_device: From function prepare_device_layer for this well and this lateral.
+        df_well: Well data.
+        df_device: Device data for this well and lateral.
 
     Returns:
         DataFrame for DAR.
@@ -1297,8 +1301,8 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Args:
         well_name: Well name.
         lateral: Lateral number.
-        df_well: df_well from class CreateWells.
-        df_device: From function prepare_device_layer for this well and this lateral.
+        df_well: Well data.
+        df_device: Device data for this well and lateral.
 
     Returns:
         DataFrame for AICV.

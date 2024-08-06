@@ -8,7 +8,8 @@ import pandas as pd
 import pytest
 import utils
 
-from completor import completion, prepare_outputs, read_casefile  # type:ignore
+import completor.read_schedule
+from completor import prepare_outputs, read_casefile
 from completor.constants import Headers, Keywords
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -105,10 +106,10 @@ def test_outlet_segment_2():
 
 def test_prepare_tubing_layer():
     """Test that the function does not create duplicate tubing segments."""
-    schedule_obj = completion.WellSchedule(["A1"])
-    schedule_obj.msws = completion.set_welsegs(
-        schedule_obj.msws,
-        schedule_obj.active_wells,
+    active_wells = np.array(["A1"])
+    schedule_data = completor.read_schedule.set_welsegs(
+        {},
+        active_wells,
         [
             ["A1", "2148.00", "3422", "1*", "ABS", "HFA", "HO"],
             ["2", "2", "1", "1", "3428.66288", "2247.36764", "0.1242", "0.0123"],
@@ -118,7 +119,7 @@ def test_prepare_tubing_layer():
         ],
     )
     df_test, _ = prepare_outputs.prepare_tubing_layer(
-        schedule=schedule_obj,
+        schedule_data=schedule_data,
         well_name="A1",
         lateral=1,
         df_well=pd.DataFrame(
@@ -183,7 +184,7 @@ def test_prepare_tubing_layer():
 
 
 @pytest.mark.parametrize(
-    "segment_length,df_device,df_annulus,df_completion_table,expected",
+    "segment_length,df_device,df_annulus,df_completion,expected",
     [
         pytest.param(
             1.0,
@@ -520,7 +521,7 @@ def test_prepare_tubing_layer():
         ),
     ],
 )
-def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion_table, expected):
+def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion, expected):
     """Tests the function prepare_outputs.py::prepare_compsegs."""
     well_name = "A1"
     lateral = 1
@@ -552,7 +553,7 @@ def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion_t
     )
 
     test_compsegs = prepare_outputs.prepare_compsegs(
-        well_name, lateral, df_reservoir, df_device, df_annulus, df_completion_table, segment_length
+        well_name, lateral, df_reservoir, df_device, df_annulus, df_completion, segment_length
     )
     pd.testing.assert_frame_equal(test_compsegs, expected)
 
