@@ -13,6 +13,7 @@ from completor.constants import Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
+from completor.wells2 import Lateral
 
 
 def trim_pandas(df_temp: pd.DataFrame) -> pd.DataFrame:
@@ -204,8 +205,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 def prepare_tubing_layer(
     schedule_data: dict[str, dict[str, Any]],
     well_name: str,
-    lateral: int,
-    df_well: pd.DataFrame,
+    lateral: Lateral,
     start_segment: int,
     branch_no: int,
     completion_table: pd.DataFrame,
@@ -231,19 +231,19 @@ def prepare_tubing_layer(
         Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
     }
     cols = list(rnm.values())
-    df_well = df_well[df_well[Headers.WELL] == well_name]
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
+    # df_well = df_well[df_well[Headers.WELL] == well_name]
+    # df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_tubing_in_reservoir = pd.DataFrame(
         {
-            Headers.MEASURED_DEPTH: df_well[Headers.TUBING_MEASURED_DEPTH],
-            Headers.TRUE_VERTICAL_DEPTH: df_well[Headers.TRUE_VERTICAL_DEPTH],
-            "DIAM": df_well[Headers.INNER_DIAMETER],
-            "ROUGHNESS": df_well[Headers.ROUGHNESS],
+            Headers.MEASURED_DEPTH: lateral.df_well[Headers.TUBING_MEASURED_DEPTH],
+            Headers.TRUE_VERTICAL_DEPTH: lateral.df_well[Headers.TRUE_VERTICAL_DEPTH],
+            "DIAM": lateral.df_well[Headers.INNER_DIAMETER],
+            "ROUGHNESS": lateral.df_well[Headers.ROUGHNESS],
         }
     )
 
     # handle overburden
-    well_segments = read_schedule.get_well_segments(schedule_data, well_name, lateral)[1]
+    well_segments = read_schedule.get_well_segments(schedule_data, well_name, lateral.lateral_number)[1]
     md_input_welsegs = well_segments[Headers.TUBING_MEASURED_DEPTH]
     md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MEASURED_DEPTH]
     overburden = well_segments[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
@@ -324,75 +324,7 @@ def fix_tubing_inner_diam_roughness(
         raise ValueError(f"Cannot find {well_name} in completion overburden; it is empty") from err
 
 
-def connect_lateral(
-    well_name: str,
-    lateral: int,
-    data: dict[int, tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]],
-    case: ReadCasefile,
-) -> None:
-    """Connect lateral to main wellbore/branch.
-
-    The main branch can either have a tubing- or device-layer connected.
-    By default, the lateral will be connected to tubing-layer, but if connect_to_tubing is False,
-    it will be connected to device-layer.
-    Abort if it cannot find device layer at junction depth.
-
-    Args:
-        well_name: Well name.
-        lateral: Lateral number.
-        data: Dict with integer key 'lateral' containing:.
-            df_tubing: DataFrame tubing layer.
-            df_device: DataFrame device layer.
-            df_annulus: DataFrame annulus layer.
-            df_wseglink: DataFrame WSEGLINK.
-            top: DataFrame of first connection.
-        case: ReadCasefile object.
-
-    Raises:
-        CompletorError: If there is no device layer at junction of lateral.
-    """
-    df_tubing, _, _, _, top = data[lateral]
-    if not top.empty:
-        lateral0 = top[Headers.TUBING_BRANCH].to_numpy()[0]
-        md_junct = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
-        if md_junct > df_tubing[Headers.MEASURED_DEPTH][0]:
-            logger.warning(
-                "Found a junction above the start of the tubing layer, well %s, "
-                "branch %s. Check the depth of segments pointing at the main stem "
-                "in schedule-file",
-                well_name,
-                lateral,
-            )
-        if case.connect_to_tubing(well_name, lateral):
-            df_segm0 = data[lateral0][0]  # df_tubing
-        else:
-            df_segm0 = data[lateral0][1]  # df_device
-        try:
-            if case.connect_to_tubing(well_name, lateral):
-                # Since md_junct (top.TUBING_MEASURED_DEPTH) has segment tops and
-                # segm0.MEASURED_DEPTH has grid block midpoints, a junction at the top of the
-                # well may not be found. Therefore, we try the following:
-                if (~(df_segm0.MEASURED_DEPTH <= md_junct)).all():
-                    md_junct = df_segm0.MEASURED_DEPTH.iloc[0]
-                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
-                else:
-                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
-            else:
-                # Add 0.1 to md_junct since md_junct refers to the tubing layer
-                # junction md and the device layer md is shifted 0.1 m to the
-                # tubing layer.
-                idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct + 0.1)[0][-1]
-        except IndexError as err:
-            raise CompletorError(f"Cannot find a device layer at junction of lateral {lateral} in {well_name}") from err
-        outsegm = df_segm0.at[idx, Headers.START_SEGMENT_NUMBER]
-    else:
-        outsegm = 1  # default
-    df_tubing.at[0, Headers.OUT] = outsegm
-
-
-def prepare_device_layer(
-    well_name: str, lateral: int, df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_length: float = 0.1
-) -> pd.DataFrame:
+def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_length: float = 0.1) -> pd.DataFrame:
     """Prepare device layer dataframe.
 
     Args:
@@ -408,8 +340,7 @@ def prepare_device_layer(
     """
     start_segment = max(df_tubing[Headers.START_SEGMENT_NUMBER].to_numpy()) + 1
     start_branch = max(df_tubing[Headers.BRANCH].to_numpy()) + 1
-    df_well = df_well[df_well[Headers.WELL] == well_name]
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
+
     # device segments are only created if:
     # 1. the device type is PERF
     # 2. if it is not PERF then it must have number of device > 0
@@ -461,7 +392,7 @@ def prepare_device_layer(
 
 
 def prepare_annulus_layer(
-    well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame, annulus_length: float = 0.1
+    well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame, annulus_length: float = 0.1
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Prepare annulus layer and wseglink dataframe.
 
@@ -481,8 +412,6 @@ def prepare_annulus_layer(
 
     """
     # filter for this lateral
-    df_well = df_well[df_well[Headers.WELL] == well_name]
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     # filter segments which have annular zones
     df_well = df_well[df_well[Headers.ANNULUS_ZONE] > 0]
     # loop through all annular zones
@@ -1018,7 +947,7 @@ def prepare_compdat(
     return compdat
 
 
-def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_wsegaicd(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare WSEGAICD data frame.
 
     Args:
@@ -1030,8 +959,6 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Returns:
         WSEGAICD.
     """
-    df_well = df_well[df_well[Headers.WELL] == well_name]
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1066,7 +993,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     return wsegaicd
 
 
-def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_wsegsicd(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare WSEGSICD data frame.
 
     Args:
@@ -1078,7 +1005,6 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Returns:
         WSEGSICD.
     """
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1104,19 +1030,17 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     return wsegsicd
 
 
-def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_wsegvalv(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare WSEGVALV data frame.
 
     Args:
         well_name: Well name.
-        lateral: Lateral number.
         df_well: Well data.
         df_device: From function prepare_device_layer for this well and this lateral.
 
     Returns:
         WSEGVALV.
     """
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1248,7 +1172,7 @@ def prepare_wsegicv(
     return wsegicv
 
 
-def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_wsegdar(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare data frame for DAR.
 
     Args:
@@ -1260,7 +1184,6 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
     Returns:
         DataFrame for DAR.
     """
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
@@ -1295,7 +1218,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
     return wsegdar
 
 
-def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_wsegaicv(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare data frame for AICV.
 
     Args:
@@ -1307,7 +1230,6 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     Returns:
         DataFrame for AICV.
     """
-    df_well = df_well[df_well[Headers.LATERAL] == lateral]
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()

@@ -7,6 +7,7 @@ import os
 import re
 import time
 from collections.abc import Mapping
+from copy import copy
 from typing import Any
 
 import numpy as np
@@ -253,11 +254,27 @@ def create(
             else:
                 progress_bar.update(len(lines) - prev_line_number)
 
+        from completor.wells2 import Wellerman
+
         for well_name_ in well_names:
+            well_name2 = copy(well_name_)
+            case2 = copy(case)
+            schedule_data2 = copy(schedule_data)
             logger.debug("Writing new MSW info for well %s", well_name_)
             wells = Wells(well_name_, case, schedule_data)
+            von_new_man = Wellerman(well_name2, case2, schedule_data2)
             well_number = read_schedule.get_well_number(well_name_, active_wells)
-            output = CreateOutput(case, schedule_data, wells, well_name_, well_number, show_fig, figure_name, paths)
+            output = CreateOutput(
+                case,
+                schedule_data,
+                wells,
+                well_name_,
+                well_number,
+                show_fig,
+                figure_name,
+                paths,
+                weller_man=von_new_man,
+            )
             output_text += format_text(None, output.finalprint)
 
     except Exception as e_:

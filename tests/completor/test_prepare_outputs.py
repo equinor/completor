@@ -8,8 +8,7 @@ import pandas as pd
 import pytest
 import utils
 
-import completor.read_schedule
-from completor import prepare_outputs, read_casefile
+from completor import prepare_outputs, read_schedule
 from completor.constants import Headers, Keywords
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -107,7 +106,7 @@ def test_outlet_segment_2():
 def test_prepare_tubing_layer():
     """Test that the function does not create duplicate tubing segments."""
     active_wells = np.array(["A1"])
-    schedule_data = completor.read_schedule.set_welsegs(
+    schedule_data = read_schedule.set_welsegs(
         {},
         active_wells,
         [
@@ -121,7 +120,7 @@ def test_prepare_tubing_layer():
     df_test, _ = prepare_outputs.prepare_tubing_layer(
         schedule_data=schedule_data,
         well_name="A1",
-        lateral=1,
+        lateral=1,  # TODO: Wrong number of input, should use Lateral
         df_well=pd.DataFrame(
             [
                 ["A1", 3428.662885, 2247.367641, 0.1, 0.1, 1],
@@ -558,74 +557,6 @@ def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion, 
     pd.testing.assert_frame_equal(test_compsegs, expected)
 
 
-def test_connect_lateral_logs_warning(caplog):
-    """Test the warning occurs in connect_lateral when given segments with negative length.
-
-    Segments with negative lengths can occur when trying to connect a lateral to its main bore/mother branch.
-    They are caused by an error in the input, so the user must be warned about this.
-    """
-    df_tubing_lat_1 = pd.DataFrame(
-        [
-            [2, 2, 1, 1, 2219.76749],
-            [3, 3, 1, 2, 2200.73413],
-            [4, 4, 1, 3, 2202.75139],
-        ],
-        columns=[
-            Headers.START_SEGMENT_NUMBER,
-            Headers.END_SEGMENT_NUMBER,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MEASURED_DEPTH,
-        ],
-    )
-    df_tubing_lat_2 = pd.DataFrame(
-        [
-            [16, 16, 5, 15, 2179.9725],
-            [17, 17, 5, 16, 2195.5],
-        ],
-        columns=[
-            Headers.START_SEGMENT_NUMBER,
-            Headers.END_SEGMENT_NUMBER,
-            Headers.BRANCH,
-            Headers.OUT,
-            Headers.MEASURED_DEPTH,
-        ],
-    )
-    df_top = pd.DataFrame(
-        [[1, 2188.76261]],
-        columns=[Headers.TUBING_BRANCH, Headers.TUBING_MEASURED_DEPTH],
-    )
-    empty_df = pd.DataFrame()
-
-    data = {
-        1: (df_tubing_lat_1, empty_df, empty_df, empty_df, empty_df),
-        2: (df_tubing_lat_2, empty_df, empty_df, empty_df, df_top),
-    }
-    case = read_casefile.ReadCasefile(
-        (
-            """
-COMPLETION
---Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
---                      Diameter Diameter
-  A1     1   0.0  2451.78 0.15   0.19    0.00035     GP      1     PERF    1
-  A1     2   0.0  2450.0  0.15   0.19    0.00035     GP      1     PERF    1
-/
-SEGMENTLENGTH
- 0
-/
-GP_PERF_DEVICELAYER
- TRUE
-/"""
-        ),
-        "dummy_schedule",
-    )
-
-    prepare_outputs.connect_lateral("A1", 2, data, case)
-    assert len(caplog.text) > 0
-    assert "WARNING" in caplog.text
-
-
 def test_user_segment_lumping_oa(tmpdir):
     """Test completor case with user defined segment lumping.
 
@@ -815,7 +746,7 @@ def test_prepare_wsegvalv():
             Headers.EMPTY,
         ],
     )
-    wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", 1, df_well, df_device)
+    wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", df_well, df_device)
     pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
 
 
