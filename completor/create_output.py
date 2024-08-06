@@ -9,7 +9,7 @@ from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 import completor
 from completor import completion, prepare_outputs
-from completor.constants import Headers, Keywords
+from completor.constants import Content, Headers, Keywords
 from completor.create_wells import CreateWells
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
@@ -85,7 +85,7 @@ class CreateOutput:
         self.print_udq = False
         self.udq_correlation = ""
         self.udq_parameter: dict[str, str] = {}
-        if self.case.completion_table[Headers.DEVICE_TYPE].isin(["AICV"]).any():
+        if self.case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
             self.print_udq = True
             self.udq_correlation = CORRELATION_UDQ
 

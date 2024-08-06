@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from completor.constants import Headers
+from completor.constants import Content, Headers
 from completor.exceptions import CaseReaderFormatError, CompletorError  # type: ignore
 from completor.main import get_content_and_path  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
@@ -21,16 +21,28 @@ def test_read_case_completion():
     """Test the function which reads the COMPLETION keyword."""
     df_true = pd.DataFrame(
         [
-            ["A1", 1, 0.0, 1000.0, 0.1, 0.2, 1e-4, "OA", 3, "AICD", 1],
-            ["A1", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 0, "VALVE", 1],
-            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, "OA", 3, "DAR", 1],
-            ["A2", 1, 500, 500, 0, 0, 0, "PA", 0.0, "PERF", 0],
-            ["A2", 1, 500, 1000, 0.1, 0.2, 1e-4, "OA", 0.0, "PERF", 0],
-            ["A3", 1, 0, 1000, 0.1, 0.2, 1e-4, "OA", 3, "AICD", 2],
-            ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, "VALVE", 2],
-            ["11", 1, 0, 500, 0.1, 0.2, 1e-4, "OA", 3, "DAR", 2],
-            ["11", 1, 500, 500, 0, 0, 0, "PA", 0, "PERF", 0],
-            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, "OA", 3, "AICV", 2],
+            [
+                "A1",
+                1,
+                0.0,
+                1000.0,
+                0.1,
+                0.2,
+                1e-4,
+                Content.OPEN_ANNULUS,
+                3,
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+            ],
+            ["A1", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 0, Content.VALVE, 1],
+            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, Content.DENSITY_ACTIVATED_RECOVERY, 1],
+            ["A2", 1, 500, 500, 0, 0, 0, Content.PACKER, 0.0, Content.PERFORATED, 0],
+            ["A2", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 0.0, Content.PERFORATED, 0],
+            ["A3", 1, 0, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, 2],
+            ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, Content.VALVE, 2],
+            ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DENSITY_ACTIVATED_RECOVERY, 2],
+            ["11", 1, 500, 500, 0, 0, 0, Content.PACKER, 0, Content.PERFORATED, 0],
+            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, 2],
         ],
         columns=[
             Headers.WELL,
@@ -64,8 +76,8 @@ def test_read_case_wsegvalv():
     """Test the function which reads WSEGVALV keyword."""
     df_true = pd.DataFrame(
         [
-            ["VALVE", 1, 0.85, 0.01, "5*", 0.04],
-            ["VALVE", 2, 0.95, 0.02, "5*", 0.04],
+            [Content.VALVE, 1, 0.85, 0.01, "5*", 0.04],
+            [Content.VALVE, 2, 0.95, 0.02, "5*", 0.04],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -83,8 +95,8 @@ def test_read_case_wsegicv():
     """Test the function which reads WSEGVALV keyword."""
     df_true = pd.DataFrame(
         [
-            ["ICV", 1, 1.0, 2.0, 2.0],
-            ["ICV", 2, 3, 4, 1.0],
+            [Content.INFLOW_CONTROL_VALVE, 1, 1.0, 2.0, 2.0],
+            [Content.INFLOW_CONTROL_VALVE, 2, 3, 4, 1.0],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -101,8 +113,36 @@ def test_read_case_wsegaicd():
     """Test the function which reads WSEGAICD keyword."""
     df_true = pd.DataFrame(
         [
-            ["AICD", 1, 0.00021, 0.0, 1.0, 1.1, 1.2, 0.9, 1.3, 1.4, 2.1, 1000.25, 1.45],
-            ["AICD", 2, 0.00042, 0.1, 1.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1001.25, 1.55],
+            [
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+                0.00021,
+                0.0,
+                1.0,
+                1.1,
+                1.2,
+                0.9,
+                1.3,
+                1.4,
+                2.1,
+                1000.25,
+                1.45,
+            ],
+            [
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                2,
+                0.00042,
+                0.1,
+                1.1,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1001.25,
+                1.55,
+            ],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -129,8 +169,8 @@ def test_read_case_wsegsicd():
     """Test the function which reads WSEGSICD keyword."""
     df_true = pd.DataFrame(
         [
-            ["ICD", 1, 0.001, 1000.0, 1.0, 0.1],
-            ["ICD", 2, 0.002, 1000.0, 0.9, 0.2],
+            [Content.INFLOW_CONTROL_DEVICE, 1, 0.001, 1000.0, 1.0, 0.1],
+            [Content.INFLOW_CONTROL_DEVICE, 2, 0.002, 1000.0, 0.9, 0.2],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -149,8 +189,8 @@ def test_read_case_wsegdar():
     """Test the function which reads WSEGDAR keyword."""
     df_true = pd.DataFrame(
         [
-            ["DAR", 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
-            ["DAR", 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
+            [Content.DENSITY_ACTIVATED_RECOVERY, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
+            [Content.DENSITY_ACTIVATED_RECOVERY, 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -187,7 +227,7 @@ def test_read_case_wsegaicv():
     df_true = pd.DataFrame(
         [
             [
-                "AICV",
+                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
                 1,
                 0.95,
                 0.95,
@@ -213,7 +253,7 @@ def test_read_case_wsegaicv():
                 1.3,
             ],
             [
-                "AICV",
+                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
                 2,
                 0.80,
                 0.85,
@@ -352,8 +392,8 @@ WSEGAICD
 
     df_true = pd.DataFrame(
         [
-            ["ICD", 1, 0.001, 1000.0, 1.0, 0.1],
-            ["ICD", 2, 0.002, 1000.0, 0.9, 0.2],
+            [Content.INFLOW_CONTROL_DEVICE, 1, 0.001, 1000.0, 1.0, 0.1],
+            [Content.INFLOW_CONTROL_DEVICE, 2, 0.002, 1000.0, 0.9, 0.2],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -432,13 +472,13 @@ def test_read_case_completion_icv():
         case = ReadCasefile(fh.read())
     df_true = pd.DataFrame(
         [
-            ["A1", 1, 0.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
-            ["A1", 1, 2010.0, 2030.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
-            ["A1", 1, 2030.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 1],
-            ["A1", 2, 0.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
-            ["A1", 2, 2010.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICD", 1],
-            ["A1", 2, 3000.0, 4000.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, "ICD", 1],
-            ["A2", 1, 0.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 2],
+            ["A1", 1, 0.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, Content.INFLOW_CONTROL_DEVICE, 1],
+            ["A1", 1, 2010.0, 2030.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, Content.INFLOW_CONTROL_DEVICE, 1],
+            ["A1", 1, 2030.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, Content.INFLOW_CONTROL_VALVE, 1],
+            ["A1", 2, 0.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, Content.INFLOW_CONTROL_DEVICE, 1],
+            ["A1", 2, 2010.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, Content.INFLOW_CONTROL_DEVICE, 1],
+            ["A1", 2, 3000.0, 4000.0, 0.2, 0.25, 1.00e-4, "GP", 0.0, Content.INFLOW_CONTROL_DEVICE, 1],
+            ["A2", 1, 0.0, 3000.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, Content.INFLOW_CONTROL_VALVE, 2],
         ],
         columns=[
             Headers.WELL,
@@ -464,8 +504,8 @@ def test_read_case_completion_icv_tubing():
         case = ReadCasefile(case_file.read())
     df_true = pd.DataFrame(
         [
-            ["A1", 1, 2010.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 1],
-            ["A1", 1, 2030.0, 2030.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, "ICV", 1],
+            ["A1", 1, 2010.0, 2010.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, Content.INFLOW_CONTROL_VALVE, 1],
+            ["A1", 1, 2030.0, 2030.0, 0.2, 0.25, 1.00e-4, "GP", 1.0, Content.INFLOW_CONTROL_VALVE, 1],
         ],
         columns=[
             Headers.WELL,

@@ -8,19 +8,11 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Headers, Keywords, Method
+from completor.constants import Content, Headers, Keywords, Method
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_schedule import fix_compsegs, fix_welsegs
 from completor.utils import log_and_raise_exception, shift_array
-
-try:
-    from typing import TypeAlias
-except ImportError:
-    pass
-
-# Use more precise type information, if possible
-DeviceType: TypeAlias = Literal["AICD", "ICD", "DAR", "VALVE", "AICV", "ICV"]
 
 
 def well_trajectory(df_well_segments_header: pd.DataFrame, df_well_segments_content: pd.DataFrame) -> pd.DataFrame:
@@ -71,19 +63,19 @@ def define_annulus_zone(df_completion: pd.DataFrame) -> pd.DataFrame:
     """
     start_measured_depth = df_completion[Headers.START_MEASURED_DEPTH].iloc[0]
     end_measured_depth = df_completion[Headers.END_MEASURED_DEPTH].iloc[-1]
-    gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == "GP"][
+    gravel_pack_location = df_completion[df_completion[Headers.ANNULUS] == Content.GRAVEL_PACKED][
         [Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     ].to_numpy()
-    packer_location = df_completion[df_completion[Headers.ANNULUS] == "PA"][
+    packer_location = df_completion[df_completion[Headers.ANNULUS] == Content.PACKER][
         [Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     ].to_numpy()
     # update df_completion by removing PA rows
-    df_completion = df_completion[df_completion[Headers.ANNULUS] != "PA"].copy()
+    df_completion = df_completion[df_completion[Headers.ANNULUS] != Content.PACKER].copy()
     # reset index after filter
     df_completion.reset_index(drop=True, inplace=True)
     annulus_content = df_completion[Headers.ANNULUS].to_numpy()
     df_completion[Headers.ANNULUS_ZONE] = 0
-    if "OA" in annulus_content:
+    if Content.OPEN_ANNULUS in annulus_content:
         # only if there is an open annulus
         boundary = np.concatenate((packer_location.flatten(), gravel_pack_location.flatten()))
         boundary = np.sort(np.append(np.insert(boundary, 0, start_measured_depth), end_measured_depth))
@@ -557,7 +549,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     return df_well.reset_index(drop=True, inplace=False)
 
 
-def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: DeviceType) -> pd.DataFrame:
+def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str) -> pd.DataFrame:
     """Get device characteristics.
 
     Args:
@@ -578,11 +570,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: Devi
         if f"'{Headers.DEVICE_TYPE}'" in str(err):
             raise ValueError(f"Missing keyword 'DEVICETYPE {device_type}' in input files.") from err
         raise err
-    if device_type == "VALVE":
+    if device_type == Content.VALVE:
         # rescale the Cv
         # because no scaling factor in WSEGVALV
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
-    elif device_type == "DAR":
+    elif device_type == Content.DENSITY_ACTIVATED_RECOVERY:
         # rescale the Cv
         # because no scaling factor in WSEGVALV
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
@@ -606,7 +598,8 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
             continue
         df_zone = df_well[df_well[Headers.ANNULUS_ZONE] == zone]
         df_zone_device = df_zone[
-            (df_zone[Headers.NUMBER_OF_DEVICES].to_numpy() > 0) | (df_zone[Headers.DEVICE_TYPE].to_numpy() == "PERF")
+            (df_zone[Headers.NUMBER_OF_DEVICES].to_numpy() > 0)
+            | (df_zone[Headers.DEVICE_TYPE].to_numpy() == Content.PERFORATED)
         ]
         if df_zone_device.shape[0] == 0:
             df_well[Headers.ANNULUS_ZONE].replace(zone, 0, inplace=True)
@@ -777,7 +770,7 @@ def handle_compdat(
         if well_name not in multisegmented_well_segments:
             multisegmented_well_segments[well_name] = {}
         multisegmented_well_segments[well_name][Keywords.COMPDAT] = df[df[Headers.WELL] == well_name]
-        logger.debug("handle_compdat for %s", well_name)
+        logger.debug("Handle_compdat for %s", well_name)
     return multisegmented_well_segments
 
 

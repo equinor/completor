@@ -7,7 +7,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import completion
-from completor.constants import Headers, Method
+from completor.constants import Content, Headers, Method
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
 from completor.read_schedule import fix_compsegs_by_priority
@@ -117,8 +117,17 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
 
     # If the user wants a device layer for this type of completion.
     if not gp_perf_devicelayer:
-        gp_check = annuli == "OA"
-        perf_check = device_types.isin(["AICD", "AICV", "DAR", "ICD", "VALVE", "ICV"])
+        gp_check = annuli == Content.OPEN_ANNULUS
+        perf_check = device_types.isin(
+            [
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
+                Content.DENSITY_ACTIVATED_RECOVERY,
+                Content.INFLOW_CONTROL_DEVICE,
+                Content.VALVE,
+                Content.INFLOW_CONTROL_VALVE,
+            ]
+        )
         # Where annuli is "OA" or perforation is in the list above.
         mask = gp_check | perf_check
         if not mask.any():
@@ -239,12 +248,13 @@ def _create_tubing_segments(
     )
 
     if (pd.unique(df_completion[Headers.DEVICE_TYPE]).size > 1) & (
-        (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
+        (df_completion[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
+        & (df_completion[Headers.VALVES_PER_JOINT] > 0)
     ).any():
         return fix_compsegs_by_priority(df_completion, df_tubing_segments_cells, df_tubing_segments_user)
 
     # If all the devices are ICVs, lump the segments.
-    if (df_completion[Headers.DEVICE_TYPE] == "ICV").all():
+    if (df_completion[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE).all():
         return df_tubing_segments_user
     # If none of the devices are ICVs use defined method.
     return df_tubing_segments_cells
@@ -267,18 +277,18 @@ def _get_devices(df_completion: pd.DataFrame, df_well: pd.DataFrame, case: ReadC
         ).unique()
     else:
         active_devices = df_completion[Headers.DEVICE_TYPE].unique()
-    if "VALVE" in active_devices:
-        df_well = completion.get_device(df_well, case.wsegvalv_table, "VALVE")
-    if "ICD" in active_devices:
-        df_well = completion.get_device(df_well, case.wsegsicd_table, "ICD")
-    if "AICD" in active_devices:
-        df_well = completion.get_device(df_well, case.wsegaicd_table, "AICD")
-    if "DAR" in active_devices:
-        df_well = completion.get_device(df_well, case.wsegdar_table, "DAR")
-    if "AICV" in active_devices:
-        df_well = completion.get_device(df_well, case.wsegaicv_table, "AICV")
-    if "ICV" in active_devices:
-        df_well = completion.get_device(df_well, case.wsegicv_table, "ICV")
+    if Content.VALVE in active_devices:
+        df_well = completion.get_device(df_well, case.wsegvalv_table, Content.VALVE)
+    if Content.INFLOW_CONTROL_DEVICE in active_devices:
+        df_well = completion.get_device(df_well, case.wsegsicd_table, Content.INFLOW_CONTROL_DEVICE)
+    if Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE in active_devices:
+        df_well = completion.get_device(df_well, case.wsegaicd_table, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE)
+    if Content.DENSITY_ACTIVATED_RECOVERY in active_devices:
+        df_well = completion.get_device(df_well, case.wsegdar_table, Content.DENSITY_ACTIVATED_RECOVERY)
+    if Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in active_devices:
+        df_well = completion.get_device(df_well, case.wsegaicv_table, Content.AUTONOMOUS_INFLOW_CONTROL_VALVE)
+    if Content.INFLOW_CONTROL_VALVE in active_devices:
+        df_well = completion.get_device(df_well, case.wsegicv_table, Content.INFLOW_CONTROL_VALVE)
     return df_well
 
 
@@ -304,7 +314,7 @@ def _connect_cells_to_segments(
     df_reservoir = df_reservoir.drop([Headers.BRANCH], axis=1)
     icv_device = (
         df_well[Headers.DEVICE_TYPE].nunique() > 1
-        and (df_well[Headers.DEVICE_TYPE] == "ICV").any()
+        and (df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE).any()
         and not df_well[Headers.NUMBER_OF_DEVICES].empty
     )
     method = Method.USER if icv_device else method
