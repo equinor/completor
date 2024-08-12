@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Headers, Method
+from completor.constants import Content, Headers, Method
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.utils import log_and_raise_exception, shift_array

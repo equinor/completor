@@ -671,9 +671,8 @@ def connect_compseg_icv(
         Completion segments for devices and completion segments for annulus.
     """
     _MARKER_MEASURED_DEPTH = "TEMPORARY_MARKER_MEASURED_DEPTH"
-    df_temp = df_completion_table[
-        (df_completion_table[Headers.VALVES_PER_JOINT] > 0.0)
-        | (df_completion_table[Headers.DEVICE_TYPE] == Content.PERFORATED)
+    df_temp = df_completion[
+        (df_completion[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion[Headers.DEVICE_TYPE] == Content.PERFORATED)
     ]
     df_completion_table_clean = df_temp[
         (df_temp[Headers.ANNULUS] != Content.PACKER) & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
@@ -704,7 +703,7 @@ def connect_compseg_icv(
         direction="nearest",
     )
     df_compseg_annulus = pd.DataFrame()
-    if (df_completion_table[Headers.ANNULUS] == Content.OPEN_ANNULUS).any():
+    if (df_completion[Headers.ANNULUS] == Content.OPEN_ANNULUS).any():
         df_compseg_annulus = pd.merge_asof(
             left=df_res,
             right=df_annulus,
