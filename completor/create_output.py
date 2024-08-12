@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import getpass
 from datetime import datetime
+from typing import Any
 
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 import completor
-from completor import completion, prepare_outputs
+from completor import prepare_outputs, read_schedule
 from completor.constants import Content, Headers, Keywords
-from completor.create_wells import CreateWells
+from completor.create_wells import Wells
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
 from completor.read_casefile import ReadCasefile
@@ -24,41 +25,33 @@ class CreateOutput:
         1. Well schedule file (text file) for input to reservoir simulator.
         2. Well diagram (pdf file), i.e. a well completion schematic.
 
-    Args:
-        case: ReadCasefile object.
-        schedule: ReadSchedule object.
-        wells: CreateWells object.
-        well_name: Well name.
-        well_number: Well number used in creating WSEGAICV and WSEGDAR output.
-        show_figure: Flag for pdf export of well completion schematic.
-        figure_no: Figure number.
-
-        write_welsegs: Flag to write WELSEGS.
     """
 
     def __init__(
         self,
         case: ReadCasefile,
-        schedule: completion.WellSchedule,
-        wells: CreateWells,
+        schedule_data: dict[str, dict[str, Any]],
+        wells: Wells,
         well_name: str,
         well_number: int,
         show_figure: bool = False,
         figure_name: str | None = None,
-        write_welsegs: bool = True,
         paths: tuple[str, str] | None = None,
     ):
         """Initialize CreateOutput class.
 
         Args:
-            case: ReadCasefile object.
-            schedule: ReadSchedule object.
-            wells: CreateWells object.
-            figure_no: Must be set if show_figure.
-            show_figure: True if the user wants to create well diagram file.
+            case: Case file object.
+            schedule_data: Data from schedule file.
+            wells: Wells object.
+            well_name: Name of well.
+            well_number: Well number.
+            show_figure: True if the user wants to create well diagram file. Defaults to False.
+            figure_name: File name of the figure.
+            paths: Paths to the original input case and schedule file.
+
         """
         self.case = case
-        self.schedule = schedule
         self.case_path: str | None
         self.schedule_path: str | None
         if paths:
@@ -69,7 +62,6 @@ class CreateOutput:
         self.wells = wells
         self.well_name = well_name
         self.well_number = well_number
-        self.write_welsegs = write_welsegs
         self.show_figure = show_figure
 
         # different line connection
@@ -100,7 +92,7 @@ class CreateOutput:
         self.laterals = self.df_well[self.df_well[Headers.WELL] == self.well_name][Headers.LATERAL].unique()
 
         # Start printing per well.
-        self.welsegs_header, _ = completion.get_well_segments(schedule.msws, well_name, branch=1)
+        self.welsegs_header, _ = read_schedule.get_well_segments(schedule_data, well_name, branch=1)
         self.check_welsegs1()
         self.print_welsegs = f"{Keywords.WELSEGS}\n{prepare_outputs.dataframe_tostring(self.welsegs_header, True)}\n"
         self.print_welsegsinit = self.print_welsegs
@@ -143,7 +135,7 @@ class CreateOutput:
         data = {}  # just a container. need to to loop twice to make connect_lateral work
         for lateral in self.laterals:
             self.df_tubing, top = prepare_outputs.prepare_tubing_layer(
-                self.schedule,
+                schedule_data,
                 self.well_name,
                 lateral,
                 self.df_well,
@@ -426,8 +418,7 @@ class CreateOutput:
         """Collect final printing for all wells."""
         # here starts active wells
         finalprint = self.finalprint + self.print_compdat
-        if self.write_welsegs:
-            finalprint += self.print_welsegs
+        finalprint += self.print_welsegs
         finalprint += self.print_wseglink
         finalprint += self.print_compsegs
         # print udq parameter if relevant

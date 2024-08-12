@@ -2,28 +2,22 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor import completion
+from completor import completion, read_schedule
 from completor.constants import Content, Headers, Method
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
-from completor.read_schedule import fix_compsegs_by_priority
 
 
-class CreateWells:
+class Wells:
     """Class for creating well completion structure.
 
-    Args:
-        case: ReadCasefile class.
-
     Attributes:
-        active_wells: Active wells defined in the case file.
-        method: Method for segment creation.
-        well_name: Well name (in loop).
-        laterals: List of lateral number of the well in loop.
         df_completion: Completion data frame in loop.
         df_reservoir: COMPDAT and COMPSEGS data frame fusion in loop.
         df_welsegs_header: WELSEGS first record.
@@ -35,46 +29,31 @@ class CreateWells:
         df_reservoir_all: df_reservoir for all laterals.
     """
 
-    def __init__(self, case: ReadCasefile):
-        """Initialize CreateWells."""
-        self.well_name: str | None = None
-        self.df_reservoir = pd.DataFrame()
-        self.df_mdtvd = pd.DataFrame()
-        self.df_completion = pd.DataFrame()
-        self.df_tubing_segments = pd.DataFrame()
-        self.df_well = pd.DataFrame()
-        self.df_compdat = pd.DataFrame()
-        self.df_well_all = pd.DataFrame()
-        self.df_reservoir_all = pd.DataFrame()
-        self.df_welsegs_header = pd.DataFrame()
-        self.df_welsegs_content = pd.DataFrame()
-        self.laterals: list[int] = []
-        self.case: ReadCasefile = case
-        self.method = _get_method(self.case)
-
-    def update(self, well_name: str, schedule: completion.WellSchedule) -> None:
-        """Update class variables in CreateWells.
+    def __init__(self, well_name: str, case: ReadCasefile, schedule_data: dict[str, dict[str, Any]]):
+        """Create completion structure.
 
         Args:
             well_name: Well name.
-            schedule: ReadSchedule object.
+            case: Data from case file.
+            schedule_data: Data from schedule file.
         """
-        if well_name is None:
-            raise ValueError("Cannot update well without well name.")
-        self.well_name = well_name
+        self.case: ReadCasefile = case
+        self.df_well_all = pd.DataFrame()
+        self.df_reservoir_all = pd.DataFrame()
+
         active_laterals = _get_active_laterals(well_name, self.case.completion_table)
         for lateral in active_laterals:
             self.df_completion = self.case.get_completion(well_name, lateral)
-            self.df_welsegs_header, self.df_welsegs_content = completion.get_well_segments(
-                schedule.msws, well_name, lateral
+            self.df_welsegs_header, self.df_welsegs_content = read_schedule.get_well_segments(
+                schedule_data, well_name, lateral
             )
 
-            self.df_reservoir = _select_well(well_name, schedule, lateral)
+            self.df_reservoir = _select_well(well_name, schedule_data, lateral)
 
             self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
             self.df_completion = completion.define_annulus_zone(self.df_completion)
             self.df_tubing_segments = _create_tubing_segments(
-                self.df_reservoir, self.df_completion, self.df_mdtvd, self.method, self.case
+                self.df_reservoir, self.df_completion, self.df_mdtvd, self.case.method, self.case
             )
             self.df_tubing_segments = completion.insert_missing_segments(self.df_tubing_segments, well_name)
             self.df_well = completion.complete_the_well(
@@ -84,7 +63,7 @@ class CreateWells:
             self.df_well = _get_devices(self.df_completion, self.df_well, self.case)
             self.df_well = completion.correct_annulus_zone(self.df_well)
             self.df_reservoir = _connect_cells_to_segments(
-                self.df_reservoir, self.df_well, self.df_tubing_segments, self.method
+                self.df_reservoir, self.df_well, self.df_tubing_segments, self.case.method
             )
             self.df_well[Headers.WELL] = well_name
             self.df_reservoir[Headers.WELL] = well_name
@@ -139,49 +118,6 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
     return np.array(completion_table[Headers.WELL].unique())
 
 
-def _get_method(case: ReadCasefile) -> Method:
-    """Define how the user wants to create segments.
-
-    Args:
-        case: Case data.
-
-    Returns:
-        Creation method enum.
-
-    Raises:
-        ValueError: If method is not one of the defined methods.
-    """
-    if isinstance(case.segment_length, float):
-        if float(case.segment_length) > 0.0:
-            return Method.FIX
-        if float(case.segment_length) == 0.0:
-            return Method.CELLS
-        if case.segment_length < 0.0:
-            return Method.USER
-        raise ValueError(
-            f"Unrecognized method '{case.segment_length}' in SEGMENTLENGTH keyword. "
-            "The value should be one of: 'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', "
-            "0 for 'CELLS', or a positive number for 'FIX'."
-        )
-
-    if isinstance(case.segment_length, str):
-        if "welsegs" in case.segment_length.lower() or "infill" in case.segment_length.lower():
-            return Method.WELSEGS
-        if "cell" in case.segment_length.lower():
-            return Method.CELLS
-        if "user" in case.segment_length.lower():
-            return Method.USER
-        raise ValueError(
-            f"Unrecognized method '{case.segment_length}' in SEGMENTLENGTH keyword. The value should be one of: "
-            "'WELSEGS', 'CELLS', 'USER', or a number: -1 for 'USER', 0 for 'CELLS', positive number for 'FIX'."
-        )
-
-    raise ValueError(
-        f"Unrecognized type of '{case.segment_length}' in SEGMENTLENGTH keyword. "
-        "The keyword must either be float or string."
-    )
-
-
 def _get_active_laterals(well_name: str, df_completion: pd.DataFrame) -> npt.NDArray[np.int_]:
     """Get a list of lateral numbers for the well.
 
@@ -195,19 +131,19 @@ def _get_active_laterals(well_name: str, df_completion: pd.DataFrame) -> npt.NDA
     return np.array(df_completion[df_completion[Headers.WELL] == well_name][Headers.BRANCH].unique())
 
 
-def _select_well(well_name: str, schedule: completion.WellSchedule, lateral: int) -> pd.DataFrame:
+def _select_well(well_name: str, schedule_data: dict[str, dict[str, Any]], lateral: int) -> pd.DataFrame:
     """Filter the reservoir data for this well and its laterals.
 
     Args:
         well_name: The name of the well.
-        schedule: Schedule data.
+        schedule_data: Multisegmented well segment data.
         lateral: The lateral number.
 
     Returns:
         Filtered reservoir data.
     """
-    df_compsegs = completion.get_completion_segments(schedule.msws, well_name, lateral)
-    df_compdat = completion.get_completion_data(schedule.msws, well_name)
+    df_compsegs = read_schedule.get_completion_segments(schedule_data, well_name, lateral)
+    df_compdat = read_schedule.get_completion_data(schedule_data, well_name)
     df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
     # Remove WELL column in the df_reservoir.
@@ -251,7 +187,7 @@ def _create_tubing_segments(
         (df_completion[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
         & (df_completion[Headers.VALVES_PER_JOINT] > 0)
     ).any():
-        return fix_compsegs_by_priority(df_completion, df_tubing_segments_cells, df_tubing_segments_user)
+        return read_schedule.fix_compsegs_by_priority(df_completion, df_tubing_segments_cells, df_tubing_segments_user)
 
     # If all the devices are ICVs, lump the segments.
     if (df_completion[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE).all():

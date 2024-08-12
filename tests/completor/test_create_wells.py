@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 import utils
 
-from completor import create_wells
 from completor.constants import Method  # type: ignore
+from completor.exceptions import CompletorError
 from completor.read_casefile import ReadCasefile  # type: ignore
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -62,8 +62,7 @@ SEGMENTLENGTH
 """
     # Test default value
     case_obj = ReadCasefile(case_obj, "dummy_value.sch")
-    well = create_wells.CreateWells(case_obj)
-    assert well.method == expected
+    assert case_obj.method == expected
 
 
 def test_error_segment_creation_method():
@@ -83,10 +82,9 @@ NON_VALID_INPUT
 /
 """
     # Test default value
-    case_obj = ReadCasefile(case_obj, "dummy_value.sch")
-    with pytest.raises(ValueError) as e:
-        create_wells.CreateWells(case_obj)
-    assert "Unrecognized method 'NON_VALID_INPUT' in SEGMENTLENGTH keyword" in str(e.value)
+    with pytest.raises(CompletorError) as e:
+        ReadCasefile(case_obj, "dummy_value.sch")
+    assert "Unrecognized method for SEGMENTLENGTH keyword 'NON_VALID_INPUT'" in str(e.value)
 
 
 def test_tubing_segment_icv(tmpdir):

@@ -10,7 +10,6 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.completion import WellSchedule
 from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
@@ -87,7 +86,6 @@ class ReadCasefile:
 
         # assign default values
         self.joint_length = 12.0
-        self.segment_length: float | str = 0.0
         self.minimum_segment_length: float = 0.0
         self.strict = True
         self.gp_perf_devicelayer = False
@@ -109,7 +107,8 @@ class ReadCasefile:
         # Run programs
         self.read_completion()
         self.read_joint_length()
-        self.read_segment_length()
+        self.segment_length = self.read_segment_length()
+        self.method = self.segmentation_method(self.segment_length)
         self.read_strictness()
         self.read_gp_perf_devicelayer()
         self.read_mapfile()
@@ -225,7 +224,7 @@ class ReadCasefile:
         else:
             logger.info("No joint length is defined. It is set to default 12.0 m")
 
-    def read_segment_length(self) -> None:
+    def read_segment_length(self) -> float | str:
         """Read the SEGMENTLENGTH keyword in the case file.
 
         Raises:
@@ -234,43 +233,65 @@ class ReadCasefile:
         start_index, end_index = parse.locate_keyword(self.content, Keywords.SEGMENT_LENGTH)
         if end_index == start_index + 2:
             try:
-                self.segment_length = float(self.content[start_index + 1])
-                # 'Fix' method if value is positive.
-                if self.segment_length > 0.0:
-                    logger.info("Segments are defined per %s meters.", self.segment_length)
-                # 'User' method if value is negative.
-                elif self.segment_length < 0.0:
-                    logger.info(
-                        "Segments are defined based on the COMPLETION keyword. "
-                        "Attempting to pick segments' measured depth from .case file."
-                    )
-                # 'Cells' method if value is zero.
-                elif self.segment_length == 0:
-                    logger.info("Segments are defined based on the grid dimensions.")
-
+                return float(self.content[start_index + 1])
             except ValueError:
-                try:
-                    self.segment_length = str(self.content[start_index + 1])
-                    # 'Welsegs' method
-                    if "welsegs" in self.segment_length.lower() or "infill" in self.segment_length.lower():
-                        logger.info(
-                            "Segments are defined based on the WELSEGS keyword. "
-                            "Retaining the original tubing segment structure."
-                        )
-                    # 'User' method if value is negative
-                    elif "user" in self.segment_length.lower():
-                        logger.info(
-                            "Segments are defined based on the COMPLETION keyword. "
-                            "Attempting to pick segments' measured depth from casefile."
-                        )
-                    # 'Cells' method
-                    elif "cell" in self.segment_length.lower():
-                        logger.info("Segment lengths are created based on the grid dimensions.")
-                except ValueError as err:
-                    raise CompletorError("SEGMENTLENGTH takes number or string") from err
+                return self.content[start_index + 1]
+
         else:
-            # 'Cells' method if value is 0.0 or undefined
-            logger.info("No segment length is defined. " "Segments are created based on the grid dimension.")
+            logger.info(
+                "SEGMENTLENGTH keyword undefined, using default strategy 'cells' "
+                "to create segments based on the grid dimensions."
+            )
+            return 0.0
+
+    @staticmethod
+    def segmentation_method(segment_length: float | str) -> Method:
+        """Determine the method of segmentation, and log the implication to info.
+
+        Args:
+            segment_length: The string or number value from the SEGMENTLENGTH keyword.
+
+        Returns:
+            The method used to create the segments.
+
+        Raises:
+            ValueError: If value of segment_length is invalid.
+        """
+        if isinstance(segment_length, float):
+            if segment_length > 0.0:
+                logger.info("Segments are defined per fixed %s meters.", segment_length)
+                return Method.FIX
+            if segment_length == 0.0:
+                logger.info("Segments are defined based on the grid dimensions.")
+                return Method.CELLS
+            if segment_length < 0.0:
+                logger.info(
+                    "Segments are defined based on the COMPLETION keyword. "
+                    "Attempting to pick segments' measured depth from case file."
+                )
+                return Method.USER
+
+        if isinstance(segment_length, str):
+            if "welsegs" in segment_length.lower() or "infill" in segment_length.lower():
+                logger.info(
+                    "Segments are defined based on the WELSEGS keyword. "
+                    "Retaining the original tubing segment structure."
+                )
+                return Method.WELSEGS
+            if "cell" in segment_length.lower():
+                logger.info("Segment lengths are created based on the grid dimensions.")
+                return Method.CELLS
+            if "user" in segment_length.lower():
+                logger.info(
+                    "Segments are defined based on the COMPLETION keyword. "
+                    "Attempting to pick segments' measured depth from casefile."
+                )
+                return Method.USER
+        raise CompletorError(
+            f"Unrecognized method for SEGMENTLENGTH keyword '{segment_length}'. The value should be one of: "
+            "'WELSEGS', 'CELLS', 'USER'. "
+            "Alternatively a negative number for 'USER', zero for 'CELLS', or positive number for 'FIX'.",
+        )
 
     def read_strictness(self) -> None:
         """Read the USE_STRICT keyword in the case file.
@@ -554,7 +575,7 @@ class ReadCasefile:
         df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
-    def check_input(self, well_name: str, schedule: WellSchedule) -> None:
+    def check_input(self, well_name: str, schedule_data: dict[str, dict[str, Any]]) -> None:
         """Ensure that the completion table (given in the case-file) is complete.
 
         If one branch is completed, all branches must be completed, unless not 'strict'.
@@ -564,7 +585,7 @@ class ReadCasefile:
 
         Args:
             well_name: Well name.
-            schedule: Schedule object.
+            schedule_data: Schedule file data.
 
         Returns:
             COMPLETION for that well and branch.
@@ -572,10 +593,10 @@ class ReadCasefile:
         Raises:
             CompletorError: If strict is true and there are undefined branches.
         """
-        msw = schedule.msws[well_name]
-        compl = self.completion_table[self.completion_table.WELL == well_name]
+        well_data = schedule_data[well_name]
+        df_completion = self.completion_table[self.completion_table.WELL == well_name]
         # check that all branches are defined in case-file
-        branch_nos = set(msw[Keywords.COMPSEGS].BRANCH).difference(set(compl.BRANCH))
+        branch_nos = set(well_data[Keywords.COMPSEGS].BRANCH).difference(set(df_completion.BRANCH))
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:
