@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-import utils
+import utils_for_tests
 
 _TESTDIR_DROGON = Path(__file__).absolute().parent / "data" / "drogon"
 _TEST_FILE = "test.sch"
@@ -76,5 +76,5 @@ def test_drogon_cases(drogon_case: str, tmpdir):
     schedule_name = lines[lines.index("SCHFILE") + 1]
     schedule_path = Path(_TESTDIR_DROGON / schedule_name)
     true_file = Path(_TESTDIR_DROGON / drogon_case.replace(".case", ".true"))
-    utils.open_files_run_create(case_path, schedule_path, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_path, schedule_path, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)

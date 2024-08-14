@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-import utils
+import utils_for_tests
 
 from completor import prepare_outputs, read_casefile, read_schedule
 from completor.constants import Content, Headers, Keywords
@@ -653,8 +653,8 @@ def test_user_segment_lumping_oa(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_user_segment_lumping_gp(tmpdir):
@@ -667,8 +667,8 @@ def test_user_segment_lumping_gp(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_tests_gp.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_gp.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_print_wsegdar(tmpdir):
@@ -1349,5 +1349,5 @@ def test_user_segment_lumping_oa_overlap(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_overlap_tests_oa.case")
     schedule_file = Path(_TESTDIR / "improved_input_4_lumping_tests.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa_overlap.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)

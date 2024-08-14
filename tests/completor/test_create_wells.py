@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-import utils
+import utils_for_tests
 
 from completor.constants import Method  # type: ignore
 from completor.exceptions import CompletorError
@@ -24,8 +24,8 @@ def test_duplicates(tmpdir):
     case_file = Path(_TESTDIR / "duplicate.case")
     schedule_file = Path(_TESTDIR / "duplicate.sch")
     true_file = Path(_TESTDIR / "duplicate.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 @pytest.mark.parametrize(
@@ -96,5 +96,5 @@ def test_tubing_segment_icv(tmpdir):
     case_file = Path(_TESTDIR / "icv_tubing.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")
     true_file = Path(_TESTDIR / "icv_tubing.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
