@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import read_schedule
-from completor.constants import Headers, Keywords
+from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
@@ -413,7 +413,7 @@ def prepare_device_layer(
     # device segments are only created if:
     # 1. the device type is PERF
     # 2. if it is not PERF then it must have number of device > 0
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.empty:
         # return blank dataframe
         return pd.DataFrame()
@@ -432,24 +432,26 @@ def prepare_device_layer(
     df_device[Headers.WELL_BORE_DIAMETER] = df_well[Headers.INNER_DIAMETER].to_numpy()
     df_device[Headers.ROUGHNESS] = df_well[Headers.ROUGHNESS].to_numpy()
     device_comment = np.where(
-        df_well[Headers.DEVICE_TYPE] == "PERF",
+        df_well[Headers.DEVICE_TYPE] == Content.PERFORATED,
         "/ -- Open Perforation",
         np.where(
-            df_well[Headers.DEVICE_TYPE] == "AICD",
+            df_well[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
             "/ -- AICD types",
             np.where(
-                df_well[Headers.DEVICE_TYPE] == "ICD",
+                df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_DEVICE,
                 "/ -- ICD types",
                 np.where(
-                    df_well[Headers.DEVICE_TYPE] == "VALVE",
+                    df_well[Headers.DEVICE_TYPE] == Content.VALVE,
                     "/ -- Valve types",
                     np.where(
-                        df_well[Headers.DEVICE_TYPE] == "DAR",
+                        df_well[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY,
                         "/ -- DAR types",
                         np.where(
-                            df_well[Headers.DEVICE_TYPE] == "AICV",
+                            df_well[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
                             "/ -- AICV types",
-                            np.where(df_well[Headers.DEVICE_TYPE] == "ICV", "/ -- ICV types", ""),
+                            np.where(
+                                df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
+                            ),
                         ),
                     ),
                 ),
@@ -494,7 +496,7 @@ def prepare_annulus_layer(
         df_branch = df_well[df_well[Headers.ANNULUS_ZONE] == zone]
         df_active = df_branch[
             (df_branch[Headers.NUMBER_OF_DEVICES].to_numpy() > 0)
-            | (df_branch[Headers.DEVICE_TYPE].to_numpy() == "PERF")
+            | (df_branch[Headers.DEVICE_TYPE].to_numpy() == Content.PERFORATED)
         ]
         # setting the start segment number and start branch number
         if izone == 0:
@@ -506,7 +508,7 @@ def prepare_annulus_layer(
         # now find the most downstream connection of the annulus zone
         idx_connection = np.argwhere(
             (df_branch[Headers.NUMBER_OF_DEVICES].to_numpy() > 0)
-            | (df_branch[Headers.DEVICE_TYPE].to_numpy() == "PERF")
+            | (df_branch[Headers.DEVICE_TYPE].to_numpy() == Content.PERFORATED)
         )
         if idx_connection[0] == 0:
             # If the first connection then everything is easy
@@ -670,9 +672,11 @@ def connect_compseg_icv(
     """
     _MARKER_MEASURED_DEPTH = "TEMPORARY_MARKER_MEASURED_DEPTH"
     df_temp = df_completion[
-        (df_completion[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion[Headers.DEVICE_TYPE] == "PERF")
+        (df_completion[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion[Headers.DEVICE_TYPE] == Content.PERFORATED)
     ]
-    df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA") & (df_temp[Headers.DEVICE_TYPE] == "ICV")]
+    df_completion_table_clean = df_temp[
+        (df_temp[Headers.ANNULUS] != Content.PACKER) & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
+    ]
     df_res = df_reservoir.copy(deep=True)
 
     df_res[_MARKER_MEASURED_DEPTH] = df_res[Headers.MEASURED_DEPTH]
@@ -699,7 +703,7 @@ def connect_compseg_icv(
         direction="nearest",
     )
     df_compseg_annulus = pd.DataFrame()
-    if (df_completion[Headers.ANNULUS] == "OA").any():
+    if (df_completion[Headers.ANNULUS] == Content.OPEN_ANNULUS).any():
         df_compseg_annulus = pd.merge_asof(
             left=df_res,
             right=df_annulus,
@@ -742,7 +746,7 @@ def prepare_compsegs(
     df_reservoir = df_reservoir[
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
         | (df_reservoir[Headers.NUMBER_OF_DEVICES] > 0)
-        | (df_reservoir[Headers.DEVICE_TYPE] == "PERF")
+        | (df_reservoir[Headers.DEVICE_TYPE] == Content.PERFORATED)
     ]
     # sort device dataframe by MEASURED_DEPTH to be used for pd.merge_asof
     if df_reservoir.shape[0] == 0:
@@ -753,7 +757,7 @@ def prepare_compsegs(
             segment_length = -1.0
     icv_segmenting = (
         df_reservoir[Headers.DEVICE_TYPE].nunique() > 1
-        and (df_reservoir[Headers.DEVICE_TYPE] == "ICV").any()
+        and (df_reservoir[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE).any()
         and not df_reservoir[Headers.NUMBER_OF_DEVICES].empty
     )
     if df_annulus.empty:
@@ -869,11 +873,12 @@ def connect_compseg_usersegment(
     """
     # check on top of df_res if the completion table is feasible
     df_temp = df_completion_table[
-        (df_completion_table[Headers.VALVES_PER_JOINT] > 0.0) | (df_completion_table[Headers.DEVICE_TYPE] == "PERF")
+        (df_completion_table[Headers.VALVES_PER_JOINT] > 0.0)
+        | (df_completion_table[Headers.DEVICE_TYPE] == Content.PERFORATED)
     ]
-    df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != "PA")]
+    df_completion_table_clean = df_temp[(df_temp[Headers.ANNULUS] != Content.PACKER)]
     if not df_annulus.empty:
-        df_completion_table_clean = df_completion_table[df_completion_table[Headers.ANNULUS] == "OA"]
+        df_completion_table_clean = df_completion_table[df_completion_table[Headers.ANNULUS] == Content.OPEN_ANNULUS]
     df_completion_table_clean = df_completion_table_clean[
         (df_completion_table_clean[Headers.END_MEASURED_DEPTH] > df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
     ]
@@ -939,7 +944,7 @@ def choose_layer(
     return np.where(
         branch_num > 0,
         df_compseg_annulus[parameter].to_numpy(),
-        np.where((ndevice > 0) | (dev_type == "PERF"), df_compseg_device[parameter].to_numpy(), -1),
+        np.where((ndevice > 0) | (dev_type == Content.PERFORATED), df_compseg_device[parameter].to_numpy(), -1),
     )
 
 
@@ -987,7 +992,7 @@ def prepare_compdat(
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
     df_reservoir = df_reservoir[
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
-        | ((df_reservoir[Headers.NUMBER_OF_DEVICES] > 0) | (df_reservoir[Headers.DEVICE_TYPE] == "PERF"))
+        | ((df_reservoir[Headers.NUMBER_OF_DEVICES] > 0) | (df_reservoir[Headers.DEVICE_TYPE] == Content.PERFORATED))
     ]
     if df_reservoir.shape[0] == 0:
         return pd.DataFrame()
@@ -1032,7 +1037,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
     """
     df_well = df_well[df_well[Headers.WELL] == well_name]
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1042,7 +1047,7 @@ def prepare_wsegaicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "AICD"]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE]
     wsegaicd = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegaicd[Headers.WELL] = [well_name] * df_merge.shape[0]
@@ -1079,7 +1084,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         WSEGSICD.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1089,7 +1094,7 @@ def prepare_wsegsicd(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICD"]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_DEVICE]
     wsegsicd = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegsicd[Headers.WELL] = [well_name] * df_merge.shape[0]
@@ -1117,7 +1122,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         WSEGVALV.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1127,7 +1132,7 @@ def prepare_wsegvalv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "VALVE"].reset_index(drop=True)
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.VALVE].reset_index(drop=True)
     wsegvalv = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegvalv[Headers.WELL] = [well_name] * df_merge.shape[0]
@@ -1168,7 +1173,7 @@ def prepare_wsegicv(
     """
     df_well = df_well[
         (df_well[Headers.LATERAL] == lateral)
-        & ((df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0))
+        & ((df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0))
     ]
     if df_well.empty:
         return df_well
@@ -1180,7 +1185,7 @@ def prepare_wsegicv(
         direction="nearest",
     )
     wsegicv = pd.DataFrame()
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "ICV"]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE]
     if not df_merge.empty:
         wsegicv = df_merge.copy()
         wsegicv = wsegicv[
@@ -1261,7 +1266,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         DataFrame for DAR.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1271,7 +1276,7 @@ def prepare_wsegdar(well_name: str, lateral: int, df_well: pd.DataFrame, df_devi
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "DAR"]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY]
     wsegdar = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegdar[Headers.WELL] = [well_name] * df_merge.shape[0]
@@ -1308,7 +1313,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         DataFrame for AICV.
     """
     df_well = df_well[df_well[Headers.LATERAL] == lateral]
-    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == "PERF") | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
         return pd.DataFrame()
     df_merge = pd.merge_asof(
@@ -1318,7 +1323,7 @@ def prepare_wsegaicv(well_name: str, lateral: int, df_well: pd.DataFrame, df_dev
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == "AICV"]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]
     wsegaicv = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegaicv[Headers.WELL] = [well_name] * df_merge.shape[0]

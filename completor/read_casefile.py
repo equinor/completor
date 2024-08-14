@@ -10,7 +10,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.constants import Headers, Keywords, Method
+from completor.constants import Content, Headers, Keywords, Method
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
 from completor.utils import clean_file_lines
@@ -170,18 +170,18 @@ class ReadCasefile:
         """
         if not df_temp.loc[
             (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
-            & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+            & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
         ].empty:
             # take ICV tubing table
             self.completion_icv_tubing = df_temp.loc[
                 (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
-                & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+                & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
             ].reset_index(drop=True)
             # drop its line
             df_temp = df_temp.drop(
                 df_temp.loc[
                     (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
-                    & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+                    & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
                 ].index[:]
             ).reset_index(drop=True)
         return df_temp
@@ -353,7 +353,7 @@ class ReadCasefile:
         """
         start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGVALV)
         if start_index == end_index:
-            if "VALVE" in self.completion_table[Headers.DEVICE_TYPE]:
+            if Content.VALVE in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
@@ -371,7 +371,7 @@ class ReadCasefile:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
 
             self.wsegvalv_table = input_validation.set_format_wsegvalv(df_temp)
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "VALVE"][
+            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == Content.VALVE][
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegvalv_table[Headers.DEVICE_NUMBER].to_numpy()):
@@ -386,7 +386,7 @@ class ReadCasefile:
         """
         start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGSICD)
         if start_index == end_index:
-            if "ICD" in self.completion_table[Headers.DEVICE_TYPE]:
+            if Content.INFLOW_CONTROL_DEVICE in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGSICD keyword must be defined, if ICD is used in the completion.")
         else:
             # Table headers
@@ -401,9 +401,9 @@ class ReadCasefile:
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
             # Check if the device in COMPLETION is exist in WSEGSICD
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "ICD"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_DEVICE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegsicd_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError("Not all device in COMPLETION is specified in WSEGSICD")
 
@@ -417,7 +417,7 @@ class ReadCasefile:
         """
         start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGAICD)
         if start_index == end_index:
-            if "AICD" in self.completion_table[Headers.DEVICE_TYPE]:
+            if Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGAICD keyword must be defined, if AICD is used in the completion.")
         else:
             # Table headers
@@ -438,9 +438,9 @@ class ReadCasefile:
             self.wsegaicd_table = input_validation.set_format_wsegaicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "AICD"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegaicd_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError("Not all device in COMPLETION is specified in WSEGAICD")
 
@@ -454,7 +454,7 @@ class ReadCasefile:
         """
         start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGDAR)
         if start_index == end_index:
-            if "DAR" in self.completion_table[Headers.DEVICE_TYPE]:
+            if Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGDAR keyword must be defined, if DAR is used in the completion")
         else:
             # Table headers
@@ -471,13 +471,13 @@ class ReadCasefile:
             ]
 
             # Fix table format
-            if self.completion_table[Headers.DEVICE_TYPE].str.contains("DAR").any():
+            if self.completion_table[Headers.DEVICE_TYPE].str.contains(Content.DENSITY_ACTIVATED_RECOVERY).any():
                 self.wsegdar_table = input_validation.set_format_wsegdar(
                     self._create_dataframe_with_columns(header, start_index, end_index)
                 )
-                device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "DAR"][
-                    Headers.DEVICE_NUMBER
-                ].to_numpy()
+                device_checks = self.completion_table[
+                    self.completion_table[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY
+                ][Headers.DEVICE_NUMBER].to_numpy()
                 if not check_contents(device_checks, self.wsegdar_table[Headers.DEVICE_NUMBER].to_numpy()):
                     raise CompletorError("Not all device in COMPLETION is specified in WSEGDAR")
 
@@ -491,7 +491,7 @@ class ReadCasefile:
         """
         start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGAICV)
         if start_index == end_index:
-            if "AICV" in self.completion_table[Headers.DEVICE_TYPE]:
+            if Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGAICV keyword must be defined, if AICV is used in the completion.")
         else:
             # Table headers
@@ -525,9 +525,9 @@ class ReadCasefile:
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
             # Check if the device in COMPLETION is exist in WSEGAICV
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "AICV"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegaicv_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError("Not all devices in COMPLETION are specified in WSEGAICV")
 
@@ -541,7 +541,7 @@ class ReadCasefile:
 
         start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGICV)
         if start_index == end_index:
-            if "ICV" in self.completion_table[Headers.DEVICE_TYPE]:
+            if Content.INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError("WSEGICV keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
@@ -555,9 +555,9 @@ class ReadCasefile:
             # Fix format
             self.wsegicv_table = input_validation.set_format_wsegicv(df_temp)
             # Check if the device in COMPLETION exists in WSEGICV
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "ICV"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegicv_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError("Not all device in COMPLETION is specified in WSEGICV")
 
@@ -611,7 +611,7 @@ class ReadCasefile:
                     )
                     lateral[Headers.START_MEASURED_DEPTH] = 0
                     lateral[Headers.END_MEASURED_DEPTH] = 999999
-                    lateral[Headers.DEVICE_TYPE] = "PERF"
+                    lateral[Headers.DEVICE_TYPE] = Content.PERFORATED
                     lateral[Headers.ANNULUS] = "GP"
                     lateral[Headers.BRANCH] = branch_no
                     # add new entry
