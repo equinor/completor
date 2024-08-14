@@ -3,7 +3,7 @@ This module tests that the roughness and ID for segments in the overburden
 are described by the case file and not the input schedule file.
 """
 
-import utils
+import utils_for_tests
 
 _TEST_FILE = "test.sch"
 
@@ -111,5 +111,5 @@ WSEGAICD
 /
 
     """  # noqa: more human readable at this witdth.
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)

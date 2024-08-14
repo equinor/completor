@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-import utils
+import utils_for_tests
 
 from completor import main  # type: ignore
 
@@ -100,8 +100,8 @@ def test_perf(tmpdir):
     tmpdir.chdir()
     case_file = WB_PERF_TEST
     true_file = Path(_TESTDIR / "wb_perf.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_perf_minimum_segment_length_13(tmpdir):
@@ -113,8 +113,8 @@ def test_perf_minimum_segment_length_13(tmpdir):
     tmpdir.chdir()
     case_file = WB_PERF_TEST_MINIMUM_SEGMENT_LENGTH_13
     true_file = Path(_TESTDIR / "wb_perf_minimum_segment_length13.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_aicd(tmpdir):
@@ -135,8 +135,8 @@ COMPLETION
 {WSEGAICD}
     """
     true_file = Path(_TESTDIR / "wb_aicd.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa(tmpdir):
@@ -157,8 +157,8 @@ COMPLETION
 {WSEGAICD}
     """
     true_file = Path(_TESTDIR / "wb_aicdoa.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_packer(tmpdir):
@@ -181,8 +181,8 @@ COMPLETION
 {WSEGAICD_TWO_AICD}
     """
     true_file = Path(_TESTDIR / "wb_aicdpa.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_packer_aicdicd(tmpdir):
@@ -211,8 +211,8 @@ WSEGSICD
 {WSEGVALV}
     """
     true_file = Path(_TESTDIR / "wb_aicdicdpa.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_packer_aicdvalve(tmpdir):
@@ -241,8 +241,8 @@ JOINTLENGTH
 {WSEGVALV}
     """
     true_file = Path(_TESTDIR / "wb_aicdvalvepa.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_packer_oagp(tmpdir):
@@ -266,8 +266,8 @@ COMPLETION
 {WSEGAICD}
     """
     true_file = Path(_TESTDIR / "wb_aicdoagp.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_inc(tmpdir):
@@ -282,12 +282,12 @@ def test_inc(tmpdir):
     case_file = WB_PERF_TEST
     schedule_file = Path(_TESTDIR / "welldefinition2.testfile")
     true_file = Path(_TESTDIR / "wb_perf.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
     print("true_file:")
     print(true_file)
     print("test_file:")
     print(_TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_dar(tmpdir):
@@ -306,8 +306,8 @@ COMPLETION
 {WSEGDAR}
     """
     true_file = Path(_TESTDIR / "wb_dar.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_aicv(tmpdir):
@@ -330,8 +330,8 @@ COMPLETION
 {WSEGAICV}
     """
     true_file = Path(_TESTDIR / "wb_aicv.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_daraicv(tmpdir):
@@ -356,8 +356,8 @@ COMPLETION
 {WSEGAICV}
     """
     true_file = Path(_TESTDIR / "wb_daraicv.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_multilateral(tmpdir):
@@ -380,8 +380,8 @@ COMPLETION
     """
     schedule_file = Path(_TESTDIR / "welldefinition3.testfile")
     true_file = Path(_TESTDIR / "wb_multilateral.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_nocf(tmpdir):
@@ -405,8 +405,8 @@ GP_PERF_DEVICELAYER
     """
     schedule_file = Path(_TESTDIR / "welldefinition4.testfile")
     true_file = Path(_TESTDIR / "wb_nocf.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_segment_length(tmpdir):
@@ -438,8 +438,8 @@ JOINTLENGTH
 {WSEGVALV}
     """
     true_file = Path(_TESTDIR / "wb_segmentlength.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_segment_comp(tmpdir):
@@ -474,8 +474,8 @@ JOINTLENGTH
 {WSEGVALV}
     """
     true_file = Path(_TESTDIR / "wb_segmentcomp.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 @pytest.mark.parametrize(
@@ -539,7 +539,7 @@ COMPLETION
     {WSEGAICD}
     """
     with pytest.raises(ValueError, match=output_message):
-        utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+        utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
 
 
 def test_well_name_in_quotes(tmpdir):
@@ -548,8 +548,8 @@ def test_well_name_in_quotes(tmpdir):
     case_file = WB_PERF_TEST
     schedule_file = Path(_TESTDIR / "welldefinition_quotes.testfile")
     true_file = Path(_TESTDIR / "wb_perf_quotes.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_well_name_in_single_quotes(tmpdir):
@@ -558,8 +558,8 @@ def test_well_name_in_single_quotes(tmpdir):
     case_file = WB_PERF_TEST
     schedule_file = Path(_TESTDIR / "welldefinition_single_quotes.testfile")
     true_file = Path(_TESTDIR / "wb_perf_single_quotes.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_well_name_with_slash(tmpdir):
@@ -579,8 +579,8 @@ GP_PERF_DEVICELAYER
     """
     schedule_file = Path(_TESTDIR / "welldefinition_slash.testfile")
     true_file = Path(_TESTDIR / "welldefinition_slash.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_leading_whitespace_terminating_slash(tmpdir):
@@ -589,8 +589,8 @@ def test_leading_whitespace_terminating_slash(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "leading_whitespace_terminating_slash.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_error_missing_keywords(tmpdir, caplog):
@@ -610,7 +610,9 @@ def test_error_missing_keywords(tmpdir, caplog):
         new_sch.write(modified_content)
 
     with pytest.raises(SystemExit) as e:
-        utils.completor_runner(inputfile=case_file, schedulefile=modified_schedule_path, outputfile="output.sch")
+        utils_for_tests.completor_runner(
+            inputfile=case_file, schedulefile=modified_schedule_path, outputfile="output.sch"
+        )
 
     assert e.value.code == 1
     assert "Keyword WELSPECS is not found" in caplog.messages
@@ -624,8 +626,8 @@ def test_wsegicv_bottom(tmpdir):
     case_file = Path(_TESTDIR / "icv_device1.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")
     true_file = Path(_TESTDIR / "icv_device1.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_wsegicv_top(tmpdir):
@@ -637,8 +639,8 @@ def test_wsegicv_top(tmpdir):
     case_file = Path(_TESTDIR / "icv_device2.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")
     true_file = Path(_TESTDIR / "icv_device2.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_wsegicv_mix(tmpdir):
@@ -649,8 +651,8 @@ def test_wsegicv_mix(tmpdir):
     case_file = Path(_TESTDIR / "icv_device3.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")
     true_file = Path(_TESTDIR / "icv_device3.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_wsegicv_mid(tmpdir):
@@ -661,8 +663,8 @@ def test_wsegicv_mid(tmpdir):
     case_file = Path(_TESTDIR / "icv_device4.case")
     schedule_file = Path(_TESTDIR / "icv_sch.sch")
     true_file = Path(_TESTDIR / "icv_device4.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_rathole_gp(tmpdir):
@@ -673,8 +675,8 @@ def test_rathole_gp(tmpdir):
     case_file = Path(_TESTDIR / "rathole_gp.case")
     schedule_file = Path(_TESTDIR / "rathole.sch")
     true_file = Path(_TESTDIR / "rathole_gp.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_rathole_oapa(tmpdir):
@@ -685,5 +687,5 @@ def test_rathole_oapa(tmpdir):
     case_file = Path(_TESTDIR / "rathole_oapa.case")
     schedule_file = Path(_TESTDIR / "rathole.sch")
     true_file = Path(_TESTDIR / "rathole_oapa.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
