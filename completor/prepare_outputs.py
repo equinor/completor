@@ -274,6 +274,76 @@ def prepare_tubing_layer(
     return df_tubing_with_overburden, top
 
 
+def prepare_tubing_layer2(
+    well_name: str,
+    lateral: Lateral,
+    start_segment: int,
+    branch_no: int,
+    completion_table: pd.DataFrame,
+    well: Wellerman,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Prepare tubing layer data frame.
+
+    Args:
+        well_name: Well name.
+        lateral: Lateral number.
+        start_segment: Start number of the first tubing segment.
+        branch_no: Branch number for this tubing layer.
+        completion_table: DataFrame with completion data.
+
+    Returns:
+        DataFrame for tubing layer.
+    """
+    rnm = {
+        Headers.TUBING_MEASURED_DEPTH: Headers.MEASURED_DEPTH,
+        Headers.TRUE_VERTICAL_DEPTH: Headers.TRUE_VERTICAL_DEPTH,
+        Headers.TUBING_INNER_DIAMETER: Headers.WELL_BORE_DIAMETER,
+        Headers.TUBING_ROUGHNESS: Headers.ROUGHNESS,
+    }
+    cols = list(rnm.values())
+    df_tubing_in_reservoir = pd.DataFrame(
+        {
+            Headers.MEASURED_DEPTH: lateral.df_well[Headers.TUBING_MEASURED_DEPTH],
+            Headers.TRUE_VERTICAL_DEPTH: lateral.df_well[Headers.TRUE_VERTICAL_DEPTH],
+            "DIAM": lateral.df_well[Headers.INNER_DIAMETER],
+            "ROUGHNESS": lateral.df_well[Headers.ROUGHNESS],
+        }
+    )
+
+    # handle overburden
+    md_input_welsegs = lateral.df_welsegs_content[Headers.TUBING_MEASURED_DEPTH]
+    md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MEASURED_DEPTH]
+    overburden = lateral.df_welsegs_content[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
+    if not overburden.empty:
+        overburden = overburden.rename(index=str, columns=rnm)
+        overburden_fixed = fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)
+        df_tubing_with_overburden = pd.concat([overburden_fixed[cols], df_tubing_in_reservoir])
+    else:
+        df_tubing_with_overburden = df_tubing_in_reservoir
+    df_tubing_with_overburden[Headers.START_SEGMENT_NUMBER] = start_segment + np.arange(
+        df_tubing_with_overburden.shape[0]
+    )
+    df_tubing_with_overburden[Headers.END_SEGMENT_NUMBER] = df_tubing_with_overburden[Headers.START_SEGMENT_NUMBER]
+    df_tubing_with_overburden[Headers.BRANCH] = branch_no
+    df_tubing_with_overburden.reset_index(drop=True, inplace=True)
+    # set out-segment to be successive.
+    # The first item will be updated in connect_lateral
+    df_tubing_with_overburden[Headers.OUT] = df_tubing_with_overburden[Headers.START_SEGMENT_NUMBER] - 1
+    # make sure order is correct
+    df_tubing_with_overburden = df_tubing_with_overburden.reindex(
+        columns=[Headers.START_SEGMENT_NUMBER, Headers.END_SEGMENT_NUMBER, Headers.BRANCH, Headers.OUT] + cols
+    )
+    df_tubing_with_overburden[Headers.EMPTY] = "/"  # for printing
+    # locate where it attached to (the top segment)
+
+    top = well.df_welsegs_content_all_laterals[
+        well.df_welsegs_content_all_laterals[Headers.TUBING_SEGMENT]
+        == lateral.df_welsegs_content.iloc[0][Headers.TUBING_OUTLET]
+    ]  # could be empty
+
+    return df_tubing_with_overburden, top
+
+
 def fix_tubing_inner_diam_roughness(
     well_name: str, overburden: pd.DataFrame, completion_table: pd.DataFrame
 ) -> pd.DataFrame:
@@ -290,7 +360,7 @@ def fix_tubing_inner_diam_roughness(
         Corrected overburden DataFrame with inner diameter and roughness taken from the ReadCasefile object.
 
     Raises:
-        ValueError: If the well completion in not found in overburden at overburden_md.
+        ValueError: If the well completion is not found in overburden at overburden_md.
     """
     overburden_out = overburden.copy(deep=True)
     completion_table_well = completion_table.loc[completion_table[Headers.WELL] == well_name]

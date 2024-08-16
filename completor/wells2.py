@@ -32,8 +32,8 @@ class Wellerman:
         """
         self.well_name = well_name
         self.case: ReadCasefile = case
-        self.df_well_all = pd.DataFrame()
-        self.df_reservoir_all = pd.DataFrame()
+        self.df_well_all_laterals = pd.DataFrame()
+        self.df_reservoir_all_laterals = pd.DataFrame()
 
         active_laterals = _get_active_laterals(well_name, self.case.completion_table)
 
@@ -41,8 +41,12 @@ class Wellerman:
         self.active_laterals = active_laterals
         self.my_new_laterals = [Lateral(l, well_name, case, schedule_data) for l in active_laterals]
 
-        self.df_well_all = pd.concat([l.df_well for l in self.my_new_laterals], sort=False)
-        self.df_reservoir_all = pd.concat([l.df_reservoir for l in self.my_new_laterals], sort=False)
+        self.df_well_all_laterals = pd.concat([l.df_well for l in self.my_new_laterals], sort=False)
+        self.df_reservoir_all_laterals = pd.concat([l.df_reservoir for l in self.my_new_laterals], sort=False)
+        self.df_welsegs_header_all_laterals = pd.concat([l.df_welsegs_header for l in self.my_new_laterals], sort=False)
+        self.df_welsegs_content_all_laterals = pd.concat(
+            [l.df_welsegs_content for l in self.my_new_laterals], sort=False
+        )
 
 
 class Lateral:

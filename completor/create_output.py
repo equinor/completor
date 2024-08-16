@@ -13,12 +13,179 @@ from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 import completor
 from completor import prepare_outputs, read_schedule
 from completor.constants import Headers, Keywords
-from completor.create_wells import Wells
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
 from completor.read_casefile import ReadCasefile
 from completor.visualize_well import visualize_well
+from completor.wells2 import Wellerman
+
+
+def format_output(
+    # schedule_data: dict[str, dict[str, Any]],
+    weller_man: Wellerman,
+    well_name: str,
+    well_number: int,
+    show_figure: bool = False,
+    figure_name: str | None = None,
+    paths: tuple[str, str] | None = None,
+) -> str:
+    """
+
+    Args:
+        # schedule_data:
+        weller_man:
+        well_name:
+        well_number:
+        show_figure:
+        figure_name:
+        paths:
+
+    Returns:
+
+    """
+    output = CreateOutput.format_header(paths)
+
+    case = weller_man.case
+
+    if case.completion_table[Headers.DEVICE_TYPE].isin(["AICV"]).any():
+        output += CORRELATION_UDQ
+
+    df_reservoir = weller_man.df_reservoir_all_laterals
+    df_well = weller_man.df_well_all_laterals
+
+    # Start printing per well.
+    print_welsegs = ""
+    print_wseglink = ""
+    print_compsegs = ""
+    print_compdat = ""
+    print_wsegvalv = ""
+    print_wsegicv = ""
+    print_wsegaicd = ""
+    print_wsegsicd = ""
+    print_wsegdar = ""
+    print_wsegaicv = ""
+
+    start_segment = 2
+    start_branch = 1
+    # pre-preparations
+    data = {}  # just a container. need to loop twice to make connect_lateral work
+
+    header_written = False
+    for lateral in weller_man.my_new_laterals:
+        welsegs_header = lateral.df_welsegs_header
+        CreateOutput.check_welsegs1(welsegs_header, df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
+
+        if not header_written:
+            print_welsegs += f"{Keywords.WELSEGS}\n{prepare_outputs.dataframe_tostring(welsegs_header, True)}\n"
+            header_written = True
+        # df_tubing, top = prepare_outputs.prepare_tubing_layer(
+        #     schedule_data, well_name, lateral, start_segment, start_branch, case.completion_table
+        # )
+        df_tubing, top = prepare_outputs.prepare_tubing_layer2(
+            well_name, lateral, start_segment, start_branch, case.completion_table, weller_man
+        )
+
+        # if pd.testing.assert_frame_equal(df_tubing, df_tubing2) is not None:
+        #     raise CompletorError("HERE")
+        # try:
+        #     if pd.testing.assert_frame_equal(top, top2) is not None:
+        #         print("bp")
+        #         raise CompletorError("HERE")
+        # except Exception as e:
+        #     print("bp")
+        #     raise e
+
+        df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
+        if df_device.empty:
+            logger.warning(
+                "No connection from reservoir to tubing in Well : %s Lateral : %d",
+                well_name,
+                lateral.lateral_number,
+            )
+        df_annulus, df_wseglink = prepare_outputs.prepare_annulus_layer(well_name, lateral.df_well, df_device)
+        if df_annulus.empty:
+            logger.info("No annular flow in Well : %s Lateral : %d", well_name, lateral.lateral_number)
+
+        start_segment, start_branch = CreateOutput.update_segmentbranch(df_device, df_annulus)
+
+        data[lateral.lateral_number] = (df_tubing, df_device, df_annulus, df_wseglink, top)
+
+        # TODO: HERE!
+        df_tubing = CreateOutput.connect_lateral(
+            well_name, lateral.lateral_number, data, case
+        )  # df_tubing2, df_device, top, case)
+        # df_tubing2, df_device, df_annulus, df_wseglink = data[lateral.lateral_number][:4]
+        df_tubing[Headers.BRANCH] = lateral.lateral_number
+        df_device, df_annulus = CreateOutput.branch_revision(
+            lateral.lateral_number, weller_man.active_laterals, df_device, df_annulus
+        )
+
+        completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == well_name]
+        completion_table_lateral = completion_table_well[
+            completion_table_well[Headers.BRANCH] == lateral.lateral_number
+        ]
+        df_compsegs = prepare_outputs.prepare_compsegs(
+            well_name,
+            lateral.lateral_number,
+            df_reservoir,
+            df_device,
+            df_annulus,
+            completion_table_lateral,
+            case.segment_length,
+        )
+        df_compdat = prepare_outputs.prepare_compdat(
+            well_name, lateral.lateral_number, df_reservoir, completion_table_lateral
+        )
+        df_wsegvalv = prepare_outputs.prepare_wsegvalv(well_name, lateral.df_well, df_device)
+        df_wsegsicd = prepare_outputs.prepare_wsegsicd(well_name, lateral.df_well, df_device)
+        df_wsegaicd = prepare_outputs.prepare_wsegaicd(well_name, lateral.df_well, df_device)
+        df_wsegdar = prepare_outputs.prepare_wsegdar(well_name, lateral.df_well, df_device)
+        df_wsegaicv = prepare_outputs.prepare_wsegaicv(well_name, lateral.df_well, df_device)
+        df_wsegicv = prepare_outputs.prepare_wsegicv(
+            well_name,
+            lateral.lateral_number,
+            df_well,
+            df_device,
+            df_tubing,
+            case.completion_icv_tubing,
+            case.wsegicv_table,
+        )
+        print_compdat += CreateOutput.make_compdat(well_name, lateral.lateral_number, df_compdat)
+        print_welsegs += CreateOutput.make_welsegs(well_name, lateral.lateral_number, df_tubing, df_device, df_annulus)
+        print_wseglink += CreateOutput.make_wseglink(well_name, lateral.lateral_number, df_wseglink)
+        print_compsegs += CreateOutput.make_compsegs(well_name, lateral.lateral_number, df_compsegs)
+        print_wsegvalv += CreateOutput.make_wsegvalv(well_name, lateral.lateral_number, df_wsegvalv)
+        print_wsegsicd += CreateOutput.make_wsegsicd(well_name, lateral.lateral_number, df_wsegsicd)
+        print_wsegaicd += CreateOutput.make_wsegaicd(well_name, lateral.lateral_number, df_wsegaicd)
+        print_wsegicv += CreateOutput.make_wsegicv(well_name, lateral.lateral_number, df_wsegicv)
+        print_wsegdar += CreateOutput.make_wsegdar(well_number, df_wsegdar)
+        print_wsegaicv += CreateOutput.make_wsegaicv(well_number, df_wsegaicv)
+
+        if show_figure and figure_name is not None:
+            logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
+            with PdfPages(figure_name) as figure:
+                figure.savefig(
+                    visualize_well(well_name, df_well, df_reservoir, case.segment_length),
+                    orientation="landscape",
+                )
+            logger.info("creating schematics: %s.pdf", figure_name)
+        elif show_figure and figure_name is None:
+            raise ValueError("Cannot show figure without filename supplied.")
+    print_welsegs += "/\n\n\n"
+
+    output += print_compdat
+    output += print_welsegs
+    output += print_wseglink
+    output += print_compsegs
+    output += print_wsegvalv
+    output += print_wsegsicd
+    output += print_wsegaicd
+    output += print_wsegdar
+    output += print_wsegaicv
+    output += print_wsegicv
+
+    return output
 
 
 class CreateOutput:
@@ -35,20 +202,19 @@ class CreateOutput:
         self,
         case: ReadCasefile,
         schedule_data: dict[str, dict[str, Any]],
-        wells: Wells,
+        weller_man: Wellerman,
         well_name: str,
         well_number: int,
         show_figure: bool = False,
         figure_name: str | None = None,
         paths: tuple[str, str] | None = None,
-        weller_man=None,
     ):
         """Initialize CreateOutput class.
 
         Args:
             case: Case file object.
             schedule_data: Data from schedule file.
-            wells: Wells object.
+            weller_man: .
             well_name: Name of well.
             well_number: Well number.
             show_figure: True if the user wants to create well diagram file. Defaults to False.
@@ -56,19 +222,16 @@ class CreateOutput:
             paths: Paths to the original input case and schedule file.
 
         """
-        self.wells = wells
-        # self.well_name = well_name
-        self.well_number = well_number
-        # self.show_figure = show_figure
-
-        # Prints the UDQ statement if a PVT file and PVT table are specified in the case file.
+        # # Prints the UDQ statement if a PVT file and PVT table are specified in the case file.
         finalprint = self.format_header(paths)
+
+        # case = weller_man.case
 
         if case.completion_table[Headers.DEVICE_TYPE].isin(["AICV"]).any():
             finalprint += CORRELATION_UDQ
 
-        df_reservoir = weller_man.df_reservoir_all
-        df_well = weller_man.df_well_all
+        df_reservoir = weller_man.df_reservoir_all_laterals
+        df_well = weller_man.df_well_all_laterals
 
         # Start printing per well.
         welsegs_header, _ = read_schedule.get_well_segments(schedule_data, well_name, branch=1)
@@ -295,7 +458,6 @@ class CreateOutput:
                 + prepare_outputs.dataframe_tostring(df_tubing, True)
                 + "\n"
             )
-        if not df_device.empty:
             print_welsegs += (
                 prepare_outputs.get_header(well_name, Keywords.WELSEGS, lateral, "Device", nchar)
                 + prepare_outputs.dataframe_tostring(df_device, True)
@@ -462,8 +624,7 @@ class CreateOutput:
             "-- The value of Cv is adjusted according to the segment length and the number of"
             "-- devices per joint. The constriction area varies according to values of"
             "-- volume fractions."
-            f"{'-' * 100}"
-            "\n\n\n"
+            f"{'-' * 100}\n\n\n"
         )
         return header + prepare_outputs.print_wsegdar(df_wsegdar, well_number + 1) + "\n\n\n\n"
 
@@ -485,8 +646,7 @@ class CreateOutput:
             "-- This is how we model AICV technology using sets of ACTIONX keyword"
             "-- the DP parameters change according to the segment water cut (at downhole condition )"
             "-- and gas volume fraction (at downhole condition)"
-            f"{'-' * 100}"
-            "\n\n\n"
+            f"{'-' * 100}\n\n\n"
         )
         return metadata + prepare_outputs.print_wsegaicv(df_wsegaicv, well_number + 1) + "\n\n\n\n"
 
@@ -539,7 +699,7 @@ class CreateOutput:
         Args:
             well_name: Well name.
             lateral_number: Lateral number.
-            data: Dict with integer key 'lateral' containing:.
+            data: Dict with integer key 'lateral' containing:
                 df_tubing: DataFrame tubing layer.
                 df_device: DataFrame device layer.
                 df_annulus: DataFrame annulus layer.
@@ -554,43 +714,83 @@ class CreateOutput:
             CompletorError: If there is no device layer at junction of lateral.
         """
         df_tubing, _, _, _, top = data[lateral_number]
-        if top.empty:
-            df_tubing.at[0, Headers.OUT] = 1
-            return df_tubing
-
-        lateral0 = top[Headers.TUBING_BRANCH].to_numpy()[0]
-        md_junct = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
-        if md_junct > df_tubing[Headers.MEASURED_DEPTH][0]:
-            logger.warning(
-                "Found a junction above the start of the tubing layer, well %s, "
-                "branch %s. Check the depth of segments pointing at the main stem "
-                "in schedule-file",
-                well_name,
-                lateral_number,
-            )
-        if case.connect_to_tubing(well_name, lateral_number):
-            df_segm0 = data[lateral0][0]  # df_tubing
-        else:
-            df_segm0 = data[lateral0][1]  # df_device
-        try:
+        if not top.empty:
+            lateral0 = top[Headers.TUBING_BRANCH].to_numpy()[0]
+            md_junct = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
+            if md_junct > df_tubing[Headers.MEASURED_DEPTH][0]:
+                logger.warning(
+                    "Found a junction above the start of the tubing layer, well %s, "
+                    "branch %s. Check the depth of segments pointing at the main stem "
+                    "in schedule-file",
+                    well_name,
+                    lateral_number,
+                )
             if case.connect_to_tubing(well_name, lateral_number):
-                # Since md_junct (top.TUBING_MEASURED_DEPTH) has segment tops and
-                # segm0.MEASURED_DEPTH has grid block midpoints, a junction at the top of the
-                # well may not be found. Therefore, we try the following:
-                if (~(df_segm0.MEASURED_DEPTH <= md_junct)).all():
-                    md_junct = df_segm0.MEASURED_DEPTH.iloc[0]
-                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
-                else:
-                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
+                df_segm0 = data[lateral0][0]  # df_tubing
             else:
-                # Add 0.1 to md_junct since md_junct refers to the tubing layer
-                # junction md and the device layer md is shifted 0.1 m to the tubing layer.
-                idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct + 0.1)[0][-1]
-        except IndexError as err:
-            raise CompletorError(
-                f"Cannot find a device layer at junction of lateral {lateral_number} in {well_name}"
-            ) from err
-        outsegm = df_segm0.at[idx, Headers.START_SEGMENT_NUMBER]
-
+                df_segm0 = data[lateral0][1]  # df_device
+            try:
+                if case.connect_to_tubing(well_name, lateral_number):
+                    # Since md_junct (top.TUBING_MEASURED_DEPTH) has segment tops and
+                    # segm0.MEASURED_DEPTH has grid block midpoints, a junction at the top of the
+                    # well may not be found. Therefore, we try the following:
+                    if (~(df_segm0.MEASURED_DEPTH <= md_junct)).all():
+                        md_junct = df_segm0.MEASURED_DEPTH.iloc[0]
+                        idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
+                    else:
+                        idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
+                else:
+                    # Add 0.1 to md_junct since md_junct refers to the tubing layer
+                    # junction md and the device layer md is shifted 0.1 m to the
+                    # tubing layer.
+                    idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct + 0.1)[0][-1]
+            except IndexError as err:
+                raise CompletorError(
+                    f"Cannot find a device layer at junction of lateral {lateral_number} in {well_name}"
+                ) from err
+            outsegm = df_segm0.at[idx, Headers.START_SEGMENT_NUMBER]
+        else:
+            outsegm = 1  # default
         df_tubing.at[0, Headers.OUT] = outsegm
         return df_tubing
+        #
+        # if top.empty:
+        #     df_tubing.at[0, Headers.OUT] = 1
+        #     return df_tubing
+        #
+        # lateral0 = top[Headers.TUBING_BRANCH].to_numpy()[0]
+        # md_junct = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
+        # if md_junct > df_tubing[Headers.MEASURED_DEPTH][0]:
+        #     logger.warning(
+        #         "Found a junction above the start of the tubing layer, well %s, "
+        #         "branch %s. Check the depth of segments pointing at the main stem "
+        #         "in schedule-file",
+        #         well_name,
+        #         lateral_number,
+        #     )
+        # if case.connect_to_tubing(well_name, lateral_number):
+        #     df_segm0 = df_tubing  # data[lateral0][0]  # df_tubing
+        # else:
+        #     df_segm0 = df_device  # data[lateral0][1]  # df_device
+        # try:
+        #     if case.connect_to_tubing(well_name, lateral_number):
+        #         # Since md_junct (top.TUBING_MEASURED_DEPTH) has segment tops and
+        #         # segm0.MEASURED_DEPTH has grid block midpoints, a junction at the top of the
+        #         # well may not be found. Therefore, we try the following:
+        #         if (~(df_segm0.MEASURED_DEPTH <= md_junct)).all():
+        #             md_junct = df_segm0.MEASURED_DEPTH.iloc[0]
+        #             idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
+        #         else:
+        #             idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct)[0][-1]
+        #     else:
+        #         # Add 0.1 to md_junct since md_junct refers to the tubing layer
+        #         # junction md and the device layer md is shifted 0.1 m to the tubing layer.
+        #         idx = np.where(df_segm0.MEASURED_DEPTH <= md_junct + 0.1)[0][-1]
+        # except IndexError as err:
+        #     raise CompletorError(
+        #         f"Cannot find a device layer at junction of lateral {lateral_number} in {well_name}"
+        #     ) from err
+        # outsegm = df_segm0.at[idx, Headers.START_SEGMENT_NUMBER]
+        #
+        # df_tubing.at[0, Headers.OUT] = outsegm
+        # return df_tubing
