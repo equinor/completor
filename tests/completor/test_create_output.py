@@ -2,9 +2,9 @@
 
 import pandas as pd
 
-from completor import read_casefile
-from completor.constants import Headers
-from completor.create_output import CreateOutput
+from completor import create_output, read_casefile
+from completor.constants import Headers, Keywords
+from completor.wells import Lateral, Well
 
 
 def test_connect_lateral_logs_warning(caplog):
@@ -70,6 +70,14 @@ GP_PERF_DEVICELAYER
         "dummy_schedule",
     )
 
-    CreateOutput.connect_lateral("A1", 2, data, case)
+    wells = Well("A1", case, {})
+    lateral = Lateral(1, "A1", case, {})
+    lateral.prepared_tubing = df_tubing_lat_1
+    lateral2 = Lateral(2, "A1", case, {})
+    lateral2.prepared_tubing = df_tubing_lat_2
+    wells.active_laterals = [lateral, lateral2]
+
+    create_output._connect_lateral("A1", lateral2, df_top, wells)
+
     assert len(caplog.text) > 0
     assert "WARNING" in caplog.text

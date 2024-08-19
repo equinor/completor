@@ -15,13 +15,13 @@ from tqdm import tqdm
 import completor
 from completor import create_output, create_wells, parse, read_schedule
 from completor.constants import Keywords
-from completor.create_output import CreateOutput
 from completor.create_wells import Wells
 from completor.exceptions import CompletorError
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
+from completor.wells import Well
 
 
 def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
@@ -149,7 +149,7 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
 
 def create(
     input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
-) -> tuple[ReadCasefile, Wells | None, CreateOutput] | tuple[ReadCasefile, Wells | None]:
+) -> tuple[ReadCasefile, Well | None, str] | tuple[ReadCasefile, Well | None]:
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
@@ -253,34 +253,12 @@ def create(
             else:
                 progress_bar.update(len(lines) - prev_line_number)
 
-        from completor.wells2 import Wellerman
-
         for well_name_ in well_names:
             logger.debug("Writing new MSW info for well %s", well_name_)
-            wells = Wellerman(well_name_, case, schedule_data)
             well_number = read_schedule.get_well_number(well_name_, active_wells)
-            output = create_output.CreateOutput(
-                case,
-                schedule_data,
-                wells,
-                well_name_,
-                well_number,
-                show_fig,
-                figure_name,
-                paths,
-            ).finalprint
-            output2 = create_output.format_output(
-                # case,
-                # schedule_data,
-                wells,
-                well_name_,
-                well_number,
-                show_fig,
-                figure_name,
-                paths,
-            )
-            # output_text += format_text(None, output)
-            output_text += format_text(None, output2)
+            wells = Well(well_name_, well_number, case, schedule_data)
+            output = create_output.format_output(wells, figure_name, paths)
+            output_text += format_text(None, output)
 
     except Exception as e_:
         err = e_  # type: ignore
