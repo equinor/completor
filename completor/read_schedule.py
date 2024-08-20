@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from numpy import typing as npt
 
-from completor.constants import Headers, Keywords
+from completor.constants import Content, Headers, Keywords
 from completor.logger import logger
 from completor.utils import sort_by_midpoint
 
@@ -129,7 +129,8 @@ def fix_compsegs_by_priority(
     """
     # slicing two dataframe for user and cells segment length
     start_md_comp = df_completion[
-        (df_completion[Headers.DEVICE_TYPE] == "ICV") & (df_completion[Headers.VALVES_PER_JOINT] > 0)
+        (df_completion[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
+        & (df_completion[Headers.VALVES_PER_JOINT] > 0)
     ][Headers.START_MEASURED_DEPTH].reset_index(drop=True)
     df_custom_compsegs = df_custom_compsegs[df_custom_compsegs[Headers.START_MEASURED_DEPTH].isin(start_md_comp)]
     df_compsegs["priority"] = 1

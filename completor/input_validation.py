@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from completor.constants import Headers
+from completor.constants import Content, Headers
 from completor.exceptions import CompletorError
 
 
@@ -21,14 +21,22 @@ def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:
         Updated completion data for packers.
     """
     # Set default values for packer sections
-    df_comp[Headers.INNER_DIAMETER] = np.where(df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp[Headers.INNER_DIAMETER])
-    df_comp[Headers.OUTER_DIAMETER] = np.where(df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp[Headers.OUTER_DIAMETER])
-    df_comp[Headers.ROUGHNESS] = np.where(df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp[Headers.ROUGHNESS])
-    df_comp[Headers.VALVES_PER_JOINT] = np.where(
-        df_comp[Headers.ANNULUS] == "PA", 0.0, df_comp[Headers.VALVES_PER_JOINT]
+    df_comp[Headers.INNER_DIAMETER] = np.where(
+        df_comp[Headers.ANNULUS] == Content.PACKER, 0.0, df_comp[Headers.INNER_DIAMETER]
     )
-    df_comp[Headers.DEVICE_TYPE] = np.where(df_comp[Headers.ANNULUS] == "PA", "PERF", df_comp[Headers.DEVICE_TYPE])
-    df_comp[Headers.DEVICE_NUMBER] = np.where(df_comp[Headers.ANNULUS] == "PA", 0, df_comp[Headers.DEVICE_NUMBER])
+    df_comp[Headers.OUTER_DIAMETER] = np.where(
+        df_comp[Headers.ANNULUS] == Content.PACKER, 0.0, df_comp[Headers.OUTER_DIAMETER]
+    )
+    df_comp[Headers.ROUGHNESS] = np.where(df_comp[Headers.ANNULUS] == Content.PACKER, 0.0, df_comp[Headers.ROUGHNESS])
+    df_comp[Headers.VALVES_PER_JOINT] = np.where(
+        df_comp[Headers.ANNULUS] == Content.PACKER, 0.0, df_comp[Headers.VALVES_PER_JOINT]
+    )
+    df_comp[Headers.DEVICE_TYPE] = np.where(
+        df_comp[Headers.ANNULUS] == Content.PACKER, Content.PERFORATED, df_comp[Headers.DEVICE_TYPE]
+    )
+    df_comp[Headers.DEVICE_NUMBER] = np.where(
+        df_comp[Headers.ANNULUS] == Content.PACKER, 0, df_comp[Headers.DEVICE_NUMBER]
+    )
     return df_comp
 
 
@@ -42,9 +50,11 @@ def set_default_perf_section(df_comp: pd.DataFrame) -> pd.DataFrame:
         Updated completion data for perforated sections.
     """
     df_comp[Headers.VALVES_PER_JOINT] = np.where(
-        df_comp[Headers.DEVICE_TYPE] == "PERF", 0.0, df_comp[Headers.VALVES_PER_JOINT]
+        df_comp[Headers.DEVICE_TYPE] == Content.PERFORATED, 0.0, df_comp[Headers.VALVES_PER_JOINT]
     )
-    df_comp[Headers.DEVICE_NUMBER] = np.where(df_comp[Headers.DEVICE_TYPE] == "PERF", 0, df_comp[Headers.DEVICE_NUMBER])
+    df_comp[Headers.DEVICE_NUMBER] = np.where(
+        df_comp[Headers.DEVICE_TYPE] == Content.PERFORATED, 0, df_comp[Headers.DEVICE_NUMBER]
+    )
     return df_comp
 
 
@@ -67,10 +77,8 @@ def check_default_non_packer(df_comp: pd.DataFrame) -> pd.DataFrame:
     """
     df_comp = df_comp.copy(True)
     # set default value of roughness
-    df_comp[Headers.ROUGHNESS] = (
-        df_comp[Headers.ROUGHNESS].replace("1*", "1e-5").astype(np.float64)
-    )  # Ensures float after replacing!
-    df_nonpa = df_comp[df_comp[Headers.ANNULUS] != "PA"]
+    df_comp[Headers.ROUGHNESS] = df_comp[Headers.ROUGHNESS].replace("1*", "1e-5").astype(np.float64)
+    df_nonpa = df_comp[df_comp[Headers.ANNULUS] != Content.PACKER]
     df_columns = df_nonpa.columns.to_numpy()
     for column in df_columns:
         if "1*" in df_nonpa[column]:
@@ -136,17 +144,17 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
             If the completion description is incomplete for some range of depth.
             If the completion description is overlapping for some range of depth.
     """
-    if df_comp[Headers.ANNULUS].iloc[idx] == "PA" and (
+    if df_comp[Headers.ANNULUS].iloc[idx] == Content.PACKER and (
         df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] != df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
-        raise CompletorError("Packer segments must not have length")
+        raise CompletorError("Packer segments must not have length.")
 
     if (
-        df_comp[Headers.ANNULUS].iloc[idx] != "PA"
-        and df_comp[Headers.DEVICE_TYPE].iloc[idx] != "ICV"
+        df_comp[Headers.ANNULUS].iloc[idx] != Content.PACKER
+        and df_comp[Headers.DEVICE_TYPE].iloc[idx] != Content.INFLOW_CONTROL_VALVE
         and df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] == df_comp[Headers.END_MEASURED_DEPTH].iloc[idx]
     ):
-        raise CompletorError("Non packer segments must have length")
+        raise CompletorError("Non packer segments must have length.")
 
     if idx > 0:
         if df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] > df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
@@ -159,17 +167,17 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
         if df_comp[Headers.START_MEASURED_DEPTH].iloc[idx] < df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]:
             raise CompletorError(
                 f"Overlapping completion description in well '{well_name}' from depth "
-                f"t{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
+                f"{df_comp[Headers.END_MEASURED_DEPTH].iloc[idx - 1]} "
                 f"to depth {(df_comp[Headers.START_MEASURED_DEPTH].iloc[idx])}"
             )
-    if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in ["PERF", "AICD", "ICD", "VALVE", "DAR", "AICV", "ICV"]:
+    if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in Content.DEVICE_TYPES:
         raise CompletorError(
-            f"{df_comp[Headers.DEVICE_TYPE].iloc[idx]} not a valid device type. "
+            f"{df_comp[Headers.DEVICE_TYPE].iloc[idx]} is not a valid device type. "
             "Valid types are PERF, AICD, ICD, VALVE, DAR, AICV, and ICV."
         )
-    if df_comp[Headers.ANNULUS].iloc[idx] not in ["GP", "OA", "PA"]:
+    if df_comp[Headers.ANNULUS].iloc[idx] not in Content.ANNULUS_TYPES:
         raise CompletorError(
-            f"{df_comp[Headers.ANNULUS].iloc[idx]} not a valid annulus type. Valid types are GP, OA, and PA"
+            f"{df_comp[Headers.ANNULUS].iloc[idx]} is not a valid annulus type. Valid types are GP, OA, and PA"
         )
 
 
@@ -190,7 +198,7 @@ def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
     )
     # allows column ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP to have default value 1* thus it is not set to float
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], fill_value="VALVE"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], fill_value=Content.VALVE))
     return df_temp
 
 
@@ -211,7 +219,7 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "ICD"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.INFLOW_CONTROL_DEVICE))
     return df_temp
 
 
@@ -230,7 +238,7 @@ def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "AICD"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE))
     return df_temp
 
 
@@ -248,7 +256,7 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "DAR"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.DENSITY_ACTIVATED_RECOVERY))
     return df_temp
 
 
@@ -266,7 +274,7 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], "AICV"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.AUTONOMOUS_INFLOW_CONTROL_VALVE))
     return df_temp
 
 
@@ -287,7 +295,7 @@ def set_format_wsegicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     )
     # allows column DEFAULTS to have default value 5*,  thus it is not set to float
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], fill_value="ICV"))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], fill_value=Content.INFLOW_CONTROL_VALVE))
     return df_temp
 
 
@@ -314,7 +322,7 @@ def validate_lateral_to_device(df_lat2dev: pd.DataFrame, df_comp: pd.DataFrame) 
     nrow = df_lat2dev.shape[0]
     for idx in range(0, nrow):
         l2d_well = df_lat2dev[Headers.WELL].iloc[idx]
-        if (df_comp[df_comp[Headers.WELL] == l2d_well][Headers.ANNULUS] == "OA").any():
+        if (df_comp[df_comp[Headers.WELL] == l2d_well][Headers.ANNULUS] == Content.OPEN_ANNULUS).any():
             raise CompletorError(
                 f"Please do not connect a lateral to the mother bore in well {l2d_well} that has open annuli. "
                 "This may trigger an error in reservoir simulator."

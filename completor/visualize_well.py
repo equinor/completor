@@ -5,7 +5,7 @@ from matplotlib.axes import Axes  # type: ignore
 from matplotlib.figure import Figure  # type: ignore
 
 from completor import visualization
-from completor.constants import Headers
+from completor.constants import Content, Headers
 
 
 def visualize_tubing(axs: Axes, df_well: pd.DataFrame) -> Axes:
@@ -18,7 +18,7 @@ def visualize_tubing(axs: Axes, df_well: pd.DataFrame) -> Axes:
     Returns:
         Pyplot axis.
     """
-    df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
+    df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == Content.PERFORATED)]
     if df_device.shape[0] > 0:
         axs.plot(df_well[Headers.TUBING_MEASURED_DEPTH].to_numpy(), [1] * df_well.shape[0], "go-")
     return axs
@@ -34,21 +34,21 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
     Returns:
         Pyplot axis
     """
-    df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == "PERF")]
+    df_device = df_well[(df_well[Headers.NUMBER_OF_DEVICES] > 0) | (df_well[Headers.DEVICE_TYPE] == Content.PERFORATED)]
     for idx in range(df_device.shape[0]):
         xpar = [df_device[Headers.TUBING_MEASURED_DEPTH].iloc[idx]] * 2
         ypar = [1.0, 2.0]
-        if df_device[Headers.DEVICE_TYPE].iloc[idx] == "PERF":
+        if df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.PERFORATED:
             axs.plot(xpar, ypar, "ro-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "AICD":
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE:
             axs.plot(xpar, ypar, "rD-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "ICD":
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.INFLOW_CONTROL_DEVICE:
             axs.plot(xpar, ypar, "rs-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "VALVE":
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.VALVE:
             axs.plot(xpar, ypar, "rv-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "DAR":
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.DENSITY_ACTIVATED_RECOVERY:
             axs.plot(xpar, ypar, "rP-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == "AICV":
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE:
             axs.plot(xpar, ypar, "r*-", markevery=[1])
     return axs
 
@@ -72,7 +72,7 @@ def visualize_annulus(axs: Axes, df_well: pd.DataFrame) -> Axes:
         axs.plot(xpar, ypar, "bo-")
         # find the first connection in branches
         df_annulus_with_connection_to_tubing = df_branch[
-            (df_branch[Headers.NUMBER_OF_DEVICES] > 0) | (df_branch[Headers.DEVICE_TYPE] == "PERF")
+            (df_branch[Headers.NUMBER_OF_DEVICES] > 0) | (df_branch[Headers.DEVICE_TYPE] == Content.PERFORATED)
         ]
         for idx in range(df_annulus_with_connection_to_tubing.shape[0]):
             xpar = [df_annulus_with_connection_to_tubing[Headers.TUBING_MEASURED_DEPTH].iloc[idx]] * 2
@@ -112,7 +112,7 @@ def visualize_reservoir(axs: Axes, ax_twinx: Axes, df_reservoir: pd.DataFrame) -
         else:
             if (
                 df_reservoir[Headers.NUMBER_OF_DEVICES].iloc[idx] > 0
-                or df_reservoir[Headers.DEVICE_TYPE].iloc[idx] == "PERF"
+                or df_reservoir[Headers.DEVICE_TYPE].iloc[idx] == Content.PERFORATED
             ):
                 axs.annotate(
                     "",

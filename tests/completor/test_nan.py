@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import utils
+import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "ml_well.sch"
@@ -18,8 +18,8 @@ def test_nan(tmpdir):
     case_file = Path(_TESTDIR / "nan.casefile")
     schedule_file = Path(_TESTDIR / "nan.sch")
     true_file = Path(_TESTDIR / "nan.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_nan_2(tmpdir):
@@ -32,5 +32,5 @@ def test_nan_2(tmpdir):
     case_file = Path(_TESTDIR / "nan.casefile")
     schedule_file = Path(_TESTDIR / "nan2.sch")
     true_file = Path(_TESTDIR / "nan2.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)

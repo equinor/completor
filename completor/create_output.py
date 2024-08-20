@@ -12,7 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 import completor
 from completor import prepare_outputs
-from completor.constants import Headers, Keywords
+from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
@@ -36,7 +36,7 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
 
     case = weller_man.case
 
-    if case.completion_table[Headers.DEVICE_TYPE].isin(["AICV"]).any():
+    if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
         output += CORRELATION_UDQ
 
     df_reservoir = weller_man.df_reservoir_all_laterals

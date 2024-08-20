@@ -6,10 +6,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-import utils
+import utils_for_tests
 
 from completor import prepare_outputs, read_schedule
-from completor.constants import Headers, Keywords
+from completor.constants import Content, Headers, Keywords
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -206,8 +206,8 @@ def test_prepare_tubing_layer():
             pd.DataFrame([], columns=[]),
             pd.DataFrame(
                 [
-                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
-                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "PERF", "GP"],
+                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, Content.PERFORATED, "GP"],
+                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, Content.PERFORATED, "GP"],
                 ],
                 columns=[
                     Headers.START_MEASURED_DEPTH,
@@ -263,8 +263,8 @@ def test_prepare_tubing_layer():
             pd.DataFrame([], columns=[]),
             pd.DataFrame(
                 [
-                    [1000.0, 1500.0, 1250.0, 1250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
-                    [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "PERF"],
+                    [1000.0, 1500.0, 1250.0, 1250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, Content.PERFORATED],
+                    [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "GP", 1, Content.PERFORATED],
                 ],
                 columns=[
                     Headers.START_MEASURED_DEPTH,
@@ -336,8 +336,8 @@ def test_prepare_tubing_layer():
             ),
             pd.DataFrame(
                 [
-                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
-                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", "ICD"],
+                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", Content.INFLOW_CONTROL_DEVICE],
+                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, 1, "GP", Content.INFLOW_CONTROL_DEVICE],
                 ],
                 columns=[
                     Headers.START_MEASURED_DEPTH,
@@ -409,8 +409,26 @@ def test_prepare_tubing_layer():
             ),
             pd.DataFrame(
                 [
-                    [1000.0, 1500.0, 1300.0, 1300.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
-                    [1500.0, 3000.0, 2250.0, 2250.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "PERF"],
+                    [
+                        1000.0,
+                        1500.0,
+                        1300.0,
+                        1300.0,
+                        Headers.ORIGINAL_SEGMENT,
+                        Content.OPEN_ANNULUS,
+                        1,
+                        Content.PERFORATED,
+                    ],
+                    [
+                        1500.0,
+                        3000.0,
+                        2250.0,
+                        2250.0,
+                        Headers.ORIGINAL_SEGMENT,
+                        Content.OPEN_ANNULUS,
+                        1,
+                        Content.PERFORATED,
+                    ],
                 ],
                 columns=[
                     Headers.START_MEASURED_DEPTH,
@@ -482,8 +500,8 @@ def test_prepare_tubing_layer():
             ),
             pd.DataFrame(
                 [
-                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
-                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, "ICD"],
+                    [1000.0, 2000.0, 1500.0, 1500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, Content.INFLOW_CONTROL_DEVICE],
+                    [2000.0, 3000.0, 2500.0, 2500.0, Headers.ORIGINAL_SEGMENT, "GP", 1, Content.INFLOW_CONTROL_DEVICE],
                 ],
                 columns=[
                     Headers.START_MEASURED_DEPTH,
@@ -526,10 +544,10 @@ def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion, 
     lateral = 1
     df_reservoir = pd.DataFrame(
         [
-            [1, 1, 1, 1000.0, 1500.0, "1*", 1, 100, 0.15, 1300.0, 1300.0, 0, "PERF", 0, "A1", 1],
-            [1, 1, 2, 1500.0, 2000.0, "1*", 1, 200, 0.20, 1750.0, 1750.0, 0, "PERF", 0, "A1", 1],
-            [1, 1, 3, 2000.0, 2500.0, "1*", 1, 100, 0.15, 2300.0, 2300.0, 0, "PERF", 0, "A1", 1],
-            [1, 1, 4, 2500.0, 3000.0, "1*", 1, 200, 0.20, 2750.0, 2750.0, 0, "PERF", 0, "A1", 1],
+            [1, 1, 1, 1000.0, 1500.0, "1*", 1, 100, 0.15, 1300.0, 1300.0, 0, Content.PERFORATED, 0, "A1", 1],
+            [1, 1, 2, 1500.0, 2000.0, "1*", 1, 200, 0.20, 1750.0, 1750.0, 0, Content.PERFORATED, 0, "A1", 1],
+            [1, 1, 3, 2000.0, 2500.0, "1*", 1, 100, 0.15, 2300.0, 2300.0, 0, Content.PERFORATED, 0, "A1", 1],
+            [1, 1, 4, 2500.0, 3000.0, "1*", 1, 200, 0.20, 2750.0, 2750.0, 0, Content.PERFORATED, 0, "A1", 1],
         ],
         columns=[
             Headers.I,
@@ -567,8 +585,8 @@ def test_user_segment_lumping_oa(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_user_segment_lumping_gp(tmpdir):
@@ -581,8 +599,8 @@ def test_user_segment_lumping_gp(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_tests_gp.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_gp.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_print_wsegdar(tmpdir):
@@ -695,8 +713,8 @@ ENDACTIO
 def test_prepare_wsegvalv():
     df_well = pd.DataFrame(
         [
-            ["'WELL'", 1250.0, 1250.0, 0.1, 0.1, 1, 1, 1.0, 1.2, "5*", 2.1, "VALVE", 1, 1],
-            ["'WELL'", 1260.0, 1260.0, 0.1, 0.1, 1, 1, 1.0, 1.2, "5*", np.nan, "VALVE", 1, 1],
+            ["'WELL'", 1250.0, 1250.0, 0.1, 0.1, 1, 1, 1.0, 1.2, "5*", 2.1, Content.VALVE, 1, 1],
+            ["'WELL'", 1260.0, 1260.0, 0.1, 0.1, 1, 1, 1.0, 1.2, "5*", np.nan, Content.VALVE, 1, 1],
         ],
         columns=[
             Headers.WELL,
@@ -778,7 +796,7 @@ def test_prepare_compdat(tmpdir):
                 1000.0,
                 1,
                 1,
-                "ICD",
+                Content.INFLOW_CONTROL_DEVICE,
             ]
         ],
         columns=[
@@ -805,7 +823,20 @@ def test_prepare_compdat(tmpdir):
     )
 
     df_completion_table = pd.DataFrame(
-        [[500.0, 1500.0, 500.0, 1500.0, Headers.ORIGINAL_SEGMENT, "OA", 1, "ICD", 0.15, 0.311]],
+        [
+            [
+                500.0,
+                1500.0,
+                500.0,
+                1500.0,
+                Headers.ORIGINAL_SEGMENT,
+                Content.OPEN_ANNULUS,
+                1,
+                Content.INFLOW_CONTROL_DEVICE,
+                0.15,
+                0.311,
+            ]
+        ],
         columns=[
             Headers.START_MEASURED_DEPTH,
             Headers.END_MEASURED_DEPTH,
@@ -853,8 +884,8 @@ def test_prepare_wsegicv(tmpdir):
     lateral = 1
     df_well = pd.DataFrame(
         [
-            ["'WELL'", 2030.0, 2000.0, 0.1, 0.1, 1, 1, 1.2, 4.1, "5*", 5.1, "ICV", 1, 1],
-            ["'WELL'", 2050.0, 2000.0, 0.1, 0.1, 1, 1, 3.5, 3.2, "5*", 6.1, "ICV", 1, 2],
+            ["'WELL'", 2030.0, 2000.0, 0.1, 0.1, 1, 1, 1.2, 4.1, "5*", 5.1, Content.INFLOW_CONTROL_VALVE, 1, 1],
+            ["'WELL'", 2050.0, 2000.0, 0.1, 0.1, 1, 1, 3.5, 3.2, "5*", 6.1, Content.INFLOW_CONTROL_VALVE, 1, 2],
         ],
         columns=[
             Headers.WELL,
@@ -908,10 +939,10 @@ def test_prepare_wsegicv(tmpdir):
     )
     df_icv_tubing = pd.DataFrame(
         [
-            ["'WELL'", 1, 2005, 2000, 1, 1, "ICV", 1],
-            ["'WELL'", 1, 2012, 2000, 1, 1, "ICV", 1],
-            ["'WELL'", 1, 2015, 2000, 1, 1, "ICV", 2],
-            ["WELL", 1, 2008, 2008, 1, 1, "ICV", 1],
+            ["'WELL'", 1, 2005, 2000, 1, 1, Content.INFLOW_CONTROL_VALVE, 1],
+            ["'WELL'", 1, 2012, 2000, 1, 1, Content.INFLOW_CONTROL_VALVE, 1],
+            ["'WELL'", 1, 2015, 2000, 1, 1, Content.INFLOW_CONTROL_VALVE, 2],
+            ["WELL", 1, 2008, 2008, 1, 1, Content.INFLOW_CONTROL_VALVE, 1],
         ],
         columns=[
             Headers.WELL,
@@ -925,7 +956,10 @@ def test_prepare_wsegicv(tmpdir):
         ],
     )
     df_icv = pd.DataFrame(
-        [["ICV", 1, 1.2, 4.1, "5*", 5.1], ["ICV", 2, 3.5, 3.2, "5*", 6.1]],
+        [
+            [Content.INFLOW_CONTROL_VALVE, 1, 1.2, 4.1, "5*", 5.1],
+            [Content.INFLOW_CONTROL_VALVE, 2, 3.5, 3.2, "5*", 6.1],
+        ],
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
@@ -963,12 +997,114 @@ def test_prepare_icv_compseg(tmpdir):
     """Test function for compseg preparation in accordance with ICV placement in well segmentation."""
     df_reservoir = pd.DataFrame(
         [
-            [33, 42, 29, 3778.0, 3932, "1*", 29, 100.0, 0.2159, 3855.0, 3855.0, 10, "AICD", 1, "OP5", 1],
-            [33, 41, 29, 3932.0, 4088, "1*", 29, 100.0, 0.2159, 4010.0, 4125.0, 10, "ICV", 0, "OP5", 1],
-            [33, 40, 29, 4088.0, 4108, "1*", 29, 100.0, 0.2159, 4098.0, 4125.0, 10, "ICV", 0, "OP5", 1],
-            [33, 40, 28, 4108.0, 4143, "1*", 28, 100.0, 0.2159, 4125.0, 4125.0, 10, "ICV", 0, "OP5", 1],
-            [32, 40, 28, 4143.0, 4246, "1*", 28, 100.0, 0.2159, 4194.0, 4125.0, 10, "ICV", 0, "OP5", 1],
-            [32, 39, 28, 4246.0, 4287, "1*", 28, 100.0, 0.2159, 4266.0, 4266.0, 10, "AICD", 1, "OP5", 1],
+            [
+                33,
+                42,
+                29,
+                3778.0,
+                3932,
+                "1*",
+                29,
+                100.0,
+                0.2159,
+                3855.0,
+                3855.0,
+                10,
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+                "OP5",
+                1,
+            ],
+            [
+                33,
+                41,
+                29,
+                3932.0,
+                4088,
+                "1*",
+                29,
+                100.0,
+                0.2159,
+                4010.0,
+                4125.0,
+                10,
+                Content.INFLOW_CONTROL_VALVE,
+                0,
+                "OP5",
+                1,
+            ],
+            [
+                33,
+                40,
+                29,
+                4088.0,
+                4108,
+                "1*",
+                29,
+                100.0,
+                0.2159,
+                4098.0,
+                4125.0,
+                10,
+                Content.INFLOW_CONTROL_VALVE,
+                0,
+                "OP5",
+                1,
+            ],
+            [
+                33,
+                40,
+                28,
+                4108.0,
+                4143,
+                "1*",
+                28,
+                100.0,
+                0.2159,
+                4125.0,
+                4125.0,
+                10,
+                Content.INFLOW_CONTROL_VALVE,
+                0,
+                "OP5",
+                1,
+            ],
+            [
+                32,
+                40,
+                28,
+                4143.0,
+                4246,
+                "1*",
+                28,
+                100.0,
+                0.2159,
+                4194.0,
+                4125.0,
+                10,
+                Content.INFLOW_CONTROL_VALVE,
+                0,
+                "OP5",
+                1,
+            ],
+            [
+                32,
+                39,
+                28,
+                4246.0,
+                4287,
+                "1*",
+                28,
+                100.0,
+                0.2159,
+                4266.0,
+                4266.0,
+                10,
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+                "OP5",
+                1,
+            ],
         ],
         columns=[
             Headers.I,
@@ -1025,9 +1161,33 @@ def test_prepare_icv_compseg(tmpdir):
     )
     df_completion_table = pd.DataFrame(
         [
-            ["OP5", 1, 3778.0, 4000.0, 0.15, 0.311, 0.00065, "OA", 6.0, "AICD", 1],
-            ["OP5", 1, 4000.0, 4250.0, 0.15, 0.311, 0.00065, "GP", 6.0, "ICV", 1],
-            ["OP5", 1, 4250.0, 4900.0, 0.15, 0.311, 0.00065, "OA", 6.0, "AICD", 1],
+            [
+                "OP5",
+                1,
+                3778.0,
+                4000.0,
+                0.15,
+                0.311,
+                0.00065,
+                Content.OPEN_ANNULUS,
+                6.0,
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+            ],
+            ["OP5", 1, 4000.0, 4250.0, 0.15, 0.311, 0.00065, "GP", 6.0, Content.INFLOW_CONTROL_VALVE, 1],
+            [
+                "OP5",
+                1,
+                4250.0,
+                4900.0,
+                0.15,
+                0.311,
+                0.00065,
+                Content.OPEN_ANNULUS,
+                6.0,
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+            ],
         ],
         columns=[
             Headers.WELL,
@@ -1121,5 +1281,5 @@ def test_user_segment_lumping_oa_overlap(tmpdir):
     case_file = Path(_TESTDIR / "well_4_lumping_overlap_tests_oa.case")
     schedule_file = Path(_TESTDIR / "improved_input_4_lumping_tests.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa_overlap.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
