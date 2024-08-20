@@ -96,7 +96,7 @@ class Lateral:
     df_welsegs_header: pd.DataFrame
     df_welsegs_content: pd.DataFrame
     df_reservoir_header: pd.DataFrame
-    df_mdtvd: pd.DataFrame
+    df_measured_true_vertical_depth: pd.DataFrame
     df_well: pd.DataFrame
     df_reservoir: pd.DataFrame
     df_tubing: pd.DataFrame
@@ -122,10 +122,12 @@ class Lateral:
         self.df_device = pd.DataFrame()
 
         self.df_reservoir = _select_well(well_name, schedule_data, lateral_number)
-        self.df_mdtvd = completion.well_trajectory(self.df_welsegs_header, self.df_welsegs_content)
+        self.df_measured_true_vertical_depth = completion.well_trajectory(
+            self.df_welsegs_header, self.df_welsegs_content
+        )
         self.df_completion = completion.define_annulus_zone(self.df_completion)
         self.df_tubing = _create_tubing_segments(
-            self.df_reservoir, self.df_completion, self.df_mdtvd, case.method, case
+            self.df_reservoir, self.df_completion, self.df_measured_true_vertical_depth, case.method, case
         )
         self.df_tubing = completion.insert_missing_segments(self.df_tubing, well_name)
         self.df_well = completion.complete_the_well(self.df_tubing, self.df_completion, case.joint_length)

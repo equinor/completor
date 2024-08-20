@@ -551,7 +551,7 @@ def test_prepare_compsegs(segment_length, df_device, df_annulus, df_completion, 
         ],
     )
 
-    test_compsegs = prepare_outputs.prepare_compsegs(
+    test_compsegs = prepare_outputs.prepare_completion_segments(
         well_name, lateral, df_reservoir, df_device, df_annulus, df_completion, segment_length
     )
     pd.testing.assert_frame_equal(test_compsegs, expected)
@@ -746,7 +746,7 @@ def test_prepare_wsegvalv():
             Headers.EMPTY,
         ],
     )
-    wsegvalv_output = prepare_outputs.prepare_wsegvalv("'WELL'", df_well, df_device)
+    wsegvalv_output = prepare_outputs.prepare_valve("'WELL'", df_well, df_device)
     pd.testing.assert_frame_equal(wsegvalv_output, true_wsegvalv_output)
 
 
@@ -820,7 +820,7 @@ def test_prepare_compdat(tmpdir):
         ],
     )
 
-    prepare_compdat_out = prepare_outputs.prepare_compdat(well_name, lateral, df_reservoir, df_completion_table)
+    prepare_compdat_out = prepare_outputs.prepare_completion_data(well_name, lateral, df_reservoir, df_completion_table)
     prepare_compdat_true = pd.DataFrame(
         [[Headers.WELL, 5, 10, 15, 15, Headers.OPEN, "1*", 100.0, 0.311, 50.0, 2.5, "1*", "Y", 12.25, "/"]],
         columns=[
@@ -935,7 +935,7 @@ def test_prepare_wsegicv(tmpdir):
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
     )
-    wsegicv_output = prepare_outputs.prepare_wsegicv(
+    wsegicv_output = prepare_outputs.prepare_inflow_control_valve(
         well_name, lateral, df_well, df_device, df_tubing, df_icv_tubing, df_icv
     )
     true_wsegicv_output = pd.DataFrame(

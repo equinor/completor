@@ -237,7 +237,6 @@ def prepare_tubing_layer(
     )
 
     # Handle overburden.
-    well_segments = lateral.df_welsegs_content
     md_input_welsegs = lateral.df_welsegs_content[Headers.TUBING_MEASURED_DEPTH]
     md_welsegs_in_reservoir = df_tubing_in_reservoir[Headers.MEASURED_DEPTH]
     overburden = lateral.df_welsegs_content[(md_welsegs_in_reservoir[0] - md_input_welsegs) > 1.0]
@@ -635,7 +634,7 @@ def connect_compseg_icv(
     return df_compseg_device.drop(_MARKER_MEASURED_DEPTH, axis=1), df_compseg_annulus
 
 
-def prepare_compsegs(
+def prepare_completion_segments(
     well_name: str,
     lateral: int,
     df_reservoir: pd.DataFrame,
@@ -894,7 +893,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
     return df_reservoir
 
 
-def prepare_compdat(
+def prepare_completion_data(
     well_name: str, lateral: int, df_reservoir: pd.DataFrame, df_completion: pd.DataFrame
 ) -> pd.DataFrame:
     """Prepare COMPDAT data frame.
@@ -943,7 +942,9 @@ def prepare_compdat(
     return compdat
 
 
-def prepare_wsegaicd(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_autonomous_inflow_control_device(
+    well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
+) -> pd.DataFrame:
     """Prepare WSEGAICD data frame.
 
     Args:
@@ -989,7 +990,7 @@ def prepare_wsegaicd(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFr
     return wsegaicd
 
 
-def prepare_wsegsicd(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare WSEGSICD data frame.
 
     Args:
@@ -1026,7 +1027,7 @@ def prepare_wsegsicd(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFr
     return wsegsicd
 
 
-def prepare_wsegvalv(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_valve(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare WSEGVALV data frame.
 
     Args:
@@ -1063,7 +1064,7 @@ def prepare_wsegvalv(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFr
     return wsegvalv
 
 
-def prepare_wsegicv(
+def prepare_inflow_control_valve(
     well_name: str,
     lateral: int,
     df_well: pd.DataFrame,
@@ -1168,7 +1169,7 @@ def prepare_wsegicv(
     return wsegicv
 
 
-def prepare_wsegdar(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_density_activated_recovery(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
     """Prepare data frame for DAR.
 
     Args:
@@ -1214,7 +1215,9 @@ def prepare_wsegdar(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFra
     return wsegdar
 
 
-def prepare_wsegaicv(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+def prepare_autonomous_inflow_control_valve(
+    well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
+) -> pd.DataFrame:
     """Prepare data frame for AICV.
 
     Args:

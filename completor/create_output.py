@@ -42,35 +42,37 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
     df_reservoir = weller_man.df_reservoir_all_laterals
     df_well = weller_man.df_well_all_laterals
 
-    print_welsegs = ""
-    print_wseglink = ""
-    print_compsegs = ""
-    print_compdat = ""
-    print_wsegvalv = ""
-    print_wsegicv = ""
-    print_wsegaicd = ""
-    print_wsegsicd = ""
-    print_wsegdar = ""
-    print_wsegaicv = ""
+    print_well_segments = ""
+    print_well_segments_link = ""
+    print_completion_segments = ""
+    print_completion_data = ""
+    print_valve = ""
+    print_inflow_control_valve = ""
+    print_autonomous_inflow_control_device = ""
+    print_inflow_control_device = ""
+    print_density_activated_recovery = ""
+    print_autonomous_inflow_control_valve = ""
 
     start_segment = 2
     start_branch = 1
 
     header_written = False
     for lateral in weller_man.active_laterals:
-        welsegs_header = lateral.df_welsegs_header
-        _check_welsegs1(welsegs_header, df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
+        _check_well_segments_header(lateral.df_welsegs_header, df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
 
         if not header_written:
-            print_welsegs += f"{Keywords.WELSEGS}\n{prepare_outputs.dataframe_tostring(welsegs_header, True)}\n"
+            print_well_segments += (
+                f"{Keywords.WELSEGS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}\n"
+            )
             header_written = True
 
         df_tubing, top = prepare_outputs.prepare_tubing_layer(
             weller_man.well_name, lateral, start_segment, start_branch, case.completion_table, weller_man
         )
-        lateral.set_prepared_tubing(df_tubing)
+        lateral.df_tubing = df_tubing
         df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
-        lateral.set_prepared_device(df_device)
+        lateral.df_device = df_device
+
         if df_device.empty:
             logger.warning(
                 "No connection from reservoir to tubing in Well : %s Lateral : %d",
@@ -96,7 +98,7 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
         completion_table_lateral = completion_table_well[
             completion_table_well[Headers.BRANCH] == lateral.lateral_number
         ]
-        df_compsegs = prepare_outputs.prepare_compsegs(
+        df_completion_segments = prepare_outputs.prepare_completion_segments(
             weller_man.well_name,
             lateral.lateral_number,
             df_reservoir,
@@ -105,15 +107,23 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
             completion_table_lateral,
             case.segment_length,
         )
-        df_compdat = prepare_outputs.prepare_compdat(
+        df_completion_data = prepare_outputs.prepare_completion_data(
             weller_man.well_name, lateral.lateral_number, df_reservoir, completion_table_lateral
         )
-        df_wsegvalv = prepare_outputs.prepare_wsegvalv(weller_man.well_name, lateral.df_well, df_device)
-        df_wsegsicd = prepare_outputs.prepare_wsegsicd(weller_man.well_name, lateral.df_well, df_device)
-        df_wsegaicd = prepare_outputs.prepare_wsegaicd(weller_man.well_name, lateral.df_well, df_device)
-        df_wsegdar = prepare_outputs.prepare_wsegdar(weller_man.well_name, lateral.df_well, df_device)
-        df_wsegaicv = prepare_outputs.prepare_wsegaicv(weller_man.well_name, lateral.df_well, df_device)
-        df_wsegicv = prepare_outputs.prepare_wsegicv(
+        df_valve = prepare_outputs.prepare_valve(weller_man.well_name, lateral.df_well, df_device)
+        df_inflow_control_device = prepare_outputs.prepare_inflow_control_device(
+            weller_man.well_name, lateral.df_well, df_device
+        )
+        df_autonomous_inflow_control_device = prepare_outputs.prepare_autonomous_inflow_control_device(
+            weller_man.well_name, lateral.df_well, df_device
+        )
+        df_density_activated_recovery = prepare_outputs.prepare_density_activated_recovery(
+            weller_man.well_name, lateral.df_well, df_device
+        )
+        df_autonomous_inflow_control_valve = prepare_outputs.prepare_autonomous_inflow_control_valve(
+            weller_man.well_name, lateral.df_well, df_device
+        )
+        df_inflow_control_valve = prepare_outputs.prepare_inflow_control_valve(
             weller_man.well_name,
             lateral.lateral_number,
             df_well,
@@ -122,16 +132,34 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
             case.completion_icv_tubing,
             case.wsegicv_table,
         )
-        print_compdat += _format_compdat(weller_man.well_name, lateral.lateral_number, df_compdat)
-        print_welsegs += _format_welsegs(weller_man.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus)
-        print_wseglink += _format_wseglink(weller_man.well_name, lateral.lateral_number, df_wseglink)
-        print_compsegs += _format_compsegs(weller_man.well_name, lateral.lateral_number, df_compsegs)
-        print_wsegvalv += _format_wsegvalv(weller_man.well_name, lateral.lateral_number, df_wsegvalv)
-        print_wsegsicd += _format_wsegsicd(weller_man.well_name, lateral.lateral_number, df_wsegsicd)
-        print_wsegaicd += _format_wsegaicd(weller_man.well_name, lateral.lateral_number, df_wsegaicd)
-        print_wsegicv += _format_wsegicv(weller_man.well_name, lateral.lateral_number, df_wsegicv)
-        print_wsegdar += _format_wsegdar(weller_man.well_number, df_wsegdar)
-        print_wsegaicv += _format_wsegaicv(weller_man.well_number, df_wsegaicv)
+        print_completion_data += _format_completion_data(
+            weller_man.well_name, lateral.lateral_number, df_completion_data
+        )
+        print_well_segments += _format_well_segments(
+            weller_man.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
+        )
+        print_well_segments_link += _format_well_segments_link(
+            weller_man.well_name, lateral.lateral_number, df_wseglink
+        )
+        print_completion_segments += _format_completion_segments(
+            weller_man.well_name, lateral.lateral_number, df_completion_segments
+        )
+        print_valve += _format_valve(weller_man.well_name, lateral.lateral_number, df_valve)
+        print_inflow_control_device += _format_inflow_control_device(
+            weller_man.well_name, lateral.lateral_number, df_inflow_control_device
+        )
+        print_autonomous_inflow_control_device += _format_autonomous_inflow_control_device(
+            weller_man.well_name, lateral.lateral_number, df_autonomous_inflow_control_device
+        )
+        print_inflow_control_valve += _format_inflow_control_valve(
+            weller_man.well_name, lateral.lateral_number, df_inflow_control_valve
+        )
+        print_density_activated_recovery += _format_density_activated_recovery(
+            weller_man.well_number, df_density_activated_recovery
+        )
+        print_autonomous_inflow_control_valve += _format_autonomous_inflow_control_valve(
+            weller_man.well_number, df_autonomous_inflow_control_valve
+        )
 
         if figure_name is not None:
             logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
@@ -141,18 +169,18 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
                     orientation="landscape",
                 )
             logger.info("creating schematics: %s.pdf", figure_name)
-    print_welsegs += "/\n\n\n"
+    print_well_segments += "/\n\n\n"
 
-    output += print_compdat
-    output += print_welsegs
-    output += print_wseglink
-    output += print_compsegs
-    output += print_wsegvalv
-    output += print_wsegsicd
-    output += print_wsegaicd
-    output += print_wsegdar
-    output += print_wsegaicv
-    output += print_wsegicv
+    output += print_completion_data
+    output += print_well_segments
+    output += print_well_segments_link
+    output += print_completion_segments
+    output += print_valve
+    output += print_inflow_control_device
+    output += print_autonomous_inflow_control_device
+    output += print_density_activated_recovery
+    output += print_autonomous_inflow_control_valve
+    output += print_inflow_control_valve
 
     return output
 
@@ -181,7 +209,7 @@ def _format_header(paths: tuple[str, str] | None) -> str:
     return header
 
 
-def _check_welsegs1(welsegs_header: pd.DataFrame, start_measured_depths: pd.Series) -> pd.DataFrame:
+def _check_well_segments_header(welsegs_header: pd.DataFrame, start_measured_depths: pd.Series) -> pd.DataFrame:
     """Check whether the measured depth of the first segment is deeper than the first cells start measured depth.
 
     In this case, adjust segments measured depth to be 1 meter shallower.
@@ -222,7 +250,7 @@ def _update_segmentbranch(df_device: pd.DataFrame, df_annulus: pd.DataFrame) -> 
     return start_segment, start_branch
 
 
-def _format_compdat(well_name: str, lateral_number: int, df_compdat: pd.DataFrame) -> str:
+def _format_completion_data(well_name: str, lateral_number: int, df_compdat: pd.DataFrame) -> str:
     """Print completion data to file.
 
     Args:
@@ -244,7 +272,7 @@ def _format_compdat(well_name: str, lateral_number: int, df_compdat: pd.DataFram
     )
 
 
-def _format_welsegs(
+def _format_well_segments(
     well_name: str, lateral_number: int, df_tubing: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame
 ) -> str:
     """Print well segments to file.
@@ -281,7 +309,7 @@ def _format_welsegs(
     return print_welsegs
 
 
-def _format_wseglink(well_name: str, lateral_number: int, df_wseglink: pd.DataFrame) -> str:
+def _format_well_segments_link(well_name: str, lateral_number: int, df_wseglink: pd.DataFrame) -> str:
     """Formats well-segments for links.
 
     Args:
@@ -303,7 +331,7 @@ def _format_wseglink(well_name: str, lateral_number: int, df_wseglink: pd.DataFr
     )
 
 
-def _format_compsegs(well_name: str, lateral_number: int, df_compsegs: pd.DataFrame) -> str:
+def _format_completion_segments(well_name: str, lateral_number: int, df_compsegs: pd.DataFrame) -> str:
     """Formats completion segments.
 
     Args:
@@ -325,7 +353,7 @@ def _format_compsegs(well_name: str, lateral_number: int, df_compsegs: pd.DataFr
     )
 
 
-def _format_wsegaicd(well_name: str, lateral_number: int, df_wsegaicd: pd.DataFrame) -> str:
+def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int, df_wsegaicd: pd.DataFrame) -> str:
     """Formats well-segments for autonomous inflow control devices.
 
     Args:
@@ -347,7 +375,7 @@ def _format_wsegaicd(well_name: str, lateral_number: int, df_wsegaicd: pd.DataFr
     )
 
 
-def _format_wsegsicd(well_name: str, lateral_number: int, df_wsegsicd: pd.DataFrame) -> str:
+def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsicd: pd.DataFrame) -> str:
     """Formats well-segments for inflow control devices.
 
     Args:
@@ -369,7 +397,7 @@ def _format_wsegsicd(well_name: str, lateral_number: int, df_wsegsicd: pd.DataFr
     )
 
 
-def _format_wsegvalv(well_name: str, lateral_number: int, df_wsegvalv) -> str:
+def _format_valve(well_name: str, lateral_number: int, df_wsegvalv) -> str:
     """Formats well-segments for valves.
 
     Args:
@@ -391,7 +419,7 @@ def _format_wsegvalv(well_name: str, lateral_number: int, df_wsegvalv) -> str:
     )
 
 
-def _format_wsegicv(well_name: str, lateral_number: int, df_wsegicv: pd.DataFrame) -> str:
+def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv: pd.DataFrame) -> str:
     """Formats well-segments for inflow control valve.
 
     Args:
@@ -413,7 +441,7 @@ def _format_wsegicv(well_name: str, lateral_number: int, df_wsegicv: pd.DataFram
     )
 
 
-def _format_wsegdar(well_number: int, df_wsegdar: pd.DataFrame) -> str:
+def _format_density_activated_recovery(well_number: int, df_wsegdar: pd.DataFrame) -> str:
     """Formats well-segments for density activated recovery valve.
 
     Args:
@@ -438,7 +466,7 @@ def _format_wsegdar(well_number: int, df_wsegdar: pd.DataFrame) -> str:
     return header + prepare_outputs.print_wsegdar(df_wsegdar, well_number + 1) + "\n\n\n\n"
 
 
-def _format_wsegaicv(well_number: int, df_wsegaicv: pd.DataFrame) -> str:
+def _format_autonomous_inflow_control_valve(well_number: int, df_wsegaicv: pd.DataFrame) -> str:
     """Formats the AICV section.
 
     Args:
@@ -514,15 +542,15 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, weller
         CompletorError: If there is no device layer at junction of lateral.
     """
     if top.empty:
-        lateral.prepared_tubing.at[0, Headers.OUT] = 1  # Default out segment.
-        return lateral.prepared_tubing
+        lateral.df_tubing.at[0, Headers.OUT] = 1  # Default out segment.
+        return lateral.df_tubing
 
     first_lateral_in_top = top[Headers.TUBING_BRANCH].to_numpy()[0]
     top_lateral = [lateral for lateral in weller_man.active_laterals if lateral.lateral_number == first_lateral_in_top][
         0
     ]
     junction_measured_depth = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
-    if junction_measured_depth > lateral.prepared_tubing[Headers.MEASURED_DEPTH][0]:
+    if junction_measured_depth > lateral.df_tubing[Headers.MEASURED_DEPTH][0]:
         logger.warning(
             "Found a junction above the start of the tubing layer, well %s, branch %s. "
             "Check the depth of segments pointing at the main stem in schedulefile.",
@@ -530,11 +558,11 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, weller
             lateral.lateral_number,
         )
     if weller_man.case.connect_to_tubing(well_name, lateral.lateral_number):
-        layer_to_connect = top_lateral.prepared_tubing
-        measured_depths = top_lateral.prepared_tubing[Headers.MEASURED_DEPTH]
+        layer_to_connect = top_lateral.df_tubing
+        measured_depths = top_lateral.df_tubing[Headers.MEASURED_DEPTH]
     else:
-        layer_to_connect = top_lateral.prepared_device
-        measured_depths = top_lateral.prepared_device[Headers.MEASURED_DEPTH]
+        layer_to_connect = top_lateral.df_device
+        measured_depths = top_lateral.df_device[Headers.MEASURED_DEPTH]
     try:
         if weller_man.case.connect_to_tubing(well_name, lateral.lateral_number):
             # Since the junction_measured_depth has segment tops and layer_to_connect has grid block midpoints,
@@ -554,5 +582,5 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, weller
             f"Cannot find a device layer at junction of lateral {lateral.lateral_number} in {well_name}"
         ) from err
     out_segment = layer_to_connect.at[idx, Headers.START_SEGMENT_NUMBER]
-    lateral.prepared_tubing.at[0, Headers.OUT] = out_segment
-    return lateral.prepared_tubing
+    lateral.df_tubing.at[0, Headers.OUT] = out_segment
+    return lateral.df_tubing
