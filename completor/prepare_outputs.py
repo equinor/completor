@@ -200,12 +200,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
 
 def prepare_tubing_layer(
-    well_name: str,
-    lateral: Lateral,
-    start_segment: int,
-    branch_no: int,
-    completion_table: pd.DataFrame,
-    well: Well,
+    well_name: str, lateral: Lateral, start_segment: int, branch_no: int, completion_table: pd.DataFrame, well: Well
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Prepare tubing layer data frame.
 
