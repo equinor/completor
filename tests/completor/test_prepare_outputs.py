@@ -10,6 +10,9 @@ import utils_for_tests
 
 from completor import prepare_outputs, read_schedule
 from completor.constants import Content, Headers, Keywords
+from completor.read_casefile import ReadCasefile
+from completor.wells import Well
+from tests.completor import data_provider
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -97,66 +100,72 @@ def test_outlet_segment_2():
     """Test outlet_segment find the outlet segments closest to target measured depths."""
     target_md = [1, 2, 4.0, 5.0]
     reference_md = [0.5, 1.0, 2.0, 4.0, 5.0]
-    reference_segement = [1, 2, 3, 4, 5]
+    reference_segment = [1, 2, 3, 4, 5]
 
-    test_segment = prepare_outputs.get_outlet_segment(target_md, reference_md, reference_segement)
+    test_segment = prepare_outputs.get_outlet_segment(target_md, reference_md, reference_segment)
     np.testing.assert_equal(test_segment, [2, 3, 4, 5])
 
 
 def test_prepare_tubing_layer():
     """Test that the function does not create duplicate tubing segments."""
     active_wells = np.array(["A1"])
-    schedule_data = read_schedule.set_welsegs(
-        {},
-        active_wells,
+    # schedule_data = read_schedule.set_welsegs(
+    #     {},
+    #     active_wells,
+    #     [
+    #         ["A1", "2148.00", "3422", "1*", "ABS", "HFA", "HO"],
+    #         ["2", "2", "1", "1", "3428.66288", "2247.36764", "0.1242", "0.0123"],
+    #         ["3", "3", "1", "2", "3445.89648", "2249.14115", "0.1242", "0.0123"],
+    #         ["4", "4", "1", "3", "3471.06249", "2251.62048", "0.1242", "0.0123"],
+    #         ["5", "5", "1", "4", "3516.04433", "2255.62756", "0.1242", "0.0123"],
+    #     ],
+    # )
+    df_well = pd.DataFrame(
         [
-            ["A1", "2148.00", "3422", "1*", "ABS", "HFA", "HO"],
-            ["2", "2", "1", "1", "3428.66288", "2247.36764", "0.1242", "0.0123"],
-            ["3", "3", "1", "2", "3445.89648", "2249.14115", "0.1242", "0.0123"],
-            ["4", "4", "1", "3", "3471.06249", "2251.62048", "0.1242", "0.0123"],
-            ["5", "5", "1", "4", "3516.04433", "2255.62756", "0.1242", "0.0123"],
+            ["A-1", 3428.662885, 2247.367641, 0.1, 0.1, 1],
+            ["A-1", 3445.896480, 2249.141150, 0.1, 0.1, 1],
+            ["A-1", 3471.062485, 2251.620480, 0.1, 0.1, 1],
+            ["A-1", 3516.044325, 2255.627560, 0.1, 0.1, 1],
+        ],
+        columns=[
+            Headers.WELL,
+            Headers.TUBING_MEASURED_DEPTH,
+            Headers.TRUE_VERTICAL_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.LATERAL,
+        ],
+    )
+    schedule_data = data_provider.provide_schedule_data()
+    case = data_provider.provide_case_object()
+    case.df_well = df_well
+    well = Well("A-1", 2, case, schedule_data)
+    # lateral = well.active_laterals[0]
+    df_completion = pd.DataFrame(
+        [
+            ["A1", 1, 0.00000000, 3417.52493, 0.1, 0.2, 6, "GP", 0],
+            ["A1", 1, 3417.52493, 4593.87272, 0.1, 0.2, 6, "GP", 3],
+            ["A1", 1, 4593.87272, 99999.0000, 0.1, 0.2, 6, "GP", 0],
+        ],
+        columns=[
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.OUTER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.ANNULUS,
+            Headers.VALVES_PER_JOINT,
         ],
     )
     df_test, _ = prepare_outputs.prepare_tubing_layer(
-        schedule_data=schedule_data,
-        well_name="A1",
-        lateral=1,  # TODO: Wrong number of input, should use Lateral
-        df_well=pd.DataFrame(
-            [
-                ["A1", 3428.662885, 2247.367641, 0.1, 0.1, 1],
-                ["A1", 3445.896480, 2249.141150, 0.1, 0.1, 1],
-                ["A1", 3471.062485, 2251.620480, 0.1, 0.1, 1],
-                ["A1", 3516.044325, 2255.627560, 0.1, 0.1, 1],
-            ],
-            columns=[
-                Headers.WELL,
-                Headers.TUBING_MEASURED_DEPTH,
-                Headers.TRUE_VERTICAL_DEPTH,
-                Headers.INNER_DIAMETER,
-                Headers.ROUGHNESS,
-                Headers.LATERAL,
-            ],
-        ),
-        start_segment=1,
-        branch_no=1,
-        completion_table=pd.DataFrame(
-            [
-                ["A1", 1, 0.00000000, 3417.52493, 0.1, 0.2, 6, "GP", 0],
-                ["A1", 1, 3417.52493, 4593.87272, 0.1, 0.2, 6, "GP", 3],
-                ["A1", 1, 4593.87272, 99999.0000, 0.1, 0.2, 6, "GP", 0],
-            ],
-            columns=[
-                Headers.WELL,
-                Headers.BRANCH,
-                Headers.START_MEASURED_DEPTH,
-                Headers.END_MEASURED_DEPTH,
-                Headers.INNER_DIAMETER,
-                Headers.OUTER_DIAMETER,
-                Headers.ROUGHNESS,
-                Headers.ANNULUS,
-                Headers.VALVES_PER_JOINT,
-            ],
-        ),
+        "A1",
+        well.active_laterals[0],
+        2,
+        well.active_laterals[0].lateral_number,
+        df_completion,
+        well,
     )
 
     df_true = pd.DataFrame(

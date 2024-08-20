@@ -5,6 +5,7 @@ import pandas as pd
 from completor import create_output, read_casefile
 from completor.constants import Headers, Keywords
 from completor.wells import Lateral, Well
+from tests.completor import data_provider
 
 
 def test_connect_lateral_logs_warning(caplog):
@@ -54,23 +55,23 @@ def test_connect_lateral_logs_warning(caplog):
         (
             """
 COMPLETION
---Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
---                      Diameter Diameter
-  A1     1   0.0  2451.78 0.15   0.19    0.00035     GP      1     PERF    1
-  A1     2   0.0  2450.0  0.15   0.19    0.00035     GP      1     PERF    1
+--Well Branch Start  End    Screen     Well/  Roughness Annulus Nvalve/ Valve Device
+--     Number    MD   MD    Tubing    Casing            Content Joint   Type  Number
+--                        Diameter  Diameter
+  A1     1     0.0  2451.78  0.15       0.19   0.00035     GP      1    PERF    1
+  A1     2     0.0  2450.0   0.15       0.19   0.00035     GP      1    PERF    1
 /
 SEGMENTLENGTH
- 0
+  0
 /
 GP_PERF_DEVICELAYER
- TRUE
+  TRUE
 /"""
         ),
         "dummy_schedule",
     )
 
-    wells = Well("A1", case, {})
+    wells = Well("A1", 1, case, data_provider.provide_schedule_data())
     lateral = Lateral(1, "A1", case, {})
     lateral.prepared_tubing = df_tubing_lat_1
     lateral2 = Lateral(2, "A1", case, {})
