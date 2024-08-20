@@ -277,7 +277,7 @@ def set_welsegs(
     df_records = pd.DataFrame(recs, columns=columns_data)
     # data types
     df_records[columns_data[:4]] = df_records[columns_data[:4]].astype(np.int64)
-    df_records[columns_data[4:7]] = df_records[columns_data[4:7]].astype(np.float64)
+    df_records[columns_data[4:8]] = df_records[columns_data[4:8]].astype(np.float64)
     # fix abs/inc issue with welsegs
     df_header, df_records = fix_welsegs(df_header, df_records)
 
