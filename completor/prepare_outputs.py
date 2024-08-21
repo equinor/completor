@@ -1073,7 +1073,7 @@ def prepare_inflow_control_valve(
     df_icv_tubing: pd.DataFrame,
     df_icv: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Prepare WSEGICV DataFrame with WELL_SEGMENTS_VALVE format. Include ICVs in device and tubing layer.
+    """Prepare INFLOW_CONTROL_VALVE DataFrame with WELL_SEGMENTS_VALVE format. Include ICVs in device and tubing layer.
 
     Args:
         well_name: Well name.
@@ -1082,7 +1082,7 @@ def prepare_inflow_control_valve(
         df_device: From function prepare_device_layer for this well and this lateral.
         df_tubing: From function prepare_tubing_layer for this well and this lateral.
         df_icv_tubing: df_icv_tubing completion from class ReadCaseFile.
-        df_icv: df_icv for WSEGICV keyword from class ReadCaseFile.
+        df_icv: df_icv for INFLOW_CONTROL_VALVE keyword from class ReadCaseFile.
 
     Returns:
         Dataframe for ICV.

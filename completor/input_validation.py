@@ -279,7 +279,7 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegicv(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments inflow control valve (WSEGICV) table.
+    """Format the well segments inflow control valve (INFLOW_CONTROL_VALVE) table.
 
     Args:
         df_temp: Well segments inflow control valve table.

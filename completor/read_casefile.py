@@ -47,7 +47,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    WSEGSICD, WSEGDAR, AUTONOMOUS_INFLOW_CONTROL_VALVE, WSEGICV, PVTFILE, PVTTABLE.
+    WSEGSICD, WSEGDAR, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -61,7 +61,7 @@ class ReadCasefile:
         wsegaicd_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_DEVICE.
         wsegsicd_table (pd.DataFrame): WSEGSICD.
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
-        wsegicv_table (pd.DataFrame): WSEGICV.
+        wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
         wsegdar_table (pd.DataFrame): WSEGDAR.
         wsegaicv_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_VALVE.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
@@ -546,17 +546,17 @@ class ReadCasefile:
                 )
 
     def read_wsegicv(self) -> None:
-        """Read WSEGICV keyword in the case file.
+        """Read INFLOW_CONTROL_VALVE keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in WSEGICV.
-            CompletorError: WSEGICV keyword not defined when ICV is used in completion.
+            ValueError: If invalid entries in INFLOW_CONTROL_VALVE.
+            CompletorError: INFLOW_CONTROL_VALVE keyword not defined when ICV is used in completion.
         """
 
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGICV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.INFLOW_CONTROL_VALVE)
         if start_index == end_index:
             if Content.INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGICV keyword must be defined, if ICV is used in the completion")
+                raise CompletorError("INFLOW_CONTROL_VALVE keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA]
@@ -568,12 +568,12 @@ class ReadCasefile:
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
             # Fix format
             self.wsegicv_table = input_validation.set_format_wsegicv(df_temp)
-            # Check if the device in COMPLETION exists in WSEGICV
+            # Check if the device in COMPLETION exists in INFLOW_CONTROL_VALVE
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE
             ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegicv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all device in COMPLETION is specified in WSEGICV")
+                raise CompletorError("Not all device in COMPLETION is specified in INFLOW_CONTROL_VALVE")
 
     def get_completion(self, well_name: str | None, branch: int) -> pd.DataFrame:
         """Create the COMPLETION table for the selected well and branch.
