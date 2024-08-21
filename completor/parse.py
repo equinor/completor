@@ -173,7 +173,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
         return complete_wsegvalv_record(record)
 
     dict_ncolumns = {
-        Keywords.WELSPECS: 17,
+        Keywords.WELL_SPECIFICATION: 17,
         Keywords.COMPDAT: 14,
         Keywords.WELSEGS_H: 12,
         Keywords.WELSEGS: 15,
@@ -228,7 +228,7 @@ def read_schedule_keywords(
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """Read schedule keywords or all keywords in table format.
 
-    E.g. WELSPECS, COMPDAT, WELSEGS, COMPSEGS, WSEGVALV.
+    E.g. WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS, WSEGVALV.
 
     Args:
         content: List of strings. Lines from the schedule file.
@@ -357,16 +357,16 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
 
 
 def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return dataframe table of WELSPECS.
+    """Return dataframe table of WELL_SPECIFICATION.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        WELSPECS table.
+        WELL_SPECIFICATION table.
 
     Raises:
-        ValueError: If collection does not contain the 'WELSPECS' keyword.
+        ValueError: If collection does not contain the 'WELL_SPECIFICATION' keyword.
     """
     columns = [
         Headers.WELL,
@@ -389,7 +389,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     ]
     welspecs_table = None
     for collection in collections:
-        if collection.name == Keywords.WELSPECS:
+        if collection.name == Keywords.WELL_SPECIFICATION:
             the_collection = np.asarray(collection)
             if welspecs_table is None:
                 welspecs_table = np.copy(the_collection)
@@ -397,7 +397,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
                 welspecs_table = np.row_stack((welspecs_table, the_collection))
 
     if welspecs_table is None:
-        raise ValueError("Collection does not contain the 'WELSPECS' keyword")
+        raise ValueError(f"Collection does not contain the '{Keywords.WELL_SPECIFICATION}' keyword")
 
     welspecs_table = pd.DataFrame(welspecs_table, columns=columns)
     # replace string component " or ' in the columns

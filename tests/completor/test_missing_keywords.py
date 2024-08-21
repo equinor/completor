@@ -138,7 +138,7 @@ def test_minimum_input(tmpdir, capsys):
 
 
 def test_missing_welspecs(tmpdir, capsys):
-    """Test output to screen from Completor missing WELSPECS."""
+    """Test output to screen from Completor missing WELL_SPECIFICATION."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case(Content.PERFORATED, ["completion"], case_file)

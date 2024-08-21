@@ -55,7 +55,7 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
            Also, the index is set to well so that the original order is not used as index.
         2. We do the comparison numerically, so we dont care about 4th decimal place.
            Use global variables CHECK_EXACT and N_DIGITS for this purpose.
-        3. WELSPECS is not included in the comparison since this keyword is left untouched by completor.
+        3. WELL_SPECIFICATION is not included in the comparison since this keyword is left untouched by completor.
     """
 
     if isinstance(true_file, Path):
@@ -101,14 +101,14 @@ class ReadSchedule:
     """Class for reading and processing of schedule/well files.
 
     This class reads the schedule/well file.
-    It reads the following keywords WELSPECS, COMPDAT, WELSEGS, COMPSEGS.
+    It reads the following keywords WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS.
     The program also reads other keywords, but the unrelated keywords will just be printed in the output file.
 
     Attributes:
         content (List[str]): The data.
         collections (List[completor.parser.ContentCollection]): Content collection of keywords in schedule file.
         unused_keywords (np.ndarray[str]): Array of strings of unused keywords in the schedule file.
-        welspecs (pd.DataFrame): Table of WELSPECS keyword.
+        welspecs (pd.DataFrame): Table of WELL_SPECIFICATION keyword.
         compdat (pd.DataFrame): Table of COMPDAT keyword.
         compsegs (pd.DataFrame): Table of COMPSEGS keyword.
     """
@@ -213,13 +213,13 @@ class ReadSchedule:
         return self._welsegs_header, self._welsegs_content  # type: ignore
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:
-        """Return the WELSPECS table of the selected well.
+        """Return the WELL_SPECIFICATION table of the selected well.
 
         Args:
             well_name: Name of the well.
 
         Returns:
-            WELSPECS table for that well.
+            WELL_SPECIFICATION table for that well.
         """
         df_temp = self.welspecs[self.welspecs[Headers.WELL] == well_name]
         # reset index after filtering

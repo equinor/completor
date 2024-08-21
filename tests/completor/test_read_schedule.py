@@ -17,7 +17,7 @@ with open(Path(_TESTDIR / "schedule.testfile"), encoding="utf-8") as file:
 
 
 def test_reading_welspecs():
-    """Test the functions which read the WELSPECS keyword."""
+    """Test the functions which read the WELL_SPECIFICATION keyword."""
     data = [
         ["WELL1", "GROUP1", 13, 75, 1200, "GAS", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
         ["WELL2", "GROUP1", 18, 37, 1200, "GAS", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],

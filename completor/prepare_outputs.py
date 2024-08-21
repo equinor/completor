@@ -43,7 +43,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
     """Add the first and last column of DataFrame.
 
     Args:
-        df_temp: E.g. WELSPECS, COMPSEGS, COMPDAT, WELSEGS, etc.
+        df_temp: E.g. WELL_SPECIFICATION, COMPSEGS, COMPDAT, WELSEGS, etc.
         add_first: Add the first column.
         add_last: Add the last column.
 

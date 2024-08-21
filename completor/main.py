@@ -204,7 +204,7 @@ def create(
 
                 well_name = _get_well_name(clean_lines_map, line_number)
 
-                if keyword == Keywords.WELSPECS:
+                if keyword == Keywords.WELL_SPECIFICATION:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]

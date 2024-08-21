@@ -62,7 +62,7 @@ class _Headers:
     THERMAL_CONTACT_LENGTH = "THERM"  # Thermal contact length, that is, the length of the well in the completion cell.
     SEGMENT = "SEGMENT"
 
-    # Well specifications (WELSPECS)
+    # Well specifications (WELL_SPECIFICATION)
     # WELL = "WELL"
     GROUP = "GROUP"
     # I = "I"  # noqa: E741
@@ -222,7 +222,7 @@ class _Keywords:
         segments: Set of keywords that are used in a segment.
     """
 
-    WELSPECS = "WELSPECS"
+    WELL_SPECIFICATION = "WELSPECS"
     COMPDAT = "COMPDAT"
     WELSEGS = "WELSEGS"
     COMPSEGS = "COMPSEGS"
@@ -248,9 +248,9 @@ class _Keywords:
     SCHFILE = "SCHFILE"
     OUTFILE = "OUTFILE"
 
-    main_keywords = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
+    main_keywords = [WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS]
 
-    _items = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
+    _items = [WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS]
     _members = set(_items)
 
     segments = {WELSEGS, COMPSEGS}

@@ -205,7 +205,7 @@ def set_welspecs(schedule_data: dict[str, dict[str, Any]], records: list[list[st
     for well_name in df[Headers.WELL].unique():
         if well_name not in schedule_data:
             schedule_data[well_name] = {}
-        schedule_data[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
+        schedule_data[well_name][Keywords.WELL_SPECIFICATION] = df[df[Headers.WELL] == well_name]
         logger.debug("set_welspecs for %s", well_name)
     return schedule_data
 
