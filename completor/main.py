@@ -109,11 +109,11 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
             file_path = re.sub("[\"']+", "", file_path)
 
         else:
-            # OUTFILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
-            if keyword == "OUTFILE":
+            # OUT_FILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
+            if keyword == Keywords.OUT_FILE:
                 return None, None
             raise CompletorError(f"The keyword {keyword} is not defined correctly in the casefile")
-    if keyword != "OUTFILE":
+    if keyword != Keywords.OUT_FILE:
         try:
             with open(file_path, encoding="utf-8") as file:
                 file_content = file.read()
@@ -312,7 +312,7 @@ def main() -> None:
     if isinstance(schedule_file_content, str):
         parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
 
-    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUTFILE)
+    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUT_FILE)
 
     if inputs.outputfile is None:
         if inputs.schedulefile is None:

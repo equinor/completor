@@ -46,7 +46,7 @@ class ReadCasefile:
 
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
-    SCHEDULE_FILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
+    SCHEDULE_FILE, OUT_FILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
     INFLOW_CONTROL_DEVICE, DENSITY_ACTIVATED_RECOVERY, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
@@ -339,8 +339,8 @@ class ReadCasefile:
         logger.info("minimum_segment_length is set to %s", self.minimum_segment_length)
 
     def read_mapfile(self) -> None:
-        """Read the MAPFILE keyword in the case file (if any) into a mapper."""
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.MAPFILE)
+        """Read the MAP_FILE keyword in the case file (if any) into a mapper."""
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.MAP_FILE)
         if end_index == start_index + 2:
             # the content is in between the keyword and the /
             self.mapfile = parse.remove_string_characters(self.content[start_index + 1])
