@@ -34,9 +34,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
     """
     output = _format_header(paths)
 
-    case = well.case
-
-    if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
+    if well.case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
         output += CORRELATION_UDQ
 
     df_reservoir = well.df_reservoir_all_laterals
@@ -67,7 +65,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             header_written = True
 
         df_tubing, top = prepare_outputs.prepare_tubing_layer(
-            well.well_name, lateral, start_segment, start_branch, case.completion_table, well
+            well.well_name, lateral, start_segment, start_branch, well.case.completion_table, well
         )
         lateral.df_tubing = df_tubing
         df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
@@ -91,7 +89,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
         active_laterals = [lateral.lateral_number for lateral in well.active_laterals]
         df_device, df_annulus = _branch_revision(lateral.lateral_number, active_laterals, df_device, df_annulus)
 
-        completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == well.well_name]
+        completion_table_well = well.case.completion_table[well.case.completion_table[Headers.WELL] == well.well_name]
         completion_table_lateral = completion_table_well[
             completion_table_well[Headers.BRANCH] == lateral.lateral_number
         ]
@@ -102,7 +100,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             df_device,
             df_annulus,
             completion_table_lateral,
-            case.segment_length,
+            well.case.segment_length,
         )
         df_completion_data = prepare_outputs.prepare_completion_data(
             well.well_name, lateral.lateral_number, df_reservoir, completion_table_lateral
@@ -126,8 +124,8 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             df_well,
             df_device,
             df_tubing,
-            case.completion_icv_tubing,
-            case.wsegicv_table,
+            well.case.completion_icv_tubing,
+            well.case.wsegicv_table,
         )
         print_completion_data += _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data)
         print_well_segments += _format_well_segments(
@@ -158,7 +156,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
             with PdfPages(figure_name) as figure:
                 figure.savefig(
-                    visualize_well(well.well_name, df_well, df_reservoir, case.segment_length),
+                    visualize_well(well.well_name, df_well, df_reservoir, well.case.segment_length),
                     orientation="landscape",
                 )
             logger.info("creating schematics: %s.pdf", figure_name)
@@ -427,7 +425,7 @@ def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegicv)
     return (
-        f"{Keywords.WSEGVALV}\n"  # TODO: Should this not be WSEGICV?
+        f"{Keywords.WSEGVALV}\n"
         + prepare_outputs.get_header(well_name, Keywords.WSEGVALV, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegicv, True)
         + "\n/\n\n\n"
