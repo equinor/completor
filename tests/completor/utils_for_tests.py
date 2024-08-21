@@ -64,7 +64,7 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     else:
         true_output = ReadSchedule(true_file)
 
-    # test COMPLETION_DATA, COMPSEGS and WELL_SEGMENTS
+    # test COMPLETION_DATA, COMPLETION_SEGMENTS and WELL_SEGMENTS
     with open(test_file, encoding="utf-8") as file:
         test_output = ReadSchedule(file.read())
 
@@ -89,7 +89,7 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     wsc_test.sort_values([Headers.WELL, Headers.TUBING_MEASURED_DEPTH], inplace=True)
     pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
 
-    # COMPSEGS
+    # COMPLETION_SEGMENTS
     cs_true = true_output.compsegs.set_index(Headers.WELL)
     cs_true.sort_values([Headers.WELL, Headers.START_MEASURED_DEPTH], inplace=True)
     cs_test = test_output.compsegs.set_index(Headers.WELL)
@@ -101,7 +101,7 @@ class ReadSchedule:
     """Class for reading and processing of schedule/well files.
 
     This class reads the schedule/well file.
-    It reads the following keywords WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPSEGS.
+    It reads the following keywords WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS.
     The program also reads other keywords, but the unrelated keywords will just be printed in the output file.
 
     Attributes:
@@ -110,14 +110,14 @@ class ReadSchedule:
         unused_keywords (np.ndarray[str]): Array of strings of unused keywords in the schedule file.
         welspecs (pd.DataFrame): Table of WELL_SPECIFICATION keyword.
         compdat (pd.DataFrame): Table of COMPLETION_DATA keyword.
-        compsegs (pd.DataFrame): Table of COMPSEGS keyword.
+        compsegs (pd.DataFrame): Table of COMPLETION_SEGMENTS keyword.
     """
 
     def __init__(self, schedule_file: str, optional_keywords: list[str] | None = None):
         """Initialize the class.
 
         Args:
-            schedule_file: Schedule/well file which contains at least `COMPLETION_DATA`, `COMPSEGS` and `WELL_SEGMENTS`.
+            schedule_file: Schedule/well file which contains at least `COMPLETION_DATA`, `COMPLETION_SEGMENTS` and `WELL_SEGMENTS`.
             optional_keywords: List of optional keywords to find tables for.
         """
         # read the file
@@ -265,14 +265,14 @@ class ReadSchedule:
         return df_header, df_content
 
     def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
-        """Return COMPSEGS table for the selected well.
+        """Return COMPLETION_SEGMENTS table for the selected well.
 
         Args:
             well_name: Name of the well.
             branch: Branch/lateral number.
 
         Returns:
-            COMPSEGS table.
+            COMPLETION_SEGMENTS table.
         """
         df_temp = self.compsegs[self.compsegs[Headers.WELL] == well_name].copy()
         if branch is not None:

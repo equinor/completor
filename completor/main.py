@@ -232,7 +232,7 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.COMPSEGS:
+                elif keyword == Keywords.COMPLETION_SEGMENTS:
                     if well_name not in list(active_wells):
                         output_text += format_text(keyword, "")
                         line_number += 1
@@ -270,7 +270,7 @@ def create(
         if len(active_wells) != 0:
             raise ValueError(
                 "Inconsistent case and schedule files. Check well names, "
-                "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPSEGS."
+                "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
             )
         return case, well
     return case, well, output

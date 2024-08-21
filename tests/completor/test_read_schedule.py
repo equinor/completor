@@ -104,7 +104,7 @@ def test_reading_compdat():
 
 
 def test_reading_compsegs():
-    """Test the functions which read the COMPSEGS keywords.
+    """Test the functions which read the COMPLETION_SEGMENTS keywords.
 
     Test it on WELL12 branch 1.
     """

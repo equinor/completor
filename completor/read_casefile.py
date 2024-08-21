@@ -597,7 +597,7 @@ class ReadCasefile:
         well_data = schedule_data[well_name]
         df_completion = self.completion_table[self.completion_table.WELL == well_name]
         # check that all branches are defined in case-file
-        branch_nos = set(well_data[Keywords.COMPSEGS].BRANCH).difference(set(df_completion.BRANCH))
+        branch_nos = set(well_data[Keywords.COMPLETION_SEGMENTS].BRANCH).difference(set(df_completion.BRANCH))
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:

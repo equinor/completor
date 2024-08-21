@@ -172,12 +172,12 @@ def test_missing_welsegs(tmpdir):
 
 
 def test_inconsistent_files(tmpdir):
-    """Test output to screen from Completor missing COMPSEGS."""
+    """Test output to screen from Completor missing COMPLETION_SEGMENTS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = (
         "Inconsistent case and schedule files. Check well names, "
-        "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPSEGS."
+        "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
     )
     set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)

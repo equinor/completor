@@ -43,7 +43,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
     """Add the first and last column of DataFrame.
 
     Args:
-        df_temp: E.g. WELL_SPECIFICATION, COMPSEGS, COMPLETION_DATA, WELL_SEGMENTS, etc.
+        df_temp: E.g. WELL_SPECIFICATION, COMPLETION_SEGMENTS, COMPLETION_DATA, WELL_SEGMENTS, etc.
         add_first: Add the first column.
         add_last: Add the last column.
 
@@ -70,7 +70,7 @@ def dataframe_tostring(
     """Convert DataFrame to string.
 
     Args:
-        df_temp: COMPLETION_DATA, COMPSEGS, etc.
+        df_temp: COMPLETION_DATA, COMPLETION_SEGMENTS, etc.
         format_column: If columns are to be formatted.
         trim_df: To trim or not to trim. Default: True.
         formatters: Dictionary of the column format. Default: None.
@@ -184,7 +184,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
     Args:
         well_name: Well name.
-        keyword: Table keyword e.g. WELL_SEGMENTS, COMPSEGS, COMPLETION_DATA, etc.
+        keyword: Table keyword e.g. WELL_SEGMENTS, COMPLETION_SEGMENTS, COMPLETION_DATA, etc.
         lat: Lateral number.
         layer: Layer description e.g. tubing, device and annulus.
         nchar: Number of characters for the line boundary. Default 100.
@@ -269,7 +269,7 @@ def fix_tubing_inner_diam_roughness(
 ) -> pd.DataFrame:
     """Ensure roughness and inner diameter of the overburden segments are from the case and not the schedule file.
 
-    Overburden segments are WELL_SEGMENTS segments located above the top COMPSEGS segment.
+    Overburden segments are WELL_SEGMENTS segments located above the top COMPLETION_SEGMENTS segment.
 
     Args:
         well_name: Well name.
@@ -578,7 +578,7 @@ def calculate_upstream(
 def connect_compseg_icv(
     df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Connect COMPSEGS with the correct depth due to ICV segmenting combination.
+    """Connect COMPLETION_SEGMENTS with the correct depth due to ICV segmenting combination.
 
     Args:
         df_reservoir: Reservoir data.
@@ -642,7 +642,7 @@ def prepare_completion_segments(
     df_completion_table: pd.DataFrame,
     segment_length: float | str,
 ) -> pd.DataFrame:
-    """Prepare output for COMPSEGS.
+    """Prepare output for COMPLETION_SEGMENTS.
 
     Args:
         well_name: Well name.
@@ -654,7 +654,7 @@ def prepare_completion_segments(
         segment_length: Segment length.
 
     Returns:
-        COMPSEGS DataFrame.
+        COMPLETION_SEGMENTS DataFrame.
     """
     df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
@@ -776,7 +776,7 @@ def prepare_completion_segments(
 def connect_compseg_usersegment(
     df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion_table: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Connect COMPSEGS with user segmentation.
+    """Connect COMPLETION_SEGMENTS with user segmentation.
 
     This method will connect df_reservoir with df_device and df_annulus in accordance with its
     depth in the df_completion due to user segmentation method.

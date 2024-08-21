@@ -177,7 +177,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
         Keywords.COMPLETION_DATA: 14,
         Keywords.WELSEGS_H: 12,
         Keywords.WELL_SEGMENTS: 15,
-        Keywords.COMPSEGS: 11,
+        Keywords.COMPLETION_SEGMENTS: 11,
     }
     max_column = dict_ncolumns[keyword]
     ncolumn = len(record)
@@ -228,7 +228,7 @@ def read_schedule_keywords(
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """Read schedule keywords or all keywords in table format.
 
-    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPSEGS, WSEGVALV.
+    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS, WSEGVALV.
 
     Args:
         content: List of strings. Lines from the schedule file.
@@ -256,7 +256,7 @@ def read_schedule_keywords(
             used_index = np.append(used_index, np.arange(start, end + 1))
             keyword_content = [_create_record(content, keyword, irec, start) for irec in range(start + 1, end)]
             collection = ContentCollection(keyword_content, name=keyword)
-            if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPSEGS]:
+            if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
                 # remove string characters
                 collection.well = remove_string_characters(keyword_content[0][0])
             collections.append(collection)
@@ -452,21 +452,21 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return data frame table of COMPSEGS.
+    """Return data frame table of COMPLETION_SEGMENTS.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        COMPSEGS table.
+        COMPLETION_SEGMENTS table.
 
     Raises:
-        ValueError: If collection does not contain the 'COMPSEGS' keyword.
+        ValueError: If collection does not contain the 'COMPLETION_SEGMENTS' keyword.
 
     """
     compsegs_table = None
     for collection in collections:
-        if collection.name == Keywords.COMPSEGS:
+        if collection.name == Keywords.COMPLETION_SEGMENTS:
             the_collection = np.asarray(collection[1:])
             # add additional well column
             well_column = np.full(the_collection.shape[0], collection.well)
@@ -477,7 +477,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
                 compsegs_table = np.row_stack((compsegs_table, the_collection))
 
     if compsegs_table is None:
-        raise ValueError("Collection does not contain the 'COMPSEGS' keyword")
+        raise ValueError(f"Collection does not contain the '{Keywords.COMPLETION_SEGMENTS}' keyword")
 
     compsegs_table = pd.DataFrame(
         compsegs_table,

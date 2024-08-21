@@ -337,8 +337,8 @@ def _format_completion_segments(well_name: str, lateral_number: int, df_compsegs
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compsegs)
     return (
-        f"{Keywords.COMPSEGS}\n'{well_name}' /\n"
-        + prepare_outputs.get_header(well_name, Keywords.COMPSEGS, lateral_number, "", nchar)
+        f"{Keywords.COMPLETION_SEGMENTS}\n'{well_name}' /\n"
+        + prepare_outputs.get_header(well_name, Keywords.COMPLETION_SEGMENTS, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_compsegs, True)
         + "\n/\n\n\n"
     )

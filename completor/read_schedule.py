@@ -57,7 +57,7 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
 
     The issue occurs when one cell is penetrated more than once by a well, and happens
     when there are big cells and the well path is complex.
-    The issue can be observed from a COMPSEGS definition that has overlapping start and end measured depth.
+    The issue can be observed from a COMPLETION_SEGMENTS definition that has overlapping start and end measured depth.
 
     Args:
         df_compsegs: DataFrame.
@@ -92,7 +92,11 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
                 start_md_new[idx] = start_md[idx]
                 end_md_new[idx] = end_md[idx]
             else:
-                logger.info("Overlapping in COMPSEGS for %s. Sorts the depths accordingly", well_name)
+                logger.info(
+                    "Overlapping in COMPLETION_SEGMENTS%s for %s. Sorts the depths accordingly",
+                    Keywords.COMPLETION_SEGMENTS,
+                    well_name,
+                )
                 comb_depth = np.append(start_md, end_md)
                 comb_depth = np.sort(comb_depth)
                 start_md_new = np.copy(comb_depth[::2])
@@ -110,7 +114,10 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
             if start_md_new[idx] >= end_md_new[idx - 1]:
                 start_md_new[idx] = end_md_new[idx - 1]
             else:
-                logger.error("Cannot construct COMPSEGS segments based on current input")
+                logger.error(
+                    "Cannot construct COMPLETION_SEGMENTS%s segments based on current input",
+                    Keywords.COMPLETION_SEGMENTS,
+                )
     return sort_by_midpoint(df_compsegs, start_md_new, end_md_new)
 
 
@@ -307,7 +314,7 @@ def set_welsegs(
 def set_compsegs(
     schedule_data: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
 ) -> dict[str, dict[str, Any]]:
-    """Update COMPSEGS for a well if it is an active well.
+    """Update COMPLETION_SEGMENTS for a well if it is an active well.
 
     * Pads missing record columns in header and contents with default 1*.
     * Convert header and column records to DataFrames.
@@ -324,7 +331,7 @@ def set_compsegs(
     Raises:
         ValueError: If a well is not an active well.
     """
-    well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
+    well_name = recs[0][0]  # each COMPLETION_SEGMENTS-chunk is for one well only
     if well_name not in active_wells:
         raise ValueError("The well must be active!")
     columns = [
@@ -347,7 +354,7 @@ def set_compsegs(
     df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
     if well_name not in schedule_data:
         schedule_data[well_name] = {}
-    schedule_data[well_name][Keywords.COMPSEGS] = df
+    schedule_data[well_name][Keywords.COMPLETION_SEGMENTS] = df
     logger.debug("set_compsegs for %s", well_name)
     return schedule_data
 
@@ -436,7 +443,7 @@ def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.Dat
 
 
 def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branch: int | None = None) -> pd.DataFrame:
-    """Get-function for COMPSEGS.
+    """Get-function for COMPLETION_SEGMENTS.
 
     Args:
        schedule_data: Data containing multisegmented well segments.
@@ -446,7 +453,7 @@ def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branc
     Returns:
         Completion segment data.
     """
-    df = schedule_data[Keywords.COMPSEGS].copy()
+    df = schedule_data[Keywords.COMPLETION_SEGMENTS].copy()
     if branch is not None:
         df = df[df[Headers.BRANCH] == branch]
     df.reset_index(drop=True, inplace=True)  # reset index after filtering
