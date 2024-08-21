@@ -595,7 +595,7 @@ def test_leading_whitespace_terminating_slash(tmpdir):
 
 def test_error_missing_keywords(tmpdir, caplog):
     """Check error is reported if any of
-    WELL_SPECIFICATION, WELSEGS, COMPDAT or COMSEGS are missing."""
+    WELL_SPECIFICATION, WELSEGS, COMPLETION_DATA or COMSEGS are missing."""
     tmpdir.chdir()
     case_file = str(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")

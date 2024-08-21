@@ -174,7 +174,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
 
     dict_ncolumns = {
         Keywords.WELL_SPECIFICATION: 17,
-        Keywords.COMPDAT: 14,
+        Keywords.COMPLETION_DATA: 14,
         Keywords.WELSEGS_H: 12,
         Keywords.WELSEGS: 15,
         Keywords.COMPSEGS: 11,
@@ -228,7 +228,7 @@ def read_schedule_keywords(
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """Read schedule keywords or all keywords in table format.
 
-    E.g. WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS, WSEGVALV.
+    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, COMPSEGS, WSEGVALV.
 
     Args:
         content: List of strings. Lines from the schedule file.
@@ -406,27 +406,27 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return dataframe table of COMPDAT.
+    """Return dataframe table of COMPLETION_DATA.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        COMPDAT table.
+        COMPLETION_DATA table.
 
     Raises:
-        ValueError: If a collection does not contain the 'COMPDAT' keyword.
+        ValueError: If a collection does not contain the 'COMPLETION_DATA' keyword.
     """
     compdat_table = None
     for collection in collections:
-        if collection.name == Keywords.COMPDAT:
+        if collection.name == Keywords.COMPLETION_DATA:
             the_collection = np.asarray(collection)
             if compdat_table is None:
                 compdat_table = np.copy(the_collection)
             else:
                 compdat_table = np.row_stack((compdat_table, the_collection))
     if compdat_table is None:
-        raise ValueError("Collection does not contain the 'COMPDAT' keyword")
+        raise ValueError(f"Collection does not contain the '{Keywords.COMPLETION_DATA}' keyword")
     compdat_table = pd.DataFrame(
         compdat_table,
         columns=[

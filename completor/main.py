@@ -212,7 +212,7 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.COMPDAT:
+                elif keyword == Keywords.COMPLETION_DATA:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
                     schedule_data = read_schedule.handle_compdat(schedule_data, active_wells, chunk)
@@ -269,7 +269,8 @@ def create(
     if output is None:
         if len(active_wells) != 0:
             raise ValueError(
-                "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
+                "Inconsistent case and schedule files. Check well names, "
+                "WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, and COMPSEGS."
             )
         return case, well
     return case, well, output

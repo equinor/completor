@@ -64,11 +64,11 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     else:
         true_output = ReadSchedule(true_file)
 
-    # test COMPDAT, COMPSEGS and WELSEGS
+    # test COMPLETION_DATA, COMPSEGS and WELSEGS
     with open(test_file, encoding="utf-8") as file:
         test_output = ReadSchedule(file.read())
 
-    # COMPDAT
+    # COMPLETION_DATA
     pd.testing.assert_frame_equal(
         true_output.compdat, test_output.compdat, check_exact=check_exact, rtol=relative_tolerance
     )
@@ -101,7 +101,7 @@ class ReadSchedule:
     """Class for reading and processing of schedule/well files.
 
     This class reads the schedule/well file.
-    It reads the following keywords WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS.
+    It reads the following keywords WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, COMPSEGS.
     The program also reads other keywords, but the unrelated keywords will just be printed in the output file.
 
     Attributes:
@@ -109,7 +109,7 @@ class ReadSchedule:
         collections (List[completor.parser.ContentCollection]): Content collection of keywords in schedule file.
         unused_keywords (np.ndarray[str]): Array of strings of unused keywords in the schedule file.
         welspecs (pd.DataFrame): Table of WELL_SPECIFICATION keyword.
-        compdat (pd.DataFrame): Table of COMPDAT keyword.
+        compdat (pd.DataFrame): Table of COMPLETION_DATA keyword.
         compsegs (pd.DataFrame): Table of COMPSEGS keyword.
     """
 
@@ -117,7 +117,7 @@ class ReadSchedule:
         """Initialize the class.
 
         Args:
-            schedule_file: Schedule/well file which contains at least `COMPDAT`, `COMPSEGS` and `WELSEGS`.
+            schedule_file: Schedule/well file which contains at least `COMPLETION_DATA`, `COMPSEGS` and `WELSEGS`.
             optional_keywords: List of optional keywords to find tables for.
         """
         # read the file
@@ -227,13 +227,13 @@ class ReadSchedule:
         return df_temp
 
     def get_compdat(self, well_name: str) -> pd.DataFrame:
-        """Return the COMPDAT table for that well.
+        """Return the COMPLETION_DATA table for that well.
 
         Args:
             well_name: Name of the well.
 
         Returns:
-            COMPDAT table for that well.
+            COMPLETION_DATA table for that well.
         """
         df_temp = self.compdat[self.compdat[Headers.WELL] == well_name]
         # reset index after filtering

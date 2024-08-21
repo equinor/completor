@@ -365,7 +365,7 @@ def handle_compdat(
     Args:
         schedule_data: Data containing multisegmented well schedules.
         active_wells: Active wells, without duplicates.
-        records: Record set of COMPDAT data.
+        records: Record set of COMPLETION_DATA data.
 
     Returns:
         Records for inactive wells.
@@ -408,13 +408,13 @@ def handle_compdat(
     for well_name in active_wells:
         if well_name not in schedule_data:
             schedule_data[well_name] = {}
-        schedule_data[well_name][Keywords.COMPDAT] = df[df[Headers.WELL] == well_name]
+        schedule_data[well_name][Keywords.COMPLETION_DATA] = df[df[Headers.WELL] == well_name]
         logger.debug("handle_compdat for %s", well_name)
     return schedule_data
 
 
 def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.DataFrame:
-    """Get-function for COMPDAT.
+    """Get-function for COMPLETION_DATA.
 
     Args:
         schedule_data: Segment information.
@@ -427,10 +427,10 @@ def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.Dat
         ValueError: If completion data keyword is missing in input schedule file.
     """
     try:
-        return schedule_data[Keywords.COMPDAT]
+        return schedule_data[Keywords.COMPLETION_DATA]
     except KeyError as err:
-        if f"'{Keywords.COMPDAT}'" in str(err):
-            raise ValueError("Input schedule file missing COMPDAT keyword.") from err
+        if f"'{Keywords.COMPLETION_DATA}'" in str(err):
+            raise ValueError(f"Input schedule file missing {Keywords.COMPLETION_DATA} keyword.") from err
         raise err
 
 

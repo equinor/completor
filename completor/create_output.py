@@ -256,8 +256,8 @@ def _format_completion_data(well_name: str, lateral_number: int, df_compdat: pd.
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compdat)
     return (
-        f"{Keywords.COMPDAT}\n"
-        + prepare_outputs.get_header(well_name, Keywords.COMPDAT, lateral_number, "", nchar)
+        f"{Keywords.COMPLETION_DATA}\n"
+        + prepare_outputs.get_header(well_name, Keywords.COMPLETION_DATA, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_compdat, True)
         + "\n/\n\n\n"
     )

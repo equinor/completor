@@ -1,4 +1,4 @@
-"""Test Completor NaN in COMPDAT to output schedule file."""
+"""Test Completor NaN in COMPLETION_DATA to output schedule file."""
 
 from pathlib import Path
 
@@ -11,7 +11,7 @@ _TEST_FILE = "ml_well.sch"
 def test_nan(tmpdir):
     """Test that the correct numbers of output elements are produced with changing input.
 
-    Completor should produce 1* in rows of 13 elements in the COMPDAT output when the
+    Completor should produce 1* in rows of 13 elements in the COMPLETION_DATA output when the
     input number of columns changes between 13 and 14.
     """
     tmpdir.chdir()
@@ -25,7 +25,7 @@ def test_nan(tmpdir):
 def test_nan_2(tmpdir):
     """Test that the correct numbers of output elements are produced with fixed input.
 
-    Completor should produce 1* in rows with 13 elements in the COMPDAT output when the
+    Completor should produce 1* in rows with 13 elements in the COMPLETION_DATA output when the
     input number of columns is 13.
     """
     tmpdir.chdir()

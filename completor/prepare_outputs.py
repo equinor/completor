@@ -43,7 +43,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
     """Add the first and last column of DataFrame.
 
     Args:
-        df_temp: E.g. WELL_SPECIFICATION, COMPSEGS, COMPDAT, WELSEGS, etc.
+        df_temp: E.g. WELL_SPECIFICATION, COMPSEGS, COMPLETION_DATA, WELSEGS, etc.
         add_first: Add the first column.
         add_last: Add the last column.
 
@@ -70,7 +70,7 @@ def dataframe_tostring(
     """Convert DataFrame to string.
 
     Args:
-        df_temp: COMPDAT, COMPSEGS, etc.
+        df_temp: COMPLETION_DATA, COMPSEGS, etc.
         format_column: If columns are to be formatted.
         trim_df: To trim or not to trim. Default: True.
         formatters: Dictionary of the column format. Default: None.
@@ -184,7 +184,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
     Args:
         well_name: Well name.
-        keyword: Table keyword e.g. WELSEGS, COMPSEGS, COMPDAT, etc.
+        keyword: Table keyword e.g. WELSEGS, COMPSEGS, COMPLETION_DATA, etc.
         lat: Lateral number.
         layer: Layer description e.g. tubing, device and annulus.
         nchar: Number of characters for the line boundary. Default 100.
@@ -868,7 +868,7 @@ def choose_layer(
 
 
 def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.DataFrame:
-    """Ensure that well/casing inner diameter in the COMPDAT section is in agreement with
+    """Ensure that well/casing inner diameter in the COMPLETION_DATA section is in agreement with
     the case/config file and not the input schedule file.
 
     Args:
@@ -896,7 +896,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
 def prepare_completion_data(
     well_name: str, lateral: int, df_reservoir: pd.DataFrame, df_completion: pd.DataFrame
 ) -> pd.DataFrame:
-    """Prepare COMPDAT data frame.
+    """Prepare COMPLETION_DATA data frame.
 
     Args:
         well_name: Well name.
@@ -905,7 +905,7 @@ def prepare_completion_data(
         df_completion: Completion data.
 
     Returns:
-        COMPDAT.
+        COMPLETION_DATA.
     """
     df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]

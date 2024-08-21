@@ -86,9 +86,9 @@ COMPORD
 
 
 def test_reading_compdat():
-    """Test the functions which read COMPDAT keywords.
+    """Test the functions which read COMPLETION_DATA keywords.
 
-    Test the whole COMPDAT and specific on WELL10.
+    Test the whole COMPLETION_DATA and specific on WELL10.
     """
     true_compdat = Path(_TESTDIR / "compdat.true")
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)

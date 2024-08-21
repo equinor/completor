@@ -70,7 +70,7 @@ class _Headers:
     BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
     PHASE = "PHASE"
     DR = "DR"
-    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
+    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPLETION_DATA.
     SHUT = "SHUT"
     # CROSS = "CROSS"
     PRESSURE_TABLE = "PRESSURETABLE"
@@ -223,7 +223,7 @@ class _Keywords:
     """
 
     WELL_SPECIFICATION = "WELSPECS"
-    COMPDAT = "COMPDAT"
+    COMPLETION_DATA = "COMPDAT"
     WELSEGS = "WELSEGS"
     COMPSEGS = "COMPSEGS"
 
@@ -248,9 +248,9 @@ class _Keywords:
     SCHFILE = "SCHFILE"
     OUTFILE = "OUTFILE"
 
-    main_keywords = [WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS]
+    main_keywords = [WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, COMPSEGS]
 
-    _items = [WELL_SPECIFICATION, COMPDAT, WELSEGS, COMPSEGS]
+    _items = [WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, COMPSEGS]
     _members = set(_items)
 
     segments = {WELSEGS, COMPSEGS}
