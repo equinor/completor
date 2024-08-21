@@ -166,7 +166,7 @@ def test_read_case_wsegaicd():
 
 
 def test_read_case_wsegsicd():
-    """Test the function which reads WSEGSICD keyword."""
+    """Test the function which reads INFLOW_CONTROL_DEVICE keyword."""
     df_true = pd.DataFrame(
         [
             [Content.INFLOW_CONTROL_DEVICE, 1, 0.001, 1000.0, 1.0, 0.1],
@@ -431,7 +431,7 @@ WSEGSICD
 
     with pytest.raises(CompletorError) as e:
         ReadCasefile(case_content)
-    assert "Keyword WSEGSICD has no end record" in str(e)
+    assert f"Keyword {Keywords.INFLOW_CONTROL_DEVICE} has no end record" in str(e)
 
     case_content += """
 WSEGVALV

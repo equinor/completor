@@ -991,7 +991,7 @@ def prepare_autonomous_inflow_control_device(
 
 
 def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
-    """Prepare WSEGSICD data frame.
+    """Prepare INFLOW_CONTROL_DEVICE data frame.
 
     Args:
         well_name: Well name.
@@ -1000,7 +1000,7 @@ def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_devi
         df_device: Device data for this well and lateral.
 
     Returns:
-        WSEGSICD.
+        INFLOW_CONTROL_DEVICE.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:

@@ -208,7 +208,7 @@ def test_missing_wsegaicd(tmpdir):
 
 
 def test_missing_wsegsicd(tmpdir):
-    """Test output to screen from Completor missing WSEGSICD."""
+    """Test output to screen from Completor missing INFLOW_CONTROL_DEVICE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE ICD' in input files."

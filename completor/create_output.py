@@ -381,8 +381,8 @@ def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsi
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegsicd)
     return (
-        f"{Keywords.WSEGSICD}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGSICD, lateral_number, "", nchar)
+        f"{Keywords.INFLOW_CONTROL_DEVICE}\n"
+        + prepare_outputs.get_header(well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegsicd, True)
         + "\n/\n\n\n"
     )

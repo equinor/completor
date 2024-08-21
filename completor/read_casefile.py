@@ -47,7 +47,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    WSEGSICD, WSEGDAR, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
+    INFLOW_CONTROL_DEVICE, WSEGDAR, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -59,7 +59,7 @@ class ReadCasefile:
         pvt_file_name (str): The pvt file name.
         completion_table (pd.DataFrame): ....
         wsegaicd_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_DEVICE.
-        wsegsicd_table (pd.DataFrame): WSEGSICD.
+        wsegsicd_table (pd.DataFrame): INFLOW_CONTROL_DEVICE.
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
         wsegdar_table (pd.DataFrame): WSEGDAR.
@@ -381,16 +381,19 @@ class ReadCasefile:
                 )
 
     def read_wsegsicd(self) -> None:
-        """Read the WSEGSICD keyword in the case file.
+        """Read the INFLOW_CONTROL_DEVICE keyword in the case file.
 
         Raises:
-            CompletorError: If WSEGSICD is not defined and ICD is used in COMPLETION, or if the device number is not found.
-                If not all devices in COMPLETION are specified in WSEGSICD.
+            CompletorError: If INFLOW_CONTROL_DEVICE is not defined and ICD is used in COMPLETION,
+                or if the device number is not found.
+                If not all devices in COMPLETION are specified in INFLOW_CONTROL_DEVICE.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGSICD)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.INFLOW_CONTROL_DEVICE)
         if start_index == end_index:
             if Content.INFLOW_CONTROL_DEVICE in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGSICD keyword must be defined, if ICD is used in the completion.")
+                raise CompletorError(
+                    f"{Keywords.INFLOW_CONTROL_DEVICE} keyword must be defined, if ICD is used in the completion."
+                )
         else:
             # Table headers
             header = [
@@ -403,12 +406,12 @@ class ReadCasefile:
             self.wsegsicd_table = input_validation.set_format_wsegsicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            # Check if the device in COMPLETION is exist in WSEGSICD
+            # Check if the device in COMPLETION is exist in INFLOW_CONTROL_DEVICE
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_DEVICE
             ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegsicd_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all device in COMPLETION is specified in WSEGSICD")
+                raise CompletorError(f"Not all device in COMPLETION is specified in {Keywords.INFLOW_CONTROL_DEVICE}")
 
     def read_wsegaicd(self) -> None:
         """Read the AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword in the case file.
