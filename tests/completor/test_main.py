@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 import utils_for_tests
 
-from completor import main  # type: ignore
+from completor import main
+from completor.constants import Keywords
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -484,7 +485,7 @@ JOINTLENGTH
 )
 def test_read_schedule_from_casefile(schfilestring, tmpdir):
     """
-    Test reading the schedule file from the SCHFILE keyword in the casefile.
+    Test reading the schedule file from the SCHEDULE_FILE keyword in the casefile.
 
     Checks that any string pre- and proceeded by whitespaces and in quotes are
     accepted as a schedule-file string.
@@ -496,8 +497,8 @@ def test_read_schedule_from_casefile(schfilestring, tmpdir):
         sch_file.write("Some schedule data\n")
 
     # Create case_content with the non-clean path to the schedule file
-    case_content = f"SCHFILE\n'{schfilestring}'\n/"
-    schedule_content, path_from_case = main.get_content_and_path(case_content, None, "SCHFILE")
+    case_content = f"{Keywords.SCHEDULE_FILE}\n'{schfilestring}'\n/"
+    schedule_content, path_from_case = main.get_content_and_path(case_content, None, Keywords.SCHEDULE_FILE)
     assert path_from_case == "testdir/testfile"
     assert "Some schedule data" in schedule_content
 

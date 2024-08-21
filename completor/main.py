@@ -120,7 +120,9 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
         except FileNotFoundError as e:
             raise CompletorError(f"Could not find the file: '{file_path}'!") from e
         except (PermissionError, IsADirectoryError) as e:
-            raise CompletorError("Could not read SCHFILE, this is likely because the path is missing quotes.") from e
+            raise CompletorError(
+                f"Could not read {Keywords.SCHEDULE_FILE}, this is likely because the path is missing quotes."
+            ) from e
         return file_content, file_path
     return None, file_path
 
@@ -304,7 +306,7 @@ def main() -> None:
         raise CompletorError("Need input case file to run Completor")
 
     schedule_file_content, inputs.schedulefile = get_content_and_path(
-        case_file_content, inputs.schedulefile, Keywords.SCHFILE
+        case_file_content, inputs.schedulefile, Keywords.SCHEDULE_FILE
     )
 
     if isinstance(schedule_file_content, str):
@@ -316,7 +318,7 @@ def main() -> None:
         if inputs.schedulefile is None:
             raise ValueError(
                 "Could not find a path to schedule file. "
-                "It must be provided as a input argument or within the case files keyword 'SCHFILE'."
+                f"It must be provided as a input argument or within the case files keyword '{Keywords.SCHEDULE_FILE}'."
             )
         inputs.outputfile = inputs.schedulefile.split(".")[0] + "_advanced.wells"
 

@@ -46,7 +46,7 @@ class ReadCasefile:
 
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
-    SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
+    SCHEDULE_FILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
     INFLOW_CONTROL_DEVICE, DENSITY_ACTIVATED_RECOVERY, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
@@ -66,7 +66,7 @@ class ReadCasefile:
         wsegaicv_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_VALVE.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
-        gp_perf_devicelayer (bool): GP_PERF_DEVICELAYER. If TRUE all wells with
+        gp_perf_devicelayer (bool): GRAVEL_PACKED_PERFORATED_DEVICELAYER. If TRUE all wells with
             gravel pack and perforation completion are given a device layer.
             If FALSE (default) all wells with this type of completions are untouched by Completor.
     """
@@ -313,14 +313,14 @@ class ReadCasefile:
         logger.info("case-strictness is set to %d", self.strict)
 
     def read_gp_perf_devicelayer(self) -> None:
-        """Read the GP_PERF_DEVICELAYER keyword in the case file.
+        """Read the GRAVEL_PACKED_PERFORATED_DEVICELAYER keyword in the case file.
 
-        If GP_PERF_DEVICELAYER = True the program assigns a device layer to
-        wells with GP PERF type completions. If GP_PERF_DEVICELAYER = False, the
+        If GRAVEL_PACKED_PERFORATED_DEVICELAYER = True the program assigns a device layer to
+        wells with GP PERF type completions. If GRAVEL_PACKED_PERFORATED_DEVICELAYER = False, the
         program does not add a device layer to the well. I.e. the well is
         untouched by the program. The default value is False.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.GP_PERF_DEVICELAYER)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.GRAVEL_PACKED_PERFORATED_DEVICELAYER)
         if end_index == start_index + 2:
             gp_perf_devicelayer = self.content[start_index + 1]
             self.gp_perf_devicelayer = gp_perf_devicelayer.upper() == "TRUE"

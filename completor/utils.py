@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Content, Headers
+from completor.constants import Content, Headers, Keywords
 from completor.logger import logger
 
 
@@ -198,7 +198,7 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
     Notes:
         No device layer will be added for perforated wells with gravel-packed annulus.
         Completor does nothing to gravel-packed perforated wells by default.
-        This behavior can be changed by setting the GP_PERF_DEVICELAYER keyword in the case file to true.
+        This behavior can be changed by setting the GRAVEL_PACKED_PERFORATED_DEVICELAYER keyword in the case file to true.
 
     Args:
         completion_table: Completion information.
@@ -226,7 +226,8 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
         if not mask.any():
             logger.warning(
                 "There are no active wells for Completor to work on. E.g. all wells are defined with Gravel Pack "
-                "(GP) and valve type PERF. If you want these wells to be active set GP_PERF_DEVICELAYER to TRUE."
+                "(GP) and valve type PERF. "
+                f"If you want these wells to be active set {Keywords.GRAVEL_PACKED_PERFORATED_DEVICELAYER} to TRUE."
             )
         return np.array(completion_table[Headers.WELL][mask].unique())
     return np.array(completion_table[Headers.WELL].unique())
