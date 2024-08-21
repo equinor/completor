@@ -43,7 +43,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
     """Add the first and last column of DataFrame.
 
     Args:
-        df_temp: E.g. WELL_SPECIFICATION, COMPSEGS, COMPLETION_DATA, WELSEGS, etc.
+        df_temp: E.g. WELL_SPECIFICATION, COMPSEGS, COMPLETION_DATA, WELL_SEGMENTS, etc.
         add_first: Add the first column.
         add_last: Add the last column.
 
@@ -184,7 +184,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
     Args:
         well_name: Well name.
-        keyword: Table keyword e.g. WELSEGS, COMPSEGS, COMPLETION_DATA, etc.
+        keyword: Table keyword e.g. WELL_SEGMENTS, COMPSEGS, COMPLETION_DATA, etc.
         lat: Lateral number.
         layer: Layer description e.g. tubing, device and annulus.
         nchar: Number of characters for the line boundary. Default 100.
@@ -192,7 +192,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
     Returns:
         String header.
     """
-    if keyword == Keywords.WELSEGS:
+    if keyword == Keywords.WELL_SEGMENTS:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
     else:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
@@ -269,11 +269,11 @@ def fix_tubing_inner_diam_roughness(
 ) -> pd.DataFrame:
     """Ensure roughness and inner diameter of the overburden segments are from the case and not the schedule file.
 
-    Overburden segments are WELSEGS segments located above the top COMPSEGS segment.
+    Overburden segments are WELL_SEGMENTS segments located above the top COMPSEGS segment.
 
     Args:
         well_name: Well name.
-        overburden: Input schedule WELSEGS segments in the overburden.
+        overburden: Input schedule WELL_SEGMENTS segments in the overburden.
         completion_table: Completion table from the case file, ReadCasefile object.
 
     Returns:

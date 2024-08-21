@@ -238,9 +238,9 @@ def create_tubing_segments(
         # Update the end point of the last segment.
         end_measured_depth[-1] = min(float(end_measured_depth[-1]), max_measured_depth)
     elif method == Method.WELSEGS:
-        # Create the tubing layer from segment measured depths in the WELSEGS keyword that are missing from COMPSEGS.
-        # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
-        # Completor interprets WELSEGS depths as segment midpoint depths.
+        # Create the tubing layer from measured depths in the WELL_SEGMENTS keyword that are missing from COMPSEGS.
+        # WELL_SEGMENTS depths are collected in the `df_measured_depth_true_vertical_depth`, available here.
+        # Completor interprets WELL_SEGMENTS depths as segment midpoint depths.
         # Obtain the multisegmented well segments midpoint depth.
         well_segments = df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy()
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
@@ -257,7 +257,7 @@ def create_tubing_segments(
         start_gaps_depth = end_compsegs_depth[indices_gaps[0]]
         # End of the gaps.
         end_gaps_depth = start_compsegs_depth[indices_gaps[0] + 1]
-        # Check the gaps between COMPSEGS and fill it out with WELSEGS.
+        # Check the gaps between COMPSEGS and fill it out with WELL_SEGMENTS.
         start = np.abs(start_welsegs_depth[:, np.newaxis] - start_gaps_depth).argmin(axis=0)
         end = np.abs(end_welsegs_depth[:, np.newaxis] - end_gaps_depth).argmin(axis=0)
         welsegs_to_add = np.setxor1d(start_welsegs_depth[start], end_welsegs_depth[end])

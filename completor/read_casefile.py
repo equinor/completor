@@ -274,8 +274,9 @@ class ReadCasefile:
         if isinstance(segment_length, str):
             if "welsegs" in segment_length.lower() or "infill" in segment_length.lower():
                 logger.info(
-                    "Segments are defined based on the WELSEGS keyword. "
-                    "Retaining the original tubing segment structure."
+                    "Segments are defined based on the WELL_SEGMENTS%s keyword. "
+                    "Retaining the original tubing segment structure.",
+                    Keywords.WELL_SEGMENTS,
                 )
                 return Method.WELSEGS
             if "cell" in segment_length.lower():
@@ -289,7 +290,7 @@ class ReadCasefile:
                 return Method.USER
         raise CompletorError(
             f"Unrecognized method for SEGMENTLENGTH keyword '{segment_length}'. The value should be one of: "
-            "'WELSEGS', 'CELLS', 'USER'. "
+            f"'{Keywords.WELL_SEGMENTS}', 'CELLS', 'USER'. "
             "Alternatively a negative number for 'USER', zero for 'CELLS', or positive number for 'FIX'.",
         )
 

@@ -118,7 +118,7 @@ def test_reading_compsegs():
 
 
 def test_reading_welsegs():
-    """Test the functions which read WELSEGS keywords.
+    """Test the functions which read WELL_SEGMENTS keywords.
 
     Both the first and the second record.
     Check WELL4 for the second record.
@@ -256,10 +256,10 @@ def test_fix_compsegs():
 
 
 def test_fix_welsegs():
-    """Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
+    """Test that fix_welsegs correctly converts WELL_SEGMENTS from INC to ABS.
 
-    Completor works with ABS in the WELSEGS.
-    So if the users have WELSEGS defined in INC then it must be converted first.
+    Completor works with ABS in the WELL_SEGMENTS.
+    So if the users have WELL_SEGMENTS defined in INC then it must be converted first.
     """
     df_header = pd.DataFrame(
         [[1000.0, 1500.0, "INC"]],

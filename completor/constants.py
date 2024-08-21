@@ -224,7 +224,7 @@ class _Keywords:
 
     WELL_SPECIFICATION = "WELSPECS"
     COMPLETION_DATA = "COMPDAT"
-    WELSEGS = "WELSEGS"
+    WELL_SEGMENTS = "WELSEGS"
     COMPSEGS = "COMPSEGS"
 
     COMPLETION = "COMPLETION"
@@ -248,12 +248,12 @@ class _Keywords:
     SCHFILE = "SCHFILE"
     OUTFILE = "OUTFILE"
 
-    main_keywords = [WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, COMPSEGS]
+    main_keywords = [WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPSEGS]
 
-    _items = [WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, COMPSEGS]
+    _items = [WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPSEGS]
     _members = set(_items)
 
-    segments = {WELSEGS, COMPSEGS}
+    segments = {WELL_SEGMENTS, COMPSEGS}
 
     def __iter__(self):
         return self._items.__iter__()

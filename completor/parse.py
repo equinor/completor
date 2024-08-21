@@ -176,7 +176,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
         Keywords.WELL_SPECIFICATION: 17,
         Keywords.COMPLETION_DATA: 14,
         Keywords.WELSEGS_H: 12,
-        Keywords.WELSEGS: 15,
+        Keywords.WELL_SEGMENTS: 15,
         Keywords.COMPSEGS: 11,
     }
     max_column = dict_ncolumns[keyword]
@@ -228,7 +228,7 @@ def read_schedule_keywords(
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """Read schedule keywords or all keywords in table format.
 
-    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELSEGS, COMPSEGS, WSEGVALV.
+    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPSEGS, WSEGVALV.
 
     Args:
         content: List of strings. Lines from the schedule file.
@@ -256,7 +256,7 @@ def read_schedule_keywords(
             used_index = np.append(used_index, np.arange(start, end + 1))
             keyword_content = [_create_record(content, keyword, irec, start) for irec in range(start + 1, end)]
             collection = ContentCollection(keyword_content, name=keyword)
-            if keyword in [Keywords.WELSEGS, Keywords.COMPSEGS]:
+            if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPSEGS]:
                 # remove string characters
                 collection.well = remove_string_characters(keyword_content[0][0])
             collections.append(collection)
@@ -278,23 +278,23 @@ def _create_record(content: list[str], keyword: str, irec: int, start: int) -> l
     record = unpack_records(record)
     # complete records
     record = complete_records(
-        record, Keywords.WELSEGS_H if keyword == Keywords.WELSEGS and irec == start + 1 else keyword
+        record, Keywords.WELSEGS_H if keyword == Keywords.WELL_SEGMENTS and irec == start + 1 else keyword
     )
     return record
 
 
 def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Return dataframe table of WELSEGS.
+    """Return dataframe table of WELL_SEGMENTS.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        header_table - The header of WELSEGS.
-        record_table - The record of WELSEGS.
+        header_table - The header of WELL_SEGMENTS.
+        record_table - The record of WELL_SEGMENTS.
 
     Raises:
-        ValueError: If collection does not contain the 'WELSEGS' keyword.
+        ValueError: If collection does not contain the 'WELL_SEGMENTSWELL_SEGMENTS' keyword.
     """
     header_columns = [
         Headers.WELL,
@@ -329,7 +329,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
     ]
     for collection in collections:
-        if collection.name == Keywords.WELSEGS:
+        if collection.name == Keywords.WELL_SEGMENTS:
             header_collection = np.asarray(collection[:1])
             record_collection = np.asarray(collection[1:])
             # add additional well column on the second collection
@@ -348,7 +348,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         header_table = pd.DataFrame(header_table, columns=header_columns)
         record_table = pd.DataFrame(record_table, columns=content_columns)
     except NameError as err:
-        raise ValueError("Collection does not contain the 'WELSEGS' keyword") from err
+        raise ValueError(f"Collection does not contain the '{Keywords.WELL_SEGMENTS}' keyword") from err
 
     # replace string component " or ' in the columns
     header_table = remove_string_characters(header_table)

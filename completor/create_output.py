@@ -60,7 +60,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
 
         if not header_written:
             print_well_segments += (
-                f"{Keywords.WELSEGS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}\n"
+                f"{Keywords.WELL_SEGMENTS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}\n"
             )
             header_written = True
 
@@ -282,18 +282,18 @@ def _format_well_segments(
     nchar = prepare_outputs.get_number_of_characters(df_tubing)
     if not df_device.empty:
         print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELSEGS, lateral_number, "Tubing", nchar)
+            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Tubing", nchar)
             + prepare_outputs.dataframe_tostring(df_tubing, True)
             + "\n"
         )
         print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELSEGS, lateral_number, "Device", nchar)
+            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Device", nchar)
             + prepare_outputs.dataframe_tostring(df_device, True)
             + "\n"
         )
     if not df_annulus.empty:
         print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELSEGS, lateral_number, "Annulus", nchar)
+            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Annulus", nchar)
             + prepare_outputs.dataframe_tostring(df_annulus, True)
             + "\n"
         )

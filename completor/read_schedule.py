@@ -12,11 +12,11 @@ from completor.utils import sort_by_midpoint
 
 
 def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Convert a WELSEGS DataFrame specified in incremental (INC) to absolute (ABS) values.
+    """Convert a WELL_SEGMENTS DataFrame specified in incremental (INC) to absolute (ABS) values.
 
     Args:
-        df_header: First record table of WELSEGS.
-        df_content: Second record table of WELSEGS.
+        df_header: First record table of WELL_SEGMENTS.
+        df_content: Second record table of WELL_SEGMENTS.
 
     Returns:
         Updated header DataFrame, Updated content DataFrame.
@@ -231,7 +231,7 @@ def set_welsegs(
     Raises:
         ValueError: If a well is not an active well.
     """
-    well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
+    well_name = recs[0][0]  # each WELL_SEGMENTS-chunk is for one well only
     if well_name not in active_wells:
         raise ValueError("The well must be active!")
 
@@ -291,15 +291,16 @@ def set_welsegs(
             .is_monotonic_increasing
         ):
             logger.warning(
-                "The branch %s in well %s contains negative length segments. Check the input schedulefile WELSEGS "
+                "The branch %s in well %s contains negative length segments. Check the input schedulefile %s "
                 "keyword for inconsistencies in measured depth (MEASURED_DEPTH) of Tubing layer.",
+                Keywords.WELL_SEGMENTS,
                 branch_num,
                 well_name,
             )
 
     if well_name not in schedule_data:
         schedule_data[well_name] = {}
-    schedule_data[well_name][Keywords.WELSEGS] = df_header, df_records
+    schedule_data[well_name][Keywords.WELL_SEGMENTS] = df_header, df_records
     return schedule_data
 
 
@@ -466,13 +467,13 @@ def get_well_segments(
         Well segments headers and content.
 
     Raises:
-        ValueError: If WELSEGS keyword missing in input schedule file.
+        ValueError: If WELL_SEGMENTS keyword missing in input schedule file.
     """
     try:
-        columns, content = well_data[Keywords.WELSEGS]
+        columns, content = well_data[Keywords.WELL_SEGMENTS]
     except KeyError as err:
-        if f"'{Keywords.WELSEGS}'" in str(err):
-            raise ValueError("Input schedule file missing WELSEGS keyword.") from err
+        if f"'{Keywords.WELL_SEGMENTS}'" in str(err):
+            raise ValueError(f"Input schedule file missing {Keywords.WELL_SEGMENTS} keyword.") from err
         raise err
     if branch is not None:
         content = content[content[Headers.TUBING_BRANCH] == branch]

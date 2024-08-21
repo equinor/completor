@@ -272,7 +272,7 @@ COMPLETION
 
 def test_inc(tmpdir):
     """
-    Test completor case WELSEGS defined in INC.
+    Test completor case WELL_SEGMENTS defined in INC.
 
     1. 1 passive well & 1 active well
     2. Single lateral well
@@ -595,7 +595,7 @@ def test_leading_whitespace_terminating_slash(tmpdir):
 
 def test_error_missing_keywords(tmpdir, caplog):
     """Check error is reported if any of
-    WELL_SPECIFICATION, WELSEGS, COMPLETION_DATA or COMSEGS are missing."""
+    WELL_SPECIFICATION, WELL_SEGMENTS, COMPLETION_DATA or COMSEGS are missing."""
     tmpdir.chdir()
     case_file = str(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
