@@ -223,7 +223,7 @@ def test_new_dar_old_parameters():
 
 
 def test_read_case_wsegaicv():
-    """Test the function which reads WSEGAICV keyword."""
+    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             [

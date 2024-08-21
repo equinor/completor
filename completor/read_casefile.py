@@ -46,8 +46,8 @@ class ReadCasefile:
 
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
-    SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH
-    AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE, WSEGSICD, WSEGDAR, WSEGAICV, WSEGICV, PVTFILE, PVTTABLE.
+    SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
+    WSEGSICD, WSEGDAR, AUTONOMOUS_INFLOW_CONTROL_VALVE, WSEGICV, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -63,7 +63,7 @@ class ReadCasefile:
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): WSEGICV.
         wsegdar_table (pd.DataFrame): WSEGDAR.
-        wsegaicv_table (pd.DataFrame): WSEGAICV.
+        wsegaicv_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_VALVE.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
         gp_perf_devicelayer (bool): GP_PERF_DEVICELAYER. If TRUE all wells with
@@ -491,17 +491,20 @@ class ReadCasefile:
                     raise CompletorError("Not all device in COMPLETION is specified in WSEGDAR")
 
     def read_wsegaicv(self) -> None:
-        """Read the WSEGAICV keyword in the case file.
+        """Read the AUTONOMOUS_INFLOW_CONTROL_VALVE keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in WSEGAICV.
-            CompletorError: WSEGAICV keyword not defined when AICV is used in completion.
-                If all devices in COMPLETION are not specified in WSEGAICV.
+            ValueError: If invalid entries in AUTONOMOUS_INFLOW_CONTROL_VALVE.
+            CompletorError: AUTONOMOUS_INFLOW_CONTROL_VALVE keyword not defined when AICV is used in completion.
+                If all devices in COMPLETION are not specified in AUTONOMOUS_INFLOW_CONTROL_VALVE.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGAICV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE)
         if start_index == end_index:
             if Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGAICV keyword must be defined, if AICV is used in the completion.")
+                raise CompletorError(
+                    f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE} keyword must be defined, "
+                    "if AICV is used in the completion."
+                )
         else:
             # Table headers
             header = [
@@ -533,12 +536,14 @@ class ReadCasefile:
             self.wsegaicv_table = input_validation.set_format_wsegaicv(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            # Check if the device in COMPLETION is exist in WSEGAICV
+            # Check if the device in COMPLETION is exist in AUTONOMOUS_INFLOW_CONTROL_VALVE
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE
             ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegaicv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all devices in COMPLETION are specified in WSEGAICV")
+                raise CompletorError(
+                    f"Not all devices in COMPLETION are specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE}"
+                )
 
     def read_wsegicv(self) -> None:
         """Read WSEGICV keyword in the case file.

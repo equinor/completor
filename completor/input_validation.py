@@ -261,7 +261,7 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments automatic inflow control valve (WSEGAICV) table.
+    """Format the well segments automatic inflow control valve (AUTONOMOUS_INFLOW_CONTROL_VALVE) table.
 
     Args:
         df_temp: Well segments automatic inflow control valve table.

@@ -275,7 +275,7 @@ def test_full_wsegaicv(tmpdir, capsys):
 
 
 def test_missing_wsegaicv(tmpdir):
-    """Test output to screen from Completor with missing WSEGAICV keyword."""
+    """Test output to screen from Completor with missing AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICV' in input files."
