@@ -315,8 +315,8 @@ def _format_well_segments_link(well_name: str, lateral_number: int, df_wseglink:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wseglink)
     return (
-        f"{Keywords.WSEGLINK}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGLINK, lateral_number, "", nchar)
+        f"{Keywords.WELL_SEGMENTS_LINK}\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_LINK, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wseglink, True)
         + "\n/\n\n\n"
     )

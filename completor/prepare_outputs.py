@@ -464,7 +464,7 @@ def prepare_annulus_layer(
             df_annulus_downstream[Headers.WELL_BORE_DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
             df_annulus_downstream[Headers.ROUGHNESS] = df_branch_downstream[Headers.ROUGHNESS].to_numpy()
 
-            # no WSEGLINK in the downstream part because
+            # no WELL_SEGMENTS_LINK in the downstream part because
             # no annulus segment have connection to
             # the device segment. in case you wonder why :)
 
@@ -568,7 +568,7 @@ def calculate_upstream(
             Headers.OUT: outlet_segment,
         }
     )
-    # WSEGLINK is only for those segments whose outlet segment is not a device segment.
+    # WELL_SEGMENTS_LINK is only for those segments whose outlet segment is not a device segment.
     df_wseglink_upstream = df_wseglink_upstream[
         df_wseglink_upstream[Headers.DEVICE] != df_wseglink_upstream[Headers.OUT]
     ]
