@@ -219,7 +219,7 @@ def test_missing_wsegsicd(tmpdir):
 
 
 def test_missing_wsegvalv(tmpdir):
-    """Test output to screen from Completor missing WSEGVALV."""
+    """Test output to screen from Completor missing WELL_SEGMENTS_VALVE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE VALVE' in input files."

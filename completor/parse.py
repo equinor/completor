@@ -169,7 +169,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
     Returns:
         Completed list of strings.
     """
-    if keyword == Keywords.WSEGVALV:
+    if keyword == Keywords.WELL_SEGMENTS_VALVE:
         return complete_wsegvalv_record(record)
 
     dict_ncolumns = {
@@ -190,7 +190,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
 
 
 def complete_wsegvalv_record(record: list[str]) -> list[str]:
-    """Complete the WSEGVALV record.
+    """Complete the WELL_SEGMENTS_VALVE record.
 
     Columns PIPE_DIAMETER, ABSOLUTE_PIPE_ROUGHNESS, PIPE_CROSS_SECTION_AREA, FLAG, and MAX_FLOW_CROSS_SECTIONAL_AREA
     might not be provided and need to be filled in with default values.
@@ -228,7 +228,7 @@ def read_schedule_keywords(
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """Read schedule keywords or all keywords in table format.
 
-    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS, WSEGVALV.
+    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS, WELL_SEGMENTS_VALVE.
 
     Args:
         content: List of strings. Lines from the schedule file.
@@ -502,13 +502,13 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return a dataframe of WSEGVALV.
+    """Return a dataframe of WELL_SEGMENTS_VALVE.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        WSEGVALV table.
+        WELL_SEGMENTS_VALVE table.
     """
     columns = [
         Headers.WELL,
@@ -523,7 +523,9 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
         Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
     ]
 
-    wsegvalv_collections = [np.asarray(collection) for collection in collections if collection.name == "WSEGVALV"]
+    wsegvalv_collections = [
+        np.asarray(collection) for collection in collections if collection.name == Keywords.WELL_SEGMENTS_VALVE
+    ]
     wsegvalv_table = np.vstack(wsegvalv_collections)
 
     if wsegvalv_table.size == 0:

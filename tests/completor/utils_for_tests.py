@@ -126,7 +126,7 @@ class ReadSchedule:
         # get contents of the listed keywords
         # and the content of the not listed keywords
         if optional_keywords is None:
-            optional_keywords = ["WSEGVALV"]
+            optional_keywords = [Keywords.WELL_SEGMENTS_VALVE]
         self.collections, self.unused_keywords = parse.read_schedule_keywords(
             self.content, Keywords.main_keywords, optional_keywords
         )

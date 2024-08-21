@@ -403,8 +403,8 @@ def _format_valve(well_name: str, lateral_number: int, df_wsegvalv) -> str:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegvalv)
     return (
-        f"{Keywords.WSEGVALV}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGVALV, lateral_number, "", nchar)
+        f"{Keywords.WELL_SEGMENTS_VALVE}\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegvalv, True)
         + "\n/\n\n\n"
     )
@@ -425,8 +425,8 @@ def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegicv)
     return (
-        f"{Keywords.WSEGVALV}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGVALV, lateral_number, "", nchar)
+        f"{Keywords.WELL_SEGMENTS_VALVE}\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegicv, True)
         + "\n/\n\n\n"
     )

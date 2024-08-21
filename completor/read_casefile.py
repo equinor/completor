@@ -47,7 +47,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH
-    WSEGAICD, WSEGVALV, WSEGSICD, WSEGDAR, WSEGAICV, WSEGICV, PVTFILE, PVTTABLE.
+    WSEGAICD, WELL_SEGMENTS_VALVE, WSEGSICD, WSEGDAR, WSEGAICV, WSEGICV, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -60,7 +60,7 @@ class ReadCasefile:
         completion_table (pd.DataFrame): ....
         wsegaicd_table (pd.DataFrame): WSEGAICD.
         wsegsicd_table (pd.DataFrame): WSEGSICD.
-        wsegvalv_table (pd.DataFrame): WSEGVALV.
+        wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): WSEGICV.
         wsegdar_table (pd.DataFrame): WSEGDAR.
         wsegaicv_table (pd.DataFrame): WSEGAICV.
@@ -347,15 +347,15 @@ class ReadCasefile:
             self.mapper = _mapper(self.mapfile)
 
     def read_wsegvalv(self) -> None:
-        """Read the WSEGVALV keyword in the case file.
+        """Read the WELL_SEGMENTS_VALVE keyword in the case file.
 
         Raises:
             CompletorError: If WESEGVALV is not defined and VALVE is used in COMPLETION. If the device number is not found.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGVALV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WELL_SEGMENTS_VALVE)
         if start_index == end_index:
             if Content.VALVE in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
+                raise CompletorError("WELL_SEGMENTS_VALVE keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
             header = [
@@ -376,7 +376,9 @@ class ReadCasefile:
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegvalv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all device in COMPLETION is specified in WSEGVALV")
+                raise CompletorError(
+                    f"Not all device in {Keywords.COMPLETION} is specified in {Keywords.WELL_SEGMENTS_VALVE}"
+                )
 
     def read_wsegsicd(self) -> None:
         """Read the WSEGSICD keyword in the case file.

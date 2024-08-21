@@ -73,7 +73,7 @@ def test_read_case_segment_length():
 
 
 def test_read_case_wsegvalv():
-    """Test the function which reads WSEGVALV keyword."""
+    """Test the function which reads WELL_SEGMENTS_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             [Content.VALVE, 1, 0.85, 0.01, "5*", 0.04],
@@ -92,7 +92,7 @@ def test_read_case_wsegvalv():
 
 
 def test_read_case_wsegicv():
-    """Test the function which reads WSEGVALV keyword."""
+    """Test the function which reads WELL_SEGMENTS_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             [Content.INFLOW_CONTROL_VALVE, 1, 1.0, 2.0, 2.0],

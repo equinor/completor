@@ -179,7 +179,7 @@ def test_reading_welsegs():
 
 
 def test_reading_wsegvalv():
-    """Test the functions which read the WSEGVALV keyword."""
+    """Test the functions which read the WELL_SEGMENTS_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             ["WELL1", 0, 0.830, 1.0000e-03, "1*", "1*", "1*", "1*", "OPEN", 1.0000e-03],

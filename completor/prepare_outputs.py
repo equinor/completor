@@ -1028,7 +1028,7 @@ def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_devi
 
 
 def prepare_valve(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
-    """Prepare WSEGVALV data frame.
+    """Prepare WELL_SEGMENTS_VALVE data frame.
 
     Args:
         well_name: Well name.
@@ -1036,7 +1036,7 @@ def prepare_valve(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
         df_device: From function prepare_device_layer for this well and this lateral.
 
     Returns:
-        WSEGVALV.
+        WELL_SEGMENTS_VALVE.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -1073,7 +1073,7 @@ def prepare_inflow_control_valve(
     df_icv_tubing: pd.DataFrame,
     df_icv: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Prepare WSEGICV DataFrame with WSEGVALV format. Include ICVs in device and tubing layer.
+    """Prepare WSEGICV DataFrame with WELL_SEGMENTS_VALVE format. Include ICVs in device and tubing layer.
 
     Args:
         well_name: Well name.
@@ -1331,7 +1331,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
     action += "/\n\n"
     iaction = 3
-    action += Keywords.WSEGVALV + "\n"
+    action += Keywords.WELL_SEGMENTS_VALVE + "\n"
     header_string = "--"
     for itm in header[iaction]:
         header_string += "  " + itm
@@ -1366,7 +1366,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             )
             print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]  # type: ignore
-            header_string = Keywords.WSEGVALV + "\n--"
+            header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
             for item in header[iaction]:
                 header_string += "  " + item
             header_string = header_string.rstrip() + "\n"
@@ -1392,7 +1392,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         )
         print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
-        header_string = Keywords.WSEGVALV + "\n--"
+        header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"
@@ -1415,7 +1415,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         )
         print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
-        header_string = Keywords.WSEGVALV + "\n--"
+        header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"

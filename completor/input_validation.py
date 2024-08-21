@@ -182,7 +182,7 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
 
 
 def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments valve (WSEGVALV) table.
+    """Format the well segments valve (WELL_SEGMENTS_VALVE) table.
 
     Args:
         df_temp: Well segments valve data.

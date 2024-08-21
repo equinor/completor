@@ -571,11 +571,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str)
         raise err
     if device_type == Content.VALVE:
         # rescale the Cv
-        # because no scaling factor in WSEGVALV
+        # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     elif device_type == Content.DENSITY_ACTIVATED_RECOVERY:
         # rescale the Cv
-        # because no scaling factor in WSEGVALV
+        # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     return df_well
 
