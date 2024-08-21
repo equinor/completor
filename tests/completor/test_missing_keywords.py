@@ -247,7 +247,7 @@ def test_full_wsegdar(tmpdir, capsys):
 
 
 def test_missing_wsegdar(tmpdir):
-    """Test output to screen from Completor with missing WSEGDAR keyword."""
+    """Test output to screen from Completor with missing DENSITY_ACTIVATED_RECOVERY keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE DAR' in input files."

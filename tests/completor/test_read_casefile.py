@@ -186,7 +186,7 @@ def test_read_case_wsegsicd():
 
 
 def test_read_case_wsegdar():
-    """Test the function which reads WSEGDAR keyword."""
+    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
     df_true = pd.DataFrame(
         [
             [Content.DENSITY_ACTIVATED_RECOVERY, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
@@ -211,14 +211,14 @@ def test_read_case_wsegdar():
 
 
 def test_new_dar_old_parameters():
-    """Test the function which reads WSEGDAR keyword."""
+    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
     with open(Path(_TESTDIR / "dar.testfile"), encoding="utf-8") as old_dar_case:
         _OLDDARCASE = old_dar_case.read()
 
     with pytest.raises(CaseReaderFormatError) as err:
         ReadCasefile(_OLDDARCASE)
 
-    expected_err = "Too few entries in data for keyword 'WSEGDAR', expected 9"
+    expected_err = f"Too few entries in data for keyword '{Keywords.DENSITY_ACTIVATED_RECOVERY}', expected 9"
     assert expected_err in str(err.value)
 
 

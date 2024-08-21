@@ -243,7 +243,7 @@ def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments DAR (WSEGDAR) data.
+    """Format the well segments DAR (DENSITY_ACTIVATED_RECOVERY) data.
 
     Args:
         df_temp: Well segments DAR device data.

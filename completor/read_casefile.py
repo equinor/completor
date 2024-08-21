@@ -47,7 +47,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    INFLOW_CONTROL_DEVICE, WSEGDAR, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
+    INFLOW_CONTROL_DEVICE, DENSITY_ACTIVATED_RECOVERY, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -62,7 +62,7 @@ class ReadCasefile:
         wsegsicd_table (pd.DataFrame): INFLOW_CONTROL_DEVICE.
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
-        wsegdar_table (pd.DataFrame): WSEGDAR.
+        wsegdar_table (pd.DataFrame): DENSITY_ACTIVATED_RECOVERY.
         wsegaicv_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_VALVE.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
@@ -457,17 +457,19 @@ class ReadCasefile:
                 )
 
     def read_wsegdar(self) -> None:
-        """Read the WSEGDAR keyword in the case file.
+        """Read the DENSITY_ACTIVATED_RECOVERY keyword in the case file.
 
         Raises:
-            ValueError: If there are invalid entries in WSEGDAR.
-            CompletorError: If not all device in COMPLETION is specified in WSEGDAR.
-                If WSEGDAR keyword not defined, when DAR is used in the completion.
+            ValueError: If there are invalid entries in DENSITY_ACTIVATED_RECOVERY.
+            CompletorError: If not all device in COMPLETION is specified in DENSITY_ACTIVATED_RECOVERY.
+                If DENSITY_ACTIVATED_RECOVERY keyword not defined, when DAR is used in the completion.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGDAR)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.DENSITY_ACTIVATED_RECOVERY)
         if start_index == end_index:
             if Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGDAR keyword must be defined, if DAR is used in the completion")
+                raise CompletorError(
+                    f"{Keywords.DENSITY_ACTIVATED_RECOVERY} keyword must be defined, if DAR is used in the completion"
+                )
         else:
             # Table headers
             header = [
@@ -491,7 +493,9 @@ class ReadCasefile:
                     self.completion_table[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY
                 ][Headers.DEVICE_NUMBER].to_numpy()
                 if not check_contents(device_checks, self.wsegdar_table[Headers.DEVICE_NUMBER].to_numpy()):
-                    raise CompletorError("Not all device in COMPLETION is specified in WSEGDAR")
+                    raise CompletorError(
+                        f"Not all device in COMPLETION is specified in {Keywords.DENSITY_ACTIVATED_RECOVERY}"
+                    )
 
     def read_wsegaicv(self) -> None:
         """Read the AUTONOMOUS_INFLOW_CONTROL_VALVE keyword in the case file.
