@@ -175,7 +175,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
     dict_ncolumns = {
         Keywords.WELL_SPECIFICATION: 17,
         Keywords.COMPLETION_DATA: 14,
-        Keywords.WELSEGS_H: 12,
+        Keywords.WELL_SEGMENTS_HEADER: 12,
         Keywords.WELL_SEGMENTS: 15,
         Keywords.COMPLETION_SEGMENTS: 11,
     }
@@ -278,7 +278,7 @@ def _create_record(content: list[str], keyword: str, irec: int, start: int) -> l
     record = unpack_records(record)
     # complete records
     record = complete_records(
-        record, Keywords.WELSEGS_H if keyword == Keywords.WELL_SEGMENTS and irec == start + 1 else keyword
+        record, Keywords.WELL_SEGMENTS_HEADER if keyword == Keywords.WELL_SEGMENTS and irec == start + 1 else keyword
     )
     return record
 
