@@ -413,7 +413,7 @@ def handle_compdat(
     return schedule_data
 
 
-def get_completion_data(schedule_data: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
+def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.DataFrame:
     """Get-function for COMPDAT.
 
     Args:
@@ -427,16 +427,14 @@ def get_completion_data(schedule_data: dict[str, dict[str, Any]], well_name: str
         ValueError: If completion data keyword is missing in input schedule file.
     """
     try:
-        return schedule_data[well_name][Keywords.COMPDAT]
+        return schedule_data[Keywords.COMPDAT]
     except KeyError as err:
         if f"'{Keywords.COMPDAT}'" in str(err):
             raise ValueError("Input schedule file missing COMPDAT keyword.") from err
         raise err
 
 
-def get_completion_segments(
-    schedule_data: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
-) -> pd.DataFrame:
+def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branch: int | None = None) -> pd.DataFrame:
     """Get-function for COMPSEGS.
 
     Args:
@@ -447,7 +445,7 @@ def get_completion_segments(
     Returns:
         Completion segment data.
     """
-    df = schedule_data[well_name][Keywords.COMPSEGS].copy()
+    df = schedule_data[Keywords.COMPSEGS].copy()
     if branch is not None:
         df = df[df[Headers.BRANCH] == branch]
     df.reset_index(drop=True, inplace=True)  # reset index after filtering
@@ -455,12 +453,12 @@ def get_completion_segments(
 
 
 def get_well_segments(
-    schedule_data: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
+    well_data: dict[str, pd.DataFrame], branch: int | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get-function for well segments.
 
     Args:
-        schedule_data: The multisegmented wells.
+        well_data: The multisegmented wells.
         well_name: Well name.
         branch: Branch number.
 
@@ -471,7 +469,7 @@ def get_well_segments(
         ValueError: If WELSEGS keyword missing in input schedule file.
     """
     try:
-        columns, content = schedule_data[well_name][Keywords.WELSEGS]
+        columns, content = well_data[Keywords.WELSEGS]
     except KeyError as err:
         if f"'{Keywords.WELSEGS}'" in str(err):
             raise ValueError("Input schedule file missing WELSEGS keyword.") from err
@@ -480,16 +478,3 @@ def get_well_segments(
         content = content[content[Headers.TUBING_BRANCH] == branch]
     content.reset_index(drop=True, inplace=True)
     return columns, content
-
-
-def get_well_number(well_name: str, active_wells: npt.NDArray[np.str_]) -> int:
-    """Well number in the active_wells list.
-
-    Args:
-        well_name: Well name.
-        active_wells: The active wells.
-
-    Returns:
-        Well number.
-    """
-    return int(np.where(active_wells == well_name)[0][0])

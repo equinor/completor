@@ -13,9 +13,8 @@ import numpy as np
 from tqdm import tqdm
 
 import completor
-from completor import create_output, create_wells, parse, read_schedule
+from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
-from completor.create_wells import Wells
 from completor.exceptions import CompletorError
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
@@ -165,9 +164,9 @@ def create(
     output_text = ""
     output = None
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
-    active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
+    active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
     schedule_data: dict[str, dict[str, Any]] = {}
-    wells = None
+    well = None
 
     figure_name = None
     if show_fig:
@@ -240,10 +239,7 @@ def create(
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
 
-                    try:
-                        schedule_data = read_schedule.set_compsegs(schedule_data, active_wells, chunk)
-                    except ValueError:
-                        pass
+                    schedule_data = read_schedule.set_compsegs(schedule_data, active_wells, chunk)
 
                     line_number = after_content_line_number + 1
                     case.check_input(well_name, schedule_data)
@@ -253,11 +249,10 @@ def create(
             else:
                 progress_bar.update(len(lines) - prev_line_number)
 
-        for well_name_ in well_names:
+        for i, well_name_ in enumerate(well_names):
             logger.debug("Writing new MSW info for well %s", well_name_)
-            well_number = read_schedule.get_well_number(well_name_, active_wells)
-            wells = Well(well_name_, well_number, case, schedule_data)
-            output = create_output.format_output(wells, figure_name, paths)
+            well = Well(well_name_, i, case, schedule_data[well_name_])
+            output = create_output.format_output(well, figure_name, paths)
             output_text += format_text(None, output)
 
     except Exception as e_:
@@ -276,8 +271,8 @@ def create(
             raise ValueError(
                 "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
             )
-        return case, wells
-    return case, wells, output
+        return case, well
+    return case, well, output
 
 
 def main() -> None:

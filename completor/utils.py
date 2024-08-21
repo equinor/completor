@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Headers
+from completor.constants import Content, Headers
 from completor.logger import logger
 
 
@@ -190,3 +190,43 @@ def shift_array(array: npt.NDArray[Any], shift_by: int, fill_value: Any = np.nan
     else:
         result[:] = array
     return result
+
+
+def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) -> npt.NDArray[np.str_]:
+    """Get a list of active wells specified by users.
+
+    Notes:
+        No device layer will be added for perforated wells with gravel-packed annulus.
+        Completor does nothing to gravel-packed perforated wells by default.
+        This behavior can be changed by setting the GP_PERF_DEVICELAYER keyword in the case file to true.
+
+    Args:
+        completion_table: Completion information.
+        gp_perf_devicelayer: Keyword denoting if the user wants a device layer for this type of completion.
+
+    Returns:
+        The active wells found.
+    """
+    # Need to check completion of all wells in the completion table to remove GP-PERF type wells
+    # If the user wants a device layer for this type of completion.
+    if not gp_perf_devicelayer:
+        gp_check = completion_table[Headers.ANNULUS] == Content.OPEN_ANNULUS
+        perf_check = completion_table[Headers.DEVICE_TYPE].isin(
+            [
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
+                Content.DENSITY_ACTIVATED_RECOVERY,
+                Content.INFLOW_CONTROL_DEVICE,
+                Content.VALVE,
+                Content.INFLOW_CONTROL_VALVE,
+            ]
+        )
+        # Where annuli is "OA" or perforation is in the list above.
+        mask = gp_check | perf_check
+        if not mask.any():
+            logger.warning(
+                "There are no active wells for Completor to work on. E.g. all wells are defined with Gravel Pack "
+                "(GP) and valve type PERF. If you want these wells to be active set GP_PERF_DEVICELAYER to TRUE."
+            )
+        return np.array(completion_table[Headers.WELL][mask].unique())
+    return np.array(completion_table[Headers.WELL].unique())

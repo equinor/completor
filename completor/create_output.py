@@ -20,11 +20,11 @@ from completor.visualize_well import visualize_well
 from completor.wells import Lateral, Well
 
 
-def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple[str, str] | None = None) -> str:
+def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, str] | None = None) -> str:
     """Formats the finished output string to be written to a file.
 
     Args:
-        weller_man: Well data.
+        well: Well data.
         figure_name: The name of the figure, if None, no figure is printed. Defaults to None.
         paths: Paths of the case and schedule files. Defaults to None.
 
@@ -34,13 +34,13 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
     """
     output = _format_header(paths)
 
-    case = weller_man.case
+    case = well.case
 
     if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
         output += CORRELATION_UDQ
 
-    df_reservoir = weller_man.df_reservoir_all_laterals
-    df_well = weller_man.df_well_all_laterals
+    df_reservoir = well.df_reservoir_all_laterals
+    df_well = well.df_well_all_laterals
 
     print_well_segments = ""
     print_well_segments_link = ""
@@ -57,7 +57,7 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
     start_branch = 1
 
     header_written = False
-    for lateral in weller_man.active_laterals:
+    for lateral in well.active_laterals:
         _check_well_segments_header(lateral.df_welsegs_header, df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
 
         if not header_written:
@@ -67,7 +67,7 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
             header_written = True
 
         df_tubing, top = prepare_outputs.prepare_tubing_layer(
-            weller_man.well_name, lateral, start_segment, start_branch, case.completion_table, weller_man
+            well.well_name, lateral, start_segment, start_branch, case.completion_table, well
         )
         lateral.df_tubing = df_tubing
         df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
@@ -76,30 +76,27 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
         if df_device.empty:
             logger.warning(
                 "No connection from reservoir to tubing in Well : %s Lateral : %d",
-                weller_man.well_name,
+                well.well_name,
                 lateral.lateral_number,
             )
-        df_annulus, df_wseglink = prepare_outputs.prepare_annulus_layer(
-            weller_man.well_name, lateral.df_well, df_device
-        )
+        df_annulus, df_wseglink = prepare_outputs.prepare_annulus_layer(well.well_name, lateral.df_well, df_device)
         if df_annulus.empty:
-            logger.info("No annular flow in Well : %s Lateral : %d", weller_man.well_name, lateral.lateral_number)
+            logger.info("No annular flow in Well : %s Lateral : %d", well.well_name, lateral.lateral_number)
 
         start_segment, start_branch = _update_segmentbranch(df_device, df_annulus)
 
-        df_tubing = _connect_lateral(weller_man.well_name, lateral, top, weller_man)
+        df_tubing = _connect_lateral(well.well_name, lateral, top, well)
 
         df_tubing[Headers.BRANCH] = lateral.lateral_number
-        df_device, df_annulus = _branch_revision(
-            lateral.lateral_number, weller_man.lateral_numbers, df_device, df_annulus
-        )
+        active_laterals = [lateral.lateral_number for lateral in well.active_laterals]
+        df_device, df_annulus = _branch_revision(lateral.lateral_number, active_laterals, df_device, df_annulus)
 
-        completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == weller_man.well_name]
+        completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == well.well_name]
         completion_table_lateral = completion_table_well[
             completion_table_well[Headers.BRANCH] == lateral.lateral_number
         ]
         df_completion_segments = prepare_outputs.prepare_completion_segments(
-            weller_man.well_name,
+            well.well_name,
             lateral.lateral_number,
             df_reservoir,
             df_device,
@@ -108,23 +105,23 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
             case.segment_length,
         )
         df_completion_data = prepare_outputs.prepare_completion_data(
-            weller_man.well_name, lateral.lateral_number, df_reservoir, completion_table_lateral
+            well.well_name, lateral.lateral_number, df_reservoir, completion_table_lateral
         )
-        df_valve = prepare_outputs.prepare_valve(weller_man.well_name, lateral.df_well, df_device)
+        df_valve = prepare_outputs.prepare_valve(well.well_name, lateral.df_well, df_device)
         df_inflow_control_device = prepare_outputs.prepare_inflow_control_device(
-            weller_man.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, df_device
         )
         df_autonomous_inflow_control_device = prepare_outputs.prepare_autonomous_inflow_control_device(
-            weller_man.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, df_device
         )
         df_density_activated_recovery = prepare_outputs.prepare_density_activated_recovery(
-            weller_man.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, df_device
         )
         df_autonomous_inflow_control_valve = prepare_outputs.prepare_autonomous_inflow_control_valve(
-            weller_man.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, df_device
         )
         df_inflow_control_valve = prepare_outputs.prepare_inflow_control_valve(
-            weller_man.well_name,
+            well.well_name,
             lateral.lateral_number,
             df_well,
             df_device,
@@ -132,40 +129,36 @@ def format_output(weller_man: Well, figure_name: str | None = None, paths: tuple
             case.completion_icv_tubing,
             case.wsegicv_table,
         )
-        print_completion_data += _format_completion_data(
-            weller_man.well_name, lateral.lateral_number, df_completion_data
-        )
+        print_completion_data += _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data)
         print_well_segments += _format_well_segments(
-            weller_man.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
+            well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
         )
-        print_well_segments_link += _format_well_segments_link(
-            weller_man.well_name, lateral.lateral_number, df_wseglink
-        )
+        print_well_segments_link += _format_well_segments_link(well.well_name, lateral.lateral_number, df_wseglink)
         print_completion_segments += _format_completion_segments(
-            weller_man.well_name, lateral.lateral_number, df_completion_segments
+            well.well_name, lateral.lateral_number, df_completion_segments
         )
-        print_valve += _format_valve(weller_man.well_name, lateral.lateral_number, df_valve)
+        print_valve += _format_valve(well.well_name, lateral.lateral_number, df_valve)
         print_inflow_control_device += _format_inflow_control_device(
-            weller_man.well_name, lateral.lateral_number, df_inflow_control_device
+            well.well_name, lateral.lateral_number, df_inflow_control_device
         )
         print_autonomous_inflow_control_device += _format_autonomous_inflow_control_device(
-            weller_man.well_name, lateral.lateral_number, df_autonomous_inflow_control_device
+            well.well_name, lateral.lateral_number, df_autonomous_inflow_control_device
         )
         print_inflow_control_valve += _format_inflow_control_valve(
-            weller_man.well_name, lateral.lateral_number, df_inflow_control_valve
+            well.well_name, lateral.lateral_number, df_inflow_control_valve
         )
         print_density_activated_recovery += _format_density_activated_recovery(
-            weller_man.well_number, df_density_activated_recovery
+            well.well_number, df_density_activated_recovery
         )
         print_autonomous_inflow_control_valve += _format_autonomous_inflow_control_valve(
-            weller_man.well_number, df_autonomous_inflow_control_valve
+            well.well_number, df_autonomous_inflow_control_valve
         )
 
         if figure_name is not None:
             logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
             with PdfPages(figure_name) as figure:
                 figure.savefig(
-                    visualize_well(weller_man.well_name, df_well, df_reservoir, case.segment_length),
+                    visualize_well(well.well_name, df_well, df_reservoir, case.segment_length),
                     orientation="landscape",
                 )
             logger.info("creating schematics: %s.pdf", figure_name)
