@@ -197,7 +197,7 @@ def test_missing_completion(tmpdir):
 
 
 def test_missing_wsegaicd(tmpdir):
-    """Test output to screen from Completor missing WSEGAICD."""
+    """Test output to screen from Completor missing AUTONOMOUS_INFLOW_CONTROL_DEVICE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICD' in input files."

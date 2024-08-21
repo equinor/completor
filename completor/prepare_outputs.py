@@ -945,7 +945,7 @@ def prepare_completion_data(
 def prepare_autonomous_inflow_control_device(
     well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
 ) -> pd.DataFrame:
-    """Prepare WSEGAICD data frame.
+    """Prepare AUTONOMOUS_INFLOW_CONTROL_DEVICE data frame.
 
     Args:
         well_name: Well name.
@@ -954,7 +954,7 @@ def prepare_autonomous_inflow_control_device(
         df_device: From function prepare_device_layer for this well and this lateral.
 
     Returns:
-        WSEGAICD.
+        AUTONOMOUS_INFLOW_CONTROL_DEVICE.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -1526,6 +1526,6 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             print_df = df_wsegaicv[df_wsegaicv[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]
             print_df.columns = new_column
-            print_df = Keywords.WSEGAICD + "\n" + dataframe_tostring(print_df, True)
+            print_df = Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE + "\n" + dataframe_tostring(print_df, True)
             action += f"{print_df}\n/\nENDACTIO\n\n"
     return action

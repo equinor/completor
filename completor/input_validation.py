@@ -224,7 +224,7 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments automatic inflow control device (WSEGAICD) table.
+    """Format the well segments automatic inflow control device (AUTONOMOUS_INFLOW_CONTROL_DEVICE) table.
 
     Args:
         df_temp: Well segments automatic inflow control device data.

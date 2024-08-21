@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from completor.constants import Content, Headers
+from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CaseReaderFormatError, CompletorError  # type: ignore
 from completor.main import get_content_and_path  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
@@ -110,7 +110,7 @@ def test_read_case_wsegicv():
 
 
 def test_read_case_wsegaicd():
-    """Test the function which reads WSEGAICD keyword."""
+    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword."""
     df_true = pd.DataFrame(
         [
             [
@@ -463,7 +463,7 @@ WSEGAICD
 
     with pytest.raises(CaseReaderFormatError) as exc:
         ReadCasefile(case_wrong_no_columns)
-    assert "Too many entries in data for keyword 'WSEGAICD'" in str(exc.value)
+    assert f"Too many entries in data for keyword '{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}'" in str(exc.value)
 
 
 def test_read_case_completion_icv():
