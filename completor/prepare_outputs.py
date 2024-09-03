@@ -43,7 +43,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
     """Add the first and last column of DataFrame.
 
     Args:
-        df_temp: E.g. WELSPECS, COMPSEGS, COMPDAT, WELSEGS, etc.
+        df_temp: E.g. WELL_SPECIFICATION, COMPLETION_SEGMENTS, COMPLETION_DATA, WELL_SEGMENTS, etc.
         add_first: Add the first column.
         add_last: Add the last column.
 
@@ -70,7 +70,7 @@ def dataframe_tostring(
     """Convert DataFrame to string.
 
     Args:
-        df_temp: COMPDAT, COMPSEGS, etc.
+        df_temp: COMPLETION_DATA, COMPLETION_SEGMENTS, etc.
         format_column: If columns are to be formatted.
         trim_df: To trim or not to trim. Default: True.
         formatters: Dictionary of the column format. Default: None.
@@ -184,7 +184,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
     Args:
         well_name: Well name.
-        keyword: Table keyword e.g. WELSEGS, COMPSEGS, COMPDAT, etc.
+        keyword: Table keyword e.g. WELL_SEGMENTS, COMPLETION_SEGMENTS, COMPLETION_DATA, etc.
         lat: Lateral number.
         layer: Layer description e.g. tubing, device and annulus.
         nchar: Number of characters for the line boundary. Default 100.
@@ -192,7 +192,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
     Returns:
         String header.
     """
-    if keyword == Keywords.WELSEGS:
+    if keyword == Keywords.WELL_SEGMENTS:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
     else:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
@@ -269,11 +269,11 @@ def fix_tubing_inner_diam_roughness(
 ) -> pd.DataFrame:
     """Ensure roughness and inner diameter of the overburden segments are from the case and not the schedule file.
 
-    Overburden segments are WELSEGS segments located above the top COMPSEGS segment.
+    Overburden segments are WELL_SEGMENTS segments located above the top COMPLETION_SEGMENTS segment.
 
     Args:
         well_name: Well name.
-        overburden: Input schedule WELSEGS segments in the overburden.
+        overburden: Input schedule WELL_SEGMENTS segments in the overburden.
         completion_table: Completion table from the case file, ReadCasefile object.
 
     Returns:
@@ -406,7 +406,7 @@ def prepare_annulus_layer(
     # loop through all annular zones
     # initiate annulus and wseglink dataframe
     df_annulus = pd.DataFrame()
-    df_wseglink = pd.DataFrame()
+    df_well_segments_link = pd.DataFrame()
     for izone, zone in enumerate(df_well[Headers.ANNULUS_ZONE].unique()):
         # filter only that annular zone
         df_branch = df_well[df_well[Headers.ANNULUS_ZONE] == zone]
@@ -428,7 +428,7 @@ def prepare_annulus_layer(
         )
         if idx_connection[0] == 0:
             # If the first connection then everything is easy
-            df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
+            df_annulus_upstream, df_well_segments_link_upstream = calculate_upstream(
                 df_branch, df_active, df_device, start_branch, annulus_length, start_segment, well_name
             )
         else:
@@ -461,7 +461,7 @@ def prepare_annulus_layer(
             df_annulus_downstream[Headers.WELL_BORE_DIAMETER] = df_branch_downstream[Headers.OUTER_DIAMETER].to_numpy()
             df_annulus_downstream[Headers.ROUGHNESS] = df_branch_downstream[Headers.ROUGHNESS].to_numpy()
 
-            # no WSEGLINK in the downstream part because
+            # no WELL_SEGMENTS_LINK in the downstream part because
             # no annulus segment have connection to
             # the device segment. in case you wonder why :)
 
@@ -470,7 +470,7 @@ def prepare_annulus_layer(
             start_segment = max(df_annulus_downstream[Headers.START_SEGMENT_NUMBER]) + 1
             start_branch = max(df_annulus_downstream[Headers.BRANCH]) + 1
             # create dataframe for upstream part
-            df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
+            df_annulus_upstream, df_well_segments_link_upstream = calculate_upstream(
                 df_branch_upstream, df_active, df_device, start_branch, annulus_length, start_segment, well_name
             )
             # combine the two dataframe upstream and downstream
@@ -479,20 +479,20 @@ def prepare_annulus_layer(
         # combine annulus and wseglink dataframe
         if izone == 0:
             df_annulus = df_annulus_upstream.copy(deep=True)
-            df_wseglink = df_wseglink_upstream.copy(deep=True)
+            df_well_segments_link = df_well_segments_link_upstream.copy(deep=True)
         else:
             df_annulus = pd.concat([df_annulus, df_annulus_upstream])
-            df_wseglink = pd.concat([df_wseglink, df_wseglink_upstream])
+            df_well_segments_link = pd.concat([df_well_segments_link, df_well_segments_link_upstream])
 
-    if df_wseglink.shape[0] > 0:
-        df_wseglink = df_wseglink[[Headers.WELL, Headers.ANNULUS, Headers.DEVICE]]
-        df_wseglink[Headers.ANNULUS] = df_wseglink[Headers.ANNULUS].astype(np.int64)
-        df_wseglink[Headers.DEVICE] = df_wseglink[Headers.DEVICE].astype(np.int64)
-        df_wseglink[Headers.EMPTY] = "/"
+    if df_well_segments_link.shape[0] > 0:
+        df_well_segments_link = df_well_segments_link[[Headers.WELL, Headers.ANNULUS, Headers.DEVICE]]
+        df_well_segments_link[Headers.ANNULUS] = df_well_segments_link[Headers.ANNULUS].astype(np.int64)
+        df_well_segments_link[Headers.DEVICE] = df_well_segments_link[Headers.DEVICE].astype(np.int64)
+        df_well_segments_link[Headers.EMPTY] = "/"
 
     if df_annulus.shape[0] > 0:
         df_annulus[Headers.EMPTY] = "/"
-    return df_annulus, df_wseglink
+    return df_annulus, df_well_segments_link
 
 
 def calculate_upstream(
@@ -557,7 +557,7 @@ def calculate_upstream(
         df_annulus_upstream[Headers.MEASURED_DEPTH].to_numpy(),
         df_annulus_upstream[Headers.OUT].to_numpy(),
     )
-    df_wseglink_upstream = pd.DataFrame(
+    df_well_segments_link_upstream = pd.DataFrame(
         {
             Headers.WELL: [well_name] * device_segment.shape[0],
             Headers.ANNULUS: annulus_segment,
@@ -565,17 +565,17 @@ def calculate_upstream(
             Headers.OUT: outlet_segment,
         }
     )
-    # WSEGLINK is only for those segments whose outlet segment is not a device segment.
-    df_wseglink_upstream = df_wseglink_upstream[
-        df_wseglink_upstream[Headers.DEVICE] != df_wseglink_upstream[Headers.OUT]
+    # WELL_SEGMENTS_LINK is only for those segments whose outlet segment is not a device segment.
+    df_well_segments_link_upstream = df_well_segments_link_upstream[
+        df_well_segments_link_upstream[Headers.DEVICE] != df_well_segments_link_upstream[Headers.OUT]
     ]
-    return df_annulus_upstream, df_wseglink_upstream
+    return df_annulus_upstream, df_well_segments_link_upstream
 
 
 def connect_compseg_icv(
     df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Connect COMPSEGS with the correct depth due to ICV segmenting combination.
+    """Connect COMPLETION_SEGMENTS with the correct depth due to ICV segmenting combination.
 
     Args:
         df_reservoir: Reservoir data.
@@ -639,7 +639,7 @@ def prepare_completion_segments(
     df_completion_table: pd.DataFrame,
     segment_length: float | str,
 ) -> pd.DataFrame:
-    """Prepare output for COMPSEGS.
+    """Prepare output for COMPLETION_SEGMENTS.
 
     Args:
         well_name: Well name.
@@ -651,7 +651,7 @@ def prepare_completion_segments(
         segment_length: Segment length.
 
     Returns:
-        COMPSEGS DataFrame.
+        COMPLETION_SEGMENTS DataFrame.
     """
     df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
@@ -773,7 +773,7 @@ def prepare_completion_segments(
 def connect_compseg_usersegment(
     df_reservoir: pd.DataFrame, df_device: pd.DataFrame, df_annulus: pd.DataFrame, df_completion_table: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Connect COMPSEGS with user segmentation.
+    """Connect COMPLETION_SEGMENTS with user segmentation.
 
     This method will connect df_reservoir with df_device and df_annulus in accordance with its
     depth in the df_completion due to user segmentation method.
@@ -865,7 +865,7 @@ def choose_layer(
 
 
 def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.DataFrame:
-    """Ensure that well/casing inner diameter in the COMPDAT section is in agreement with
+    """Ensure that well/casing inner diameter in the COMPLETION_DATA section is in agreement with
     the case/config file and not the input schedule file.
 
     Args:
@@ -893,7 +893,7 @@ def fix_well_id(df_reservoir: pd.DataFrame, df_completion: pd.DataFrame) -> pd.D
 def prepare_completion_data(
     well_name: str, lateral: int, df_reservoir: pd.DataFrame, df_completion: pd.DataFrame
 ) -> pd.DataFrame:
-    """Prepare COMPDAT data frame.
+    """Prepare COMPLETION_DATA data frame.
 
     Args:
         well_name: Well name.
@@ -902,7 +902,7 @@ def prepare_completion_data(
         df_completion: Completion data.
 
     Returns:
-        COMPDAT.
+        COMPLETION_DATA.
     """
     df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
     df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
@@ -942,7 +942,7 @@ def prepare_completion_data(
 def prepare_autonomous_inflow_control_device(
     well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
 ) -> pd.DataFrame:
-    """Prepare WSEGAICD data frame.
+    """Prepare AUTONOMOUS_INFLOW_CONTROL_DEVICE data frame.
 
     Args:
         well_name: Well name.
@@ -950,7 +950,7 @@ def prepare_autonomous_inflow_control_device(
         df_device: From function prepare_device_layer for this well and this lateral.
 
     Returns:
-        WSEGAICD.
+        AUTONOMOUS_INFLOW_CONTROL_DEVICE.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -987,7 +987,7 @@ def prepare_autonomous_inflow_control_device(
 
 
 def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
-    """Prepare WSEGSICD data frame.
+    """Prepare INFLOW_CONTROL_DEVICE data frame.
 
     Args:
         well_name: Well name.
@@ -995,7 +995,7 @@ def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_devi
         df_device: Device data for this well and lateral.
 
     Returns:
-        WSEGSICD.
+        INFLOW_CONTROL_DEVICE.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -1023,7 +1023,7 @@ def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_devi
 
 
 def prepare_valve(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
-    """Prepare WSEGVALV data frame.
+    """Prepare WELL_SEGMENTS_VALVE data frame.
 
     Args:
         well_name: Well name.
@@ -1031,7 +1031,7 @@ def prepare_valve(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
         df_device: From function prepare_device_layer for this well and this lateral.
 
     Returns:
-        WSEGVALV.
+        WELL_SEGMENTS_VALVE.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -1068,7 +1068,7 @@ def prepare_inflow_control_valve(
     df_icv_tubing: pd.DataFrame,
     df_icv: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Prepare WSEGICV DataFrame with WSEGVALV format. Include ICVs in device and tubing layer.
+    """Prepare INFLOW_CONTROL_VALVE DataFrame with WELL_SEGMENTS_VALVE format. Include ICVs in device and tubing layer.
 
     Args:
         well_name: Well name.
@@ -1077,7 +1077,7 @@ def prepare_inflow_control_valve(
         df_device: From function prepare_device_layer for this well and this lateral.
         df_tubing: From function prepare_tubing_layer for this well and this lateral.
         df_icv_tubing: df_icv_tubing completion from class ReadCaseFile.
-        df_icv: df_icv for WSEGICV keyword from class ReadCaseFile.
+        df_icv: df_icv for INFLOW_CONTROL_VALVE keyword from class ReadCaseFile.
 
     Returns:
         Dataframe for ICV.
@@ -1324,7 +1324,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
     action += "/\n\n"
     iaction = 3
-    action += Keywords.WSEGVALV + "\n"
+    action += Keywords.WELL_SEGMENTS_VALVE + "\n"
     header_string = "--"
     for itm in header[iaction]:
         header_string += "  " + itm
@@ -1359,7 +1359,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             )
             print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]  # type: ignore
-            header_string = Keywords.WSEGVALV + "\n--"
+            header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
             for item in header[iaction]:
                 header_string += "  " + item
             header_string = header_string.rstrip() + "\n"
@@ -1385,7 +1385,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         )
         print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
-        header_string = Keywords.WSEGVALV + "\n--"
+        header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"
@@ -1408,7 +1408,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         )
         print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
-        header_string = Keywords.WSEGVALV + "\n--"
+        header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"
@@ -1519,6 +1519,6 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
             print_df = df_wsegaicv[df_wsegaicv[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]
             print_df.columns = new_column
-            print_df = Keywords.WSEGAICD + "\n" + dataframe_tostring(print_df, True)
+            print_df = Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE + "\n" + dataframe_tostring(print_df, True)
             action += f"{print_df}\n/\nENDACTIO\n\n"
     return action

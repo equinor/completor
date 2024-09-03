@@ -471,7 +471,7 @@ def test_prepare_tubing_layer():
             id="Negative segment length with annulus zone",
         ),
         pytest.param(
-            Keywords.WELSEGS,
+            Keywords.WELL_SEGMENTS,
             pd.DataFrame(
                 [
                     [4, 4, 1, 2, 1500.0, 1500.0, 0.15, 0.00065],
@@ -541,7 +541,7 @@ def test_prepare_tubing_layer():
                     Headers.EMPTY,
                 ],
             ),
-            id="WELSEGS segment length with annulus",
+            id="WELL_SEGMENTS segment length with annulus",
         ),
     ],
 )

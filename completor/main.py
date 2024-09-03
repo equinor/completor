@@ -109,18 +109,20 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
             file_path = re.sub("[\"']+", "", file_path)
 
         else:
-            # OUTFILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
-            if keyword == "OUTFILE":
+            # OUT_FILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
+            if keyword == Keywords.OUT_FILE:
                 return None, None
             raise CompletorError(f"The keyword {keyword} is not defined correctly in the casefile")
-    if keyword != "OUTFILE":
+    if keyword != Keywords.OUT_FILE:
         try:
             with open(file_path, encoding="utf-8") as file:
                 file_content = file.read()
         except FileNotFoundError as e:
             raise CompletorError(f"Could not find the file: '{file_path}'!") from e
         except (PermissionError, IsADirectoryError) as e:
-            raise CompletorError("Could not read SCHFILE, this is likely because the path is missing quotes.") from e
+            raise CompletorError(
+                f"Could not read {Keywords.SCHEDULE_FILE}, this is likely because the path is missing quotes."
+            ) from e
         return file_content, file_path
     return None, file_path
 
@@ -204,7 +206,7 @@ def create(
 
                 well_name = _get_well_name(clean_lines_map, line_number)
 
-                if keyword == Keywords.WELSPECS:
+                if keyword == Keywords.WELL_SPECIFICATION:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]
@@ -212,7 +214,7 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.COMPDAT:
+                elif keyword == Keywords.COMPLETION_DATA:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
                     schedule_data = read_schedule.handle_compdat(schedule_data, active_wells, chunk)
@@ -222,7 +224,7 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.WELSEGS:
+                elif keyword == Keywords.WELL_SEGMENTS:
                     if well_name not in list(active_wells):
                         output_text += format_text(keyword, "")
                         line_number += 1
@@ -232,7 +234,7 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.COMPSEGS:
+                elif keyword == Keywords.COMPLETION_SEGMENTS:
                     if well_name not in list(active_wells):
                         output_text += format_text(keyword, "")
                         line_number += 1
@@ -269,7 +271,8 @@ def create(
     if output is None:
         if len(active_wells) != 0:
             raise ValueError(
-                "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
+                "Inconsistent case and schedule files. Check well names, "
+                "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
             )
         return case, well
     return case, well, output
@@ -303,19 +306,19 @@ def main() -> None:
         raise CompletorError("Need input case file to run Completor")
 
     schedule_file_content, inputs.schedulefile = get_content_and_path(
-        case_file_content, inputs.schedulefile, Keywords.SCHFILE
+        case_file_content, inputs.schedulefile, Keywords.SCHEDULE_FILE
     )
 
     if isinstance(schedule_file_content, str):
         parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
 
-    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUTFILE)
+    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUT_FILE)
 
     if inputs.outputfile is None:
         if inputs.schedulefile is None:
             raise ValueError(
                 "Could not find a path to schedule file. "
-                "It must be provided as a input argument or within the case files keyword 'SCHFILE'."
+                f"It must be provided as a input argument or within the case files keyword '{Keywords.SCHEDULE_FILE}'."
             )
         inputs.outputfile = inputs.schedulefile.split(".")[0] + "_advanced.wells"
 

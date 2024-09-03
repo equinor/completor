@@ -138,7 +138,7 @@ def test_minimum_input(tmpdir, capsys):
 
 
 def test_missing_welspecs(tmpdir, capsys):
-    """Test output to screen from Completor missing WELSPECS."""
+    """Test output to screen from Completor missing WELL_SPECIFICATION."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case(Content.PERFORATED, ["completion"], case_file)
@@ -150,7 +150,7 @@ def test_missing_welspecs(tmpdir, capsys):
 
 
 def test_missing_compdat(tmpdir):
-    """Test output to screen from Completor missing COMPDAT."""
+    """Test output to screen from Completor missing COMPLETION_DATA."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case(Content.PERFORATED, ["completion"], case_file)
@@ -160,7 +160,7 @@ def test_missing_compdat(tmpdir):
 
 
 def test_missing_welsegs(tmpdir):
-    """Test output to screen from Completor missing WELSEGS."""
+    """Test output to screen from Completor missing WELL_SEGMENTS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Input schedule file missing WELSEGS keyword."
@@ -171,11 +171,12 @@ def test_missing_welsegs(tmpdir):
 
 
 def test_inconsistent_files(tmpdir):
-    """Test output to screen from Completor missing COMPSEGS."""
+    """Test output to screen from Completor missing COMPLETION_SEGMENTS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = (
-        "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
+        "Inconsistent case and schedule files. Check well names, "
+        "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
     )
     set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)
@@ -195,7 +196,7 @@ def test_missing_completion(tmpdir):
 
 
 def test_missing_wsegaicd(tmpdir):
-    """Test output to screen from Completor missing WSEGAICD."""
+    """Test output to screen from Completor missing AUTONOMOUS_INFLOW_CONTROL_DEVICE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICD' in input files."
@@ -206,7 +207,7 @@ def test_missing_wsegaicd(tmpdir):
 
 
 def test_missing_wsegsicd(tmpdir):
-    """Test output to screen from Completor missing WSEGSICD."""
+    """Test output to screen from Completor missing INFLOW_CONTROL_DEVICE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE ICD' in input files."
@@ -217,7 +218,7 @@ def test_missing_wsegsicd(tmpdir):
 
 
 def test_missing_wsegvalv(tmpdir):
-    """Test output to screen from Completor missing WSEGVALV."""
+    """Test output to screen from Completor missing WELL_SEGMENTS_VALVE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE VALVE' in input files."
@@ -245,7 +246,7 @@ def test_full_wsegdar(tmpdir, capsys):
 
 
 def test_missing_wsegdar(tmpdir):
-    """Test output to screen from Completor with missing WSEGDAR keyword."""
+    """Test output to screen from Completor with missing DENSITY_ACTIVATED_RECOVERY keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE DAR' in input files."
@@ -273,7 +274,7 @@ def test_full_wsegaicv(tmpdir, capsys):
 
 
 def test_missing_wsegaicv(tmpdir):
-    """Test output to screen from Completor with missing WSEGAICV keyword."""
+    """Test output to screen from Completor with missing AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICV' in input files."

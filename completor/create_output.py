@@ -60,7 +60,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
 
         if not header_written:
             print_well_segments += (
-                f"{Keywords.WELSEGS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}\n"
+                f"{Keywords.WELL_SEGMENTS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}\n"
             )
             header_written = True
 
@@ -77,7 +77,9 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
                 well.well_name,
                 lateral.lateral_number,
             )
-        df_annulus, df_wseglink = prepare_outputs.prepare_annulus_layer(well.well_name, lateral.df_well, df_device)
+        df_annulus, df_well_segments_link = prepare_outputs.prepare_annulus_layer(
+            well.well_name, lateral.df_well, df_device
+        )
         if df_annulus.empty:
             logger.info("No annular flow in Well : %s Lateral : %d", well.well_name, lateral.lateral_number)
 
@@ -131,7 +133,9 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
         print_well_segments += _format_well_segments(
             well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
         )
-        print_well_segments_link += _format_well_segments_link(well.well_name, lateral.lateral_number, df_wseglink)
+        print_well_segments_link += _format_well_segments_link(
+            well.well_name, lateral.lateral_number, df_well_segments_link
+        )
         print_completion_segments += _format_completion_segments(
             well.well_name, lateral.lateral_number, df_completion_segments
         )
@@ -256,8 +260,8 @@ def _format_completion_data(well_name: str, lateral_number: int, df_compdat: pd.
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compdat)
     return (
-        f"{Keywords.COMPDAT}\n"
-        + prepare_outputs.get_header(well_name, Keywords.COMPDAT, lateral_number, "", nchar)
+        f"{Keywords.COMPLETION_DATA}\n"
+        + prepare_outputs.get_header(well_name, Keywords.COMPLETION_DATA, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_compdat, True)
         + "\n/\n\n\n"
     )
@@ -282,42 +286,42 @@ def _format_well_segments(
     nchar = prepare_outputs.get_number_of_characters(df_tubing)
     if not df_device.empty:
         print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELSEGS, lateral_number, "Tubing", nchar)
+            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Tubing", nchar)
             + prepare_outputs.dataframe_tostring(df_tubing, True)
             + "\n"
         )
         print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELSEGS, lateral_number, "Device", nchar)
+            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Device", nchar)
             + prepare_outputs.dataframe_tostring(df_device, True)
             + "\n"
         )
     if not df_annulus.empty:
         print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELSEGS, lateral_number, "Annulus", nchar)
+            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Annulus", nchar)
             + prepare_outputs.dataframe_tostring(df_annulus, True)
             + "\n"
         )
     return print_welsegs
 
 
-def _format_well_segments_link(well_name: str, lateral_number: int, df_wseglink: pd.DataFrame) -> str:
+def _format_well_segments_link(well_name: str, lateral_number: int, df_well_segments_link: pd.DataFrame) -> str:
     """Formats well-segments for links.
 
     Args:
         well_name: Name of well.
         lateral_number: Current lateral number.
-        df_wseglink: Well-segmentation data with links.
+        df_well_segments_link: Well-segmentation data with links.
 
     Returns:
         Formatted string.
     """
-    if df_wseglink.empty:
+    if df_well_segments_link.empty:
         return ""
-    nchar = prepare_outputs.get_number_of_characters(df_wseglink)
+    nchar = prepare_outputs.get_number_of_characters(df_well_segments_link)
     return (
-        f"{Keywords.WSEGLINK}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGLINK, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_wseglink, True)
+        f"{Keywords.WELL_SEGMENTS_LINK}\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_LINK, lateral_number, "", nchar)
+        + prepare_outputs.dataframe_tostring(df_well_segments_link, True)
         + "\n/\n\n\n"
     )
 
@@ -337,8 +341,8 @@ def _format_completion_segments(well_name: str, lateral_number: int, df_compsegs
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compsegs)
     return (
-        f"{Keywords.COMPSEGS}\n'{well_name}' /\n"
-        + prepare_outputs.get_header(well_name, Keywords.COMPSEGS, lateral_number, "", nchar)
+        f"{Keywords.COMPLETION_SEGMENTS}\n'{well_name}' /\n"
+        + prepare_outputs.get_header(well_name, Keywords.COMPLETION_SEGMENTS, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_compsegs, True)
         + "\n/\n\n\n"
     )
@@ -359,8 +363,8 @@ def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegaicd)
     return (
-        f"{Keywords.WSEGAICD}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGAICD, lateral_number, "", nchar)
+        f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}\n"
+        + prepare_outputs.get_header(well_name, Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegaicd, True)
         + "\n/\n\n\n"
     )
@@ -381,8 +385,8 @@ def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsi
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegsicd)
     return (
-        f"{Keywords.WSEGSICD}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGSICD, lateral_number, "", nchar)
+        f"{Keywords.INFLOW_CONTROL_DEVICE}\n"
+        + prepare_outputs.get_header(well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegsicd, True)
         + "\n/\n\n\n"
     )
@@ -403,8 +407,8 @@ def _format_valve(well_name: str, lateral_number: int, df_wsegvalv) -> str:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegvalv)
     return (
-        f"{Keywords.WSEGVALV}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGVALV, lateral_number, "", nchar)
+        f"{Keywords.WELL_SEGMENTS_VALVE}\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegvalv, True)
         + "\n/\n\n\n"
     )
@@ -425,8 +429,8 @@ def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegicv)
     return (
-        f"{Keywords.WSEGVALV}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WSEGVALV, lateral_number, "", nchar)
+        f"{Keywords.WELL_SEGMENTS_VALVE}\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
         + prepare_outputs.dataframe_tostring(df_wsegicv, True)
         + "\n/\n\n\n"
     )

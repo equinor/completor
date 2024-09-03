@@ -22,8 +22,8 @@ def test_unpack_record():
 
 def test_locate_keyword():
     """Test locate_keyword find the correct start and end indexes of keywords."""
-    test1 = [Keywords.COMPDAT, "1 2 3 /", "/", Keywords.COMPDAT, "2 3 4 /", "/"]
+    test1 = [Keywords.COMPLETION_DATA, "1 2 3 /", "/", Keywords.COMPLETION_DATA, "2 3 4 /", "/"]
 
-    start_compdat, end_compdat = parse.locate_keyword(test1, Keywords.COMPDAT, "/", take_first=False)
+    start_compdat, end_compdat = parse.locate_keyword(test1, Keywords.COMPLETION_DATA, "/", take_first=False)
     np.testing.assert_array_equal(start_compdat, [0, 3])
     np.testing.assert_array_equal(end_compdat, [2, 5])

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from completor import parse
+from completor.parse import locate_keyword
 
 
 class _BaseCaseException(Exception):
@@ -106,7 +106,7 @@ class CaseReaderFormatError(_BaseCaseException):
         super().__init__(message, lines, error_index, window_size)
 
     @staticmethod
-    def find_error_line(keyword: str, lines: list[str], header: list[str]):
+    def find_error_line(keyword: str, lines: list[str], header: list[str]) -> tuple[int, bool]:
         """Find line where error occurs.
 
         Args:
@@ -114,14 +114,14 @@ class CaseReaderFormatError(_BaseCaseException):
             lines: The (preferably) original case-file lines.
             header: The expected headers for this keyword.
 
-        Raises:
-            ValueError: If the line could not be found.
-
         Returns:
             Line number and whether there are too many/few data entries vs header.
+
+        Raises:
+            ValueError: If the line could not be found.
         """
         stripped_content = [x.strip() for x in lines]
-        start, end = parse.locate_keyword(stripped_content, keyword)
+        start, end = locate_keyword(stripped_content, keyword)
 
         line_content = {
             i + start + 1: line for i, line in enumerate(lines[start + 1 : end]) if line and not line.startswith("--")

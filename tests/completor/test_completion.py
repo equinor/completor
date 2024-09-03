@@ -956,7 +956,7 @@ def test_lumping_segment_2():
 
 
 def test_skin():
-    """Test handle_compdat with a mix of values in COMPDAT, SKIN column."""
+    """Test handle_compdat with a mix of values in COMPLETION_DATA, SKIN column."""
     compdat = [
         #                                                       SKIN
         ["A1", "3", "6", "1", "1", Headers.OPEN, "1*", "1", "2", "2", "0.0", "1*", "X", "1"],
@@ -994,7 +994,7 @@ def test_skin():
     )
     active_wells = np.array(["A1"])
     schedule_data = read_schedule.handle_compdat({}, active_wells, compdat)
-    df_out = schedule_data["A1"][Keywords.COMPDAT]
+    df_out = schedule_data["A1"][Keywords.COMPLETION_DATA]
     pd.testing.assert_frame_equal(df_out, df_true)
 
 
