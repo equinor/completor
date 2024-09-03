@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 import utils_for_tests
 
-from completor import main  # type: ignore
+from completor import main
+from completor.constants import Keywords
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -272,7 +273,7 @@ COMPLETION
 
 def test_inc(tmpdir):
     """
-    Test completor case WELSEGS defined in INC.
+    Test completor case WELL_SEGMENTS defined in INC.
 
     1. 1 passive well & 1 active well
     2. Single lateral well
@@ -484,7 +485,7 @@ JOINTLENGTH
 )
 def test_read_schedule_from_casefile(schfilestring, tmpdir):
     """
-    Test reading the schedule file from the SCHFILE keyword in the casefile.
+    Test reading the schedule file from the SCHEDULE_FILE keyword in the casefile.
 
     Checks that any string pre- and proceeded by whitespaces and in quotes are
     accepted as a schedule-file string.
@@ -496,8 +497,8 @@ def test_read_schedule_from_casefile(schfilestring, tmpdir):
         sch_file.write("Some schedule data\n")
 
     # Create case_content with the non-clean path to the schedule file
-    case_content = f"SCHFILE\n'{schfilestring}'\n/"
-    schedule_content, path_from_case = main.get_content_and_path(case_content, None, "SCHFILE")
+    case_content = f"{Keywords.SCHEDULE_FILE}\n'{schfilestring}'\n/"
+    schedule_content, path_from_case = main.get_content_and_path(case_content, None, Keywords.SCHEDULE_FILE)
     assert path_from_case == "testdir/testfile"
     assert "Some schedule data" in schedule_content
 
@@ -508,7 +509,7 @@ def test_read_schedule_from_casefile(schfilestring, tmpdir):
 )
 def test_read_outputfile_from_casefile(outfilestring, tmpdir):
     """
-    Test reading the output file from the OUTFILE keyword in the casefile.
+    Test reading the output file from the OUT_FILE keyword in the casefile.
 
     Checks that any string pre- and proceeded by whitespaces and in quotes are
     accepted as a output-file string.
@@ -520,8 +521,8 @@ def test_read_outputfile_from_casefile(outfilestring, tmpdir):
         case_file.write("Some case data\n")
 
     # Create case_content with the non-clean path to the schedule file
-    case_content = f"OUTFILE\n'{outfilestring}'\n/"
-    _, path_from_case = main.get_content_and_path(case_content, None, "OUTFILE")
+    case_content = f"{Keywords.OUT_FILE}\n'{outfilestring}'\n/"
+    _, path_from_case = main.get_content_and_path(case_content, None, Keywords.OUT_FILE)
     assert path_from_case == "testdir/testfile"
 
 
@@ -595,12 +596,12 @@ def test_leading_whitespace_terminating_slash(tmpdir):
 
 def test_error_missing_keywords(tmpdir, caplog):
     """Check error is reported if any of
-    WELSPECS, WELSEGS, COMPDAT or COMSEGS are missing."""
+    WELL_SPECIFICATION, WELL_SEGMENTS, COMPLETION_DATA or COMSEGS are missing."""
     tmpdir.chdir()
     case_file = str(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
 
-    # Modify schedule file to remove WELSPECS
+    # Modify schedule file to remove WELL_SPECIFICATION
     with open(schedule_file, encoding="utf-8") as f:
         schedule_content = f.read()
 

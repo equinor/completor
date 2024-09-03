@@ -160,7 +160,7 @@ def create_tubing_segments(
         cells: Create one segment per cell.
         user: Create segment based on the completion definition.
         fix: Create segment based on a fixed interval.
-        schedule_data: Create segment based on well segments keyword.
+        well_data: Create segment based on well segments keyword.
 
     Returns:
         DataFrame with start and end measured depth, tubing measured depth, and tubing true vertical depth.
@@ -238,9 +238,9 @@ def create_tubing_segments(
         # Update the end point of the last segment.
         end_measured_depth[-1] = min(float(end_measured_depth[-1]), max_measured_depth)
     elif method == Method.WELSEGS:
-        # Create the tubing layer from segment measured depths in the WELSEGS keyword that are missing from COMPSEGS.
-        # WELSEGS segment depths are collected in the df_measured_depth_true_vertical_depth dataframe, which is available here.
-        # Completor interprets WELSEGS depths as segment midpoint depths.
+        # Create the tubing layer from measured depths in the WELL_SEGMENTS keyword that are missing from COMPLETION_SEGMENTS.
+        # WELL_SEGMENTS depths are collected in the `df_measured_depth_true_vertical_depth`, available here.
+        # Completor interprets WELL_SEGMENTS depths as segment midpoint depths.
         # Obtain the multisegmented well segments midpoint depth.
         well_segments = df_measured_depth_true_vertical_depth[Headers.MEASURED_DEPTH].to_numpy()
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
@@ -257,7 +257,7 @@ def create_tubing_segments(
         start_gaps_depth = end_compsegs_depth[indices_gaps[0]]
         # End of the gaps.
         end_gaps_depth = start_compsegs_depth[indices_gaps[0] + 1]
-        # Check the gaps between COMPSEGS and fill it out with WELSEGS.
+        # Check the gaps between COMPLETION_SEGMENTS and fill it out with WELL_SEGMENTS.
         start = np.abs(start_welsegs_depth[:, np.newaxis] - start_gaps_depth).argmin(axis=0)
         end = np.abs(end_welsegs_depth[:, np.newaxis] - end_gaps_depth).argmin(axis=0)
         welsegs_to_add = np.setxor1d(start_welsegs_depth[start], end_welsegs_depth[end])
@@ -571,11 +571,11 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str)
         raise err
     if device_type == Content.VALVE:
         # rescale the Cv
-        # because no scaling factor in WSEGVALV
+        # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     elif device_type == Content.DENSITY_ACTIVATED_RECOVERY:
         # rescale the Cv
-        # because no scaling factor in WSEGVALV
+        # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     return df_well
 
@@ -612,7 +612,7 @@ def connect_cells_to_segments(
 
     Args:
         df_well: Segment table. Must contain tubing measured depth.
-        df_reservoir: COMPSEGS table. Must contain start and end measured depth.
+        df_reservoir: COMPLETION_SEGMENTS table. Must contain start and end measured depth.
         df_tubing_segments: Tubing segment dataframe. Must contain start and end measured depth.
         method: Segmentation method indicator. Must be one of 'user', 'fix', 'welsegs', or 'cells'.
 

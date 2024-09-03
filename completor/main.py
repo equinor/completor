@@ -13,15 +13,14 @@ import numpy as np
 from tqdm import tqdm
 
 import completor
-from completor import create_wells, parse, read_schedule
+from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
-from completor.create_output import CreateOutput
-from completor.create_wells import Wells
 from completor.exceptions import CompletorError
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
+from completor.wells import Well
 
 
 def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
@@ -110,18 +109,20 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
             file_path = re.sub("[\"']+", "", file_path)
 
         else:
-            # OUTFILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
-            if keyword == "OUTFILE":
+            # OUT_FILE is optional, if it's needed but not supplied the error is caught in ReadCasefile:check_pvt_file()
+            if keyword == Keywords.OUT_FILE:
                 return None, None
             raise CompletorError(f"The keyword {keyword} is not defined correctly in the casefile")
-    if keyword != "OUTFILE":
+    if keyword != Keywords.OUT_FILE:
         try:
             with open(file_path, encoding="utf-8") as file:
                 file_content = file.read()
         except FileNotFoundError as e:
             raise CompletorError(f"Could not find the file: '{file_path}'!") from e
         except (PermissionError, IsADirectoryError) as e:
-            raise CompletorError("Could not read SCHFILE, this is likely because the path is missing quotes.") from e
+            raise CompletorError(
+                f"Could not read {Keywords.SCHEDULE_FILE}, this is likely because the path is missing quotes."
+            ) from e
         return file_content, file_path
     return None, file_path
 
@@ -149,7 +150,7 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
 
 def create(
     input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
-) -> tuple[ReadCasefile, Wells | None, CreateOutput] | tuple[ReadCasefile, Wells | None]:
+) -> tuple[ReadCasefile, Well | None, str] | tuple[ReadCasefile, Well | None]:
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
@@ -165,9 +166,9 @@ def create(
     output_text = ""
     output = None
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
-    active_wells = create_wells.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
+    active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
     schedule_data: dict[str, dict[str, Any]] = {}
-    wells = None
+    well = None
 
     figure_name = None
     if show_fig:
@@ -205,7 +206,7 @@ def create(
 
                 well_name = _get_well_name(clean_lines_map, line_number)
 
-                if keyword == Keywords.WELSPECS:
+                if keyword == Keywords.WELL_SPECIFICATION:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]
@@ -213,7 +214,7 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.COMPDAT:
+                elif keyword == Keywords.COMPLETION_DATA:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
                     schedule_data = read_schedule.handle_compdat(schedule_data, active_wells, chunk)
@@ -223,7 +224,7 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.WELSEGS:
+                elif keyword == Keywords.WELL_SEGMENTS:
                     if well_name not in list(active_wells):
                         output_text += format_text(keyword, "")
                         line_number += 1
@@ -233,17 +234,14 @@ def create(
                     line_number = after_content_line_number + 1
                     continue
 
-                elif keyword == Keywords.COMPSEGS:
+                elif keyword == Keywords.COMPLETION_SEGMENTS:
                     if well_name not in list(active_wells):
                         output_text += format_text(keyword, "")
                         line_number += 1
                         continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
 
-                    try:
-                        schedule_data = read_schedule.set_compsegs(schedule_data, active_wells, chunk)
-                    except ValueError:
-                        pass
+                    schedule_data = read_schedule.set_compsegs(schedule_data, active_wells, chunk)
 
                     line_number = after_content_line_number + 1
                     case.check_input(well_name, schedule_data)
@@ -253,12 +251,11 @@ def create(
             else:
                 progress_bar.update(len(lines) - prev_line_number)
 
-        for well_name_ in well_names:
+        for i, well_name_ in enumerate(well_names):
             logger.debug("Writing new MSW info for well %s", well_name_)
-            wells = Wells(well_name_, case, schedule_data)
-            well_number = read_schedule.get_well_number(well_name_, active_wells)
-            output = CreateOutput(case, schedule_data, wells, well_name_, well_number, show_fig, figure_name, paths)
-            output_text += format_text(None, output.finalprint)
+            well = Well(well_name_, i, case, schedule_data[well_name_])
+            output = create_output.format_output(well, figure_name, paths)
+            output_text += format_text(None, output)
 
     except Exception as e_:
         err = e_  # type: ignore
@@ -274,10 +271,11 @@ def create(
     if output is None:
         if len(active_wells) != 0:
             raise ValueError(
-                "Inconsistent case and schedule files. Check well names, WELSPECS, COMPDAT, WELSEGS, and COMPSEGS."
+                "Inconsistent case and schedule files. Check well names, "
+                "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
             )
-        return case, wells
-    return case, wells, output
+        return case, well
+    return case, well, output
 
 
 def main() -> None:
@@ -308,19 +306,19 @@ def main() -> None:
         raise CompletorError("Need input case file to run Completor")
 
     schedule_file_content, inputs.schedulefile = get_content_and_path(
-        case_file_content, inputs.schedulefile, Keywords.SCHFILE
+        case_file_content, inputs.schedulefile, Keywords.SCHEDULE_FILE
     )
 
     if isinstance(schedule_file_content, str):
         parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
 
-    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUTFILE)
+    _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUT_FILE)
 
     if inputs.outputfile is None:
         if inputs.schedulefile is None:
             raise ValueError(
                 "Could not find a path to schedule file. "
-                "It must be provided as a input argument or within the case files keyword 'SCHFILE'."
+                f"It must be provided as a input argument or within the case files keyword '{Keywords.SCHEDULE_FILE}'."
             )
         inputs.outputfile = inputs.schedulefile.split(".")[0] + "_advanced.wells"
 

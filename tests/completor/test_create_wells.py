@@ -16,9 +16,9 @@ _TEST_FILE = "test.sch"
 
 
 def test_duplicates(tmpdir):
-    """Test completor case with duplicated entries in COMPDAT and COMPSEGS.
+    """Test completor case with duplicated entries in COMPLETION_DATA and COMPLETION_SEGMENTS.
 
-    Completor produces a number for the second COMPDAT entry, but it is a mistake.
+    Completor produces a number for the second COMPLETION_DATA entry, but it is a mistake.
     """
     tmpdir.chdir()
     case_file = Path(_TESTDIR / "duplicate.case")

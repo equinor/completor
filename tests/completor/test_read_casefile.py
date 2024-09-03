@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from completor.constants import Content, Headers
+from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CaseReaderFormatError, CompletorError  # type: ignore
 from completor.main import get_content_and_path  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
@@ -73,7 +73,7 @@ def test_read_case_segment_length():
 
 
 def test_read_case_wsegvalv():
-    """Test the function which reads WSEGVALV keyword."""
+    """Test the function which reads WELL_SEGMENTS_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             [Content.VALVE, 1, 0.85, 0.01, "5*", 0.04],
@@ -92,7 +92,7 @@ def test_read_case_wsegvalv():
 
 
 def test_read_case_wsegicv():
-    """Test the function which reads WSEGVALV keyword."""
+    """Test the function which reads WELL_SEGMENTS_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             [Content.INFLOW_CONTROL_VALVE, 1, 1.0, 2.0, 2.0],
@@ -110,7 +110,7 @@ def test_read_case_wsegicv():
 
 
 def test_read_case_wsegaicd():
-    """Test the function which reads WSEGAICD keyword."""
+    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword."""
     df_true = pd.DataFrame(
         [
             [
@@ -166,7 +166,7 @@ def test_read_case_wsegaicd():
 
 
 def test_read_case_wsegsicd():
-    """Test the function which reads WSEGSICD keyword."""
+    """Test the function which reads INFLOW_CONTROL_DEVICE keyword."""
     df_true = pd.DataFrame(
         [
             [Content.INFLOW_CONTROL_DEVICE, 1, 0.001, 1000.0, 1.0, 0.1],
@@ -186,7 +186,7 @@ def test_read_case_wsegsicd():
 
 
 def test_read_case_wsegdar():
-    """Test the function which reads WSEGDAR keyword."""
+    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
     df_true = pd.DataFrame(
         [
             [Content.DENSITY_ACTIVATED_RECOVERY, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
@@ -211,19 +211,19 @@ def test_read_case_wsegdar():
 
 
 def test_new_dar_old_parameters():
-    """Test the function which reads WSEGDAR keyword."""
+    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
     with open(Path(_TESTDIR / "dar.testfile"), encoding="utf-8") as old_dar_case:
         _OLDDARCASE = old_dar_case.read()
 
     with pytest.raises(CaseReaderFormatError) as err:
         ReadCasefile(_OLDDARCASE)
 
-    expected_err = "Too few entries in data for keyword 'WSEGDAR', expected 9"
+    expected_err = f"Too few entries in data for keyword '{Keywords.DENSITY_ACTIVATED_RECOVERY}', expected 9"
     assert expected_err in str(err.value)
 
 
 def test_read_case_wsegaicv():
-    """Test the function which reads WSEGAICV keyword."""
+    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             [
@@ -357,12 +357,12 @@ COMPLETION
 
 
 def test_read_case_output_file_with_OUTFILE(tmpdir):
-    """Test the function which reads OUTFILE keyword when not command line"""
+    """Test the function which reads OUT_FILE keyword when not command line"""
     shutil.copy(_TESTDIR / "case.testfile", tmpdir)
     tmpdir.chdir()
     with open("case.testfile", encoding="utf-8") as file:
         case_content = file.read()
-    output_file = get_content_and_path(case_content, None, "OUTFILE")
+    output_file = get_content_and_path(case_content, None, Keywords.OUT_FILE)
     assert output_file[1] == "output.file", "Failed reading PVTFILE keyword"
 
 
@@ -431,7 +431,7 @@ WSEGSICD
 
     with pytest.raises(CompletorError) as e:
         ReadCasefile(case_content)
-    assert "Keyword WSEGSICD has no end record" in str(e)
+    assert f"Keyword {Keywords.INFLOW_CONTROL_DEVICE} has no end record" in str(e)
 
     case_content += """
 WSEGVALV
@@ -463,7 +463,7 @@ WSEGAICD
 
     with pytest.raises(CaseReaderFormatError) as exc:
         ReadCasefile(case_wrong_no_columns)
-    assert "Too many entries in data for keyword 'WSEGAICD'" in str(exc.value)
+    assert f"Too many entries in data for keyword '{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}'" in str(exc.value)
 
 
 def test_read_case_completion_icv():

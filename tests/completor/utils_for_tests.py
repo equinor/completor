@@ -55,7 +55,7 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
            Also, the index is set to well so that the original order is not used as index.
         2. We do the comparison numerically, so we dont care about 4th decimal place.
            Use global variables CHECK_EXACT and N_DIGITS for this purpose.
-        3. WELSPECS is not included in the comparison since this keyword is left untouched by completor.
+        3. WELL_SPECIFICATION is not included in the comparison since this keyword is left untouched by completor.
     """
 
     if isinstance(true_file, Path):
@@ -64,15 +64,15 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     else:
         true_output = ReadSchedule(true_file)
 
-    # test COMPDAT, COMPSEGS and WELSEGS
+    # test COMPLETION_DATA, COMPLETION_SEGMENTS and WELL_SEGMENTS
     with open(test_file, encoding="utf-8") as file:
         test_output = ReadSchedule(file.read())
 
-    # COMPDAT
+    # COMPLETION_DATA
     pd.testing.assert_frame_equal(
         true_output.compdat, test_output.compdat, check_exact=check_exact, rtol=relative_tolerance
     )
-    # WELSEGS header
+    # WELL_SEGMENTS header
     wsh_true = true_output.welsegs_header
     wsh_true.set_index(Headers.WELL, inplace=True)
     wsh_true.sort_values(Headers.WELL, inplace=True)
@@ -80,7 +80,7 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     wsh_test.set_index(Headers.WELL, inplace=True)
     wsh_test.sort_values(Headers.WELL, inplace=True)
     pd.testing.assert_frame_equal(wsh_true, wsh_test, check_exact=check_exact, rtol=relative_tolerance)
-    # WELSEGS content
+    # WELL_SEGMENTS content
     wsc_true = true_output.welsegs_content
     wsc_true.set_index(Headers.WELL, inplace=True)
     wsc_true.sort_values([Headers.WELL, Headers.TUBING_MEASURED_DEPTH], inplace=True)
@@ -89,7 +89,7 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     wsc_test.sort_values([Headers.WELL, Headers.TUBING_MEASURED_DEPTH], inplace=True)
     pd.testing.assert_frame_equal(wsc_true, wsc_test, check_exact=check_exact, rtol=relative_tolerance)
 
-    # COMPSEGS
+    # COMPLETION_SEGMENTS
     cs_true = true_output.compsegs.set_index(Headers.WELL)
     cs_true.sort_values([Headers.WELL, Headers.START_MEASURED_DEPTH], inplace=True)
     cs_test = test_output.compsegs.set_index(Headers.WELL)
@@ -101,23 +101,23 @@ class ReadSchedule:
     """Class for reading and processing of schedule/well files.
 
     This class reads the schedule/well file.
-    It reads the following keywords WELSPECS, COMPDAT, WELSEGS, COMPSEGS.
+    It reads the following keywords WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS.
     The program also reads other keywords, but the unrelated keywords will just be printed in the output file.
 
     Attributes:
         content (List[str]): The data.
         collections (List[completor.parser.ContentCollection]): Content collection of keywords in schedule file.
         unused_keywords (np.ndarray[str]): Array of strings of unused keywords in the schedule file.
-        welspecs (pd.DataFrame): Table of WELSPECS keyword.
-        compdat (pd.DataFrame): Table of COMPDAT keyword.
-        compsegs (pd.DataFrame): Table of COMPSEGS keyword.
+        welspecs (pd.DataFrame): Table of WELL_SPECIFICATION keyword.
+        compdat (pd.DataFrame): Table of COMPLETION_DATA keyword.
+        compsegs (pd.DataFrame): Table of COMPLETION_SEGMENTS keyword.
     """
 
     def __init__(self, schedule_file: str, optional_keywords: list[str] | None = None):
         """Initialize the class.
 
         Args:
-            schedule_file: Schedule/well file which contains at least `COMPDAT`, `COMPSEGS` and `WELSEGS`.
+            schedule_file: Schedule/well file which contains at least `COMPLETION_DATA`, `COMPLETION_SEGMENTS` and `WELL_SEGMENTS`.
             optional_keywords: List of optional keywords to find tables for.
         """
         # read the file
@@ -126,7 +126,7 @@ class ReadSchedule:
         # get contents of the listed keywords
         # and the content of the not listed keywords
         if optional_keywords is None:
-            optional_keywords = ["WSEGVALV"]
+            optional_keywords = [Keywords.WELL_SEGMENTS_VALVE]
         self.collections, self.unused_keywords = parse.read_schedule_keywords(
             self.content, Keywords.main_keywords, optional_keywords
         )
@@ -178,7 +178,7 @@ class ReadSchedule:
 
     @property
     def welsegs_header(self) -> pd.DataFrame:
-        """Table of the WELSEGS header, the first record of WELSEGS keyword."""
+        """Table of the WELL_SEGMENTS header, the first record of WELL_SEGMENTS keyword."""
         if self._welsegs_header is None:
             welsegs_header, _ = self._compute_welsegs()
             self._welsegs_header = welsegs_header
@@ -186,14 +186,14 @@ class ReadSchedule:
 
     @property
     def welsegs_content(self) -> pd.DataFrame:
-        """Table of the WELSEGS content, the second record of WELSEGS keyword."""
+        """Table of the WELL_SEGMENTS content, the second record of WELL_SEGMENTS keyword."""
         if self._welsegs_content is None:
             _, welsegs_content = self._compute_welsegs()
             self._welsegs_content = welsegs_content
         return self._welsegs_content
 
     def _compute_welsegs(self) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Set correct types for information in WELSEGS header and content."""
+        """Set correct types for information in WELL_SEGMENTS header and content."""
         welsegs_header, welsegs_content = parse.get_welsegs_table(self.collections)
         self._welsegs_content = welsegs_content.astype(
             {
@@ -213,13 +213,13 @@ class ReadSchedule:
         return self._welsegs_header, self._welsegs_content  # type: ignore
 
     def get_welspecs(self, well_name: str) -> pd.DataFrame:
-        """Return the WELSPECS table of the selected well.
+        """Return the WELL_SPECIFICATION table of the selected well.
 
         Args:
             well_name: Name of the well.
 
         Returns:
-            WELSPECS table for that well.
+            WELL_SPECIFICATION table for that well.
         """
         df_temp = self.welspecs[self.welspecs[Headers.WELL] == well_name]
         # reset index after filtering
@@ -227,13 +227,13 @@ class ReadSchedule:
         return df_temp
 
     def get_compdat(self, well_name: str) -> pd.DataFrame:
-        """Return the COMPDAT table for that well.
+        """Return the COMPLETION_DATA table for that well.
 
         Args:
             well_name: Name of the well.
 
         Returns:
-            COMPDAT table for that well.
+            COMPLETION_DATA table for that well.
         """
         df_temp = self.compdat[self.compdat[Headers.WELL] == well_name]
         # reset index after filtering
@@ -241,15 +241,15 @@ class ReadSchedule:
         return df_temp
 
     def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Return WELSEGS table for both header and content for the selected well.
+        """Return WELL_SEGMENTS table for both header and content for the selected well.
 
         Args:
             well_name: Name of the well.
             branch: Branch/lateral number.
 
         Returns:
-            WELSEGS first record (df_header).
-            WELSEGS second record (df_content).
+            WELL_SEGMENTS first record (df_header).
+            WELL_SEGMENTS second record (df_content).
         """
         df1_welsegs = self.welsegs_header[self.welsegs_header[Headers.WELL] == well_name]
         df2_welsegs = self.welsegs_content[self.welsegs_content[Headers.WELL] == well_name].copy()
@@ -265,14 +265,14 @@ class ReadSchedule:
         return df_header, df_content
 
     def get_compsegs(self, well_name: str, branch: int | None = None) -> pd.DataFrame:
-        """Return COMPSEGS table for the selected well.
+        """Return COMPLETION_SEGMENTS table for the selected well.
 
         Args:
             well_name: Name of the well.
             branch: Branch/lateral number.
 
         Returns:
-            COMPSEGS table.
+            COMPLETION_SEGMENTS table.
         """
         df_temp = self.compsegs[self.compsegs[Headers.WELL] == well_name].copy()
         if branch is not None:

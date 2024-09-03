@@ -12,11 +12,11 @@ from completor.utils import sort_by_midpoint
 
 
 def fix_welsegs(df_header: pd.DataFrame, df_content: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Convert a WELSEGS DataFrame specified in incremental (INC) to absolute (ABS) values.
+    """Convert a WELL_SEGMENTS DataFrame specified in incremental (INC) to absolute (ABS) values.
 
     Args:
-        df_header: First record table of WELSEGS.
-        df_content: Second record table of WELSEGS.
+        df_header: First record table of WELL_SEGMENTS.
+        df_content: Second record table of WELL_SEGMENTS.
 
     Returns:
         Updated header DataFrame, Updated content DataFrame.
@@ -57,7 +57,7 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
 
     The issue occurs when one cell is penetrated more than once by a well, and happens
     when there are big cells and the well path is complex.
-    The issue can be observed from a COMPSEGS definition that has overlapping start and end measured depth.
+    The issue can be observed from a COMPLETION_SEGMENTS definition that has overlapping start and end measured depth.
 
     Args:
         df_compsegs: DataFrame.
@@ -92,7 +92,11 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
                 start_md_new[idx] = start_md[idx]
                 end_md_new[idx] = end_md[idx]
             else:
-                logger.info("Overlapping in COMPSEGS for %s. Sorts the depths accordingly", well_name)
+                logger.info(
+                    "Overlapping in COMPLETION_SEGMENTS%s for %s. Sorts the depths accordingly",
+                    Keywords.COMPLETION_SEGMENTS,
+                    well_name,
+                )
                 comb_depth = np.append(start_md, end_md)
                 comb_depth = np.sort(comb_depth)
                 start_md_new = np.copy(comb_depth[::2])
@@ -110,7 +114,10 @@ def fix_compsegs(df_compsegs: pd.DataFrame, well_name: str) -> pd.DataFrame:
             if start_md_new[idx] >= end_md_new[idx - 1]:
                 start_md_new[idx] = end_md_new[idx - 1]
             else:
-                logger.error("Cannot construct COMPSEGS segments based on current input")
+                logger.error(
+                    "Cannot construct COMPLETION_SEGMENTS%s segments based on current input",
+                    Keywords.COMPLETION_SEGMENTS,
+                )
     return sort_by_midpoint(df_compsegs, start_md_new, end_md_new)
 
 
@@ -205,7 +212,7 @@ def set_welspecs(schedule_data: dict[str, dict[str, Any]], records: list[list[st
     for well_name in df[Headers.WELL].unique():
         if well_name not in schedule_data:
             schedule_data[well_name] = {}
-        schedule_data[well_name][Keywords.WELSPECS] = df[df[Headers.WELL] == well_name]
+        schedule_data[well_name][Keywords.WELL_SPECIFICATION] = df[df[Headers.WELL] == well_name]
         logger.debug("set_welspecs for %s", well_name)
     return schedule_data
 
@@ -231,7 +238,7 @@ def set_welsegs(
     Raises:
         ValueError: If a well is not an active well.
     """
-    well_name = recs[0][0]  # each WELSEGS-chunk is for one well only
+    well_name = recs[0][0]  # each WELL_SEGMENTS-chunk is for one well only
     if well_name not in active_wells:
         raise ValueError("The well must be active!")
 
@@ -278,7 +285,7 @@ def set_welsegs(
     df_records = pd.DataFrame(recs, columns=columns_data)
     # data types
     df_records[columns_data[:4]] = df_records[columns_data[:4]].astype(np.int64)
-    df_records[columns_data[4:7]] = df_records[columns_data[4:7]].astype(np.float64)
+    df_records[columns_data[4:8]] = df_records[columns_data[4:8]].astype(np.float64)
     # fix abs/inc issue with welsegs
     df_header, df_records = fix_welsegs(df_header, df_records)
 
@@ -291,22 +298,23 @@ def set_welsegs(
             .is_monotonic_increasing
         ):
             logger.warning(
-                "The branch %s in well %s contains negative length segments. Check the input schedulefile WELSEGS "
+                "The branch %s in well %s contains negative length segments. Check the input schedulefile %s "
                 "keyword for inconsistencies in measured depth (MEASURED_DEPTH) of Tubing layer.",
+                Keywords.WELL_SEGMENTS,
                 branch_num,
                 well_name,
             )
 
     if well_name not in schedule_data:
         schedule_data[well_name] = {}
-    schedule_data[well_name][Keywords.WELSEGS] = df_header, df_records
+    schedule_data[well_name][Keywords.WELL_SEGMENTS] = df_header, df_records
     return schedule_data
 
 
 def set_compsegs(
     schedule_data: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
 ) -> dict[str, dict[str, Any]]:
-    """Update COMPSEGS for a well if it is an active well.
+    """Update COMPLETION_SEGMENTS for a well if it is an active well.
 
     * Pads missing record columns in header and contents with default 1*.
     * Convert header and column records to DataFrames.
@@ -323,7 +331,7 @@ def set_compsegs(
     Raises:
         ValueError: If a well is not an active well.
     """
-    well_name = recs[0][0]  # each COMPSEGS-chunk is for one well only
+    well_name = recs[0][0]  # each COMPLETION_SEGMENTS-chunk is for one well only
     if well_name not in active_wells:
         raise ValueError("The well must be active!")
     columns = [
@@ -346,7 +354,7 @@ def set_compsegs(
     df[columns[4:6]] = df[columns[4:6]].astype(np.float64)
     if well_name not in schedule_data:
         schedule_data[well_name] = {}
-    schedule_data[well_name][Keywords.COMPSEGS] = df
+    schedule_data[well_name][Keywords.COMPLETION_SEGMENTS] = df
     logger.debug("set_compsegs for %s", well_name)
     return schedule_data
 
@@ -365,7 +373,7 @@ def handle_compdat(
     Args:
         schedule_data: Data containing multisegmented well schedules.
         active_wells: Active wells, without duplicates.
-        records: Record set of COMPDAT data.
+        records: Record set of COMPLETION_DATA data.
 
     Returns:
         Records for inactive wells.
@@ -408,17 +416,16 @@ def handle_compdat(
     for well_name in active_wells:
         if well_name not in schedule_data:
             schedule_data[well_name] = {}
-        schedule_data[well_name][Keywords.COMPDAT] = df[df[Headers.WELL] == well_name]
+        schedule_data[well_name][Keywords.COMPLETION_DATA] = df[df[Headers.WELL] == well_name]
         logger.debug("handle_compdat for %s", well_name)
     return schedule_data
 
 
-def get_completion_data(schedule_data: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
-    """Get-function for COMPDAT.
+def get_completion_data(schedule_data: dict[str, Any]) -> pd.DataFrame:
+    """Get-function for COMPLETION_DATA.
 
     Args:
         schedule_data: Segment information.
-        well_name: Well name.
 
     Returns:
         Completion data.
@@ -426,18 +433,14 @@ def get_completion_data(schedule_data: dict[str, dict[str, Any]], well_name: str
     Raises:
         ValueError: If completion data keyword is missing in input schedule file.
     """
-    try:
-        return schedule_data[well_name][Keywords.COMPDAT]
-    except KeyError as err:
-        if f"'{Keywords.COMPDAT}'" in str(err):
-            raise ValueError("Input schedule file missing COMPDAT keyword.") from err
-        raise err
+    data = schedule_data.get(Keywords.COMPLETION_DATA)
+    if data is None:
+        raise KeyError(f"Input schedule file missing {Keywords.COMPLETION_DATA} keyword.")
+    return data
 
 
-def get_completion_segments(
-    schedule_data: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
-) -> pd.DataFrame:
-    """Get-function for COMPSEGS.
+def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branch: int | None = None) -> pd.DataFrame:
+    """Get-function for COMPLETION_SEGMENTS.
 
     Args:
        schedule_data: Data containing multisegmented well segments.
@@ -447,7 +450,7 @@ def get_completion_segments(
     Returns:
         Completion segment data.
     """
-    df = schedule_data[well_name][Keywords.COMPSEGS].copy()
+    df = schedule_data[Keywords.COMPLETION_SEGMENTS].copy()
     if branch is not None:
         df = df[df[Headers.BRANCH] == branch]
     df.reset_index(drop=True, inplace=True)  # reset index after filtering
@@ -455,41 +458,26 @@ def get_completion_segments(
 
 
 def get_well_segments(
-    schedule_data: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
+    well_data: dict[str, pd.DataFrame], branch: int | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get-function for well segments.
 
     Args:
-        schedule_data: The multisegmented wells.
-        well_name: Well name.
+        well_data: The multisegmented wells.
         branch: Branch number.
 
     Returns:
         Well segments headers and content.
 
     Raises:
-        ValueError: If WELSEGS keyword missing in input schedule file.
+        ValueError: If WELL_SEGMENTS keyword missing in input schedule file.
     """
-    try:
-        columns, content = schedule_data[well_name][Keywords.WELSEGS]
-    except KeyError as err:
-        if f"'{Keywords.WELSEGS}'" in str(err):
-            raise ValueError("Input schedule file missing WELSEGS keyword.") from err
-        raise err
+    data = well_data.get(Keywords.WELL_SEGMENTS)
+    if data is None:
+        raise ValueError(f"Input schedule file missing {Keywords.WELL_SEGMENTS} keyword.")
+    columns, content = data
+
     if branch is not None:
         content = content[content[Headers.TUBING_BRANCH] == branch]
-    content.reset_index(drop=True, inplace=True)
+    content = content.reset_index(drop=True)
     return columns, content
-
-
-def get_well_number(well_name: str, active_wells: npt.NDArray[np.str_]) -> int:
-    """Well number in the active_wells list.
-
-    Args:
-        well_name: Well name.
-        active_wells: The active wells.
-
-    Returns:
-        Well number.
-    """
-    return int(np.where(active_wells == well_name)[0][0])
