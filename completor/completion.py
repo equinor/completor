@@ -178,7 +178,10 @@ def create_tubing_segments(
             if not df_reservoir[Headers.SEGMENT].isin(["1*"]).any():
                 create_start_measured_depths = []
                 create_end_measured_depths = []
-                create_start_measured_depths.append(df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
+                try:
+                    create_start_measured_depths.append(df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
+                except IndexError:
+                    raise CompletorError("Number of WELSEGS and COMPSEGS is inconsistent.")
                 current_segment = df_reservoir[Headers.SEGMENT].iloc[0]
                 for i in range(1, len(df_reservoir[Headers.SEGMENT])):
                     if df_reservoir[Headers.SEGMENT].iloc[i] != current_segment:
