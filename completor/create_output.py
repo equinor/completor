@@ -65,7 +65,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             header_written = True
 
         df_tubing, top = prepare_outputs.prepare_tubing_layer(
-            well.well_name, lateral, start_segment, start_branch, well.case.completion_table, well
+            well, lateral, start_segment, start_branch, well.case.completion_table
         )
         lateral.df_tubing = df_tubing
         df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
