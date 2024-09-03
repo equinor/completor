@@ -4,7 +4,7 @@ also work both for cells-, fixed-, user- and welsegs type of segmentation method
 
 from pathlib import Path
 
-import utils
+import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -540,8 +540,8 @@ def test_gp_cells(tmpdir):
     tmpdir.chdir()
     case_file = CASE_GP_CELLS
     true_file = Path(_TESTDIR / "gp_cells.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_cells(tmpdir):
@@ -549,8 +549,8 @@ def test_oa_cells(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_CELLS
     true_file = Path(_TESTDIR / "oa_cells.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_gp_user(tmpdir):
@@ -558,8 +558,8 @@ def test_gp_user(tmpdir):
     tmpdir.chdir()
     case_file = CASE_GP_USER
     true_file = Path(_TESTDIR / "gp_user.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_gp_user_top_overlap(tmpdir):
@@ -570,8 +570,8 @@ def test_gp_user_top_overlap(tmpdir):
     tmpdir.chdir()
     case_file = CASE_GP_USER_TOP_OVERLAP
     true_file = Path(_TESTDIR / "gp_user_top_overlap.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_gp_user_bottom_overlap(tmpdir):
@@ -582,8 +582,8 @@ def test_gp_user_bottom_overlap(tmpdir):
     tmpdir.chdir()
     case_file = CASE_GP_USER_BOTTOM_OVERLAP
     true_file = Path(_TESTDIR / "gp_user_bottom_overlap.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_gp_user_1vpj(tmpdir):
@@ -593,8 +593,8 @@ def test_gp_user_1vpj(tmpdir):
     tmpdir.chdir()
     case_file = CASE_GP_USER_1VPJ
     true_file = Path(_TESTDIR / "gp_user_1vpj.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_gp_user_0vpj(tmpdir):
@@ -604,8 +604,8 @@ def test_gp_user_0vpj(tmpdir):
     tmpdir.chdir()
     case_file = CASE_GP_USER_0VPJ
     true_file = Path(_TESTDIR / "gp_user_0vpj.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_gp_oneliner(tmpdir):
@@ -617,8 +617,8 @@ def test_gp_oneliner(tmpdir):
     print(tmpdir)
     case_file = CASE_GP_ONELINER
     true_file = Path(_TESTDIR / "gp_user_oneliner.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_user(tmpdir):
@@ -626,8 +626,8 @@ def test_oa_user(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_USER
     true_file = Path(_TESTDIR / "oa_user.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_user_top_overlap(tmpdir):
@@ -638,8 +638,8 @@ def test_oa_user_top_overlap(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_USER_TOP_OVERLAP
     true_file = Path(_TESTDIR / "oa_user_top_overlap.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_user_bottom_overlap(tmpdir):
@@ -650,8 +650,8 @@ def test_oa_user_bottom_overlap(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_USER_BOTTOM_OVERLAP
     true_file = Path(_TESTDIR / "oa_user_bottom_overlap.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_user_1vpj(tmpdir):
@@ -661,8 +661,8 @@ def test_oa_user_1vpj(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_USER_1VPJ
     true_file = Path(_TESTDIR / "oa_user_1vpj.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_user_user(tmpdir):
@@ -672,8 +672,8 @@ def test_oa_user_user(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_USER_USER
     true_file = Path(_TESTDIR / "oa_user_1vpj.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_user_1vpj_pa(tmpdir):
@@ -685,8 +685,8 @@ def test_oa_user_1vpj_pa(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_USER_1VPJ_PA
     true_file = Path(_TESTDIR / "oa_user_1vpj_pa.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_user_0vpj(tmpdir):
@@ -696,8 +696,8 @@ def test_oa_user_0vpj(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_USER_0VPJ
     true_file = Path(_TESTDIR / "oa_user_0vpj.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_oa_oneliner(tmpdir):
@@ -708,5 +708,5 @@ def test_oa_oneliner(tmpdir):
     tmpdir.chdir()
     case_file = CASE_OA_ONELINER
     true_file = Path(_TESTDIR / "oa_user_oneliner.true")
-    utils.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)

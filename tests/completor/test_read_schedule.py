@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from utils import ReadSchedule
+from utils_for_tests import ReadSchedule
 
 import completor.parse as fr
 from completor import utils
@@ -17,7 +17,7 @@ with open(Path(_TESTDIR / "schedule.testfile"), encoding="utf-8") as file:
 
 
 def test_reading_welspecs():
-    """Test the functions which read the WELSPECS keyword."""
+    """Test the functions which read the WELL_SPECIFICATION keyword."""
     data = [
         ["WELL1", "GROUP1", 13, 75, 1200, "GAS", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
         ["WELL2", "GROUP1", 18, 37, 1200, "GAS", "1*", "1*", "SHUT", "1*", "1*", "1*", "1*", "1*", "1*", "1*", "1*"],
@@ -86,9 +86,9 @@ COMPORD
 
 
 def test_reading_compdat():
-    """Test the functions which read COMPDAT keywords.
+    """Test the functions which read COMPLETION_DATA keywords.
 
-    Test the whole COMPDAT and specific on WELL10.
+    Test the whole COMPLETION_DATA and specific on WELL10.
     """
     true_compdat = Path(_TESTDIR / "compdat.true")
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
@@ -104,7 +104,7 @@ def test_reading_compdat():
 
 
 def test_reading_compsegs():
-    """Test the functions which read the COMPSEGS keywords.
+    """Test the functions which read the COMPLETION_SEGMENTS keywords.
 
     Test it on WELL12 branch 1.
     """
@@ -118,7 +118,7 @@ def test_reading_compsegs():
 
 
 def test_reading_welsegs():
-    """Test the functions which read WELSEGS keywords.
+    """Test the functions which read WELL_SEGMENTS keywords.
 
     Both the first and the second record.
     Check WELL4 for the second record.
@@ -179,7 +179,7 @@ def test_reading_welsegs():
 
 
 def test_reading_wsegvalv():
-    """Test the functions which read the WSEGVALV keyword."""
+    """Test the functions which read the WELL_SEGMENTS_VALVE keyword."""
     df_true = pd.DataFrame(
         [
             ["WELL1", 0, 0.830, 1.0000e-03, "1*", "1*", "1*", "1*", "OPEN", 1.0000e-03],
@@ -256,10 +256,10 @@ def test_fix_compsegs():
 
 
 def test_fix_welsegs():
-    """Test that fix_welsegs correctly converts WELSEGS from INC to ABS.
+    """Test that fix_welsegs correctly converts WELL_SEGMENTS from INC to ABS.
 
-    Completor works with ABS in the WELSEGS.
-    So if the users have WELSEGS defined in INC then it must be converted first.
+    Completor works with ABS in the WELL_SEGMENTS.
+    So if the users have WELL_SEGMENTS defined in INC then it must be converted first.
     """
     df_header = pd.DataFrame(
         [[1000.0, 1500.0, "INC"]],

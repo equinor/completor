@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt  # type: ignore
 import matplotlib.ticker as ticker  # type: ignore
 from matplotlib import rcParams
 from matplotlib.axes import Axes  # type: ignore
-from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 from matplotlib.figure import Figure  # type: ignore
 
 
@@ -131,18 +130,6 @@ def subplot_position(num_plots: int) -> tuple[int, int]:
     list_rows = [1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 5]
     list_cols = [1, 2, 3, 2, 3, 3, 4, 4, 3, 4, 5]
     return list_rows[num_plots - 1], list_cols[num_plots - 1]
-
-
-def create_pdfpages(file_name: str) -> PdfPages:
-    """Create a pdf file.
-
-    Args:
-        file_name: Full name of the file without extension .pdf.
-
-    Returns:
-        PdfPages instance.
-    """
-    return PdfPages(file_name)
 
 
 def create_figure(figsize: list[int] | tuple[int, int] | None = (18, 12)) -> Figure:

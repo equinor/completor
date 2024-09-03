@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import utils
+import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -20,17 +20,17 @@ A1 1 0 3000 0.2 0.25 1.00E-4 GP 0 PERF 0
 def test_gp_perf_default(tmpdir):
     """Test Completor case with only gravel packs and perforation.
 
-    No GP_PERF_DEVICELAYER keyword set, default to False.
+    No GRAVEL_PACKED_PERFORATED_DEVICELAYER keyword set, default to False.
     """
     tmpdir.chdir()
-    utils.open_files_run_create(GP_PERF_BASE_CASE, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.open_files_run_create(GP_PERF_BASE_CASE, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(WELL_DEFINITION, _TEST_FILE)
 
 
 def test_gp_perf_false(tmpdir):
     """Test Completor case with only gravel packs and perforation.
 
-    GP_PERF_DEVICELAYER keyword explicitly set to False.
+    GRAVEL_PACKED_PERFORATED_DEVICELAYER keyword explicitly set to False.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -40,14 +40,14 @@ def test_gp_perf_false(tmpdir):
      FALSE
     /
     """
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(WELL_DEFINITION, _TEST_FILE)
 
 
 def test_gp_perf_true(tmpdir):
     """Test Completor case with only gravel packs and perforation.
 
-    GP_PERF_DEVICELAYER keyword explicitly set to True.
+    GRAVEL_PACKED_PERFORATED_DEVICELAYER keyword explicitly set to True.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -58,14 +58,14 @@ def test_gp_perf_true(tmpdir):
     /
     """
     true_file = Path(_TESTDIR / "wb_perf.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_mix_in_branch(tmpdir):
     """Test completor case with gp_perf and aicd in same branch.
 
-    GP_PERF_DEVICELAYER not set.
+    GRAVEL_PACKED_PERFORATED_DEVICELAYER not set.
     """
     tmpdir.chdir()
     case_file = """
@@ -79,14 +79,14 @@ def test_mix_in_branch(tmpdir):
     /
     """
     true_file = Path(_TESTDIR / "wb_perf_mix_inbranch.true")
-    utils.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_mix_multibranch(tmpdir):
     """Test completor case with gp_perf and aicd in two different branches.
 
-    GP_PERF_DEVICELAYER not set.
+    GRAVEL_PACKED_PERFORATED_DEVICELAYER not set.
     """
     tmpdir.chdir()
     case_file = """
@@ -102,5 +102,5 @@ def test_mix_multibranch(tmpdir):
     with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as f:
         schedule_file = f.read()
     true_file = Path(_TESTDIR / "wb_perf_mix_multibranch.true")
-    utils.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)

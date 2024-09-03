@@ -75,3 +75,4 @@ repos:
     - "pandas-stubs==1.2.0.61"
     - "pytest-mypy-plugins==1.9.3"
     - "typing-extensions==4.2.0"  # May use future type annotations
+    - "types-tqdm==4.66.0.20240417"

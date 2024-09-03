@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 
-class Headers:
+@dataclass(frozen=True)
+class _Headers:
     """Headers for DataFrames."""
 
     # Well Segments Record 1 (WELSEGS)
@@ -61,7 +62,7 @@ class Headers:
     THERMAL_CONTACT_LENGTH = "THERM"  # Thermal contact length, that is, the length of the well in the completion cell.
     SEGMENT = "SEGMENT"
 
-    # Well specifications (WELSPECS)
+    # Well specifications (WELL_SPECIFICATION)
     # WELL = "WELL"
     GROUP = "GROUP"
     # I = "I"  # noqa: E741
@@ -69,7 +70,7 @@ class Headers:
     BHP_DEPTH = "BHP_DEPTH"  # Bottom hole pressure depth?
     PHASE = "PHASE"
     DR = "DR"
-    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPDAT.
+    FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPLETION_DATA.
     SHUT = "SHUT"
     # CROSS = "CROSS"
     PRESSURE_TABLE = "PRESSURETABLE"
@@ -205,6 +206,9 @@ class Headers:
     F_PILOT = "F_PILOT"
 
 
+Headers = _Headers()
+
+
 @dataclass(frozen=True)
 class _Keywords:
     """Define keywords used in the schedule file.
@@ -218,38 +222,37 @@ class _Keywords:
         segments: Set of keywords that are used in a segment.
     """
 
-    WELSPECS = "WELSPECS"
-    COMPDAT = "COMPDAT"
-    WELSEGS = "WELSEGS"
-    COMPSEGS = "COMPSEGS"
+    WELL_SPECIFICATION = "WELSPECS"
+    COMPLETION_DATA = "COMPDAT"
+    WELL_SEGMENTS = "WELSEGS"
+    COMPLETION_SEGMENTS = "COMPSEGS"
 
     COMPLETION = "COMPLETION"
 
-    WELSEGS_H = "WELSEGS_H"
-    WSEGLINK = "WSEGLINK"
-    WSEGVALV = "WSEGVALV"
-    WSEGAICD = "WSEGAICD"
-    WSEGAICV = "WSEGAICV"
-    WSEGICV = "WSEGICV"
-    WSEGSICD = "WSEGSICD"
-    WSEGDAR = "WSEGDAR"
+    WELL_SEGMENTS_HEADER = "WELSEGS_H"
+    WELL_SEGMENTS_LINK = "WSEGLINK"
+    WELL_SEGMENTS_VALVE = "WSEGVALV"
+    AUTONOMOUS_INFLOW_CONTROL_DEVICE = "WSEGAICD"
+    AUTONOMOUS_INFLOW_CONTROL_VALVE = "WSEGAICV"
+    INFLOW_CONTROL_VALVE = "WSEGICV"
+    INFLOW_CONTROL_DEVICE = "WSEGSICD"
+    DENSITY_ACTIVATED_RECOVERY = "WSEGDAR"
     LATERAL_TO_DEVICE = "LATERAL_TO_DEVICE"
     JOINT_LENGTH = "JOINTLENGTH"
     SEGMENT_LENGTH = "SEGMENTLENGTH"
     USE_STRICT = "USE_STRICT"
-    GP_PERF_DEVICELAYER = "GP_PERF_DEVICELAYER"  # suggestion: GRAVEL_PACKED_PERFORATION_DEVICE_LAYER
+    GRAVEL_PACKED_PERFORATED_DEVICELAYER = "GP_PERF_DEVICELAYER"  # suggestion: GRAVEL_PACKED_PERFORATION_DEVICE_LAYER
     MINIMUM_SEGMENT_LENGTH = "MINIMUM_SEGMENT_LENGTH"
-    MAPFILE = "MAPFILE"
+    MAP_FILE = "MAPFILE"
+    SCHEDULE_FILE = "SCHFILE"
+    OUT_FILE = "OUTFILE"
 
-    SCHFILE = "SCHFILE"
-    OUTFILE = "OUTFILE"
+    main_keywords = [WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS]
 
-    main_keywords = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
-
-    _items = [WELSPECS, COMPDAT, WELSEGS, COMPSEGS]
+    _items = [WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS]
     _members = set(_items)
 
-    segments = {WELSEGS, COMPSEGS}
+    segments = {WELL_SEGMENTS, COMPLETION_SEGMENTS}
 
     def __iter__(self):
         return self._items.__iter__()
@@ -259,6 +262,36 @@ class _Keywords:
 
 
 Keywords = _Keywords()
+
+
+@dataclass(frozen=True)
+class _Content:
+    """ """
+
+    PACKER = "PA"
+    GRAVEL_PACKED = "GP"
+    OPEN_ANNULUS = "OA"
+    ANNULUS_TYPES = [GRAVEL_PACKED, OPEN_ANNULUS, PACKER]
+
+    PERFORATED = "PERF"
+    INFLOW_CONTROL_VALVE = "ICV"
+    AUTONOMOUS_INFLOW_CONTROL_VALVE = "AICV"
+    INFLOW_CONTROL_DEVICE = "ICD"
+    AUTONOMOUS_INFLOW_CONTROL_DEVICE = "AICD"
+    DENSITY_ACTIVATED_RECOVERY = "DAR"
+    VALVE = "VALVE"
+    DEVICE_TYPES = [
+        AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+        AUTONOMOUS_INFLOW_CONTROL_VALVE,
+        DENSITY_ACTIVATED_RECOVERY,
+        INFLOW_CONTROL_DEVICE,
+        VALVE,
+        INFLOW_CONTROL_VALVE,
+        PERFORATED,
+    ]
+
+
+Content = _Content()
 
 
 class Method(Enum):

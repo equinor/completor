@@ -9,10 +9,8 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor import input_validation as val
-from completor import parse
-from completor.completion import WellSchedule
-from completor.constants import Headers, Keywords
+from completor import input_validation, parse
+from completor.constants import Content, Headers, Keywords, Method
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
 from completor.utils import clean_file_lines
@@ -48,8 +46,8 @@ class ReadCasefile:
 
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
-    SCHFILE, OUTFILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH
-    WSEGAICD, WSEGVALV, WSEGSICD, WSEGDAR, WSEGAICV, WSEGICV, PVTFILE, PVTTABLE.
+    SCHEDULE_FILE, OUT_FILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
+    INFLOW_CONTROL_DEVICE, DENSITY_ACTIVATED_RECOVERY, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -60,15 +58,15 @@ class ReadCasefile:
         pvt_file (str): The pvt file content.
         pvt_file_name (str): The pvt file name.
         completion_table (pd.DataFrame): ....
-        wsegaicd_table (pd.DataFrame): WSEGAICD.
-        wsegsicd_table (pd.DataFrame): WSEGSICD.
-        wsegvalv_table (pd.DataFrame): WSEGVALV.
-        wsegicv_table (pd.DataFrame): WSEGICV.
-        wsegdar_table (pd.DataFrame): WSEGDAR.
-        wsegaicv_table (pd.DataFrame): WSEGAICV.
+        wsegaicd_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_DEVICE.
+        wsegsicd_table (pd.DataFrame): INFLOW_CONTROL_DEVICE.
+        wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
+        wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
+        wsegdar_table (pd.DataFrame): DENSITY_ACTIVATED_RECOVERY.
+        wsegaicv_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_VALVE.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
-        gp_perf_devicelayer (bool): GP_PERF_DEVICELAYER. If TRUE all wells with
+        gp_perf_devicelayer (bool): GRAVEL_PACKED_PERFORATED_DEVICELAYER. If TRUE all wells with
             gravel pack and perforation completion are given a device layer.
             If FALSE (default) all wells with this type of completions are untouched by Completor.
     """
@@ -88,7 +86,6 @@ class ReadCasefile:
 
         # assign default values
         self.joint_length = 12.0
-        self.segment_length: float | str = 0.0
         self.minimum_segment_length: float = 0.0
         self.strict = True
         self.gp_perf_devicelayer = False
@@ -110,7 +107,8 @@ class ReadCasefile:
         # Run programs
         self.read_completion()
         self.read_joint_length()
-        self.read_segment_length()
+        self.segment_length = self.read_segment_length()
+        self.method = self.segmentation_method(self.segment_length)
         self.read_strictness()
         self.read_gp_perf_devicelayer()
         self.read_mapfile()
@@ -149,15 +147,15 @@ class ReadCasefile:
         ]
         df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
         # Set default value for packer segment
-        df_temp = val.set_default_packer_section(df_temp)
+        df_temp = input_validation.set_default_packer_section(df_temp)
         # Set default value for PERF segments
-        df_temp = val.set_default_perf_section(df_temp)
+        df_temp = input_validation.set_default_perf_section(df_temp)
         # Give errors if 1* is found for non packer segments
-        df_temp = val.check_default_non_packer(df_temp)
+        df_temp = input_validation.check_default_non_packer(df_temp)
         # Fix the data types format
-        df_temp = val.set_format_completion(df_temp)
+        df_temp = input_validation.set_format_completion(df_temp)
         # Check overall user inputs on completion
-        val.assess_completion(df_temp)
+        input_validation.assess_completion(df_temp)
         df_temp = self.read_icv_tubing(df_temp)
         self.completion_table = df_temp.copy(deep=True)
 
@@ -172,18 +170,18 @@ class ReadCasefile:
         """
         if not df_temp.loc[
             (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
-            & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+            & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
         ].empty:
             # take ICV tubing table
             self.completion_icv_tubing = df_temp.loc[
                 (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
-                & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+                & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
             ].reset_index(drop=True)
             # drop its line
             df_temp = df_temp.drop(
                 df_temp.loc[
                     (df_temp[Headers.START_MEASURED_DEPTH] == df_temp[Headers.END_MEASURED_DEPTH])
-                    & (df_temp[Headers.DEVICE_TYPE] == "ICV")
+                    & (df_temp[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE)
                 ].index[:]
             ).reset_index(drop=True)
         return df_temp
@@ -212,7 +210,7 @@ class ReadCasefile:
             self.lat2device = pd.DataFrame([], columns=header)  # empty df
             return
         self.lat2device = self._create_dataframe_with_columns(header, start_index, end_index)
-        val.validate_lateral_to_device(self.lat2device, self.completion_table)
+        input_validation.validate_lateral_to_device(self.lat2device, self.completion_table)
         self.lat2device[Headers.BRANCH] = self.lat2device[Headers.BRANCH].astype(np.int64)
 
     def read_joint_length(self) -> None:
@@ -226,7 +224,7 @@ class ReadCasefile:
         else:
             logger.info("No joint length is defined. It is set to default 12.0 m")
 
-    def read_segment_length(self) -> None:
+    def read_segment_length(self) -> float | str:
         """Read the SEGMENTLENGTH keyword in the case file.
 
         Raises:
@@ -235,43 +233,66 @@ class ReadCasefile:
         start_index, end_index = parse.locate_keyword(self.content, Keywords.SEGMENT_LENGTH)
         if end_index == start_index + 2:
             try:
-                self.segment_length = float(self.content[start_index + 1])
-                # 'Fix' method if value is positive.
-                if self.segment_length > 0.0:
-                    logger.info("Segments are defined per %s meters.", self.segment_length)
-                # 'User' method if value is negative.
-                elif self.segment_length < 0.0:
-                    logger.info(
-                        "Segments are defined based on the COMPLETION keyword. "
-                        "Attempting to pick segments' measured depth from .case file."
-                    )
-                # 'Cells' method if value is zero.
-                elif self.segment_length == 0:
-                    logger.info("Segments are defined based on the grid dimensions.")
-
+                return float(self.content[start_index + 1])
             except ValueError:
-                try:
-                    self.segment_length = str(self.content[start_index + 1])
-                    # 'Welsegs' method
-                    if "welsegs" in self.segment_length.lower() or "infill" in self.segment_length.lower():
-                        logger.info(
-                            "Segments are defined based on the WELSEGS keyword. "
-                            "Retaining the original tubing segment structure."
-                        )
-                    # 'User' method if value is negative
-                    elif "user" in self.segment_length.lower():
-                        logger.info(
-                            "Segments are defined based on the COMPLETION keyword. "
-                            "Attempting to pick segments' measured depth from casefile."
-                        )
-                    # 'Cells' method
-                    elif "cell" in self.segment_length.lower():
-                        logger.info("Segment lengths are created based on the grid dimensions.")
-                except ValueError as err:
-                    raise CompletorError("SEGMENTLENGTH takes number or string") from err
+                return self.content[start_index + 1]
+
         else:
-            # 'Cells' method if value is 0.0 or undefined
-            logger.info("No segment length is defined. " "Segments are created based on the grid dimension.")
+            logger.info(
+                "SEGMENTLENGTH keyword undefined, using default strategy 'cells' "
+                "to create segments based on the grid dimensions."
+            )
+            return 0.0
+
+    @staticmethod
+    def segmentation_method(segment_length: float | str) -> Method:
+        """Determine the method of segmentation, and log the implication to info.
+
+        Args:
+            segment_length: The string or number value from the SEGMENTLENGTH keyword.
+
+        Returns:
+            The method used to create the segments.
+
+        Raises:
+            ValueError: If value of segment_length is invalid.
+        """
+        if isinstance(segment_length, float):
+            if segment_length > 0.0:
+                logger.info("Segments are defined per fixed %s meters.", segment_length)
+                return Method.FIX
+            if segment_length == 0.0:
+                logger.info("Segments are defined based on the grid dimensions.")
+                return Method.CELLS
+            if segment_length < 0.0:
+                logger.info(
+                    "Segments are defined based on the COMPLETION keyword. "
+                    "Attempting to pick segments' measured depth from case file."
+                )
+                return Method.USER
+
+        if isinstance(segment_length, str):
+            if "welsegs" in segment_length.lower() or "infill" in segment_length.lower():
+                logger.info(
+                    "Segments are defined based on the WELL_SEGMENTS%s keyword. "
+                    "Retaining the original tubing segment structure.",
+                    Keywords.WELL_SEGMENTS,
+                )
+                return Method.WELSEGS
+            if "cell" in segment_length.lower():
+                logger.info("Segment lengths are created based on the grid dimensions.")
+                return Method.CELLS
+            if "user" in segment_length.lower():
+                logger.info(
+                    "Segments are defined based on the COMPLETION keyword. "
+                    "Attempting to pick segments' measured depth from casefile."
+                )
+                return Method.USER
+        raise CompletorError(
+            f"Unrecognized method for SEGMENTLENGTH keyword '{segment_length}'. The value should be one of: "
+            f"'{Keywords.WELL_SEGMENTS}', 'CELLS', 'USER'. "
+            "Alternatively a negative number for 'USER', zero for 'CELLS', or positive number for 'FIX'.",
+        )
 
     def read_strictness(self) -> None:
         """Read the USE_STRICT keyword in the case file.
@@ -292,14 +313,14 @@ class ReadCasefile:
         logger.info("case-strictness is set to %d", self.strict)
 
     def read_gp_perf_devicelayer(self) -> None:
-        """Read the GP_PERF_DEVICELAYER keyword in the case file.
+        """Read the GRAVEL_PACKED_PERFORATED_DEVICELAYER keyword in the case file.
 
-        If GP_PERF_DEVICELAYER = True the program assigns a device layer to
-        wells with GP PERF type completions. If GP_PERF_DEVICELAYER = False, the
+        If GRAVEL_PACKED_PERFORATED_DEVICELAYER = True the program assigns a device layer to
+        wells with GP PERF type completions. If GRAVEL_PACKED_PERFORATED_DEVICELAYER = False, the
         program does not add a device layer to the well. I.e. the well is
         untouched by the program. The default value is False.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.GP_PERF_DEVICELAYER)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.GRAVEL_PACKED_PERFORATED_DEVICELAYER)
         if end_index == start_index + 2:
             gp_perf_devicelayer = self.content[start_index + 1]
             self.gp_perf_devicelayer = gp_perf_devicelayer.upper() == "TRUE"
@@ -314,27 +335,27 @@ class ReadCasefile:
         start_index, end_index = parse.locate_keyword(self.content, Keywords.MINIMUM_SEGMENT_LENGTH)
         if end_index == start_index + 2:
             min_seg_len = self.content[start_index + 1]
-            self.minimum_segment_length = val.validate_minimum_segment_length(min_seg_len)
+            self.minimum_segment_length = input_validation.validate_minimum_segment_length(min_seg_len)
         logger.info("minimum_segment_length is set to %s", self.minimum_segment_length)
 
     def read_mapfile(self) -> None:
-        """Read the MAPFILE keyword in the case file (if any) into a mapper."""
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.MAPFILE)
+        """Read the MAP_FILE keyword in the case file (if any) into a mapper."""
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.MAP_FILE)
         if end_index == start_index + 2:
             # the content is in between the keyword and the /
             self.mapfile = parse.remove_string_characters(self.content[start_index + 1])
             self.mapper = _mapper(self.mapfile)
 
     def read_wsegvalv(self) -> None:
-        """Read the WSEGVALV keyword in the case file.
+        """Read the WELL_SEGMENTS_VALVE keyword in the case file.
 
         Raises:
             CompletorError: If WESEGVALV is not defined and VALVE is used in COMPLETION. If the device number is not found.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGVALV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.WELL_SEGMENTS_VALVE)
         if start_index == end_index:
-            if "VALVE" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGVALV keyword must be defined, if VALVE is used in the completion.")
+            if Content.VALVE in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError("WELL_SEGMENTS_VALVE keyword must be defined, if VALVE is used in the completion.")
         else:
             # Table headers
             header = [
@@ -350,24 +371,29 @@ class ReadCasefile:
                 header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
 
-            self.wsegvalv_table = val.set_format_wsegvalv(df_temp)
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "VALVE"][
+            self.wsegvalv_table = input_validation.set_format_wsegvalv(df_temp)
+            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == Content.VALVE][
                 Headers.DEVICE_NUMBER
             ].to_numpy()
             if not check_contents(device_checks, self.wsegvalv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all device in COMPLETION is specified in WSEGVALV")
+                raise CompletorError(
+                    f"Not all device in {Keywords.COMPLETION} is specified in {Keywords.WELL_SEGMENTS_VALVE}"
+                )
 
     def read_wsegsicd(self) -> None:
-        """Read the WSEGSICD keyword in the case file.
+        """Read the INFLOW_CONTROL_DEVICE keyword in the case file.
 
         Raises:
-            CompletorError: If WSEGSICD is not defined and ICD is used in COMPLETION, or if the device number is not found.
-                If not all devices in COMPLETION are specified in WSEGSICD.
+            CompletorError: If INFLOW_CONTROL_DEVICE is not defined and ICD is used in COMPLETION,
+                or if the device number is not found.
+                If not all devices in COMPLETION are specified in INFLOW_CONTROL_DEVICE.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGSICD)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.INFLOW_CONTROL_DEVICE)
         if start_index == end_index:
-            if "ICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGSICD keyword must be defined, if ICD is used in the completion.")
+            if Content.INFLOW_CONTROL_DEVICE in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError(
+                    f"{Keywords.INFLOW_CONTROL_DEVICE} keyword must be defined, if ICD is used in the completion."
+                )
         else:
             # Table headers
             header = [
@@ -377,28 +403,32 @@ class ReadCasefile:
                 Headers.CALIBRATION_FLUID_VISCOSITY,
                 Headers.WATER_CUT,
             ]
-            self.wsegsicd_table = val.set_format_wsegsicd(
+            self.wsegsicd_table = input_validation.set_format_wsegsicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            # Check if the device in COMPLETION is exist in WSEGSICD
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "ICD"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            # Check if the device in COMPLETION is exist in INFLOW_CONTROL_DEVICE
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_DEVICE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegsicd_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all device in COMPLETION is specified in WSEGSICD")
+                raise CompletorError(f"Not all device in COMPLETION is specified in {Keywords.INFLOW_CONTROL_DEVICE}")
 
     def read_wsegaicd(self) -> None:
-        """Read the WSEGAICD keyword in the case file.
+        """Read the AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in WSEGAICD.
-            CompletorError: If WSEGAICD is not defined and AICD is used in COMPLETION, or if the device number is not found.
-                If all devices in COMPLETION are not specified in WSEGAICD.
+            ValueError: If invalid entries in AUTONOMOUS_INFLOW_CONTROL_DEVICE.
+            CompletorError: If AUTONOMOUS_INFLOW_CONTROL_DEVICE is not defined, and AICD is used in COMPLETION,
+                or if the device number is not found.
+                If all devices in COMPLETION are not specified in AUTONOMOUS_INFLOW_CONTROL_DEVICE.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGAICD)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE)
         if start_index == end_index:
-            if "AICD" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGAICD keyword must be defined, if AICD is used in the completion.")
+            if Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError(
+                    f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE} keyword must be defined, "
+                    "if AICD is used in the completion."
+                )
         else:
             # Table headers
             header = [
@@ -415,27 +445,31 @@ class ReadCasefile:
                 Headers.AICD_CALIBRATION_FLUID_DENSITY,
                 Headers.AICD_FLUID_VISCOSITY,
             ]
-            self.wsegaicd_table = val.set_format_wsegaicd(
+            self.wsegaicd_table = input_validation.set_format_wsegaicd(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "AICD"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegaicd_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all device in COMPLETION is specified in WSEGAICD")
+                raise CompletorError(
+                    f"Not all device in COMPLETION is specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}"
+                )
 
     def read_wsegdar(self) -> None:
-        """Read the WSEGDAR keyword in the case file.
+        """Read the DENSITY_ACTIVATED_RECOVERY keyword in the case file.
 
         Raises:
-            ValueError: If there are invalid entries in WSEGDAR.
-            CompletorError: If not all device in COMPLETION is specified in WSEGDAR.
-                If WSEGDAR keyword not defined, when DAR is used in the completion.
+            ValueError: If there are invalid entries in DENSITY_ACTIVATED_RECOVERY.
+            CompletorError: If not all device in COMPLETION is specified in DENSITY_ACTIVATED_RECOVERY.
+                If DENSITY_ACTIVATED_RECOVERY keyword not defined, when DAR is used in the completion.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGDAR)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.DENSITY_ACTIVATED_RECOVERY)
         if start_index == end_index:
-            if "DAR" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGDAR keyword must be defined, if DAR is used in the completion")
+            if Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError(
+                    f"{Keywords.DENSITY_ACTIVATED_RECOVERY} keyword must be defined, if DAR is used in the completion"
+                )
         else:
             # Table headers
             header = [
@@ -451,28 +485,33 @@ class ReadCasefile:
             ]
 
             # Fix table format
-            if self.completion_table[Headers.DEVICE_TYPE].str.contains("DAR").any():
-                self.wsegdar_table = val.set_format_wsegdar(
+            if self.completion_table[Headers.DEVICE_TYPE].str.contains(Content.DENSITY_ACTIVATED_RECOVERY).any():
+                self.wsegdar_table = input_validation.set_format_wsegdar(
                     self._create_dataframe_with_columns(header, start_index, end_index)
                 )
-                device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "DAR"][
-                    Headers.DEVICE_NUMBER
-                ].to_numpy()
+                device_checks = self.completion_table[
+                    self.completion_table[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY
+                ][Headers.DEVICE_NUMBER].to_numpy()
                 if not check_contents(device_checks, self.wsegdar_table[Headers.DEVICE_NUMBER].to_numpy()):
-                    raise CompletorError("Not all device in COMPLETION is specified in WSEGDAR")
+                    raise CompletorError(
+                        f"Not all device in COMPLETION is specified in {Keywords.DENSITY_ACTIVATED_RECOVERY}"
+                    )
 
     def read_wsegaicv(self) -> None:
-        """Read the WSEGAICV keyword in the case file.
+        """Read the AUTONOMOUS_INFLOW_CONTROL_VALVE keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in WSEGAICV.
-            CompletorError: WSEGAICV keyword not defined when AICV is used in completion.
-                If all devices in COMPLETION are not specified in WSEGAICV.
+            ValueError: If invalid entries in AUTONOMOUS_INFLOW_CONTROL_VALVE.
+            CompletorError: AUTONOMOUS_INFLOW_CONTROL_VALVE keyword not defined when AICV is used in completion.
+                If all devices in COMPLETION are not specified in AUTONOMOUS_INFLOW_CONTROL_VALVE.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGAICV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE)
         if start_index == end_index:
-            if "AICV" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGAICV keyword must be defined, if AICV is used in the completion.")
+            if Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError(
+                    f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE} keyword must be defined, "
+                    "if AICV is used in the completion."
+                )
         else:
             # Table headers
             header = [
@@ -501,28 +540,30 @@ class ReadCasefile:
                 Headers.F_PILOT,
             ]
             # Fix table format
-            self.wsegaicv_table = val.set_format_wsegaicv(
+            self.wsegaicv_table = input_validation.set_format_wsegaicv(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            # Check if the device in COMPLETION is exist in WSEGAICV
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "AICV"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            # Check if the device in COMPLETION is exist in AUTONOMOUS_INFLOW_CONTROL_VALVE
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegaicv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all devices in COMPLETION are specified in WSEGAICV")
+                raise CompletorError(
+                    f"Not all devices in COMPLETION are specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE}"
+                )
 
     def read_wsegicv(self) -> None:
-        """Read WSEGICV keyword in the case file.
+        """Read INFLOW_CONTROL_VALVE keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in WSEGICV.
-            CompletorError: WSEGICV keyword not defined when ICV is used in completion.
+            ValueError: If invalid entries in INFLOW_CONTROL_VALVE.
+            CompletorError: INFLOW_CONTROL_VALVE keyword not defined when ICV is used in completion.
         """
 
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.WSEGICV)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.INFLOW_CONTROL_VALVE)
         if start_index == end_index:
-            if "ICV" in self.completion_table[Headers.DEVICE_TYPE]:
-                raise CompletorError("WSEGICV keyword must be defined, if ICV is used in the completion")
+            if Content.INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError("INFLOW_CONTROL_VALVE keyword must be defined, if ICV is used in the completion")
         else:
             # Table headers
             header = [Headers.DEVICE_NUMBER, Headers.FLOW_COEFFICIENT, Headers.FLOW_CROSS_SECTIONAL_AREA]
@@ -533,13 +574,13 @@ class ReadCasefile:
                 header += [Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]
                 df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
             # Fix format
-            self.wsegicv_table = val.set_format_wsegicv(df_temp)
-            # Check if the device in COMPLETION exists in WSEGICV
-            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == "ICV"][
-                Headers.DEVICE_NUMBER
-            ].to_numpy()
+            self.wsegicv_table = input_validation.set_format_wsegicv(df_temp)
+            # Check if the device in COMPLETION exists in INFLOW_CONTROL_VALVE
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE
+            ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegicv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError("Not all device in COMPLETION is specified in WSEGICV")
+                raise CompletorError("Not all device in COMPLETION is specified in INFLOW_CONTROL_VALVE")
 
     def get_completion(self, well_name: str | None, branch: int) -> pd.DataFrame:
         """Create the COMPLETION table for the selected well and branch.
@@ -555,7 +596,7 @@ class ReadCasefile:
         df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
-    def check_input(self, well_name: str, schedule: WellSchedule) -> None:
+    def check_input(self, well_name: str, schedule_data: dict[str, dict[str, Any]]) -> None:
         """Ensure that the completion table (given in the case-file) is complete.
 
         If one branch is completed, all branches must be completed, unless not 'strict'.
@@ -565,7 +606,7 @@ class ReadCasefile:
 
         Args:
             well_name: Well name.
-            schedule: Schedule object.
+            schedule_data: Schedule file data.
 
         Returns:
             COMPLETION for that well and branch.
@@ -573,11 +614,10 @@ class ReadCasefile:
         Raises:
             CompletorError: If strict is true and there are undefined branches.
         """
-        msw = schedule.msws[well_name]
-        compl = self.completion_table[self.completion_table.WELL == well_name]
-
+        well_data = schedule_data[well_name]
+        df_completion = self.completion_table[self.completion_table.WELL == well_name]
         # check that all branches are defined in case-file
-        branch_nos = set(msw[Keywords.COMPSEGS].BRANCH).difference(set(compl.BRANCH))
+        branch_nos = set(well_data[Keywords.COMPLETION_SEGMENTS].BRANCH).difference(set(df_completion.BRANCH))
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:
@@ -592,7 +632,7 @@ class ReadCasefile:
                     )
                     lateral[Headers.START_MEASURED_DEPTH] = 0
                     lateral[Headers.END_MEASURED_DEPTH] = 999999
-                    lateral[Headers.DEVICE_TYPE] = "PERF"
+                    lateral[Headers.DEVICE_TYPE] = Content.PERFORATED
                     lateral[Headers.ANNULUS] = "GP"
                     lateral[Headers.BRANCH] = branch_no
                     # add new entry
@@ -633,7 +673,6 @@ class ReadCasefile:
         if keyword is None:
             keyword = self.content[start_index]
         table_header = " ".join(header)
-        table_content = ""
         # Handle weirdly formed keywords.
         if start_index + 1 == end_index or self.content[start_index + 1].endswith("/"):
             content_str = "\n".join(self.content[start_index + 1 :]) + "\n"

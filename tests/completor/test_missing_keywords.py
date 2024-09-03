@@ -3,7 +3,9 @@
 from pathlib import Path
 
 import pytest
-import utils
+import utils_for_tests
+
+from completor.constants import Content
 
 COMPLETION = """
 COMPLETION
@@ -105,7 +107,7 @@ def set_files(tmpdir):
 
 
 def set_case(completion_type, combination, case_file):
-    """Set contents of case file from a completion type and combination of keywords."""
+    """Set the contents of case file from a completion type and combination of keywords."""
     case_content = ""
     for case_keyword in combination:
         case_content += CASE_KEYWORDS[case_keyword].replace("__TYPE__", completion_type)
@@ -121,110 +123,109 @@ def set_schedule(combination, schedule_file):
 
 
 def test_minimum_input(tmpdir, capsys):
-    """
-    Test output to screen from Completor.
+    """Test output to screen from Completor.
 
     Uses combinations of keywords in input case- and schedule files.
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case("PERF", ["completion"], case_file)
+    set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    utils.open_files_run_create(case_file, schedule_file, _outfile)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
 
 
 def test_missing_welspecs(tmpdir, capsys):
-    """Test output to screen from Completor missing WELSPECS."""
+    """Test output to screen from Completor missing WELL_SPECIFICATION."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case("PERF", ["completion"], case_file)
+    set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["compdat", "welsegs", "compsegs"], schedule_file)
-    utils.open_files_run_create(case_file, schedule_file, _outfile)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
 
 
 def test_missing_compdat(tmpdir):
-    """Test output to screen from Completor missing COMPDAT."""
+    """Test output to screen from Completor missing COMPLETION_DATA."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = "Input schedule file missing COMPDAT keyword."
-    set_case("PERF", ["completion"], case_file)
+    set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "welsegs", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+    with pytest.raises(KeyError, match="Input schedule file missing COMPDAT keyword."):
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_welsegs(tmpdir):
-    """Test output to screen from Completor missing WELSEGS."""
+    """Test output to screen from Completor missing WELL_SEGMENTS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = "Input schedule file missing WELSEGS keyword."
-    set_case("PERF", ["completion"], case_file)
+    expected_error_message = "Input schedule file missing WELSEGS keyword."
+    set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+    with pytest.raises(ValueError, match=expected_error_message):
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_inconsistent_files(tmpdir):
-    """Test output to screen from Completor missing COMPSEGS."""
+    """Test output to screen from Completor missing COMPLETION_SEGMENTS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = (
-        "Inconsistent case and input schedule files. " "Check well names and WELSPECS, COMPDAT, WELSEGS and COMPSEGS."
+    expected_error_message = (
+        "Inconsistent case and schedule files. Check well names, "
+        "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
     )
-    set_case("PERF", ["completion"], case_file)
+    set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+    with pytest.raises(ValueError, match=expected_error_message):
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_completion(tmpdir):
     """Test output to screen from Completor missing COMPLETION."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    outputmessage = "No completion is defined in the case file."
-    set_case("PERF", ["wsegaicd"], case_file)
+    expected_error_message = "No completion is defined in the case file."
+    set_case(Content.PERFORATED, ["wsegaicd"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=outputmessage):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+    with pytest.raises(ValueError, match=expected_error_message):
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_wsegaicd(tmpdir):
-    """Test output to screen from Completor missing WSEGAICD."""
+    """Test output to screen from Completor missing AUTONOMOUS_INFLOW_CONTROL_DEVICE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICD' in input files."
-    set_case("AICD", ["completion"], case_file)
+    set_case(Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_wsegsicd(tmpdir):
-    """Test output to screen from Completor missing WSEGSICD."""
+    """Test output to screen from Completor missing INFLOW_CONTROL_DEVICE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE ICD' in input files."
-    set_case("ICD", ["completion"], case_file)
+    set_case(Content.INFLOW_CONTROL_DEVICE, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_missing_wsegvalv(tmpdir):
-    """Test output to screen from Completor missing WSEGVALV."""
+    """Test output to screen from Completor missing WELL_SEGMENTS_VALVE."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE VALVE' in input files."
-    set_case("VALVE", ["completion"], case_file)
+    set_case(Content.VALVE, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_full_wsegdar(tmpdir, capsys):
@@ -236,23 +237,23 @@ def test_full_wsegdar(tmpdir, capsys):
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case("DAR", ["completion", "wsegdar"], case_file)
+    set_case(Content.DENSITY_ACTIVATED_RECOVERY, ["completion", "wsegdar"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    utils.open_files_run_create(case_file, schedule_file, _outfile)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
 
 
 def test_missing_wsegdar(tmpdir):
-    """Test output to screen from Completor with missing WSEGDAR keyword."""
+    """Test output to screen from Completor with missing DENSITY_ACTIVATED_RECOVERY keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE DAR' in input files."
-    set_case("DAR", ["completion"], case_file)
+    set_case(Content.DENSITY_ACTIVATED_RECOVERY, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
 def test_full_wsegaicv(tmpdir, capsys):
@@ -264,20 +265,20 @@ def test_full_wsegaicv(tmpdir, capsys):
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case("AICV", ["completion", "wsegaicv"], case_file)
+    set_case(Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, ["completion", "wsegaicv"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
-    utils.open_files_run_create(case_file, schedule_file, _outfile)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert captured.out == ""
 
 
 def test_missing_wsegaicv(tmpdir):
-    """Test output to screen from Completor with missing WSEGAICV keyword."""
+    """Test output to screen from Completor with missing AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE AICV' in input files."
-    set_case("AICV", ["completion"], case_file)
+    set_case(Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
-        utils.open_files_run_create(case_file, schedule_file, _outfile)
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)

@@ -169,15 +169,15 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
     Returns:
         Completed list of strings.
     """
-    if keyword == Keywords.WSEGVALV:
+    if keyword == Keywords.WELL_SEGMENTS_VALVE:
         return complete_wsegvalv_record(record)
 
     dict_ncolumns = {
-        Keywords.WELSPECS: 17,
-        Keywords.COMPDAT: 14,
-        Keywords.WELSEGS_H: 12,
-        Keywords.WELSEGS: 15,
-        Keywords.COMPSEGS: 11,
+        Keywords.WELL_SPECIFICATION: 17,
+        Keywords.COMPLETION_DATA: 14,
+        Keywords.WELL_SEGMENTS_HEADER: 12,
+        Keywords.WELL_SEGMENTS: 15,
+        Keywords.COMPLETION_SEGMENTS: 11,
     }
     max_column = dict_ncolumns[keyword]
     ncolumn = len(record)
@@ -190,7 +190,7 @@ def complete_records(record: list[str], keyword: str) -> list[str]:
 
 
 def complete_wsegvalv_record(record: list[str]) -> list[str]:
-    """Complete the WSEGVALV record.
+    """Complete the WELL_SEGMENTS_VALVE record.
 
     Columns PIPE_DIAMETER, ABSOLUTE_PIPE_ROUGHNESS, PIPE_CROSS_SECTION_AREA, FLAG, and MAX_FLOW_CROSS_SECTIONAL_AREA
     might not be provided and need to be filled in with default values.
@@ -224,11 +224,11 @@ def complete_wsegvalv_record(record: list[str]) -> list[str]:
 
 
 def read_schedule_keywords(
-    content: list[str], keywords: list[str], optional_keywords: list[str] = []
+    content: list[str], keywords: list[str], optional_keywords: list[str] | None = None
 ) -> tuple[list[ContentCollection], npt.NDArray[np.str_]]:
     """Read schedule keywords or all keywords in table format.
 
-    E.g. WELSPECS, COMPDAT, WELSEGS, COMPSEGS, WSEGVALV.
+    E.g. WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS, WELL_SEGMENTS_VALVE.
 
     Args:
         content: List of strings. Lines from the schedule file.
@@ -245,6 +245,7 @@ def read_schedule_keywords(
     content = deepcopy(content)
     used_index = np.asarray([-1])
     collections = []
+    optional_keywords = [] if optional_keywords is None else optional_keywords
     # get the contents that correspond with the list_keywords
     for keyword in keywords + optional_keywords:
         start_index, end_index = locate_keyword(content, keyword, take_first=False)
@@ -255,7 +256,7 @@ def read_schedule_keywords(
             used_index = np.append(used_index, np.arange(start, end + 1))
             keyword_content = [_create_record(content, keyword, irec, start) for irec in range(start + 1, end)]
             collection = ContentCollection(keyword_content, name=keyword)
-            if keyword in [Keywords.WELSEGS, Keywords.COMPSEGS]:
+            if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
                 # remove string characters
                 collection.well = remove_string_characters(keyword_content[0][0])
             collections.append(collection)
@@ -277,23 +278,23 @@ def _create_record(content: list[str], keyword: str, irec: int, start: int) -> l
     record = unpack_records(record)
     # complete records
     record = complete_records(
-        record, Keywords.WELSEGS_H if keyword == Keywords.WELSEGS and irec == start + 1 else keyword
+        record, Keywords.WELL_SEGMENTS_HEADER if keyword == Keywords.WELL_SEGMENTS and irec == start + 1 else keyword
     )
     return record
 
 
 def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Return dataframe table of WELSEGS.
+    """Return dataframe table of WELL_SEGMENTS.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        header_table - The header of WELSEGS.
-        record_table - The record of WELSEGS.
+        header_table - The header of WELL_SEGMENTS.
+        record_table - The record of WELL_SEGMENTS.
 
     Raises:
-        ValueError: If collection does not contain the 'WELSEGS' keyword.
+        ValueError: If collection does not contain the 'WELL_SEGMENTSWELL_SEGMENTS' keyword.
     """
     header_columns = [
         Headers.WELL,
@@ -328,7 +329,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
     ]
     for collection in collections:
-        if collection.name == Keywords.WELSEGS:
+        if collection.name == Keywords.WELL_SEGMENTS:
             header_collection = np.asarray(collection[:1])
             record_collection = np.asarray(collection[1:])
             # add additional well column on the second collection
@@ -347,7 +348,7 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
         header_table = pd.DataFrame(header_table, columns=header_columns)
         record_table = pd.DataFrame(record_table, columns=content_columns)
     except NameError as err:
-        raise ValueError("Collection does not contain the 'WELSEGS' keyword") from err
+        raise ValueError(f"Collection does not contain the '{Keywords.WELL_SEGMENTS}' keyword") from err
 
     # replace string component " or ' in the columns
     header_table = remove_string_characters(header_table)
@@ -356,16 +357,16 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
 
 
 def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return dataframe table of WELSPECS.
+    """Return dataframe table of WELL_SPECIFICATION.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        WELSPECS table.
+        WELL_SPECIFICATION table.
 
     Raises:
-        ValueError: If collection does not contain the 'WELSPECS' keyword.
+        ValueError: If collection does not contain the 'WELL_SPECIFICATION' keyword.
     """
     columns = [
         Headers.WELL,
@@ -388,7 +389,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
     ]
     welspecs_table = None
     for collection in collections:
-        if collection.name == Keywords.WELSPECS:
+        if collection.name == Keywords.WELL_SPECIFICATION:
             the_collection = np.asarray(collection)
             if welspecs_table is None:
                 welspecs_table = np.copy(the_collection)
@@ -396,7 +397,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
                 welspecs_table = np.row_stack((welspecs_table, the_collection))
 
     if welspecs_table is None:
-        raise ValueError("Collection does not contain the 'WELSPECS' keyword")
+        raise ValueError(f"Collection does not contain the '{Keywords.WELL_SPECIFICATION}' keyword")
 
     welspecs_table = pd.DataFrame(welspecs_table, columns=columns)
     # replace string component " or ' in the columns
@@ -405,27 +406,27 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return dataframe table of COMPDAT.
+    """Return dataframe table of COMPLETION_DATA.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        COMPDAT table.
+        COMPLETION_DATA table.
 
     Raises:
-        ValueError: If a collection does not contain the 'COMPDAT' keyword.
+        ValueError: If a collection does not contain the 'COMPLETION_DATA' keyword.
     """
     compdat_table = None
     for collection in collections:
-        if collection.name == Keywords.COMPDAT:
+        if collection.name == Keywords.COMPLETION_DATA:
             the_collection = np.asarray(collection)
             if compdat_table is None:
                 compdat_table = np.copy(the_collection)
             else:
                 compdat_table = np.row_stack((compdat_table, the_collection))
     if compdat_table is None:
-        raise ValueError("Collection does not contain the 'COMPDAT' keyword")
+        raise ValueError(f"Collection does not contain the '{Keywords.COMPLETION_DATA}' keyword")
     compdat_table = pd.DataFrame(
         compdat_table,
         columns=[
@@ -451,21 +452,21 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return data frame table of COMPSEGS.
+    """Return data frame table of COMPLETION_SEGMENTS.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        COMPSEGS table.
+        COMPLETION_SEGMENTS table.
 
     Raises:
-        ValueError: If collection does not contain the 'COMPSEGS' keyword.
+        ValueError: If collection does not contain the 'COMPLETION_SEGMENTS' keyword.
 
     """
     compsegs_table = None
     for collection in collections:
-        if collection.name == Keywords.COMPSEGS:
+        if collection.name == Keywords.COMPLETION_SEGMENTS:
             the_collection = np.asarray(collection[1:])
             # add additional well column
             well_column = np.full(the_collection.shape[0], collection.well)
@@ -476,7 +477,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
                 compsegs_table = np.row_stack((compsegs_table, the_collection))
 
     if compsegs_table is None:
-        raise ValueError("Collection does not contain the 'COMPSEGS' keyword")
+        raise ValueError(f"Collection does not contain the '{Keywords.COMPLETION_SEGMENTS}' keyword")
 
     compsegs_table = pd.DataFrame(
         compsegs_table,
@@ -501,13 +502,13 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
 
 
 def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
-    """Return a dataframe of WSEGVALV.
+    """Return a dataframe of WELL_SEGMENTS_VALVE.
 
     Args:
         collections: ContentCollection class.
 
     Returns:
-        WSEGVALV table.
+        WELL_SEGMENTS_VALVE table.
     """
     columns = [
         Headers.WELL,
@@ -522,7 +523,9 @@ def get_wsegvalv_table(collections: list[ContentCollection]) -> pd.DataFrame:
         Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
     ]
 
-    wsegvalv_collections = [np.asarray(collection) for collection in collections if collection.name == "WSEGVALV"]
+    wsegvalv_collections = [
+        np.asarray(collection) for collection in collections if collection.name == Keywords.WELL_SEGMENTS_VALVE
+    ]
     wsegvalv_table = np.vstack(wsegvalv_collections)
 
     if wsegvalv_table.size == 0:

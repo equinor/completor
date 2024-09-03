@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 
-from completor import completion  # type: ignore
-from completor.constants import Headers, Keywords, Method
+from completor import completion, read_schedule
+from completor.constants import Content, Headers, Keywords, Method
 from completor.exceptions import CompletorError
 
 
@@ -149,7 +150,7 @@ def test_connect_cells_segment_user():
         ],
     )
 
-    df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method="user")
+    df_test = completion.connect_cells_to_segments(df_segment, df_compsegs, df_tubing_segments, method=Method.USER)
     pd.testing.assert_frame_equal(df_test, df_merge)
 
 
@@ -226,7 +227,7 @@ def test_insert_missing_segments_two_gaps():
 
 
 def test_insert_missing_segments_raise_error():
-    """Test that an error is raised when there is no data in df_tubing_segments."""
+    """Test that an error is raised when there is no data in df_tubing."""
     df_tubing_segments = pd.DataFrame([], columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH])
 
     with pytest.raises(CompletorError):
@@ -270,23 +271,23 @@ def test_define_annulus_zone_keep_gravel_pack_1():
     """
     df_completion = pd.DataFrame(
         [
-            [1.0, 2.0, "OA"],
+            [1.0, 2.0, Content.OPEN_ANNULUS],
             [2.0, 3.0, "GP"],
-            [3.0, 4.0, "OA"],
+            [3.0, 4.0, Content.OPEN_ANNULUS],
             [4.0, 5.0, "GP"],
-            [5.0, 5.0, "PA"],
-            [5.0, 6.0, "OA"],
+            [5.0, 5.0, Content.PACKER],
+            [5.0, 6.0, Content.OPEN_ANNULUS],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
         [
-            [1.0, 2.0, "OA", 1],
+            [1.0, 2.0, Content.OPEN_ANNULUS, 1],
             [2.0, 3.0, "GP", 0],
-            [3.0, 4.0, "OA", 2],
+            [3.0, 4.0, Content.OPEN_ANNULUS, 2],
             [4.0, 5.0, "GP", 0],
-            [5.0, 6.0, "OA", 3],
+            [5.0, 6.0, Content.OPEN_ANNULUS, 3],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
@@ -303,24 +304,24 @@ def test_define_annulus_zone_keep_gravel_pack_2():
     """
     df_completion = pd.DataFrame(
         [
-            [1.0, 2.0, "OA"],
+            [1.0, 2.0, Content.OPEN_ANNULUS],
             [2.0, 3.0, "GP"],
-            [3.0, 4.0, "OA"],
-            [4.0, 4.0, "PA"],
-            [4.0, 5.0, "OA"],
-            [5.0, 5.0, "PA"],
-            [5.0, 6.0, "OA"],
+            [3.0, 4.0, Content.OPEN_ANNULUS],
+            [4.0, 4.0, Content.PACKER],
+            [4.0, 5.0, Content.OPEN_ANNULUS],
+            [5.0, 5.0, Content.PACKER],
+            [5.0, 6.0, Content.OPEN_ANNULUS],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
         [
-            [1.0, 2.0, "OA", 1],
+            [1.0, 2.0, Content.OPEN_ANNULUS, 1],
             [2.0, 3.0, "GP", 0],
-            [3.0, 4.0, "OA", 2],
-            [4.0, 5.0, "OA", 3],
-            [5.0, 6.0, "OA", 4],
+            [3.0, 4.0, Content.OPEN_ANNULUS, 2],
+            [4.0, 5.0, Content.OPEN_ANNULUS, 3],
+            [5.0, 6.0, Content.OPEN_ANNULUS, 4],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
@@ -337,24 +338,24 @@ def test_define_annulus_zone_packer_segments():
     """
     df_completion = pd.DataFrame(
         [
-            [1.0, 2.0, "OA"],
-            [2.0, 3.0, "OA"],
-            [3.0, 4.0, "OA"],
-            [4.0, 4.0, "PA"],
-            [4.0, 5.0, "OA"],
-            [5.0, 5.0, "PA"],
-            [5.0, 6.0, "OA"],
+            [1.0, 2.0, Content.OPEN_ANNULUS],
+            [2.0, 3.0, Content.OPEN_ANNULUS],
+            [3.0, 4.0, Content.OPEN_ANNULUS],
+            [4.0, 4.0, Content.PACKER],
+            [4.0, 5.0, Content.OPEN_ANNULUS],
+            [5.0, 5.0, Content.PACKER],
+            [5.0, 6.0, Content.OPEN_ANNULUS],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
         [
-            [1.0, 2.0, "OA", 1],
-            [2.0, 3.0, "OA", 1],
-            [3.0, 4.0, "OA", 1],
-            [4.0, 5.0, "OA", 2],
-            [5.0, 6.0, "OA", 3],
+            [1.0, 2.0, Content.OPEN_ANNULUS, 1],
+            [2.0, 3.0, Content.OPEN_ANNULUS, 1],
+            [3.0, 4.0, Content.OPEN_ANNULUS, 1],
+            [4.0, 5.0, Content.OPEN_ANNULUS, 2],
+            [5.0, 6.0, Content.OPEN_ANNULUS, 3],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
@@ -368,22 +369,22 @@ def test_define_annulus_zone_continuous_annulus_1():
     """Test define_annulus_zone gives one continuous open annulus segment when all segment are open annulus."""
     df_completion = pd.DataFrame(
         [
-            [1.0, 2.0, "OA"],
-            [2.0, 3.0, "OA"],
-            [3.0, 4.0, "OA"],
-            [4.0, 5.0, "OA"],
-            [5.0, 6.0, "OA"],
+            [1.0, 2.0, Content.OPEN_ANNULUS],
+            [2.0, 3.0, Content.OPEN_ANNULUS],
+            [3.0, 4.0, Content.OPEN_ANNULUS],
+            [4.0, 5.0, Content.OPEN_ANNULUS],
+            [5.0, 6.0, Content.OPEN_ANNULUS],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
     )
     df_completion_before = df_completion.copy(deep=True)
     df_true = pd.DataFrame(
         [
-            [1.0, 2.0, "OA", 1],
-            [2.0, 3.0, "OA", 1],
-            [3.0, 4.0, "OA", 1],
-            [4.0, 5.0, "OA", 1],
-            [5.0, 6.0, "OA", 1],
+            [1.0, 2.0, Content.OPEN_ANNULUS, 1],
+            [2.0, 3.0, Content.OPEN_ANNULUS, 1],
+            [3.0, 4.0, Content.OPEN_ANNULUS, 1],
+            [4.0, 5.0, Content.OPEN_ANNULUS, 1],
+            [5.0, 6.0, Content.OPEN_ANNULUS, 1],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
     )
@@ -401,8 +402,8 @@ def test_define_annulus_zone_continuous_annulus_2():
         [
             [1.0, 2.0, "GP"],
             [2.0, 3.0, "GP"],
-            [3.0, 4.0, "OA"],
-            [4.0, 5.0, "OA"],
+            [3.0, 4.0, Content.OPEN_ANNULUS],
+            [4.0, 5.0, Content.OPEN_ANNULUS],
             [5.0, 6.0, "GP"],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS],
@@ -412,8 +413,8 @@ def test_define_annulus_zone_continuous_annulus_2():
         [
             [1.0, 2.0, "GP", 0],
             [2.0, 3.0, "GP", 0],
-            [3.0, 4.0, "OA", 1],
-            [4.0, 5.0, "OA", 1],
+            [3.0, 4.0, Content.OPEN_ANNULUS, 1],
+            [4.0, 5.0, Content.OPEN_ANNULUS, 1],
             [5.0, 6.0, "GP", 0],
         ],
         columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH, Headers.ANNULUS, Headers.ANNULUS_ZONE],
@@ -835,10 +836,10 @@ def test_complete_the_well():
     """Test the complete_the_well function."""
     df_completion = pd.DataFrame(
         [
-            [0, 20, 1, 1.2, 2.1, 1.1, "AICD", 1, 1],
-            [20, 30, 2, 1, 5, 2.0, "ICD", 2, 0],
-            [30, 40, 3, 2, 3, 3.0, "VALVE", 3, 2],
-            [40, 50, 3.5, 3, 4, 4.0, "DAR", 4, 3],
+            [0, 20, 1, 1.2, 2.1, 1.1, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, 1, 1],
+            [20, 30, 2, 1, 5, 2.0, Content.INFLOW_CONTROL_DEVICE, 2, 0],
+            [30, 40, 3, 2, 3, 3.0, Content.VALVE, 3, 2],
+            [40, 50, 3.5, 3, 4, 4.0, Content.DENSITY_ACTIVATED_RECOVERY, 4, 3],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -869,8 +870,21 @@ def test_complete_the_well():
     )
     df_true = pd.DataFrame(
         [
-            [13, 19.5, 26, "OriginalSegment", 3.2, 1, "AICD", 1.2, 1.723368794, 1.1, 1, -0.3125],
-            [42.5, 46.25, 15, "OriginalSegment", 5, 4, "DAR", 3, 2.645751311, 4, 3, -0.2],
+            [
+                13,
+                19.5,
+                26,
+                "OriginalSegment",
+                3.2,
+                1,
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1.2,
+                1.723368794,
+                1.1,
+                1,
+                -0.3125,
+            ],
+            [42.5, 46.25, 15, "OriginalSegment", 5, 4, Content.DENSITY_ACTIVATED_RECOVERY, 3, 2.645751311, 4, 3, -0.2],
         ],
         columns=[
             Headers.TUBING_MEASURED_DEPTH,
@@ -891,40 +905,6 @@ def test_complete_the_well():
     joint_length = 10.0
     df_test = completion.complete_the_well(df_tubing, df_completion, joint_length)
     pd.testing.assert_frame_equal(df_test, df_true)
-
-
-def test_fix_compsegs():
-    """Test that fix_compsegs correctly assigns start and end measured depths.
-
-    In cases where there are overlapping segments in compsegs, also test zero length segments.
-    """
-    data_frame_in = pd.DataFrame(
-        [
-            [3000.82607, 3026.67405],
-            [2984.458, 3006.55],
-            [3006.55, 3013.000],
-            [3013.147, 3013.147],
-            [3014.000, 3019.764],
-            [3019.764, 3039.297],
-            [3039.297, 3041.915],
-        ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
-    )
-
-    data_frame_true = pd.DataFrame(
-        [
-            [2984.458, 3000.82607],
-            [3000.82607, 3013],
-            [3013, 3013.147],
-            [3013.147, 3014],
-            [3014, 3026.67405],
-            [3026.67405, 3039.297],
-            [3039.297, 3041.915],
-        ],
-        columns=[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH],
-    )
-    result = completion.fix_compsegs(data_frame_in, "")
-    pd.testing.assert_frame_equal(data_frame_true, result)
 
 
 def test_lumping_segment_1():
@@ -976,7 +956,7 @@ def test_lumping_segment_2():
 
 
 def test_skin():
-    """Test handle_compdat with a mix of values in COMPDAT, SKIN column."""
+    """Test handle_compdat with a mix of values in COMPLETION_DATA, SKIN column."""
     compdat = [
         #                                                       SKIN
         ["A1", "3", "6", "1", "1", Headers.OPEN, "1*", "1", "2", "2", "0.0", "1*", "X", "1"],
@@ -1012,22 +992,24 @@ def test_skin():
             Headers.RO,
         ],
     )
-    well_schedule = completion.WellSchedule(["A1"])
-    well_schedule.handle_compdat(compdat)
-    df_out = well_schedule.msws["A1"][Keywords.COMPDAT]
+    active_wells = np.array(["A1"])
+    schedule_data = read_schedule.handle_compdat({}, active_wells, compdat)
+    df_out = schedule_data["A1"][Keywords.COMPLETION_DATA]
     pd.testing.assert_frame_equal(df_out, df_true)
 
 
 def test_set_welsegs_negative_length_segments(caplog):
     """Test that negative segments inside a branch give a warning."""
-    schedule = completion.WellSchedule(["A1"])
-    well_segments = [
-        ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],
-        [2, 2, 1, 1, 2202.75139, 2005.28911, 0.15200, 0.0000100],
-        [3, 3, 1, 2, 2200.73413, 2007.00000, 0.15200, 0.0000100],
-        [4, 4, 1, 3, 2219.76749, 2008.87380, 0.15200, 0.0000100],
-    ]
-
-    schedule.set_welsegs(well_segments)
+    active_wells = np.array(["A1"])
+    read_schedule.set_welsegs(
+        {},
+        active_wells,
+        [
+            ["A1", 2000.86739, 2186.68410, "1*", "ABS", "HF-", "NaN", "NaN"],
+            [2, 2, 1, 1, 2202.75139, 2005.28911, 0.15200, 0.0000100],
+            [3, 3, 1, 2, 2200.73413, 2007.00000, 0.15200, 0.0000100],
+            [4, 4, 1, 3, 2219.76749, 2008.87380, 0.15200, 0.0000100],
+        ],
+    )
     assert len(caplog.text) > 0
     assert "WARNING" in caplog.text
