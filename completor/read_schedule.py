@@ -433,9 +433,9 @@ def get_completion_data(schedule_data: dict[str, Any]) -> pd.DataFrame:
     Raises:
         ValueError: If completion data keyword is missing in input schedule file.
     """
-    data = schedule_data.get(Keywords.COMPDAT)
+    data = schedule_data.get(Keywords.COMPLETION_DATA)
     if data is None:
-        raise KeyError("Input schedule file missing COMPDAT keyword.")
+        raise KeyError(f"Input schedule file missing {Keywords.COMPLETION_DATA} keyword.")
     return data
 
 
@@ -472,9 +472,9 @@ def get_well_segments(
     Raises:
         ValueError: If WELL_SEGMENTS keyword missing in input schedule file.
     """
-    data = well_data.get(Keywords.WELSEGS)
+    data = well_data.get(Keywords.WELL_SEGMENTS)
     if data is None:
-        raise ValueError("Input schedule file missing WELSEGS keyword.")
+        raise ValueError(f"Input schedule file missing {Keywords.WELL_SEGMENTS} keyword.")
     columns, content = data
 
     if branch is not None:
