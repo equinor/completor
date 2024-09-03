@@ -500,18 +500,14 @@ def _branch_revision(
         Corrected device.
     """
     correction = max(active_laterals) - lateral_number
-    try:
+    if df_device.get(Headers.BRANCH) is not None:
         df_device[Headers.BRANCH] += correction
-    except KeyError:
-        pass
-    try:
+    if df_annulus.get(Headers.BRANCH) is not None:
         df_annulus[Headers.BRANCH] += correction
-    except KeyError:
-        pass
     return df_device, df_annulus
 
 
-def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, weller_man: Well) -> pd.DataFrame:
+def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, well: Well) -> pd.DataFrame:
     """Connect lateral to main wellbore/branch.
 
     The main branch can either have a tubing- or device-layer connected.
@@ -523,8 +519,7 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, weller
         well_name: Well name.
         lateral: Current lateral to connect.
         top: DataFrame of first connection.
-        case: ReadCasefile object.
-        weller_man: Well object containing data from whole well.
+        well: Well object containing data from whole well.
 
     Returns:
         Tubing data with modified outsegment.
@@ -537,10 +532,8 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, weller
         return lateral.df_tubing
 
     first_lateral_in_top = top[Headers.TUBING_BRANCH].to_numpy()[0]
-    top_lateral = [lateral for lateral in weller_man.active_laterals if lateral.lateral_number == first_lateral_in_top][
-        0
-    ]
-    junction_measured_depth = top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0]
+    top_lateral = [lateral for lateral in well.active_laterals if lateral.lateral_number == first_lateral_in_top][0]
+    junction_measured_depth = float(top[Headers.TUBING_MEASURED_DEPTH].to_numpy()[0])
     if junction_measured_depth > lateral.df_tubing[Headers.MEASURED_DEPTH][0]:
         logger.warning(
             "Found a junction above the start of the tubing layer, well %s, branch %s. "
@@ -548,17 +541,17 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, weller
             well_name,
             lateral.lateral_number,
         )
-    if weller_man.case.connect_to_tubing(well_name, lateral.lateral_number):
+    if well.case.connect_to_tubing(well_name, lateral.lateral_number):
         layer_to_connect = top_lateral.df_tubing
         measured_depths = top_lateral.df_tubing[Headers.MEASURED_DEPTH]
     else:
         layer_to_connect = top_lateral.df_device
         measured_depths = top_lateral.df_device[Headers.MEASURED_DEPTH]
     try:
-        if weller_man.case.connect_to_tubing(well_name, lateral.lateral_number):
+        if well.case.connect_to_tubing(well_name, lateral.lateral_number):
             # Since the junction_measured_depth has segment tops and layer_to_connect has grid block midpoints,
             # a junction at the top of the well may not be found. Therefore, we try the following:
-            if (~(measured_depths <= junction_measured_depth)).all():
+            if (np.array(~(measured_depths <= junction_measured_depth))).all():
                 junction_measured_depth = measured_depths.iloc[0]
                 idx = np.where(measured_depths <= junction_measured_depth)[0][-1]
 

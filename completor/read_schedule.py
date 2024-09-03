@@ -413,12 +413,11 @@ def handle_compdat(
     return schedule_data
 
 
-def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.DataFrame:
+def get_completion_data(schedule_data: dict[str, Any]) -> pd.DataFrame:
     """Get-function for COMPDAT.
 
     Args:
         schedule_data: Segment information.
-        well_name: Well name.
 
     Returns:
         Completion data.
@@ -426,12 +425,10 @@ def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.Dat
     Raises:
         ValueError: If completion data keyword is missing in input schedule file.
     """
-    try:
-        return schedule_data[Keywords.COMPDAT]
-    except KeyError as err:
-        if f"'{Keywords.COMPDAT}'" in str(err):
-            raise ValueError("Input schedule file missing COMPDAT keyword.") from err
-        raise err
+    data = schedule_data.get(Keywords.COMPDAT)
+    if data is None:
+        raise KeyError("Input schedule file missing COMPDAT keyword.")
+    return data
 
 
 def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branch: int | None = None) -> pd.DataFrame:
@@ -459,7 +456,6 @@ def get_well_segments(
 
     Args:
         well_data: The multisegmented wells.
-        well_name: Well name.
         branch: Branch number.
 
     Returns:
@@ -468,13 +464,12 @@ def get_well_segments(
     Raises:
         ValueError: If WELSEGS keyword missing in input schedule file.
     """
-    try:
-        columns, content = well_data[Keywords.WELSEGS]
-    except KeyError as err:
-        if f"'{Keywords.WELSEGS}'" in str(err):
-            raise ValueError("Input schedule file missing WELSEGS keyword.") from err
-        raise err
+    data = well_data.get(Keywords.WELSEGS)
+    if data is None:
+        raise ValueError("Input schedule file missing WELSEGS keyword.")
+    columns, content = data
+
     if branch is not None:
         content = content[content[Headers.TUBING_BRANCH] == branch]
-    content.reset_index(drop=True, inplace=True)
+    content = content.reset_index(drop=True)
     return columns, content
