@@ -200,17 +200,16 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
 
 
 def prepare_tubing_layer(
-    well_name: str, lateral: Lateral, start_segment: int, branch_no: int, completion_table: pd.DataFrame, well: Well
+    well: Well, lateral: Lateral, start_segment: int, branch_no: int, completion_table: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Prepare tubing layer data frame.
 
     Args:
-        well_name: Well name.
-        lateral: Lateral number.
+        well: Well object.
+        lateral: Lateral object.
         start_segment: Start number of the first tubing segment.
         branch_no: Branch number for this tubing layer.
         completion_table: DataFrame with completion data.
-        well: Well object.
 
     Returns:
         DataFrame for tubing layer.
@@ -239,7 +238,7 @@ def prepare_tubing_layer(
         df_tubing_with_overburden = df_tubing_in_reservoir
     else:
         overburden = overburden.rename(index=str, columns=alias_rename)
-        overburden_fixed = fix_tubing_inner_diam_roughness(well_name, overburden, completion_table)
+        overburden_fixed = fix_tubing_inner_diam_roughness(well.well_name, overburden, completion_table)
         df_tubing_with_overburden = pd.concat([overburden_fixed[cols], df_tubing_in_reservoir])
 
     df_tubing_with_overburden[Headers.START_SEGMENT_NUMBER] = start_segment + np.arange(
