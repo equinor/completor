@@ -652,7 +652,6 @@ class ReadCasefile:
         if keyword is None:
             keyword = self.content[start_index]
         table_header = " ".join(header)
-        table_content = ""
         # Handle weirdly formed keywords.
         if start_index + 1 == end_index or self.content[start_index + 1].endswith("/"):
             content_str = "\n".join(self.content[start_index + 1 :]) + "\n"

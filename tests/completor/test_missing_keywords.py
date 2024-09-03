@@ -153,10 +153,9 @@ def test_missing_compdat(tmpdir):
     """Test output to screen from Completor missing COMPDAT."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    expected_error_message = "Input schedule file missing COMPDAT keyword."
     set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "welsegs", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=expected_error_message):
+    with pytest.raises(KeyError, match="Input schedule file missing COMPDAT keyword."):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 

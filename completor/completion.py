@@ -160,7 +160,7 @@ def create_tubing_segments(
         cells: Create one segment per cell.
         user: Create segment based on the completion definition.
         fix: Create segment based on a fixed interval.
-        schedule_data: Create segment based on well segments keyword.
+        well_data: Create segment based on well segments keyword.
 
     Returns:
         DataFrame with start and end measured depth, tubing measured depth, and tubing true vertical depth.

@@ -278,7 +278,7 @@ def set_welsegs(
     df_records = pd.DataFrame(recs, columns=columns_data)
     # data types
     df_records[columns_data[:4]] = df_records[columns_data[:4]].astype(np.int64)
-    df_records[columns_data[4:7]] = df_records[columns_data[4:7]].astype(np.float64)
+    df_records[columns_data[4:8]] = df_records[columns_data[4:8]].astype(np.float64)
     # fix abs/inc issue with welsegs
     df_header, df_records = fix_welsegs(df_header, df_records)
 
@@ -413,12 +413,11 @@ def handle_compdat(
     return schedule_data
 
 
-def get_completion_data(schedule_data: dict[str, dict[str, Any]], well_name: str) -> pd.DataFrame:
+def get_completion_data(schedule_data: dict[str, Any]) -> pd.DataFrame:
     """Get-function for COMPDAT.
 
     Args:
         schedule_data: Segment information.
-        well_name: Well name.
 
     Returns:
         Completion data.
@@ -426,17 +425,13 @@ def get_completion_data(schedule_data: dict[str, dict[str, Any]], well_name: str
     Raises:
         ValueError: If completion data keyword is missing in input schedule file.
     """
-    try:
-        return schedule_data[well_name][Keywords.COMPDAT]
-    except KeyError as err:
-        if f"'{Keywords.COMPDAT}'" in str(err):
-            raise ValueError("Input schedule file missing COMPDAT keyword.") from err
-        raise err
+    data = schedule_data.get(Keywords.COMPDAT)
+    if data is None:
+        raise KeyError("Input schedule file missing COMPDAT keyword.")
+    return data
 
 
-def get_completion_segments(
-    schedule_data: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
-) -> pd.DataFrame:
+def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branch: int | None = None) -> pd.DataFrame:
     """Get-function for COMPSEGS.
 
     Args:
@@ -447,7 +442,7 @@ def get_completion_segments(
     Returns:
         Completion segment data.
     """
-    df = schedule_data[well_name][Keywords.COMPSEGS].copy()
+    df = schedule_data[Keywords.COMPSEGS].copy()
     if branch is not None:
         df = df[df[Headers.BRANCH] == branch]
     df.reset_index(drop=True, inplace=True)  # reset index after filtering
@@ -455,13 +450,12 @@ def get_completion_segments(
 
 
 def get_well_segments(
-    schedule_data: dict[str, dict[str, Any]], well_name: str, branch: int | None = None
+    well_data: dict[str, pd.DataFrame], branch: int | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get-function for well segments.
 
     Args:
-        schedule_data: The multisegmented wells.
-        well_name: Well name.
+        well_data: The multisegmented wells.
         branch: Branch number.
 
     Returns:
@@ -470,26 +464,12 @@ def get_well_segments(
     Raises:
         ValueError: If WELSEGS keyword missing in input schedule file.
     """
-    try:
-        columns, content = schedule_data[well_name][Keywords.WELSEGS]
-    except KeyError as err:
-        if f"'{Keywords.WELSEGS}'" in str(err):
-            raise ValueError("Input schedule file missing WELSEGS keyword.") from err
-        raise err
+    data = well_data.get(Keywords.WELSEGS)
+    if data is None:
+        raise ValueError("Input schedule file missing WELSEGS keyword.")
+    columns, content = data
+
     if branch is not None:
         content = content[content[Headers.TUBING_BRANCH] == branch]
-    content.reset_index(drop=True, inplace=True)
+    content = content.reset_index(drop=True)
     return columns, content
-
-
-def get_well_number(well_name: str, active_wells: npt.NDArray[np.str_]) -> int:
-    """Well number in the active_wells list.
-
-    Args:
-        well_name: Well name.
-        active_wells: The active wells.
-
-    Returns:
-        Well number.
-    """
-    return int(np.where(active_wells == well_name)[0][0])
