@@ -409,7 +409,7 @@ def prepare_annulus_layer(
     # loop through all annular zones
     # initiate annulus and wseglink dataframe
     df_annulus = pd.DataFrame()
-    df_wseglink = pd.DataFrame()
+    df_well_segments_link = pd.DataFrame()
     for izone, zone in enumerate(df_well[Headers.ANNULUS_ZONE].unique()):
         # filter only that annular zone
         df_branch = df_well[df_well[Headers.ANNULUS_ZONE] == zone]
@@ -431,7 +431,7 @@ def prepare_annulus_layer(
         )
         if idx_connection[0] == 0:
             # If the first connection then everything is easy
-            df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
+            df_annulus_upstream, df_well_segments_link_upstream = calculate_upstream(
                 df_branch, df_active, df_device, start_branch, annulus_length, start_segment, well_name
             )
         else:
@@ -473,7 +473,7 @@ def prepare_annulus_layer(
             start_segment = max(df_annulus_downstream[Headers.START_SEGMENT_NUMBER]) + 1
             start_branch = max(df_annulus_downstream[Headers.BRANCH]) + 1
             # create dataframe for upstream part
-            df_annulus_upstream, df_wseglink_upstream = calculate_upstream(
+            df_annulus_upstream, df_well_segments_link_upstream = calculate_upstream(
                 df_branch_upstream, df_active, df_device, start_branch, annulus_length, start_segment, well_name
             )
             # combine the two dataframe upstream and downstream
@@ -482,20 +482,20 @@ def prepare_annulus_layer(
         # combine annulus and wseglink dataframe
         if izone == 0:
             df_annulus = df_annulus_upstream.copy(deep=True)
-            df_wseglink = df_wseglink_upstream.copy(deep=True)
+            df_well_segments_link = df_well_segments_link_upstream.copy(deep=True)
         else:
             df_annulus = pd.concat([df_annulus, df_annulus_upstream])
-            df_wseglink = pd.concat([df_wseglink, df_wseglink_upstream])
+            df_well_segments_link = pd.concat([df_well_segments_link, df_well_segments_link_upstream])
 
-    if df_wseglink.shape[0] > 0:
-        df_wseglink = df_wseglink[[Headers.WELL, Headers.ANNULUS, Headers.DEVICE]]
-        df_wseglink[Headers.ANNULUS] = df_wseglink[Headers.ANNULUS].astype(np.int64)
-        df_wseglink[Headers.DEVICE] = df_wseglink[Headers.DEVICE].astype(np.int64)
-        df_wseglink[Headers.EMPTY] = "/"
+    if df_well_segments_link.shape[0] > 0:
+        df_well_segments_link = df_well_segments_link[[Headers.WELL, Headers.ANNULUS, Headers.DEVICE]]
+        df_well_segments_link[Headers.ANNULUS] = df_well_segments_link[Headers.ANNULUS].astype(np.int64)
+        df_well_segments_link[Headers.DEVICE] = df_well_segments_link[Headers.DEVICE].astype(np.int64)
+        df_well_segments_link[Headers.EMPTY] = "/"
 
     if df_annulus.shape[0] > 0:
         df_annulus[Headers.EMPTY] = "/"
-    return df_annulus, df_wseglink
+    return df_annulus, df_well_segments_link
 
 
 def calculate_upstream(
@@ -560,7 +560,7 @@ def calculate_upstream(
         df_annulus_upstream[Headers.MEASURED_DEPTH].to_numpy(),
         df_annulus_upstream[Headers.OUT].to_numpy(),
     )
-    df_wseglink_upstream = pd.DataFrame(
+    df_well_segments_link_upstream = pd.DataFrame(
         {
             Headers.WELL: [well_name] * device_segment.shape[0],
             Headers.ANNULUS: annulus_segment,
@@ -569,10 +569,10 @@ def calculate_upstream(
         }
     )
     # WELL_SEGMENTS_LINK is only for those segments whose outlet segment is not a device segment.
-    df_wseglink_upstream = df_wseglink_upstream[
-        df_wseglink_upstream[Headers.DEVICE] != df_wseglink_upstream[Headers.OUT]
+    df_well_segments_link_upstream = df_well_segments_link_upstream[
+        df_well_segments_link_upstream[Headers.DEVICE] != df_well_segments_link_upstream[Headers.OUT]
     ]
-    return df_annulus_upstream, df_wseglink_upstream
+    return df_annulus_upstream, df_well_segments_link_upstream
 
 
 def connect_compseg_icv(

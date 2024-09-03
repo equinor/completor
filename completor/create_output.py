@@ -77,7 +77,9 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
                 well.well_name,
                 lateral.lateral_number,
             )
-        df_annulus, df_wseglink = prepare_outputs.prepare_annulus_layer(well.well_name, lateral.df_well, df_device)
+        df_annulus, df_well_segments_link = prepare_outputs.prepare_annulus_layer(
+            well.well_name, lateral.df_well, df_device
+        )
         if df_annulus.empty:
             logger.info("No annular flow in Well : %s Lateral : %d", well.well_name, lateral.lateral_number)
 
@@ -131,7 +133,9 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
         print_well_segments += _format_well_segments(
             well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
         )
-        print_well_segments_link += _format_well_segments_link(well.well_name, lateral.lateral_number, df_wseglink)
+        print_well_segments_link += _format_well_segments_link(
+            well.well_name, lateral.lateral_number, df_well_segments_link
+        )
         print_completion_segments += _format_completion_segments(
             well.well_name, lateral.lateral_number, df_completion_segments
         )
@@ -300,24 +304,24 @@ def _format_well_segments(
     return print_welsegs
 
 
-def _format_well_segments_link(well_name: str, lateral_number: int, df_wseglink: pd.DataFrame) -> str:
+def _format_well_segments_link(well_name: str, lateral_number: int, df_well_segments_link: pd.DataFrame) -> str:
     """Formats well-segments for links.
 
     Args:
         well_name: Name of well.
         lateral_number: Current lateral number.
-        df_wseglink: Well-segmentation data with links.
+        df_well_segments_link: Well-segmentation data with links.
 
     Returns:
         Formatted string.
     """
-    if df_wseglink.empty:
+    if df_well_segments_link.empty:
         return ""
-    nchar = prepare_outputs.get_number_of_characters(df_wseglink)
+    nchar = prepare_outputs.get_number_of_characters(df_well_segments_link)
     return (
         f"{Keywords.WELL_SEGMENTS_LINK}\n"
         + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_LINK, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_wseglink, True)
+        + prepare_outputs.dataframe_tostring(df_well_segments_link, True)
         + "\n/\n\n\n"
     )
 
