@@ -421,12 +421,11 @@ def handle_compdat(
     return schedule_data
 
 
-def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.DataFrame:
+def get_completion_data(schedule_data: dict[str, Any]) -> pd.DataFrame:
     """Get-function for COMPLETION_DATA.
 
     Args:
         schedule_data: Segment information.
-        well_name: Well name.
 
     Returns:
         Completion data.
@@ -434,12 +433,10 @@ def get_completion_data(schedule_data: dict[str, Any], well_name: str) -> pd.Dat
     Raises:
         ValueError: If completion data keyword is missing in input schedule file.
     """
-    try:
-        return schedule_data[Keywords.COMPLETION_DATA]
-    except KeyError as err:
-        if f"'{Keywords.COMPLETION_DATA}'" in str(err):
-            raise ValueError(f"Input schedule file missing {Keywords.COMPLETION_DATA} keyword.") from err
-        raise err
+    data = schedule_data.get(Keywords.COMPDAT)
+    if data is None:
+        raise KeyError("Input schedule file missing COMPDAT keyword.")
+    return data
 
 
 def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branch: int | None = None) -> pd.DataFrame:
@@ -467,7 +464,6 @@ def get_well_segments(
 
     Args:
         well_data: The multisegmented wells.
-        well_name: Well name.
         branch: Branch number.
 
     Returns:
@@ -476,13 +472,12 @@ def get_well_segments(
     Raises:
         ValueError: If WELL_SEGMENTS keyword missing in input schedule file.
     """
-    try:
-        columns, content = well_data[Keywords.WELL_SEGMENTS]
-    except KeyError as err:
-        if f"'{Keywords.WELL_SEGMENTS}'" in str(err):
-            raise ValueError(f"Input schedule file missing {Keywords.WELL_SEGMENTS} keyword.") from err
-        raise err
+    data = well_data.get(Keywords.WELSEGS)
+    if data is None:
+        raise ValueError("Input schedule file missing WELSEGS keyword.")
+    columns, content = data
+
     if branch is not None:
         content = content[content[Headers.TUBING_BRANCH] == branch]
-    content.reset_index(drop=True, inplace=True)
+    content = content.reset_index(drop=True)
     return columns, content

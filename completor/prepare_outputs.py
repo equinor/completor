@@ -318,8 +318,6 @@ def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_
     """Prepare device layer dataframe.
 
     Args:
-        well_name: Well name.
-        lateral: Lateral number.
         df_well: Must contain LATERAL, TUBING_MEASURED_DEPTH, TRUE_VERTICAL_DEPTH,
             INNER_DIAMETER, ROUGHNESS, DEVICE_TYPE and NDEVICES.
         df_tubing: Data frame from function prepare_tubing_layer for this well and this lateral.
@@ -390,7 +388,6 @@ def prepare_annulus_layer(
 
     Args:
         well_name: Well name.
-        lateral: Lateral number.
         df_well: Must contain LATERAL, ANNULUS_ZONE, TUBING_MEASURED_DEPTH, TRUE_VERTICAL_DEPTH, OUTER_DIAMETER,
             ROUGHNESS, DEVICETYPE and NDEVICES.
         df_device: DataFrame from function prepare_device_layer for this well and this lateral.
@@ -949,7 +946,6 @@ def prepare_autonomous_inflow_control_device(
 
     Args:
         well_name: Well name.
-        lateral: Lateral number.
         df_well: Well data.
         df_device: From function prepare_device_layer for this well and this lateral.
 
@@ -995,7 +991,6 @@ def prepare_inflow_control_device(well_name: str, df_well: pd.DataFrame, df_devi
 
     Args:
         well_name: Well name.
-        lateral: Lateral number.
         df_well: Well data.
         df_device: Device data for this well and lateral.
 
@@ -1174,7 +1169,6 @@ def prepare_density_activated_recovery(well_name: str, df_well: pd.DataFrame, df
 
     Args:
         well_name: Well name.
-        lateral: Lateral number.
         df_well: Well data.
         df_device: Device data for this well and lateral.
 
@@ -1222,7 +1216,6 @@ def prepare_autonomous_inflow_control_valve(
 
     Args:
         well_name: Well name.
-        lateral: Lateral number.
         df_well: Well data.
         df_device: Device data for this well and lateral.
 
