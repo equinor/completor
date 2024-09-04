@@ -60,7 +60,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
 
         if not header_written:
             print_well_segments += (
-                f"{Keywords.WELL_SEGMENTS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}\n"
+                f"{Keywords.WELL_SEGMENTS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}"
             )
             header_written = True
 
@@ -163,8 +163,39 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
                     visualize_well(well.well_name, df_well, df_reservoir, well.case.segment_length),
                     orientation="landscape",
                 )
-            logger.info("creating schematics: %s.pdf", figure_name)
-    print_well_segments += "/\n\n\n"
+            logger.info("Creating schematics: %s.pdf", figure_name)
+
+    if print_completion_data:
+        print_completion_data = f"{Keywords.COMPLETION_DATA}{print_completion_data}\n/\n\n\n"
+
+    if print_well_segments:
+        print_well_segments = f"{print_well_segments}\n/\n\n"
+
+    if print_well_segments_link:
+        print_well_segments_link = f"{Keywords.WELL_SEGMENTS_LINK}{print_well_segments_link}\n/\n\n\n"
+
+    if print_completion_segments:
+        print_completion_segments = (
+            f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{print_completion_segments}\n/\n\n\n"
+        )
+
+    if print_valve:
+        print_valve = f"{Keywords.WELL_SEGMENTS_VALVE}{print_valve}\n/\n\n\n"
+    if print_inflow_control_device:
+        print_inflow_control_device = f"{Keywords.INFLOW_CONTROL_DEVICE}{print_inflow_control_device}\n/\n\n\n"
+    if print_autonomous_inflow_control_device:
+        print_autonomous_inflow_control_device = (
+            f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}{print_autonomous_inflow_control_device}\n/\n\n\n"
+        )
+    if print_inflow_control_valve:
+        print_inflow_control_valve = f"{Keywords.WELL_SEGMENTS_VALVE}{print_inflow_control_valve}\n/\n\n\n"
+    if print_density_activated_recovery:
+        print_density_activated_recovery = _format_density_activated_recovery2(print_density_activated_recovery)
+
+    if print_autonomous_inflow_control_valve:
+        print_autonomous_inflow_control_valve = _format_autonomous_inflow_control_valve2(
+            print_autonomous_inflow_control_valve
+        )
 
     output += print_completion_data
     output += print_well_segments
@@ -259,12 +290,9 @@ def _format_completion_data(well_name: str, lateral_number: int, df_compdat: pd.
     if df_compdat.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compdat)
-    return (
-        f"{Keywords.COMPLETION_DATA}\n"
-        + prepare_outputs.get_header(well_name, Keywords.COMPLETION_DATA, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_compdat, True)
-        + "\n/\n\n\n"
-    )
+    return prepare_outputs.get_header(
+        well_name, Keywords.COMPLETION_DATA, lateral_number, "", nchar
+    ) + prepare_outputs.dataframe_tostring(df_compdat, True)
 
 
 def _format_well_segments(
@@ -285,22 +313,16 @@ def _format_well_segments(
     print_welsegs = ""
     nchar = prepare_outputs.get_number_of_characters(df_tubing)
     if not df_device.empty:
-        print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Tubing", nchar)
-            + prepare_outputs.dataframe_tostring(df_tubing, True)
-            + "\n"
-        )
-        print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Device", nchar)
-            + prepare_outputs.dataframe_tostring(df_device, True)
-            + "\n"
-        )
+        print_welsegs += prepare_outputs.get_header(
+            well_name, Keywords.WELL_SEGMENTS, lateral_number, "Tubing", nchar
+        ) + prepare_outputs.dataframe_tostring(df_tubing, True)
+        print_welsegs += prepare_outputs.get_header(
+            well_name, Keywords.WELL_SEGMENTS, lateral_number, "Device", nchar
+        ) + prepare_outputs.dataframe_tostring(df_device, True)
     if not df_annulus.empty:
-        print_welsegs += (
-            prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Annulus", nchar)
-            + prepare_outputs.dataframe_tostring(df_annulus, True)
-            + "\n"
-        )
+        print_welsegs += prepare_outputs.get_header(
+            well_name, Keywords.WELL_SEGMENTS, lateral_number, "Annulus", nchar
+        ) + prepare_outputs.dataframe_tostring(df_annulus, True)
     return print_welsegs
 
 
@@ -318,12 +340,9 @@ def _format_well_segments_link(well_name: str, lateral_number: int, df_well_segm
     if df_well_segments_link.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_well_segments_link)
-    return (
-        f"{Keywords.WELL_SEGMENTS_LINK}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_LINK, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_well_segments_link, True)
-        + "\n/\n\n\n"
-    )
+    return prepare_outputs.get_header(
+        well_name, Keywords.WELL_SEGMENTS_LINK, lateral_number, "", nchar
+    ) + prepare_outputs.dataframe_tostring(df_well_segments_link, True)
 
 
 def _format_completion_segments(well_name: str, lateral_number: int, df_compsegs: pd.DataFrame) -> str:
@@ -340,12 +359,9 @@ def _format_completion_segments(well_name: str, lateral_number: int, df_compsegs
     if df_compsegs.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compsegs)
-    return (
-        f"{Keywords.COMPLETION_SEGMENTS}\n'{well_name}' /\n"
-        + prepare_outputs.get_header(well_name, Keywords.COMPLETION_SEGMENTS, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_compsegs, True)
-        + "\n/\n\n\n"
-    )
+    return prepare_outputs.get_header(
+        well_name, Keywords.COMPLETION_SEGMENTS, lateral_number, "", nchar
+    ) + prepare_outputs.dataframe_tostring(df_compsegs, True)
 
 
 def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int, df_wsegaicd: pd.DataFrame) -> str:
@@ -361,13 +377,7 @@ def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int
     """
     if df_wsegaicd.empty:
         return ""
-    nchar = prepare_outputs.get_number_of_characters(df_wsegaicd)
-    return (
-        f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}\n"
-        + prepare_outputs.get_header(well_name, Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_wsegaicd, True)
-        + "\n/\n\n\n"
-    )
+    return prepare_outputs.dataframe_tostring(df_wsegaicd, True)
 
 
 def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsicd: pd.DataFrame) -> str:
@@ -384,12 +394,9 @@ def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsi
     if df_wsegsicd.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegsicd)
-    return (
-        f"{Keywords.INFLOW_CONTROL_DEVICE}\n"
-        + prepare_outputs.get_header(well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_wsegsicd, True)
-        + "\n/\n\n\n"
-    )
+    return prepare_outputs.get_header(
+        well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar
+    ) + prepare_outputs.dataframe_tostring(df_wsegsicd, True)
 
 
 def _format_valve(well_name: str, lateral_number: int, df_wsegvalv) -> str:
@@ -406,12 +413,9 @@ def _format_valve(well_name: str, lateral_number: int, df_wsegvalv) -> str:
     if df_wsegvalv.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegvalv)
-    return (
-        f"{Keywords.WELL_SEGMENTS_VALVE}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_wsegvalv, True)
-        + "\n/\n\n\n"
-    )
+    return prepare_outputs.get_header(
+        well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar
+    ) + prepare_outputs.dataframe_tostring(df_wsegvalv, True)
 
 
 def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv: pd.DataFrame) -> str:
@@ -428,12 +432,9 @@ def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv
     if df_wsegicv.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegicv)
-    return (
-        f"{Keywords.WELL_SEGMENTS_VALVE}\n"
-        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
-        + prepare_outputs.dataframe_tostring(df_wsegicv, True)
-        + "\n/\n\n\n"
-    )
+    return prepare_outputs.get_header(
+        well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar
+    ) + prepare_outputs.dataframe_tostring(df_wsegicv, True)
 
 
 def _format_density_activated_recovery(well_number: int, df_wsegdar: pd.DataFrame) -> str:
@@ -448,17 +449,7 @@ def _format_density_activated_recovery(well_number: int, df_wsegdar: pd.DataFram
     """
     if df_wsegdar.empty:
         return ""
-    header = (
-        f"{'-' * 100}"
-        "-- This is how we model DAR technology using sets of ACTIONX keywords."
-        "-- The segment dP curves changes according to the segment water-"
-        "-- and gas volume fractions at downhole condition."
-        "-- The value of Cv is adjusted according to the segment length and the number of"
-        "-- devices per joint. The constriction area varies according to values of"
-        "-- volume fractions."
-        f"{'-' * 100}\n\n\n"
-    )
-    return header + prepare_outputs.print_wsegdar(df_wsegdar, well_number + 1) + "\n\n\n\n"
+    return prepare_outputs.print_wsegdar(df_wsegdar, well_number + 1)
 
 
 def _format_autonomous_inflow_control_valve(well_number: int, df_wsegaicv: pd.DataFrame) -> str:
@@ -471,16 +462,9 @@ def _format_autonomous_inflow_control_valve(well_number: int, df_wsegaicv: pd.Da
     Returns:
         Formatted string.
     """
-    if not df_wsegaicv.empty:
+    if df_wsegaicv.empty:
         return ""
-    metadata = (
-        f"{'-' * 100}"
-        "-- This is how we model AICV technology using sets of ACTIONX keyword"
-        "-- the DP parameters change according to the segment water cut (at downhole condition )"
-        "-- and gas volume fraction (at downhole condition)"
-        f"{'-' * 100}\n\n\n"
-    )
-    return metadata + prepare_outputs.print_wsegaicv(df_wsegaicv, well_number + 1) + "\n\n\n\n"
+    return prepare_outputs.print_wsegaicv(df_wsegaicv, well_number + 1)
 
 
 def _branch_revision(
@@ -572,3 +556,42 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, well: 
     out_segment = layer_to_connect.at[idx, Headers.START_SEGMENT_NUMBER]
     lateral.df_tubing.at[0, Headers.OUT] = out_segment
     return lateral.df_tubing
+
+
+def _format_density_activated_recovery2(data: str) -> str:
+    """Formats well-segments for density activated recovery valve.
+
+    Args:
+
+    Returns:
+        Formatted string.
+    """
+    header = (
+        f"{'-' * 100}\n"
+        "-- This is how we model DAR technology using sets of ACTIONX keywords.\n"
+        "-- The segment dP curves changes according to the segment water-\n"
+        "-- and gas volume fractions at downhole condition.\n"
+        "-- The value of Cv is adjusted according to the segment length and the number of\n"
+        "-- devices per joint. The constriction area varies according to values of\n"
+        "-- volume fractions.\n"
+        f"{'-' * 100}\n\n\n"
+    )
+    return header + data + "\n\n\n\n"
+
+
+def _format_autonomous_inflow_control_valve2(data: str) -> str:
+    """Formats the AICV section.
+
+    Args:
+
+    Returns:
+        Formatted string.
+    """
+    metadata = (
+        f"{'-' * 100}\n"
+        "-- This is how we model AICV technology using sets of ACTIONX keyword\n"
+        "-- the DP parameters change according to the segment water cut (at downhole condition )\n"
+        "-- and gas volume fraction (at downhole condition)\n"
+        f"{'-' * 100}\n\n\n"
+    )
+    return metadata + data + "\n\n\n\n"
