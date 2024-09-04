@@ -131,7 +131,6 @@ class Lateral:
         )
         self.df_tubing = completion.insert_missing_segments(self.df_tubing, well_name)
         self.df_well = completion.complete_the_well(self.df_tubing, self.df_completion, case.joint_length)
-        self.df_well[Headers.ROUGHNESS] = self.df_well[Headers.ROUGHNESS].apply(lambda x: f"{x:.3E}")
         self.df_well = self._get_devices(self.df_completion, self.df_well, case)
         self.df_well = completion.correct_annulus_zone(self.df_well)
         self.df_reservoir = self._connect_cells_to_segments(

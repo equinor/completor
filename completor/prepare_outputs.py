@@ -196,7 +196,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
     else:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
-    return header + "-" * nchar + "\n"
+    return "\n" + header + "-" * nchar + "\n"
 
 
 def prepare_tubing_layer(
