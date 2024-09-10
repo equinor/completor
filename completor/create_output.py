@@ -32,10 +32,10 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
         Properly formatted output string ready to be written to file.
 
     """
-    output = _format_header(paths)
+    output = [_format_header(paths)]
 
     if well.case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
-        output += CORRELATION_UDQ
+        output.append(CORRELATION_UDQ)
 
     df_reservoir = well.df_reservoir_all_laterals
     df_well = well.df_well_all_laterals
@@ -166,49 +166,27 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             logger.info("Creating schematics: %s.pdf", figure_name)
 
     if print_completion_data:
-        print_completion_data = f"{Keywords.COMPLETION_DATA}{print_completion_data}\n/\n\n\n"
-
+        output.append(f"{Keywords.COMPLETION_DATA}{print_completion_data}\n/\n\n\n")
     if print_well_segments:
-        print_well_segments = f"{print_well_segments}\n/\n\n"
-
+        output.append(f"{print_well_segments}\n/\n\n")
     if print_well_segments_link:
-        print_well_segments_link = f"{Keywords.WELL_SEGMENTS_LINK}{print_well_segments_link}\n/\n\n\n"
-
+        output.append(f"{Keywords.WELL_SEGMENTS_LINK}{print_well_segments_link}\n/\n\n\n")
     if print_completion_segments:
-        print_completion_segments = (
-            f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{print_completion_segments}\n/\n\n\n"
-        )
-
+        output.append(f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{print_completion_segments}\n/\n\n\n")
     if print_valve:
-        print_valve = f"{Keywords.WELL_SEGMENTS_VALVE}{print_valve}\n/\n\n\n"
+        output.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_valve}\n/\n\n\n")
     if print_inflow_control_device:
-        print_inflow_control_device = f"{Keywords.INFLOW_CONTROL_DEVICE}{print_inflow_control_device}\n/\n\n\n"
+        output.append(f"{Keywords.INFLOW_CONTROL_DEVICE}{print_inflow_control_device}\n/\n\n\n")
     if print_autonomous_inflow_control_device:
-        print_autonomous_inflow_control_device = (
-            f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}{print_autonomous_inflow_control_device}\n/\n\n\n"
-        )
+        output.append(f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}{print_autonomous_inflow_control_device}\n/\n\n\n")
     if print_inflow_control_valve:
-        print_inflow_control_valve = f"{Keywords.WELL_SEGMENTS_VALVE}{print_inflow_control_valve}\n/\n\n\n"
+        output.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_inflow_control_valve}\n/\n\n\n")
     if print_density_activated_recovery:
-        print_density_activated_recovery = _format_density_activated_recovery2(print_density_activated_recovery)
-
+        output.append(_format_density_activated_recovery2(print_density_activated_recovery))
     if print_autonomous_inflow_control_valve:
-        print_autonomous_inflow_control_valve = _format_autonomous_inflow_control_valve2(
-            print_autonomous_inflow_control_valve
-        )
+        output.append(_format_autonomous_inflow_control_valve2(print_autonomous_inflow_control_valve))
 
-    output += print_completion_data
-    output += print_well_segments
-    output += print_well_segments_link
-    output += print_completion_segments
-    output += print_valve
-    output += print_inflow_control_device
-    output += print_autonomous_inflow_control_device
-    output += print_density_activated_recovery
-    output += print_autonomous_inflow_control_valve
-    output += print_inflow_control_valve
-
-    return output
+    return "".join(output)
 
 
 def _format_header(paths: tuple[str, str] | None) -> str:
