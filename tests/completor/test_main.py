@@ -358,7 +358,7 @@ COMPLETION
     """
     true_file = Path(_TESTDIR / "wb_daraicv.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils_for_tests.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
 def test_multilateral(tmpdir):

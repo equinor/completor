@@ -19,7 +19,7 @@ def test_nan(tmpdir):
     schedule_file = Path(_TESTDIR / "nan.sch")
     true_file = Path(_TESTDIR / "nan.true")
     utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils_for_tests.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
 def test_nan_2(tmpdir):
@@ -33,4 +33,4 @@ def test_nan_2(tmpdir):
     schedule_file = Path(_TESTDIR / "nan2.sch")
     true_file = Path(_TESTDIR / "nan2.true")
     utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    utils_for_tests.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
