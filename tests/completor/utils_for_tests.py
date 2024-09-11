@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from argparse import Namespace
 from pathlib import Path
 
@@ -41,7 +42,13 @@ def open_files_run_create(
         main.create(case, schedule, output)
 
 
-def assert_results(true_file: str | Path, test_file: str | Path, check_exact=False, relative_tolerance=0.0001) -> None:
+def assert_results(
+    true_file: str | Path,
+    test_file: str | Path,
+    check_exact: bool = False,
+    relative_tolerance: float = 0.0001,
+    assert_text: bool = False,
+) -> None:
     """Assert the final Completor output.
 
     Args:
@@ -49,6 +56,7 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
         test_file: Completor output file.
         check_exact: Whether to compare number exactly.
         relative_tolerance: Relative tolerance, only used when check_exact is False.
+        assert_text: If result and expected file text should be compared.
 
     Notes:
         1. The dfs are sorted so that the order of input is *not* important.
@@ -95,6 +103,35 @@ def assert_results(true_file: str | Path, test_file: str | Path, check_exact=Fal
     cs_test = test_output.compsegs.set_index(Headers.WELL)
     cs_test.sort_values([Headers.WELL, Headers.START_MEASURED_DEPTH], inplace=True)
     pd.testing.assert_frame_equal(cs_true, cs_test, check_exact=check_exact, rtol=relative_tolerance)
+
+    if assert_text:
+        _assert_file_text(test_file, true_file)
+
+
+def _assert_file_text(test_file: str | Path, expected_file: str | Path, remove_completor_meta: bool = True) -> None:
+    with open(test_file, encoding="utf-8") as f:
+        result = f.read()
+    with open(expected_file, encoding="utf-8") as f:
+        expected = f.read()
+
+    if remove_completor_meta:
+        expected = _replace_machine_specific_text(expected)
+        result = _replace_machine_specific_text(result)
+
+    assert result == expected
+
+
+def _replace_machine_specific_text(text: str) -> str:
+    """Replace completor metadata comment containing machine specific text that is unique every run.
+    i.e. impossible to assert without mocking a bunch of stuff.
+
+    Args:
+        text: Text to replace.
+
+    Returns:
+        Text with machine and run specific text replaced.
+    """
+    return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n\n", "REPLACED", text, 0, re.MULTILINE)
 
 
 class ReadSchedule:
@@ -235,10 +272,7 @@ class ReadSchedule:
         Returns:
             COMPLETION_DATA table for that well.
         """
-        df_temp = self.compdat[self.compdat[Headers.WELL] == well_name]
-        # reset index after filtering
-        df_temp.reset_index(drop=True, inplace=True)
-        return df_temp
+        return self.compdat[self.compdat[Headers.WELL] == well_name].reset_index(drop=True)
 
     def get_welsegs(self, well_name: str, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Return WELL_SEGMENTS table for both header and content for the selected well.
