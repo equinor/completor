@@ -68,7 +68,7 @@ def format_text(
         for recs in content:
             text += f" {' '.join(recs)} /\n"
     else:
-        for line in content:
+        for line in content[1:]:
             if isinstance(line, list):
                 logger.warning(
                     "Chunk is False, but content contains lists of lists, "
@@ -302,8 +302,6 @@ def main() -> None:
     if inputs.inputfile is not None:
         with open(inputs.inputfile, encoding="utf-8") as file:
             case_file_content = file.read()
-    else:
-        raise CompletorError("Need input case file to run Completor")
 
     schedule_file_content, inputs.schedulefile = get_content_and_path(
         case_file_content, inputs.schedulefile, Keywords.SCHEDULE_FILE
