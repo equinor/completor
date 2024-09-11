@@ -376,7 +376,6 @@ def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int
     return prepare_outputs.get_header(
         well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar
     ) + prepare_outputs.dataframe_tostring(df_wsegaicd, True)
-    # return prepare_outputs.dataframe_tostring(df_wsegaicd, True)
 
 
 def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsicd: pd.DataFrame) -> str:
