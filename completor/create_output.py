@@ -182,9 +182,26 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
     if print_inflow_control_valve:
         output.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_inflow_control_valve}\n/\n\n\n")
     if print_density_activated_recovery:
-        output.append(_format_density_activated_recovery2(print_density_activated_recovery))
+        metadata = (
+            f"{'-' * 100}\n"
+            "-- This is how we model DAR technology using sets of ACTIONX keywords.\n"
+            "-- The segment dP curves changes according to the segment water-\n"
+            "-- and gas volume fractions at downhole condition.\n"
+            "-- The value of Cv is adjusted according to the segment length and the number of\n"
+            "-- devices per joint. The constriction area varies according to values of\n"
+            "-- volume fractions.\n"
+            f"{'-' * 100}\n\n\n"
+        )
+        output.append(metadata + print_density_activated_recovery + "\n\n\n\n")
     if print_autonomous_inflow_control_valve:
-        output.append(_format_autonomous_inflow_control_valve2(print_autonomous_inflow_control_valve))
+        metadata = (
+            f"{'-' * 100}\n"
+            "-- This is how we model AICV technology using sets of ACTIONX keyword\n"
+            "-- the DP parameters change according to the segment water cut (at downhole condition )\n"
+            "-- and gas volume fraction (at downhole condition)\n"
+            f"{'-' * 100}\n\n\n"
+        )
+        output.append(metadata + print_autonomous_inflow_control_valve + "\n\n\n\n")
 
     return "".join(output)
 
@@ -355,7 +372,11 @@ def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int
     """
     if df_wsegaicd.empty:
         return ""
-    return prepare_outputs.dataframe_tostring(df_wsegaicd, True)
+    nchar = prepare_outputs.get_number_of_characters(df_wsegaicd)
+    return prepare_outputs.get_header(
+        well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar
+    ) + prepare_outputs.dataframe_tostring(df_wsegaicd, True)
+    # return prepare_outputs.dataframe_tostring(df_wsegaicd, True)
 
 
 def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsicd: pd.DataFrame) -> str:
@@ -534,42 +555,3 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, well: 
     out_segment = layer_to_connect.at[idx, Headers.START_SEGMENT_NUMBER]
     lateral.df_tubing.at[0, Headers.OUT] = out_segment
     return lateral.df_tubing
-
-
-def _format_density_activated_recovery2(data: str) -> str:
-    """Formats well-segments for density activated recovery valve.
-
-    Args:
-
-    Returns:
-        Formatted string.
-    """
-    header = (
-        f"{'-' * 100}\n"
-        "-- This is how we model DAR technology using sets of ACTIONX keywords.\n"
-        "-- The segment dP curves changes according to the segment water-\n"
-        "-- and gas volume fractions at downhole condition.\n"
-        "-- The value of Cv is adjusted according to the segment length and the number of\n"
-        "-- devices per joint. The constriction area varies according to values of\n"
-        "-- volume fractions.\n"
-        f"{'-' * 100}\n\n\n"
-    )
-    return header + data + "\n\n\n\n"
-
-
-def _format_autonomous_inflow_control_valve2(data: str) -> str:
-    """Formats the AICV section.
-
-    Args:
-
-    Returns:
-        Formatted string.
-    """
-    metadata = (
-        f"{'-' * 100}\n"
-        "-- This is how we model AICV technology using sets of ACTIONX keyword\n"
-        "-- the DP parameters change according to the segment water cut (at downhole condition )\n"
-        "-- and gas volume fraction (at downhole condition)\n"
-        f"{'-' * 100}\n\n\n"
-    )
-    return metadata + data + "\n\n\n\n"

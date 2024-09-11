@@ -210,7 +210,8 @@ def create(
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]
-                    output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
+                    # Write it back 'untouched'.
+                    output_text += format_text(keyword, raw, chunk=False, end_of_record=True)
                     line_number = after_content_line_number + 1
                     continue
 
