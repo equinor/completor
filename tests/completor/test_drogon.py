@@ -81,12 +81,7 @@ def test_drogon_cases(drogon_case: str, tmpdir):
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
-@pytest.mark.parametrize(
-    "drogon_case",
-    [
-        "icv1_gp.case",
-    ],
-)
+@pytest.mark.parametrize("drogon_case", ["icv1_gp.case"])
 def test_drogon_cases_with_text_match(drogon_case: str, tmpdir):
     """Test Completor with Drogon cases."""
     # Copy pvt file to tmpdir before creating schedule files
