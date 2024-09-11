@@ -622,6 +622,7 @@ def connect_cells_to_segments(
     Returns:
         Merged DataFrame.
     """
+    df_well = df_well.copy()
     # Calculate mid cell measured depth
     df_reservoir[Headers.MEASURED_DEPTH] = (
         df_reservoir[Headers.START_MEASURED_DEPTH] + df_reservoir[Headers.END_MEASURED_DEPTH]
@@ -630,7 +631,7 @@ def connect_cells_to_segments(
         # Ensure that tubing segment boundaries as described in the case file are honored.
         # Associate reservoir cells with tubing segment midpoints using markers.
         df_reservoir[Headers.MARKER] = np.full(df_reservoir.shape[0], 0)
-        df_well[Headers.MARKER] = np.arange(df_well.shape[0]) + 1
+        df_well.loc[:, Headers.MARKER] = np.arange(df_well.shape[0]) + 1
 
         start_measured_depths = df_tubing_segments[Headers.START_MEASURED_DEPTH]
         end_measured_depths = df_tubing_segments[Headers.END_MEASURED_DEPTH]
