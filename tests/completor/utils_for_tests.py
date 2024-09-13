@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import difflib
 import os
 import re
 from argparse import Namespace
@@ -124,11 +125,8 @@ def _assert_file_text(test_file: str | Path, expected_file: str | Path, remove_c
     try:
         assert result == expected
     except AssertionError:
-        import difflib
-
-        unified_diff = difflib.unified_diff(result.splitlines(keepends=True), expected.splitlines(keepends=True))
-        test = list(unified_diff)
-        raise AssertionError(f'Unexpected output for {test_file}:\n{"".join(test)}')
+        unified_diff = list(difflib.unified_diff(result.splitlines(keepends=True), expected.splitlines(keepends=True)))
+        raise AssertionError(f'Unexpected output between {test_file} and {expected_file}:\n{"".join(unified_diff)}')
 
 
 def _replace_machine_specific_text(text: str) -> str:
