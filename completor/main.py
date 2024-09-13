@@ -200,7 +200,7 @@ def create(
 
                 # Unrecognized (potential) keywords are written back untouched.
                 if keyword not in Keywords.main_keywords:
-                    output_text += format_text(None, f"{line}\n")
+                    output_text += f"{line}\n"
                     line_number += 1
                     continue
 
@@ -210,7 +210,8 @@ def create(
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]
-                    output_text += format_text(keyword, raw, chunk=False)  # Write it back 'untouched'.
+                    # Write it back 'untouched'.
+                    output_text += format_text(keyword, raw, chunk=False, end_of_record=True)
                     line_number = after_content_line_number + 1
                     continue
 
@@ -255,7 +256,7 @@ def create(
             logger.debug("Writing new MSW info for well %s", well_name_)
             well = Well(well_name_, i, case, schedule_data[well_name_])
             output = create_output.format_output(well, figure_name, paths)
-            output_text += format_text(None, output)
+            output_text += "\n" + output
 
     except Exception as e_:
         err = e_  # type: ignore
