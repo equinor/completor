@@ -446,9 +446,7 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
             Headers.RO,
         ],
     )
-    # replace string component " or ' in the columns
-    compdat_table = remove_string_characters(compdat_table)
-    return compdat_table
+    return remove_string_characters(compdat_table)
 
 
 def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:

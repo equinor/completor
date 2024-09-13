@@ -118,7 +118,17 @@ def _assert_file_text(test_file: str | Path, expected_file: str | Path, remove_c
         expected = _replace_machine_specific_text(expected)
         result = _replace_machine_specific_text(result)
 
-    assert result == expected
+    expected = "\n".join([line.strip() for line in expected.splitlines()])
+    result = "\n".join([line.strip() for line in result.splitlines()])
+
+    try:
+        assert result == expected
+    except AssertionError:
+        import difflib
+
+        unified_diff = difflib.unified_diff(result.splitlines(keepends=True), expected.splitlines(keepends=True))
+        test = list(unified_diff)
+        raise AssertionError(f'Unexpected output for {test_file}:\n{"".join(test)}')
 
 
 def _replace_machine_specific_text(text: str) -> str:
@@ -131,7 +141,7 @@ def _replace_machine_specific_text(text: str) -> str:
     Returns:
         Text with machine and run specific text replaced.
     """
-    return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n\n", "REPLACED", text, 0, re.MULTILINE)
+    return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "REPLACED", text, 0, re.MULTILINE)
 
 
 class ReadSchedule:

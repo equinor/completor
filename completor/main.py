@@ -200,7 +200,7 @@ def create(
 
                 # Unrecognized (potential) keywords are written back untouched.
                 if keyword not in Keywords.main_keywords:
-                    output_text += format_text(None, f"{line}\n")
+                    output_text += f"{line}\n"
                     line_number += 1
                     continue
 
@@ -256,7 +256,7 @@ def create(
             logger.debug("Writing new MSW info for well %s", well_name_)
             well = Well(well_name_, i, case, schedule_data[well_name_])
             output = create_output.format_output(well, figure_name, paths)
-            output_text += format_text(None, output)
+            output_text += "\n" + output
 
     except Exception as e_:
         err = e_  # type: ignore
