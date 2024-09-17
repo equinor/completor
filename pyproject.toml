@@ -22,14 +22,13 @@ classifiers = [
 "Bug Tracker" = "https://github.com/equinor/completor/issues"
 
 [tool.poetry.dependencies]
-# TODO(#56): Re-add all of these dependencies with `poetry add` when support for python3.8 can be dropped.
-python = ">=3.8.1, <3.12"
-matplotlib = "^3.7"
-numpy = "^1.24"
-pandas = "1.5.3"
-scipy = "^1.10"
-tqdm = "^4.66.4"
-pytest-env = "^1.1.3"
+python = ">=3.11, <3.12"
+matplotlib = "^3.9.2"
+numpy = "^1.26.4"
+pandas = "^2.2.2"
+scipy = "^1.14.1"
+tqdm = "^4.66.5"
+pytest-env = "^1.1.4"
 
 docutils = {version="0.20.1", optional=true} # Pinned due to problems with OS spesific builds
 rstcheck-core = {version="^1.2.1", optional=true}
