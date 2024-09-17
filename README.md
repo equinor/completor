@@ -53,7 +53,7 @@ and making a pull request.
 See [Contribution Document](documentation/docs/contribution_guide.mdx) on how to contribute.
 
 ### Install completor as dev
-In order to run Completor® you need to have versions of [Python 3.8 to 3.11](https://www.python.org/downloads/) installed.
+In order to run Completor® you need to have versions of [Python 3.11](https://www.python.org/downloads/) installed.
 #### Source code
 Clone the [Completor® repository](https://github.com/equinor/completor) to get the source code.
 ```bash
