@@ -17,7 +17,6 @@ class Well:
     Attributes:
         well_name: The name of the well.
         well_number: The number of the well.
-        case: Case file data.
         lateral_numbers: Numbers for each lateral.
         active_laterals: List of laterals.
         df_well_all_laterals: DataFrame containing all the laterals' well-layer data.
@@ -28,7 +27,6 @@ class Well:
 
     well_name: str
     well_number: int
-    case: ReadCasefile
     df_well_all_laterals: pd.DataFrame
     df_reservoir_all_laterals: pd.DataFrame
     lateral_numbers: npt.NDArray[np.int64]
@@ -45,10 +43,9 @@ class Well:
             well_data: Data from schedule file.
         """
         self.well_name = well_name
-        self.case: ReadCasefile = case
         self.well_number = well_number
 
-        lateral_numbers = self._get_active_laterals(well_name, self.case.completion_table)
+        lateral_numbers = self._get_active_laterals(well_name, case.completion_table)
         self.active_laterals = [Lateral(num, well_name, case, well_data) for num in lateral_numbers]
 
         self.df_well_all_laterals = pd.DataFrame()

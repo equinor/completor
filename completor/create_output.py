@@ -16,15 +16,19 @@ from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
+from completor.read_casefile import ReadCasefile
 from completor.visualize_well import visualize_well
 from completor.wells import Lateral, Well
 
 
-def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, str] | None = None) -> str:
+def format_output(
+    well: Well, case: ReadCasefile, figure_name: str | None = None, paths: tuple[str, str] | None = None
+) -> str:
     """Formats the finished output string to be written to a file.
 
     Args:
         well: Well data.
+        case: Case data.
         figure_name: The name of the figure, if None, no figure is printed. Defaults to None.
         paths: Paths of the case and schedule files. Defaults to None.
 
@@ -34,7 +38,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
     """
     output = [_format_header(paths)]
 
-    if well.case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
+    if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
         output.append(CORRELATION_UDQ)
 
     df_reservoir = well.df_reservoir_all_laterals
@@ -65,7 +69,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             header_written = True
 
         df_tubing, top = prepare_outputs.prepare_tubing_layer(
-            well, lateral, start_segment, start_branch, well.case.completion_table
+            well, lateral, start_segment, start_branch, case.completion_table
         )
         lateral.df_tubing = df_tubing
         df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
@@ -85,13 +89,13 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
 
         start_segment, start_branch = _update_segmentbranch(df_device, df_annulus)
 
-        df_tubing = _connect_lateral(well.well_name, lateral, top, well)
+        df_tubing = _connect_lateral(well.well_name, lateral, top, well, case)
 
         df_tubing[Headers.BRANCH] = lateral.lateral_number
         active_laterals = [lateral.lateral_number for lateral in well.active_laterals]
         df_device, df_annulus = _branch_revision(lateral.lateral_number, active_laterals, df_device, df_annulus)
 
-        completion_table_well = well.case.completion_table[well.case.completion_table[Headers.WELL] == well.well_name]
+        completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == well.well_name]
         completion_table_lateral = completion_table_well[
             completion_table_well[Headers.BRANCH] == lateral.lateral_number
         ]
@@ -102,7 +106,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             df_device,
             df_annulus,
             completion_table_lateral,
-            well.case.segment_length,
+            case.segment_length,
         )
         df_completion_data = prepare_outputs.prepare_completion_data(
             well.well_name, lateral.lateral_number, df_reservoir, completion_table_lateral
@@ -126,8 +130,8 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             df_well,
             df_device,
             df_tubing,
-            well.case.completion_icv_tubing,
-            well.case.wsegicv_table,
+            case.completion_icv_tubing,
+            case.wsegicv_table,
         )
         print_completion_data += _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data)
         print_well_segments += _format_well_segments(
@@ -160,7 +164,7 @@ def format_output(well: Well, figure_name: str | None = None, paths: tuple[str, 
             logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
             with PdfPages(figure_name) as figure:
                 figure.savefig(
-                    visualize_well(well.well_name, df_well, df_reservoir, well.case.segment_length),
+                    visualize_well(well.well_name, df_well, df_reservoir, case.segment_length),
                     orientation="landscape",
                 )
             logger.info("Creating schematics: %s.pdf", figure_name)
@@ -493,7 +497,9 @@ def _branch_revision(
     return df_device, df_annulus
 
 
-def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, well: Well) -> pd.DataFrame:
+def _connect_lateral(
+    well_name: str, lateral: Lateral, top: pd.DataFrame, well: Well, case: ReadCasefile
+) -> pd.DataFrame:
     """Connect lateral to main wellbore/branch.
 
     The main branch can either have a tubing- or device-layer connected.
@@ -527,14 +533,14 @@ def _connect_lateral(well_name: str, lateral: Lateral, top: pd.DataFrame, well: 
             well_name,
             lateral.lateral_number,
         )
-    if well.case.connect_to_tubing(well_name, lateral.lateral_number):
+    if case.connect_to_tubing(well_name, lateral.lateral_number):
         layer_to_connect = top_lateral.df_tubing
         measured_depths = top_lateral.df_tubing[Headers.MEASURED_DEPTH]
     else:
         layer_to_connect = top_lateral.df_device
         measured_depths = top_lateral.df_device[Headers.MEASURED_DEPTH]
     try:
-        if well.case.connect_to_tubing(well_name, lateral.lateral_number):
+        if case.connect_to_tubing(well_name, lateral.lateral_number):
             # Since the junction_measured_depth has segment tops and layer_to_connect has grid block midpoints,
             # a junction at the top of the well may not be found. Therefore, we try the following:
             if (np.array(~(measured_depths <= junction_measured_depth))).all():
