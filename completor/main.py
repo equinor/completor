@@ -205,7 +205,8 @@ def create(
                     line_number += 1
                     continue
 
-                well_name = _get_well_name(clean_lines_map, line_number)  # TODO: Bit sketch with more than one?
+                # TODO(#164): Check that this works properly in multi-well environment.
+                well_name = _get_well_name(clean_lines_map, line_number)
 
                 if keyword == Keywords.WELL_SPECIFICATION:
                     if well_name not in list(active_wells):
