@@ -208,6 +208,10 @@ def create(
                 well_name = _get_well_name(clean_lines_map, line_number)  # TODO: Bit sketch with more than one?
 
                 if keyword == Keywords.WELL_SPECIFICATION:
+                    if well_name not in list(active_wells):
+                        output_text += format_text(keyword, "")
+                        line_number += 1
+                        continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]
@@ -218,12 +222,16 @@ def create(
 
                 elif keyword == Keywords.COMPLETION_DATA:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
-                    _non_active = {rec[0] for rec in chunk if rec[0] not in list(active_wells)}
-                    schedule_data = read_schedule.handle_compdat(schedule_data, active_wells, chunk)
-                    if untouched_wells:
+                    untouched_content = [rec for rec in chunk if rec[0] not in list(active_wells)]
+                    current_wells = {rec[0] for rec in chunk if rec[0]}
+                    current_active_wells = np.array(list(current_wells.intersection(active_wells)))
+                    if current_active_wells.size > 0:
+                        schedule_data = read_schedule.handle_compdat(
+                            schedule_data, np.array(list(current_active_wells)), chunk
+                        )
+                    if untouched_content:
                         # Write untouched wells back as-is.
-                        output_text += format_text(keyword, untouched_wells, end_of_record=True)
+                        output_text += format_text(keyword, untouched_content, end_of_record=True)
                     line_number = after_content_line_number + 1
                     continue
 

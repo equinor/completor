@@ -229,7 +229,7 @@ def format_header(paths: tuple[str, str] | None) -> str:
     header += (
         f"-- Created by : {(getpass.getuser()).upper()}\n"
         f"-- Created at : {datetime.now().strftime('%Y %B %d %H:%M')}\n"
-        f"{'-' * 100}\n\n\n"
+        f"{'-' * 100}\n\n"
     )
     return header
 
