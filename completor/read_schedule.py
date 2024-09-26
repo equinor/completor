@@ -204,8 +204,9 @@ def set_welspecs(schedule_data: dict[str, dict[str, Any]], records: list[list[st
         Headers.WELL_MODEL_TYPE,
         Headers.POLYMER_MIXING_TABLE_NUMBER,
     ]
-    _records = records[0] + ["1*"] * (len(columns) - len(records[0]))  # pad with default values (1*)
-    df = pd.DataFrame(np.array(_records).reshape((1, len(columns))), columns=columns)
+    len_to_pad = len(columns) - len(records[0])
+    _records = [rec + ["1*"] * len_to_pad for rec in records]  # pad with default values (1*)
+    df = pd.DataFrame(_records, columns=columns)
     df[columns[2:4]] = df[columns[2:4]].astype(np.int64)
     df[columns[4]] = df[columns[4]].astype(np.float64, errors="ignore")
     # welspecs could be for multiple wells - split it
@@ -360,9 +361,7 @@ def set_compsegs(
 
 
 def handle_compdat(
-    schedule_data: dict[str, dict[str, Any]],
-    active_wells: npt.NDArray[np.str_],
-    records: list[list[str]],
+    schedule_data: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], records: list[list[str]]
 ) -> dict[str, dict[str, Any]]:
     """Convert completion data (COMPDAT) record to a DataFrame.
 
@@ -415,7 +414,9 @@ def handle_compdat(
     # Compdat could be for multiple wells, split it.
     for well_name in active_wells:
         if well_name not in schedule_data:
-            schedule_data[well_name] = {}
+            if schedule_data.get(well_name) is None:
+                schedule_data[well_name] = {}
+            schedule_data[well_name][Keywords.COMPLETION_DATA] = {"__NON_ACTIVE__"}
         schedule_data[well_name][Keywords.COMPLETION_DATA] = df[df[Headers.WELL] == well_name]
         logger.debug("handle_compdat for %s", well_name)
     return schedule_data
@@ -453,7 +454,7 @@ def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branc
     df = schedule_data[Keywords.COMPLETION_SEGMENTS].copy()
     if branch is not None:
         df = df[df[Headers.BRANCH] == branch]
-    df.reset_index(drop=True, inplace=True)  # reset index after filtering
+    df = df.reset_index(drop=True)  # reset index after filtering
     return fix_compsegs(df, well_name)
 
 
