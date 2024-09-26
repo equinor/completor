@@ -399,7 +399,6 @@ def set_compdat(schedule_data: ScheduleData, records: list[list[str]]) -> Schedu
         if well_name not in schedule_data:
             if schedule_data.get(well_name) is None:
                 schedule_data[well_name] = {}
-            schedule_data[well_name][Keywords.COMPLETION_DATA] = {"__NON_ACTIVE__"}
         schedule_data[well_name][Keywords.COMPLETION_DATA] = df[df[Headers.WELL] == well_name]
         logger.debug("handle_compdat for %s", well_name)
     return schedule_data
