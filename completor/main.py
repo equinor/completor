@@ -15,6 +15,7 @@ from tqdm import tqdm
 import completor
 from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
+from completor.create_output import format_header
 from completor.exceptions import CompletorError
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
@@ -253,7 +254,8 @@ def create(
             else:
                 progress_bar.update(len(lines) - prev_line_number)
 
-        for i, well_name_ in enumerate(well_names):
+        output_text += "\n" + format_header(paths)
+        for i, well_name_ in tqdm(enumerate(well_names), total=len(well_names)):
             logger.debug("Writing new MSW info for well %s", well_name_)
             well = Well(well_name_, i, case, schedule_data[well_name_])
             output = create_output.format_output(well, case, figure_name, paths)

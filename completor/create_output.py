@@ -36,7 +36,7 @@ def format_output(
         Properly formatted output string ready to be written to file.
 
     """
-    output = [_format_header(paths)]
+    output = []
 
     if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
         output.append(CORRELATION_UDQ)
@@ -210,7 +210,7 @@ def format_output(
     return "".join(output)
 
 
-def _format_header(paths: tuple[str, str] | None) -> str:
+def format_header(paths: tuple[str, str] | None) -> str:
     """Formats the header banner, with metadata.
 
     Args:
