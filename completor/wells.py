@@ -122,6 +122,8 @@ class Lateral:
         self.df_device = pd.DataFrame()
 
         self.df_reservoir = self._select_well(well_name, well_data, lateral_number)
+        if self.df_reservoir.empty:
+            print("")
         self.df_measured_true_vertical_depth = completion.well_trajectory(
             self.df_welsegs_header, self.df_welsegs_content
         )

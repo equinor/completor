@@ -204,7 +204,7 @@ def create(
                     line_number += 1
                     continue
 
-                well_name = _get_well_name(clean_lines_map, line_number)
+                well_name = _get_well_name(clean_lines_map, line_number)  # TODO: Bit sketch with more than one?
 
                 if keyword == Keywords.WELL_SPECIFICATION:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
@@ -218,6 +218,7 @@ def create(
                 elif keyword == Keywords.COMPLETION_DATA:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
+                    _non_active = {rec[0] for rec in chunk if rec[0] not in list(active_wells)}
                     schedule_data = read_schedule.handle_compdat(schedule_data, active_wells, chunk)
                     if untouched_wells:
                         # Write untouched wells back as-is.
