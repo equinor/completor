@@ -81,25 +81,10 @@ def assert_results(
         test_output = ReadSchedule(result)
 
     if check_width:
-        lines = result.splitlines()
-        lengths = np.char.str_len(lines)
-        lines_to_check = np.nonzero(lengths >= 132)[0]
-
-        too_long_lines = []
-        for line_index in lines_to_check:
-            cleaned_line = lines[line_index].rsplit("/")[0] + "/"
-            cleaned_line = cleaned_line.rsplit("--")[0] + "--"
-
-            if len(cleaned_line) > 132:
-                too_long_lines.append((line_index, lines[line_index]))
-        if too_long_lines:
-            number_of_lines = len(too_long_lines)
-            raise AssertionError(
-                "Some data-lines in the output are wider than limit of 132 characters!\n"
-                f"This is concerning line-numbers: {[tup[0] for tup in too_long_lines]}\n"
-                f"{'An excerpt of the five first' if number_of_lines > 5 else 'The'} lines:\n"
-                + "\n".join([tup[1] for tup in too_long_lines[: min(number_of_lines, 5)]])
-            )
+        try:
+            check_width_lines(result)
+        except ValueError as e:
+            raise AssertionError(e)
 
     # COMPLETION_DATA
     pd.testing.assert_frame_equal(
@@ -131,6 +116,38 @@ def assert_results(
 
     if assert_text:
         _assert_file_text(test_file, true_file)
+
+
+def check_width_lines(result: str, limit: int = 132) -> None:
+    """Check the width of each line versus limit.
+
+    Disregarding all content after '/' and '--' characters.
+
+    Args:
+        result: Raw text.
+        limit: The character width limit.
+
+    Raises:
+        ValueError: If there exists any data that is too long.
+    """
+    lines = result.splitlines()
+    lengths = np.char.str_len(lines)
+    lines_to_check = np.nonzero(lengths >= limit)[0]
+    too_long_lines = []
+    for line_index in lines_to_check:
+        cleaned_line = lines[line_index].rsplit("/")[0] + "/"
+        cleaned_line = cleaned_line.rsplit("--")[0] + "--"
+
+        if len(cleaned_line) > 132:
+            too_long_lines.append((line_index, lines[line_index]))
+    if too_long_lines:
+        number_of_lines = len(too_long_lines)
+        raise ValueError(
+            f"Some data-lines in the output are wider than limit of {limit} characters!\n"
+            f"This is concerning line-numbers: {[tup[0] for tup in too_long_lines]}\n"
+            f"{'An excerpt of the five first' if number_of_lines > 5 else 'The'} lines:\n"
+            + "\n".join([tup[1] for tup in too_long_lines[: min(number_of_lines, 5)]])
+        )
 
 
 def _assert_file_text(test_file: str | Path, expected_file: str | Path, remove_completor_meta: bool = True) -> None:
