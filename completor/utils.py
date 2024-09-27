@@ -97,7 +97,9 @@ def find_quote(string: str) -> re.Match | None:
     return re.search(rf"([{quotes}])(?:(?=(\\?))\2.)*?\1", string)
 
 
-def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_marks: bool = False) -> str:
+def clean_file_line(
+    line: str, comment_prefix: str = "--", remove_quotation_marks: bool = False, replace_tabs: bool = True
+) -> str:
     """Remove comments, tabs, newlines and consecutive spaces from a string.
 
     Also remove trailing '/' comments, but ignore lines containing a file path.
@@ -107,6 +109,7 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
         comment_prefix: The prefix used to denote a comment in the file.
         remove_quotation_marks: Whether quotation marks should be removed from the line.
             Used for cleaning schedule files.
+        replace_tabs: Whether tabs should be replaced with a space.
 
     Returns:
         A cleaned line. Returns an empty string in the case of a comment or empty line.
@@ -125,7 +128,8 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
     if not line:
         return ""
     # Replace tabs with spaces, remove newlines and remove trailing spaces.
-    line = line.replace("\t", " ").replace("\n", "")
+    if replace_tabs:
+        line = line.replace("\t", " ").replace("\n", "")
     # Remove quotation marks if specified
     if remove_quotation_marks:
         line = line.replace("'", " ").replace('"', " ")
