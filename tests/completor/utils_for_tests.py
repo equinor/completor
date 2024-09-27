@@ -49,6 +49,7 @@ def assert_results(
     check_exact: bool = False,
     relative_tolerance: float = 0.0001,
     assert_text: bool = False,
+    check_width: bool = True,
 ) -> None:
     """Assert the final Completor output.
 
@@ -58,6 +59,7 @@ def assert_results(
         check_exact: Whether to compare number exactly.
         relative_tolerance: Relative tolerance, only used when check_exact is False.
         assert_text: If result and expected file text should be compared.
+        check_width: Whether to check that all data is less than 132 characters.
 
     Notes:
         1. The dfs are sorted so that the order of input is *not* important.
@@ -75,7 +77,29 @@ def assert_results(
 
     # test COMPLETION_DATA, COMPLETION_SEGMENTS and WELL_SEGMENTS
     with open(test_file, encoding="utf-8") as file:
-        test_output = ReadSchedule(file.read())
+        result = file.read()
+        test_output = ReadSchedule(result)
+
+    if check_width:
+        lines = result.splitlines()
+        lengths = np.char.str_len(lines)
+        lines_to_check = np.nonzero(lengths >= 132)[0]
+
+        too_long_lines = []
+        for line_index in lines_to_check:
+            cleaned_line = lines[line_index].rsplit("/")[0] + "/"
+            cleaned_line = cleaned_line.rsplit("--")[0] + "--"
+
+            if len(cleaned_line) > 132:
+                too_long_lines.append((line_index, lines[line_index]))
+        if too_long_lines:
+            number_of_lines = len(too_long_lines)
+            raise AssertionError(
+                "Some data-lines in the output are wider than limit of 132 characters!\n"
+                f"This is concerning line-numbers: {[tup[0] for tup in too_long_lines]}\n"
+                f"{'An excerpt of the five first' if number_of_lines > 5 else 'The'} lines:\n"
+                + "\n".join([tup[1] for tup in too_long_lines[: min(number_of_lines, 5)]])
+            )
 
     # COMPLETION_DATA
     pd.testing.assert_frame_equal(
