@@ -91,10 +91,20 @@ def dataframe_tostring(
     if columns[0] != "--":
         # then add first column
         df_temp = add_columns_first_last(df_temp, add_first=True, add_last=False)
-    # Add single quotes around well names in output file
+
+    # Modify headers to reduce width.
+    split_cols = [tuple(column.split("_")) for column in df_temp.columns]
+    if split_cols[0][0].startswith("--"):
+        number_of_levels = max([len(tup) for tup in split_cols])
+        # Make sure each level is commented out!
+        split_cols[0] = tuple(["--"] * number_of_levels)
+    # Replace nan with empty for printing purposes.
+    split_cols = pd.DataFrame(split_cols).fillna("")
+    df_temp.columns = pd.MultiIndex.from_frame(split_cols)
+
+    # Add single quotes around well names in an output file.
     if Headers.WELL in df_temp.columns:
         df_temp[Headers.WELL] = "'" + df_temp[Headers.WELL].astype(str) + "'"
-    output_string = df_temp.to_string(index=False, justify="justify", header=header)
     if format_column:
         if formatters is None:
             formatters = {
@@ -121,10 +131,9 @@ def dataframe_tostring(
                 Headers.ALPHA_MAIN: "{:.10g}".format,
                 Headers.ALPHA_PILOT: "{:.10g}".format,
             }
-        try:
-            output_string = df_temp.to_string(index=False, justify="justify", formatters=formatters, header=header)
-        except ValueError:
-            pass
+
+    output_string = df_temp.to_string(index=False, justify="justify", formatters=formatters, header=header)
+
     if output_string is None:
         return ""
     return output_string
