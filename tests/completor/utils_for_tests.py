@@ -47,7 +47,7 @@ def assert_results(
     true_file: str | Path,
     test_file: str | Path,
     check_exact: bool = False,
-    relative_tolerance: float = 0.0001,
+    relative_tolerance: float = 1e-5,
     assert_text: bool = False,
     check_width: bool = True,
 ) -> None:
@@ -88,7 +88,7 @@ def assert_results(
 
     # COMPLETION_DATA
     pd.testing.assert_frame_equal(
-        true_output.compdat, test_output.compdat, check_exact=check_exact, rtol=relative_tolerance
+        true_output.compdat, test_output.compdat, check_exact=check_exact, rtol=relative_tolerance, atol=1e-6
     )
     # WELL_SEGMENTS header
     wsh_true = true_output.welsegs_header
