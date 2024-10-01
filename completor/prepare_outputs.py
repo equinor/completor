@@ -10,6 +10,8 @@ import pandas as pd
 
 from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
+from completor.logger import logger
+from completor.utils import check_width_lines
 from completor.wells import Lateral, Well
 
 
@@ -92,16 +94,6 @@ def dataframe_tostring(
         # then add first column
         df_temp = add_columns_first_last(df_temp, add_first=True, add_last=False)
 
-    # Modify headers to reduce width.
-    split_cols = [tuple(column.split("_")) for column in df_temp.columns]
-    if split_cols[0][0].startswith("--"):
-        number_of_levels = max([len(tup) for tup in split_cols])
-        # Make sure each level is commented out!
-        split_cols[0] = tuple(["--"] * number_of_levels)
-    # Replace nan with empty for printing purposes.
-    split_cols = pd.DataFrame(split_cols).fillna("")
-    df_temp.columns = pd.MultiIndex.from_frame(split_cols)
-
     # Add single quotes around well names in an output file.
     if Headers.WELL in df_temp.columns:
         df_temp[Headers.WELL] = "'" + df_temp[Headers.WELL].astype(str) + "'"
@@ -134,8 +126,38 @@ def dataframe_tostring(
 
     output_string = df_temp.to_string(index=False, justify="justify", formatters=formatters, header=header)
 
+    # Modify headers to reduce width.
+    column_splits = [tuple(column.split("_")) for column in df_temp.columns]
+    number_of_levels = max([len(tup) for tup in column_splits])
+    if number_of_levels > 1:
+        if column_splits[0][0].startswith("--"):
+            # Make sure each level is commented out!
+            column_splits[0] = tuple(["--"] * number_of_levels)
+
+        # Replace nan with empty for printing purposes.
+        new_cols = pd.DataFrame(column_splits).fillna("")
+        df_temp.columns = pd.MultiIndex.from_frame(new_cols)
+
     if output_string is None:
         return ""
+
+    limit = 132
+    too_long_lines = check_width_lines(output_string, limit)
+    if too_long_lines:
+        output_string = df_temp.to_string(index=False, justify="left", formatters=formatters, header=header)
+        if output_string is None:
+            return ""
+        too_long_lines2 = check_width_lines(output_string, limit)
+        if too_long_lines2:
+            # Still, some issues. Reporting on the original errors.
+            number_of_lines = len(too_long_lines)
+            logger.error(
+                f"Some data-lines in the output are wider than limit of {limit} characters for some reservoir "
+                f"simulators!\nThis is concerning line-numbers: {[tup[0] for tup in too_long_lines]}\n"
+                f"{'An excerpt of the five first' if number_of_lines > 5 else 'The'} lines:\n"
+                + "\n".join([tup[1] for tup in too_long_lines[: min(number_of_lines, 5)]])
+            )
+
     return output_string
 
 
@@ -918,7 +940,7 @@ def prepare_completion_data(
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
         | ((df_reservoir[Headers.NUMBER_OF_DEVICES] > 0) | (df_reservoir[Headers.DEVICE_TYPE] == Content.PERFORATED))
     ]
-    if df_reservoir.shape[0] == 0:
+    if df_reservoir.empty:
         return pd.DataFrame()
     compdat = pd.DataFrame()
     compdat[Headers.WELL] = [well_name] * df_reservoir.shape[0]

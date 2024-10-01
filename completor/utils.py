@@ -235,3 +235,28 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
             )
         return np.array(completion_table[Headers.WELL][mask].unique())
     return np.array(completion_table[Headers.WELL].unique())
+
+
+def check_width_lines(result: str, limit: int = 132) -> list[tuple[int, str]]:
+    """Check the width of each line versus limit.
+
+    Disregarding all content after '/' and '--' characters.
+
+    Args:
+        result: Raw text.
+        limit: The character width limit.
+
+    Raises:
+        ValueError: If there exists any data that is too long.
+    """
+    lines = result.splitlines()
+    lengths = np.char.str_len(lines)
+    lines_to_check = np.nonzero(lengths >= limit)[0]
+    too_long_lines = []
+    for line_index in lines_to_check:
+        cleaned_line = lines[line_index].rsplit("/")[0] + "/"
+        cleaned_line = cleaned_line.rsplit("--")[0] + "--"
+
+        if len(cleaned_line) > limit:
+            too_long_lines.append((line_index, lines[line_index]))
+    return too_long_lines
