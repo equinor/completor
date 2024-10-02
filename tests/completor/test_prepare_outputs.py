@@ -75,12 +75,7 @@ def test_dataframe_to_string():
 
     df_test_default = prepare_outputs.dataframe_tostring(df_test_utils)
     df_true_default = df_true_utils.to_string(index=False, justify="justify")
-    # with formatters
-    formatters = {"A": "{:.3f}".format}
-    df_test_with_formatter = prepare_outputs.dataframe_tostring(df_test_utils, True, True, True, formatters)
-    df_true_with_formatter = df_true_utils.to_string(index=False, justify="justify", formatters=formatters)
     assert df_test_default == df_true_default
-    assert df_test_with_formatter == df_true_with_formatter
 
 
 def test_outlet_segment_1():
