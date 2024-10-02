@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import MutableMapping
 from typing import Any
 
 import numpy as np
@@ -63,10 +63,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
 
 
 def dataframe_tostring(
-    df_temp: pd.DataFrame,
-    format_column: bool = False,
-    trim_df: bool = True,
-    header: bool = True,
+    df_temp: pd.DataFrame, format_column: bool = False, trim_df: bool = True, header: bool = True, limit: int = 128
 ) -> str:
     """Convert DataFrame to string.
 
@@ -75,6 +72,7 @@ def dataframe_tostring(
         format_column: If columns are to be formatted.
         trim_df: To trim or not to trim. Default: True.
         header: Keep header (True) or not (False).
+        limit: Limit width of DataFrame.
 
     Returns:
         Text string of the DataFrame.
@@ -96,7 +94,7 @@ def dataframe_tostring(
     if Headers.WELL in df_temp.columns:
         df_temp[Headers.WELL] = "'" + df_temp[Headers.WELL].astype(str) + "'"
 
-    formatters: Mapping[Any, Any] = {}
+    formatters: MutableMapping[Any, Any] = {}
     if format_column:
         formatters = {
             Headers.STRENGTH: "{:.10g}".format,
@@ -187,7 +185,6 @@ def dataframe_tostring(
     if output_string is None:
         return ""
 
-    limit = 132
     too_long_lines = check_width_lines(output_string, limit)
     if too_long_lines:
         output_string = df_temp.to_string(

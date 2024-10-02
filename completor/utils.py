@@ -237,7 +237,7 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
     return np.array(completion_table[Headers.WELL].unique())
 
 
-def check_width_lines(result: str, limit: int = 132) -> list[tuple[int, str]]:
+def check_width_lines(result: str, limit: int) -> list[tuple[int, str]]:
     """Check the width of each line versus limit.
 
     Disregarding all content after '/' and '--' characters.
