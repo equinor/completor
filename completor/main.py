@@ -15,6 +15,7 @@ from tqdm import tqdm
 import completor
 from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
+from completor.create_output import format_header
 from completor.exceptions import CompletorError
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
@@ -204,9 +205,14 @@ def create(
                     line_number += 1
                     continue
 
+                # TODO(#164): Check that this works properly in multi-well environment.
                 well_name = _get_well_name(clean_lines_map, line_number)
 
                 if keyword == Keywords.WELL_SPECIFICATION:
+                    if well_name not in list(active_wells):
+                        output_text += format_text(keyword, "")
+                        line_number += 1
+                        continue  # not an active well
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
                     schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
                     raw = lines[line_number:after_content_line_number]
@@ -217,11 +223,16 @@ def create(
 
                 elif keyword == Keywords.COMPLETION_DATA:
                     chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    untouched_wells = [rec for rec in chunk if rec[0] not in list(active_wells)]
-                    schedule_data = read_schedule.handle_compdat(schedule_data, active_wells, chunk)
-                    if untouched_wells:
+                    untouched_content = [rec for rec in chunk if rec[0] not in list(active_wells)]
+                    current_wells = {rec[0] for rec in chunk if rec[0]}
+                    current_active_wells = np.array(list(current_wells.intersection(active_wells)))
+                    if current_active_wells.size > 0:
+                        schedule_data = read_schedule.handle_compdat(
+                            schedule_data, np.array(list(current_active_wells)), chunk
+                        )
+                    if untouched_content:
                         # Write untouched wells back as-is.
-                        output_text += format_text(keyword, untouched_wells, end_of_record=True)
+                        output_text += format_text(keyword, untouched_content, end_of_record=True)
                     line_number = after_content_line_number + 1
                     continue
 
@@ -252,10 +263,11 @@ def create(
             else:
                 progress_bar.update(len(lines) - prev_line_number)
 
-        for i, well_name_ in enumerate(well_names):
+        output_text += "\n" + format_header(paths)
+        for i, well_name_ in tqdm(enumerate(well_names), total=len(well_names)):
             logger.debug("Writing new MSW info for well %s", well_name_)
             well = Well(well_name_, i, case, schedule_data[well_name_])
-            output = create_output.format_output(well, figure_name, paths)
+            output = create_output.format_output(well, case, figure_name, paths)
             output_text += "\n" + output
 
     except Exception as e_:
