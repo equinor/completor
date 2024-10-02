@@ -372,7 +372,7 @@ def test_multilateral(tmpdir):
     case_file = f"""
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
+--     Number    MD  MD Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1    1     0   3000   0.2     0.25    1.00E-4    OA      1     AICD     1
    A1    2     0   3000   0.2     0.25    1.00E-4    OA      1     AICD     1
@@ -396,7 +396,7 @@ def test_nocf(tmpdir):
     case_file = """
 COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
+--     Number   MD   MD Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
    A1     1    0   3000   0.2     0.25    1.00E-4    GP      1     PERF     0
 /
