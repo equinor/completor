@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.1.4](https://github.com/equinor/completor/compare/v0.1.3...v0.1.4) (2024-10-02)
+
+
+### 🐛 Bug Fixes
+
+* Error when non-active wells are specified with separate WELSPECS ([#163](https://github.com/equinor/completor/issues/163)) ([92bf4b7](https://github.com/equinor/completor/commit/92bf4b7f57bd8c24859b06d9280fdb682864470f))
+* Handle pandas deprecation warnings ([#156](https://github.com/equinor/completor/issues/156)) ([e5d101f](https://github.com/equinor/completor/commit/e5d101f1ef534608f9b733abe60f289beea3f941))
+* **security:** Update dependencies for documentation build ([#135](https://github.com/equinor/completor/issues/135)) ([5c51da4](https://github.com/equinor/completor/commit/5c51da4f8c9566aa4cbd51ab2ac891273ebbfb53))
+* Testing of string building ([#157](https://github.com/equinor/completor/issues/157)) ([d10a399](https://github.com/equinor/completor/commit/d10a3995e108c65365eea0cbd61d0cce70d0faa9))
+
+
+### 🧹 Chores
+
+* Bump aiohttp from 3.9.5 to 3.10.2 in the pip group across 1 directory ([#148](https://github.com/equinor/completor/issues/148)) ([e3cfc70](https://github.com/equinor/completor/commit/e3cfc701fcef8904879cc18ae69609277b07ae58))
+* Bump certifi from 2024.6.2 to 2024.7.4 in the pip group across 1 directory ([#129](https://github.com/equinor/completor/issues/129)) ([75d0dce](https://github.com/equinor/completor/commit/75d0dce54a7e7c8009075ee963986651cd03fa21))
+* Bump cryptography from 43.0.0 to 43.0.1 in the pip group across 1 directory ([#151](https://github.com/equinor/completor/issues/151)) ([7be0edb](https://github.com/equinor/completor/commit/7be0edbe40a72bb6c50fed6c6239181898a27276))
+* Bump the npm_and_yarn group across 1 directory with 3 updates ([#155](https://github.com/equinor/completor/issues/155)) ([dbb331f](https://github.com/equinor/completor/commit/dbb331fcb7fcb692faae0a57bcfbf490a1dd61a0))
+* Bump webpack from 5.93.0 to 5.94.0 in /documentation in the npm_and_yarn group across 1 directory ([#144](https://github.com/equinor/completor/issues/144)) ([d0a9275](https://github.com/equinor/completor/commit/d0a92754c4db9145b8c0a057ee9e6546308e42db))
+* Class-structure ([#136](https://github.com/equinor/completor/issues/136)) ([9e5fae2](https://github.com/equinor/completor/commit/9e5fae2be48daeae24fdd3a1a551eb920a01fe9a))
+* Make pdf figure context managed ([#138](https://github.com/equinor/completor/issues/138)) ([5681387](https://github.com/equinor/completor/commit/5681387e353cd24213244d5e13a5e67f8a46f5ac))
+* Recast error to be more informative. ([#116](https://github.com/equinor/completor/issues/116)) ([668ce0c](https://github.com/equinor/completor/commit/668ce0cff869fe12ecc3ba7f347c4401c8f02650))
+* Remove TODO 142 ([#150](https://github.com/equinor/completor/issues/150)) ([9d80518](https://github.com/equinor/completor/commit/9d80518f4f045cc40813265c190f44b03b359dcd))
+
 ## [0.1.3](https://github.com/equinor/completor/compare/v0.1.2...v0.1.3) (2024-07-04)
 
 
