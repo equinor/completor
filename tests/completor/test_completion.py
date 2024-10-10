@@ -993,7 +993,7 @@ def test_skin():
         ],
     )
     active_wells = np.array(["A1"])
-    schedule_data = read_schedule.handle_compdat({}, active_wells, compdat)
+    schedule_data = read_schedule.set_compdat({}, active_wells, compdat)
     df_out = schedule_data["A1"][Keywords.COMPLETION_DATA]
     pd.testing.assert_frame_equal(df_out, df_true)
 
