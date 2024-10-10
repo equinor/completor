@@ -63,7 +63,12 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
 
 
 def dataframe_tostring(
-    df_temp: pd.DataFrame, format_column: bool = False, trim_df: bool = True, header: bool = True, limit: int = 128
+    df_temp: pd.DataFrame,
+    format_column: bool = False,
+    trim_df: bool = True,
+    header: bool = True,
+    limit: int = 128,
+    quote_well_names: bool = True,
 ) -> str:
     """Convert DataFrame to string.
 
@@ -91,7 +96,7 @@ def dataframe_tostring(
         df_temp = add_columns_first_last(df_temp, add_first=True, add_last=False)
 
     # Add single quotes around well names in an output file.
-    if Headers.WELL in df_temp.columns:
+    if quote_well_names and Headers.WELL in df_temp.columns:
         df_temp[Headers.WELL] = "'" + df_temp[Headers.WELL].astype(str) + "'"
 
     formatters: MutableMapping[Any, Any] = {}
@@ -114,8 +119,8 @@ def dataframe_tostring(
             "END_MD": "{:.3f}".format,
             Headers.FLOW_COEFFICIENT: "{:.10g}".format,
             "CV": "{:.10g}".format,
-            Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
-            "FLOW_CROSS_SECTIONAL_AREA": "{:.3e}".format,
+            # Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+            # "FLOW_CROSS_SECTIONAL_AREA": "{:.3e}".format,
             Headers.OIL_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
             Headers.GAS_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
             Headers.WATER_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
@@ -146,7 +151,7 @@ def dataframe_tostring(
                         ("END", "MEASURED", "DEPTH"): "{:.3f}".format,
                         ("END", "MD"): "{:.3f}".format,
                         ("FLOW", "COEFFICIENT"): "{:.10g}".format,
-                        ("FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
+                        # ("FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
                         ("OIL", "FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
                         ("GAS", "FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
                         ("WATER", "FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
@@ -188,7 +193,7 @@ def dataframe_tostring(
     too_long_lines = check_width_lines(output_string, limit)
     if too_long_lines:
         output_string = df_temp.to_string(
-            index=False, justify="left", formatters=formatters, header=header, sparsify=False
+            index=False, justify="left", formatters=formatters, header=header, sparsify=False, na_rep="1*"
         )
         if output_string is None:
             return ""
@@ -272,7 +277,8 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
     else:
         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
-    return "\n" + header + "-" * nchar + "\n"
+    # return "\n" + header + "-" * nchar + "\n"
+    return header + "-" * nchar + "\n"
 
 
 def prepare_tubing_layer(
@@ -1151,7 +1157,7 @@ def prepare_inflow_control_valve(
         df_well: Well data.
         df_device: From function prepare_device_layer for this well and this lateral.
         df_tubing: From function prepare_tubing_layer for this well and this lateral.
-        df_icv_tubing: df_icv_tubing completion from class ReadCaseFile.
+        df_icv_tubing: df_ic v_tubing completion from class ReadCaseFile.
         df_icv: df_icv for INFLOW_CONTROL_VALVE keyword from class ReadCaseFile.
 
     Returns:
