@@ -1,3 +1,3 @@
-from completor.utils import get_version
+from completor.get_version import get_version
 
 __version__ = get_version()

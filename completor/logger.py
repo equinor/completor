@@ -7,7 +7,7 @@ import time
 from functools import wraps
 from pathlib import Path
 
-from completor.utils import get_version
+from completor.get_version import get_version
 
 
 def get_logger(module_name="completor"):

@@ -10,7 +10,7 @@ import numpy.typing as npt
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
-from completor.utils import get_version
+from completor.get_version import get_version
 from completor import prepare_outputs
 from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
@@ -225,7 +225,7 @@ def metadata_banner(paths: tuple[str, str] | None) -> str:
     Returns:
         Formatted header.
     """
-    header = f"{'-' * 100}\n-- Output from completor {completor.__version__}\n"
+    header = f"{'-' * 100}\n-- Output from completor {get_version()}\n"
     if paths is not None:
         header += f"-- Case file: {paths[0]}\n-- Schedule file: {paths[1]}\n"
     else:

@@ -15,6 +15,7 @@ from typing import Any
 
 import numpy as np
 
+from completor.get_version import get_version
 from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
 from completor.exceptions import CompletorError

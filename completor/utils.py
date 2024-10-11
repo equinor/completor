@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 import sys
-from importlib import metadata
 from typing import Any, Literal, NoReturn, overload
 
 import numpy as np
@@ -261,8 +260,3 @@ def check_width_lines(result: str, limit: int) -> list[tuple[int, str]]:
         if len(cleaned_line) > limit:
             too_long_lines.append((line_index, lines[line_index]))
     return too_long_lines
-
-
-def get_version():
-    """Returns Completors version."""
-    return metadata.version("completor")

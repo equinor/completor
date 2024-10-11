@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from completor.utils import get_version
+from completor.get_version import get_version
 
 COMPLETOR_DESCRIPTION = """Completor models advanced well completions for reservoir simulators.
 It generates all necessary keywords for reservoir simulation
