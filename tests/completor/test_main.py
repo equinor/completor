@@ -192,7 +192,7 @@ def test_packer_aicdicd(tmpdir):
 
     1. 1 passive well & 1 active well
     2. Single lateral well
-    3. AICD and ICD is installed
+    3. AICD and ICD are installed
     """
     tmpdir.chdir()
     case_file = f"""
@@ -284,10 +284,6 @@ def test_inc(tmpdir):
     schedule_file = Path(_TESTDIR / "welldefinition2.testfile")
     true_file = Path(_TESTDIR / "wb_perf.true")
     utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    print("true_file:")
-    print(true_file)
-    print("test_file:")
-    print(_TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 

@@ -7,7 +7,8 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import completion, read_schedule
-from completor.constants import Content, Headers, Method
+from completor.constants import Content, Headers, Keywords, Method
+from completor.exceptions import CompletorError
 from completor.read_casefile import ReadCasefile
 
 
@@ -34,7 +35,13 @@ class Well:
     df_welsegs_header_all_laterals: pd.DataFrame
     df_welsegs_content_all_laterals: pd.DataFrame
 
-    def __init__(self, well_name: str, well_number: int, case: ReadCasefile, well_data: dict[str, pd.DataFrame]):
+    def __init__(
+        self,
+        well_name: str,
+        well_number: int,
+        case: ReadCasefile,
+        well_data: dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]],
+    ):
         """Create well.
 
         Args:
@@ -44,6 +51,12 @@ class Well:
         """
         self.well_name = well_name
         self.well_number = well_number
+
+        missing_keywords = Keywords.main_keywords - well_data.keys()
+        if missing_keywords:
+            raise CompletorError(
+                f"Well {well_name} is missing required data for keyword(s) '{', '.join(missing_keywords)}'"
+            )
 
         lateral_numbers = self._get_active_laterals(well_name, case.completion_table)
         self.active_laterals = [Lateral(num, well_name, case, well_data) for num in lateral_numbers]
@@ -103,7 +116,13 @@ class Lateral:
     df_tubing: pd.DataFrame
     df_device: pd.DataFrame
 
-    def __init__(self, lateral_number: int, well_name: str, case: ReadCasefile, well_data: dict[str, pd.DataFrame]):
+    def __init__(
+        self,
+        lateral_number: int,
+        well_name: str,
+        case: ReadCasefile,
+        well_data: dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]],
+    ):
         """Create Lateral.
 
         Args:
@@ -119,8 +138,6 @@ class Lateral:
         self.df_device = pd.DataFrame()
 
         self.df_reservoir = self._select_well(well_name, well_data, lateral_number)
-        if self.df_reservoir.empty:
-            print("")
         self.df_measured_true_vertical_depth = completion.well_trajectory(
             self.df_welsegs_header, self.df_welsegs_content
         )
@@ -141,7 +158,9 @@ class Lateral:
         self.df_reservoir[Headers.LATERAL] = lateral_number
 
     @staticmethod
-    def _select_well(well_name: str, schedule_data: dict[str, pd.DataFrame], lateral: int) -> pd.DataFrame:
+    def _select_well(
+        well_name: str, schedule_data: dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]], lateral: int
+    ) -> pd.DataFrame:
         """Filter the reservoir data for this well and its laterals.
 
         Args:

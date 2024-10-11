@@ -1,24 +1,20 @@
 """Main module of Completor."""
 
 from __future__ import annotations
-from tqdm import tqdm
-from completor.create_output import Output, metadata_banner
-
-from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 import logging
 import os
 import re
 import time
 from collections.abc import Mapping
-from typing import Any
 
 import numpy as np
+import pandas as pd
 
-from completor.get_version import get_version
 from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
 from completor.exceptions import CompletorError
+from completor.get_version import get_version
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
@@ -166,11 +162,8 @@ def create(
     Returns:
         The case and schedule file, the well and output object.
     """
-    output_text = ""
-    output = None
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    schedule_data: dict[str, dict[str, Any]] = {}
     well = None
 
     figure_name = None
@@ -181,112 +174,76 @@ def create(
             figure_no += 1
             figure_name = f"Well_schematic_{figure_no:03d}.pdf"
 
-    # lines = schedule_file.splitlines()
-    # clean_lines_map = {}
-    # for line_number, line in enumerate(lines):
-    #     line = clean_file_line(line, remove_quotation_marks=True)
-    #     if line:
-    #         clean_lines_map[line_number] = line
-
-    err: Exception | None = None
-
-    schedule = schedule_file
-    meaningful_data = {}
-    old = schedule
-    schedule = metadata_banner(paths) + schedule
+    schedule = schedule_file  # TODO: Refactor
+    # Add banner.
+    schedule = create_output.metadata_banner(paths) + schedule
+    # Strip trailing whitespace.
     schedule = re.sub(r"[^\S\r\n]+$", "", schedule, flags=re.MULTILINE)
+    meaningful_data: dict[str, dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]]] = {}
+    err: Exception | None = None
     try:
-
-        # TODO: Tqdm
-        # TODO: Consider using update instead of returning and setting the whole dict.
-        # TODO: Make this a method?
-        # def read_meaningful_schedule_data(key, data) -> dict[str, dict[str, Any]]:
-        #     = Keywords.COMPLETION_DATA
-        #     chunks = find_keyword_data(keyword, schedule)
-        #     for chunk in chunks:
-        #         clean_data = format_data(chunk, keyword)
-        #         meaningful_data = read_schedule.set_compdat(meaningful_data, clean_data)
+        # TODO(#ANDRE): Consider using update instead of returning and setting the whole dict.
         keyword = Keywords.WELL_SPECIFICATION
         chunks = find_keyword_data(keyword, schedule)
         for chunk in chunks:
-            clean_data = format_data(chunk, keyword)
+            clean_data = clean_raw_data(chunk, keyword)
             meaningful_data = read_schedule.set_welspecs(meaningful_data, clean_data)
 
         keyword = Keywords.WELL_SEGMENTS
         chunks = find_keyword_data(keyword, schedule)
         for chunk in chunks:
-            clean_data = format_data(chunk, keyword)
+            clean_data = clean_raw_data(chunk, keyword)
             meaningful_data = read_schedule.set_welsegs(meaningful_data, clean_data)
 
         keyword = Keywords.COMPLETION_SEGMENTS
         chunks = find_keyword_data(keyword, schedule)
         for chunk in chunks:
-            clean_data = format_data(chunk, keyword)
+            clean_data = clean_raw_data(chunk, keyword)
             meaningful_data = read_schedule.set_compsegs(meaningful_data, clean_data)
 
         keyword = Keywords.COMPLETION_DATA
         chunks = find_keyword_data(keyword, schedule)
         for chunk in chunks:
-            clean_data = format_data(chunk, keyword)
+            clean_data = clean_raw_data(chunk, keyword)
             meaningful_data = read_schedule.set_compdat(meaningful_data, clean_data)
 
-        # TODO: Strip the single fnutts to have it get correct lol
+        # TODO: Single fnutts are a bit inconsistent if not present in input schedule.
 
-        # TODO: Not the actual active well.
-        # warn if under 4 len?
-        # temp_active_wells = [key for key in meaningful_data.keys() if len(meaningful_data.get(key)) == 4]
-        # temp_active_wells = [well for well in temp_active_wells if (well == case.completion_table["WELL"]).any()]
-
-        for i, well_name in enumerate(active_wells):
-            # TODO: Consider using update instead of returning and setting the whole str file.
-            # schedule = replace_chunks(Keywords.WELL_SPECIFICATION, well, schedule, meaningful_data)
+        # TODO: Tqdm
+        for i, well_name in enumerate(active_wells.tolist()):
             well = Well(well_name, i, case, meaningful_data[well_name])
 
-            output_object = Output(well, case, figure_name)
+            output_object = create_output.Output(well, case, figure_name)
 
-            print(well_name)
             # TODO: Maybe reformat WELSPECS not touched as well for a more consistent look?
-            for keyword in Keywords.main_keywords:
-                # TODO: Technically not needed to be calculated in WELSPECS case?
-                old_data, format_header = find_well_keyword_data(well_name, keyword, schedule)
-                if not old_data:
-                    continue
-                old_data = "\n".join(old_data)
+            # TODO: Consider using update instead of returning and setting the whole str file.
+            for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
+                tmp_data = find_well_keyword_data(well_name, keyword, schedule)
+                old_data = str("\n".join(tmp_data))
+                try:
+                    # Check that nothing is lost.
+                    schedule.index(old_data)
+                    if not old_data:
+                        raise ValueError
+                except ValueError:
+                    raise CompletorError("Could not match the old data to schedule file. Please contact the team!")
+
+                new_data = ""
                 match keyword:
-                    case Keywords.WELL_SPECIFICATION:
-                        continue
                     case Keywords.COMPLETION_DATA:
-                        # TODO: print_completion_data formatting looks wonky
-                        #  Only formatting the one block, also adds headers to each lateral.
                         new_data = output_object.print_completion_data
-                        schedule = schedule.replace(old_data, new_data)
-                        # TODO: COMPDAT 'DERM2' looking a bit wonkey, maybe remove comments already there?
-                        # TODO: Merge headers kanskje?
-                        continue
                     case Keywords.COMPLETION_SEGMENTS:
                         new_data = output_object.print_completion_segments
                         new_data += output_object.bonus_data
-                        schedule = schedule.replace(old_data, new_data)
                     case Keywords.WELL_SEGMENTS:
                         new_data = output_object.print_well_segments
-                        schedule = schedule.replace(old_data, new_data)
-                    case _:
-                        print(keyword, "not handeled")
-                        continue
-                    # TODO: QUESTION MARK, what is what of VALV and WSEGICV??
-                    # case Keywords.INFLOW_CONTROL_VALVE:
-                    #     new_data = output_object.print_well_segments
-                    # TODO: WSEGVALV headers blir ikke riktig formatert!
-                    # case Keywords.WELL_SEGMENTS_VALVE:
-                    #     new_data = output_object.print_well_segments
 
-        print("bp")
+                schedule = schedule.replace(old_data, new_data)
 
     except Exception as e_:
         err = e_  # type: ignore
     finally:
         # Make sure the output thus far is written, and figure files are closed.
-
         schedule = _replace_preprocessing_names(schedule, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
             file.write(schedule)
@@ -294,14 +251,7 @@ def create(
     if err is not None:
         raise err
 
-    # if output is None:
-    #     if len(active_wells) != 0:
-    #         raise ValueError(
-    #             "Inconsistent case and schedule files. Check well names, "
-    #             "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
-    #         )
-    #     return case, well
-    return case, well, output
+    return case, well
 
 
 def main() -> None:
@@ -333,8 +283,8 @@ def main() -> None:
         case_file_content, inputs.schedulefile, Keywords.SCHEDULE_FILE
     )
 
-    if isinstance(schedule_file_content, str):
-        parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
+    # if isinstance(schedule_file_content, str):
+    #     parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
 
     _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUT_FILE)
 
@@ -348,7 +298,7 @@ def main() -> None:
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
 
-    logger.info("Running Completor version %s. An advanced well modelling tool.", utils.get_version())
+    logger.info("Running Completor version %s. An advanced well modelling tool.", get_version())
     logger.debug("-" * 60)
     start_a = time.time()
 
@@ -408,64 +358,99 @@ def _format_content(text: str) -> list[list[str]]:
 
 
 def find_keyword_data(keyword: str, text: str) -> list[str]:
-    # TODO: Docstrings
-    pattern = rf"^{keyword}(?:\n--.*\n)?(?:.*\n)*?/"
+    """Finds the common pattern for the four keywords thats needed.
 
-    # Find matches
+    Args:
+        keyword: Current keyword.
+        text: The whole text to find matches in.
+
+    Returns:
+        The matches if any.
+
+    """
+    # Finds keyword followed by two slashes.
+    # Matches any characters followed by a newline, non-greedily, to allow for comments within the data.
+    # Matches new line followed by a single (can have leading whitespace) slash.
+    pattern = rf"^{keyword}(?:.*\n)*?\s*\/"
     return re.findall(pattern, text, re.MULTILINE)
 
 
-def format_data(raw_record: str, keyword):
-    # TODO: Parsing should not be in this file though, move it.
-    # for record in raw_records:
-    # record = raw_record.split(f"{keyword}\n")
-    # record = raw_record.split(keyword)
+def clean_raw_data(raw_record: str, keyword: str) -> list[list[str]]:
+    """Parse the record and clean its content.
+
+    Args:
+        raw_record: Raw data taken straight from schedule.
+        keyword: The current keyword.
+
+    Returns:
+        The contents of the keyword, cleaned.
+    """
     record = re.split(rf"{keyword}\n", raw_record)
     if len(record) != 2:
-        # TODO: Fix it
-        raise ValueError("Yoo, too many keywords in here yo")
+        raise CompletorError(f"Something went wrong when reading keyword '{keyword}' from schedule:\n{raw_record}")
+    # Strip keyword and last line.
     raw_content = record[1].splitlines()
-    raw_content = raw_content[:-1]
+    if raw_content[-1].strip().startswith("/"):
+        raw_content = raw_content[:-1]
+
     clean_content = []
-    for line in raw_content:  # keepends=True?
+    for line in raw_content:
         clean_line = clean_file_line(line, remove_quotation_marks=True)
         if clean_line:
-            clean_content.append(_format_content(clean_line)[0])  # remove_quotation_marks=True?
+            clean_content.append(_format_content(clean_line)[0])
     return clean_content
 
 
-def find_well_keyword_data(well: str, keyword: str, text: str) -> tuple[list[str], bool]:
+def find_well_keyword_data(well: str, keyword: str, text: str) -> list[str]:
+    """Find the data associated with keyword and well name, include leading comments.
+
+    Args:
+        well: Well name.
+        keyword: Keyword to search for.
+        text: Raw text to look for matches in.
+
+    Returns:
+        The correct match given keyword and well name.
+    """
     matches = find_keyword_data(keyword, text)
 
     lines = []
-    format_header = False
-    # TODO: Place for big improvement by re.searching in matches strings as a preprocessing at least
     for match in matches:
-        match = match.splitlines()
-        once = True
-        for i, line in enumerate(match):
-            if well == line.split()[0] or f"'{well}'" in line.split()[0]:
-                # TODO: This is not efficient
-                if once:
-                    # Remove contiguous comments above this line by looking backwards
-                    for l in match[i - 1 :: -1]:
-                        if l.strip().startswith("--"):
-                            lines.append(l)
-                        else:
-                            break
+        if re.search(well, match) is None:
+            continue
 
-                    once = False
+        match = match.splitlines()
+        once = False
+        for i, line in enumerate(match):
+            if not line:
+                if once:
+                    lines.append(line)
+                continue
+
+            if well in line.split()[0]:  # or f"'{well}'" == line.split()[0]: # TODO: This should be redundant.
+                if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
+                    # These keywords should just be the entire match as they never contain more than one well.
+                    return match
+                if not once:
+                    once = True
+                    # Remove contiguous comments above the first line by looking backwards,
+                    # adding it to the replaceable text match.
+                    for prev_line in match[i - 1 :: -1]:
+                        if not prev_line.strip().startswith("--") or not prev_line:
+                            break
+                        lines.append(prev_line)
                     lines.reverse()
 
-                # if not format_header:
-                #     is_first = all([l.startswith("--") for l in match[1:i]])
-                #     if is_first:
-                #         format_header = True
-                if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
-                    return match, True
                 lines.append(line)
+            elif not once:
+                continue
+            # All following comments inside data.
+            elif line.strip().startswith("--"):
+                lines.append(line)
+            else:
+                break
 
-    return lines, format_header
+    return lines
 
 
 if __name__ == "__main__":

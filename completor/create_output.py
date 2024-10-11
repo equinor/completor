@@ -10,10 +10,10 @@ import numpy.typing as npt
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
-from completor.get_version import get_version
 from completor import prepare_outputs
 from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
+from completor.get_version import get_version
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
 from completor.read_casefile import ReadCasefile
@@ -43,6 +43,7 @@ class Output:
         self.print_well_segments = ""
         self.print_completion_segments = ""
         self.print_completion_data = ""
+        completion_data_list = []
         print_well_segments_link = ""
         print_valve = ""
         print_inflow_control_valve = ""
@@ -131,8 +132,8 @@ class Output:
                 case.completion_icv_tubing,
                 case.wsegicv_table,
             )
-            self.print_completion_data += _format_completion_data(
-                well.well_name, lateral.lateral_number, df_completion_data
+            completion_data_list.append(
+                _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data)
             )
             self.print_well_segments += _format_well_segments(
                 well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
@@ -161,13 +162,16 @@ class Output:
             )
 
             if figure_name is not None:
-                logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
+                logger.info("Creating figure for lateral %s.", lateral.lateral_number)
                 with PdfPages(figure_name) as figure:
                     figure.savefig(
                         visualize_well(well.well_name, df_well, df_reservoir, case.segment_length),
                         orientation="landscape",
                     )
                 logger.info("Creating schematics: %s.pdf", figure_name)
+
+        if completion_data_list:
+            self.print_completion_data = "\n".join(completion_data_list)
 
         if self.print_well_segments:
             self.print_well_segments = f"{self.print_well_segments}\n/\n\n"
@@ -295,6 +299,7 @@ def _format_completion_data(well_name: str, lateral_number: int, df_compdat: pd.
     if df_compdat.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compdat)
+    # TODO: Bit unrelated but reduce vspace of this get_header to only take one line with LATERAL X in middle?
     return prepare_outputs.get_header(
         well_name, Keywords.COMPLETION_DATA, lateral_number, "", nchar
     ) + prepare_outputs.dataframe_tostring(df_compdat, True)

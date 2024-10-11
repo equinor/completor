@@ -4,7 +4,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy import typing as npt
 
 from completor.constants import Content, Headers, Keywords
 from completor.logger import logger
@@ -369,7 +368,7 @@ def set_compdat(schedule_data: dict[str, dict[str, Any]], records: list[list[str
         records: Record set of COMPLETION_DATA data.
 
     Returns:
-        Records for inactive wells.
+        Key (well name), subkey (keyword), data (DataFrame).
     """
     columns = [
         Headers.WELL,
@@ -454,7 +453,7 @@ def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branc
 
 
 def get_well_segments(
-    well_data: dict[str, pd.DataFrame], branch: int | None = None
+    well_data: dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]], branch: int | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get-function for well segments.
 

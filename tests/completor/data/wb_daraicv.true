@@ -1,5 +1,6 @@
+REPLACED
 WELSPECS
---	WELL	GROUP	I	J	BHP_DEPTH	PHASE	DR	FLAG	SHUT	CROSS	
+--	WELL	GROUP	I	J	BHP_DEPTH	PHASE	DR	FLAG	SHUT	CROSS
 	A1	FIELD	1	1	2000	OIL	1*	SHUT	YES	1*	/
 	A2	FIELD	1	1	2000	OIL	1*	SHUT	YES	1*	/
 /
@@ -10,40 +11,72 @@ A2 /
 /
 
 COMPDAT
- A2 1 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
- A2 2 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
- A2 3 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
- A2 4 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
+----------------------------------------------------
+-- Well : A1 : Lateral : 1
+----------------------------------------------------
+-- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN
+   'A1'  1  1  1   1 OPEN      0 10  0.25  2   0.0 /
+   'A1'  2  1  1   1 OPEN      0 10  0.25  2   0.0 /
+   'A1'  3  1  1   1 OPEN      0 10  0.25  2   0.0 /
+   'A1'  4  1  1   1 OPEN      0 10  0.25  2   0.0 /
+	A2	1	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
+	A2	2	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
+	A2	3	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
+	A2	4	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
+/
+
+WELSEGS
+-- WELL     TRUE MEASURED WBVOLUME INFOTYPE
+--      VERTICAL    DEPTH
+--         DEPTH
+   'A1' 2000.000   2000.0       1*      ABS /
+----------------------------------------------------------------
+-- Well : A1 : Lateral : 1 : Tubing layer
+----------------------------------------------------------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+         2       2      1   1   2006.0 2000.000  0.2    0.0001 /
+         3       3      1   2   2018.0 2000.000  0.2    0.0001 /
+         4       4      1   3   2030.0 2000.000  0.2    0.0001 /
+         5       5      1   4   2042.0 2000.000  0.2    0.0001 /
+----------------------------------------------------------------
+-- Well : A1 : Lateral : 1 : Device layer
+----------------------------------------------------------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+         6       6      2   2   2006.1 2000.000  0.2    0.0001  / -- DAR types
+         7       7      3   3   2018.1 2000.000  0.2    0.0001  / -- DAR types
+         8       8      4   4   2030.1 2000.000  0.2    0.0001 / -- AICV types
+         9       9      5   5   2042.1 2000.000  0.2    0.0001 / -- AICV types
+----------------------------------------------------------------
+-- Well : A1 : Lateral : 1 : Annulus layer
+----------------------------------------------------------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+        10      10      6   6   2006.2 2000.000 0.15    0.0001 /
+        11      11      6  10   2018.1 2000.000 0.15    0.0001 /
+        12      12      7   8   2030.2 2000.000 0.15    0.0001 /
+        13      13      7  12   2042.1 2000.000 0.15    0.0001 /
 /
 
 
 
-
-WELSEGS
---	WELL	TVD	MD	WBVOL	INF	CMP	MOD	
-	A2	2000	2000	1*	ABS	1*	1*	/
---	SEG	SEG2	BRANCH	OUT	MD	TVD	DIAM	ROUGHNESS	
-	2	2	1	1	2012	2000	0.2	1.00E-04	/
-	3	3	1	2	2024	2000	0.2	1.00E-04	/
-	4	4	1	3	2036	2000	0.2	1.00E-04	/
-	5	5	1	4	2048	2000	0.2	1.00E-04	/
-/									
-
 COMPSEGS
-A2	/						
---	I	J	K	BRANCH	STARTMD	ENDMD	
-	1	1	1	1	2000	2012	/
-	2	1	1	1	2012	2024	/
-	3	1	1	1	2024	2036	/
-	4	1	1	1	2036	2048	/
-/							
-
-
-
-
-----------------------------------------------------------------------------------------------------
--- Output from completor
-----------------------------------------------------------------------------------------------------
+'A1' /
+---------------------------------------------------------
+-- Well : A1 : Lateral : 1
+---------------------------------------------------------
+-- I J K BRANCH    START      END  COMPSEGS DEF   START
+--              MEASURED MEASURED DIRECTION     SEGMENT
+--                 DEPTH    DEPTH                NUMBER
+   1 1 1      6 2000.000 2012.000        1*  3*      10 /
+   2 1 1      6 2012.000 2024.000        1*  3*      11 /
+   3 1 1      7 2024.000 2036.000        1*  3*      12 /
+   4 1 1      7 2036.000 2048.000        1*  3*      13 /
+/
 
 
 UDQ
@@ -52,77 +85,13 @@ DEFINE SUWCT NINT(SWHF*100/(SWHF+SOHF+1e-20))/100 /
 /
 
 
-COMPDAT
-----------------------------------------------------
--- Well : A1 : Lateral : 1
-----------------------------------------------------
--- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN  
-   'A1'  1  1  1   1 OPEN      0 10  0.25  2   0.0 /
-   'A1'  2  1  1   1 OPEN      0 10  0.25  2   0.0 /
-   'A1'  3  1  1   1 OPEN      0 10  0.25  2   0.0 /
-   'A1'  4  1  1   1 OPEN      0 10  0.25  2   0.0 /
-/
-
-
-WELSEGS
--- WELL     TRUE MEASURED WBVOLUME INFOTYPE  
---      VERTICAL    DEPTH                    
---         DEPTH                             
-   'A1' 2000.000   2000.0       1*      ABS /
-----------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Tubing layer
-----------------------------------------------------------------
---   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS  
--- SEGMENT SEGMENT               DEPTH VERTICAL                 
---  NUMBER  NUMBER                        DEPTH                 
-         2       2      1   1   2006.0 2000.000  0.2    0.0001 /
-         3       3      1   2   2018.0 2000.000  0.2    0.0001 /
-         4       4      1   3   2030.0 2000.000  0.2    0.0001 /
-         5       5      1   4   2042.0 2000.000  0.2    0.0001 /
-----------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Device layer
-----------------------------------------------------------------
---   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS                
--- SEGMENT SEGMENT               DEPTH VERTICAL                               
---  NUMBER  NUMBER                        DEPTH                               
-         6       6      2   2   2006.1 2000.000  0.2    0.0001  / -- DAR types
-         7       7      3   3   2018.1 2000.000  0.2    0.0001  / -- DAR types
-         8       8      4   4   2030.1 2000.000  0.2    0.0001 / -- AICV types
-         9       9      5   5   2042.1 2000.000  0.2    0.0001 / -- AICV types
-----------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Annulus layer
-----------------------------------------------------------------
---   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS  
--- SEGMENT SEGMENT               DEPTH VERTICAL                 
---  NUMBER  NUMBER                        DEPTH                 
-        10      10      6   6   2006.2 2000.000 0.15    0.0001 /
-        11      11      6  10   2018.1 2000.000 0.15    0.0001 /
-        12      12      7   8   2030.2 2000.000 0.15    0.0001 /
-        13      13      7  12   2042.1 2000.000 0.15    0.0001 /
-/
-
 WSEGLINK
 --------------------------
 -- Well : A1 : Lateral : 1
 --------------------------
--- WELL  ANNULUS  DEVICE  
+-- WELL  ANNULUS  DEVICE
    'A1'       11       7 /
    'A1'       13       9 /
-/
-
-
-COMPSEGS
-'A1' /
----------------------------------------------------------
--- Well : A1 : Lateral : 1
----------------------------------------------------------
--- I J K BRANCH    START      END  COMPSEGS DEF   START  
---              MEASURED MEASURED DIRECTION     SEGMENT  
---                 DEPTH    DEPTH                NUMBER  
-   1 1 1      6 2000.000 2012.000        1*  3*      10 /
-   2 1 1      6 2012.000 2024.000        1*  3*      11 /
-   3 1 1      7 2024.000 2036.000        1*  3*      12 /
-   4 1 1      7 2036.000 2048.000        1*  3*      13 /
 /
 
 
@@ -302,9 +271,9 @@ SUWCT 'A1' 8 < 0.95 AND /
 SGHF 'A1' 8 < 0.95 /
 /
 WSEGAICD
--- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F  
---      SEGMENT SEGMENT          FACTOR       FLUID       FLUID                                           
---       NUMBER  NUMBER                     DENSITY   VISCOSITY                                           
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
    'A1'       8       8    0.001   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
@@ -315,9 +284,9 @@ SUWCT 'A1' 8 >= 0.95 OR /
 SGHF 'A1' 8 >= 0.95 /
 /
 WSEGAICD
--- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F  
---      SEGMENT SEGMENT          FACTOR       FLUID       FLUID                                           
---       NUMBER  NUMBER                     DENSITY   VISCOSITY                                           
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
    'A1'       8       8    0.002   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
@@ -328,9 +297,9 @@ SUWCT 'A1' 9 < 0.95 AND /
 SGHF 'A1' 9 < 0.95 /
 /
 WSEGAICD
--- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F  
---      SEGMENT SEGMENT          FACTOR       FLUID       FLUID                                           
---       NUMBER  NUMBER                     DENSITY   VISCOSITY                                           
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
    'A1'       9       9    0.001   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
@@ -341,14 +310,38 @@ SUWCT 'A1' 9 >= 0.95 OR /
 SGHF 'A1' 9 >= 0.95 /
 /
 WSEGAICD
--- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F  
---      SEGMENT SEGMENT          FACTOR       FLUID       FLUID                                           
---       NUMBER  NUMBER                     DENSITY   VISCOSITY                                           
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
    'A1'       9       9    0.002   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
 
 
+
+
+
+
+
+
+WELSEGS
+--	WELL	TVD	MD	WBVOL	INF	CMP	MOD
+	A2	2000	2000	1*	ABS	1*	1*	/
+--	SEG	SEG2	BRANCH	OUT	MD	TVD	DIAM	ROUGHNESS
+	2	2	1	1	2012	2000	0.2	1.00E-04	/
+	3	3	1	2	2024	2000	0.2	1.00E-04	/
+	4	4	1	3	2036	2000	0.2	1.00E-04	/
+	5	5	1	4	2048	2000	0.2	1.00E-04	/
+/
+
+COMPSEGS
+A2	/
+--	I	J	K	BRANCH	STARTMD	ENDMD
+	1	1	1	1	2000	2012	/
+	2	1	1	1	2012	2024	/
+	3	1	1	1	2024	2036	/
+	4	1	1	1	2036	2048	/
+/
 
 
 
