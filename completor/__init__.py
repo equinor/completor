@@ -1,3 +1,3 @@
-from importlib import metadata
+from completor.utils import get_version
 
-__version__ = metadata.version("completor")
+__version__ = get_version()

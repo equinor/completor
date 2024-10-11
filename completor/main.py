@@ -15,8 +15,7 @@ from typing import Any
 
 import numpy as np
 
-import completor
-from completor import parse, read_schedule, utils
+from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
 from completor.exceptions import CompletorError
 from completor.launch_args_parser import get_parser
@@ -348,7 +347,7 @@ def main() -> None:
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
 
-    logger.info("Running Completor version %s. An advanced well modelling tool.", completor.__version__)
+    logger.info("Running Completor version %s. An advanced well modelling tool.", utils.get_version())
     logger.debug("-" * 60)
     start_a = time.time()
 
