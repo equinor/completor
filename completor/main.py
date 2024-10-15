@@ -213,10 +213,28 @@ def create(
         for i, well_name in enumerate(active_wells.tolist()):
             well = Well(well_name, i, case, meaningful_data[well_name])
 
-            output_object = create_output.Output(well, case, figure_name)
+            case.check_input(well_name, meaningful_data)
+
+            new_compdat = ""
+            new_compsegs = ""
+            new_welsegs = ""
+            bonus = ""
+            # for lateral in well.active_laterals:
+            output_object = create_output.Output(well, None, case, figure_name)
 
             # TODO: Maybe reformat WELSPECS not touched as well for a more consistent look?
             # TODO: Consider using update instead of returning and setting the whole str file.
+            for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
+
+                match keyword:
+                    case Keywords.COMPLETION_DATA:
+                        new_compdat += output_object.print_completion_data
+                    case Keywords.COMPLETION_SEGMENTS:
+                        new_compsegs += output_object.print_completion_segments
+                        bonus += output_object.bonus_data
+                    case Keywords.WELL_SEGMENTS:
+                        new_welsegs += output_object.print_well_segments
+
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
                 tmp_data = find_well_keyword_data(well_name, keyword, schedule)
                 old_data = str("\n".join(tmp_data))
@@ -228,17 +246,13 @@ def create(
                 except ValueError:
                     raise CompletorError("Could not match the old data to schedule file. Please contact the team!")
 
-                new_data = ""
                 match keyword:
                     case Keywords.COMPLETION_DATA:
-                        new_data = output_object.print_completion_data
+                        schedule = schedule.replace(old_data, new_compdat)
                     case Keywords.COMPLETION_SEGMENTS:
-                        new_data = output_object.print_completion_segments
-                        new_data += output_object.bonus_data
+                        schedule = schedule.replace(old_data, new_compsegs + bonus)
                     case Keywords.WELL_SEGMENTS:
-                        new_data = output_object.print_well_segments
-
-                schedule = schedule.replace(old_data, new_data)
+                        schedule = schedule.replace(old_data, new_welsegs)
 
     except Exception as e_:
         err = e_  # type: ignore
@@ -441,14 +455,14 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> list[str]:
                         lines.append(prev_line)
                     lines.reverse()
 
-                lines.append(line)
-            elif not once:
-                continue
-            # All following comments inside data.
-            elif line.strip().startswith("--"):
-                lines.append(line)
-            else:
-                break
+                    lines.append(line)
+                elif not once:
+                    continue
+                # All following comments inside data.
+                elif line.strip().startswith("--"):
+                    lines.append(line)
+                else:
+                    break
 
     return lines
 

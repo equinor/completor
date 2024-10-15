@@ -274,11 +274,13 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
         String header.
     """
     if keyword == Keywords.WELL_SEGMENTS:
-        header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
+        header = f"Well: {well_name}, Lateral: {lat}, Layer: {layer}"
     else:
-        header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
-    # return "\n" + header + "-" * nchar + "\n"
-    return header + "-" * nchar + "\n"
+        header = f"Well: {well_name}, Lateral: {lat}"
+
+    pad = max((nchar - len(header)) // 2, 2)
+
+    return f"{'-' * pad} {header} {'-' * pad}\n"
 
 
 def prepare_tubing_layer(

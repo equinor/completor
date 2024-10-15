@@ -59,6 +59,8 @@ class Well:
             )
 
         lateral_numbers = self._get_active_laterals(well_name, case.completion_table)
+
+        # TODO: Ahhh, we replace data well-based, not lateral-based so we replace too much probably
         self.active_laterals = [Lateral(num, well_name, case, well_data) for num in lateral_numbers]
 
         self.df_well_all_laterals = pd.DataFrame()

@@ -7,6 +7,7 @@ import utils_for_tests
 
 from completor import main
 from completor.constants import Keywords
+from completor.exceptions import CompletorError
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -587,12 +588,12 @@ def test_leading_whitespace_terminating_slash(tmpdir):
     schedule_file = Path(_TESTDIR / "leading_whitespace_terminating_slash.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
     utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    # TODO: This should be fine once user_created_lumping_oa is fixed
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_error_missing_keywords(tmpdir, caplog):
-    """Check error is reported if any of
-    WELL_SPECIFICATION, WELL_SEGMENTS, COMPLETION_DATA or COMSEGS are missing."""
+    """Check error is reported if any of WELL_SPECIFICATION, WELL_SEGMENTS, COMPLETION_DATA or COMSEGS are missing."""
     tmpdir.chdir()
     case_file = str(_TESTDIR / "well_4_lumping_tests_oa.case")
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
@@ -612,7 +613,7 @@ def test_error_missing_keywords(tmpdir, caplog):
         )
 
     assert e.value.code == 1
-    assert "Keyword WELSPECS is not found" in caplog.messages
+    assert "Well OP5 is missing required data for keyword(s) 'WELSPECS'" in caplog.messages
 
 
 def test_wsegicv_bottom(tmpdir):

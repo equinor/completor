@@ -24,7 +24,7 @@ from completor.wells import Lateral, Well
 class Output:
     """TODO: Attrs"""
 
-    def __init__(self, well: Well, case: ReadCasefile, figure_name: str | None = None):
+    def __init__(self, well: Well, lateral: Lateral, case: ReadCasefile, figure_name: str | None = None):
         """Formats the finished output string to be written to a file.
 
         Args:
@@ -34,15 +34,15 @@ class Output:
 
         Returns:
             Properly formatted output string ready to be written to file.
-
         """
 
         df_reservoir = well.df_reservoir_all_laterals
         df_well = well.df_well_all_laterals
+        # df_reservoir = lateral.df_reservoir
 
-        self.print_well_segments = ""
-        self.print_completion_segments = ""
-        self.print_completion_data = ""
+        self.print_well_segments = []
+        self.print_completion_segments = []
+        self.print_completion_data = []
         completion_data_list = []
         print_well_segments_link = ""
         print_valve = ""
@@ -62,7 +62,7 @@ class Output:
             _check_well_segments_header(lateral.df_welsegs_header, df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
 
             if not header_written:
-                self.print_well_segments += (
+                self.print_well_segments.append(
                     f"{Keywords.WELL_SEGMENTS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}"
                 )
                 header_written = True
@@ -135,11 +135,11 @@ class Output:
             completion_data_list.append(
                 _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data)
             )
-            self.print_well_segments += _format_well_segments(
-                well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
+            self.print_well_segments.append(
+                _format_well_segments(well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus)
             )
-            self.print_completion_segments += _format_completion_segments(
-                well.well_name, lateral.lateral_number, df_completion_segments
+            self.print_completion_segments.append(
+                _format_completion_segments(well.well_name, lateral.lateral_number, df_completion_segments)
             )
             print_well_segments_link += _format_well_segments_link(
                 well.well_name, lateral.lateral_number, df_well_segments_link
@@ -170,16 +170,17 @@ class Output:
                     )
                 logger.info("Creating schematics: %s.pdf", figure_name)
 
-        if completion_data_list:
-            self.print_completion_data = "\n".join(completion_data_list)
+        # if completion_data_list:
+        #     self.print_completion_data = "\n".join(completion_data_list)
+        self.print_completion_data = completion_data_list
 
-        if self.print_well_segments:
-            self.print_well_segments = f"{self.print_well_segments}\n/\n\n"
+        # if self.print_well_segments:
+        #     self.print_well_segments = f"{self.print_well_segments}\n/\n\n"
 
-        if self.print_completion_segments:
-            self.print_completion_segments = (
-                f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{self.print_completion_segments}\n/\n\n\n"
-            )
+        # if self.print_completion_segments:
+        #     self.print_completion_segments = (
+        #         f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{self.print_completion_segments}\n/\n\n\n"
+        #     )
 
         mask = case.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE
         if any(well.well_name == case.completion_table[mask][Headers.WELL]):
