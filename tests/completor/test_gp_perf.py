@@ -12,7 +12,10 @@ with open(Path(_TESTDIR / "welldefinition.testfile"), encoding="utf-8") as file:
 
 GP_PERF_BASE_CASE = """
 COMPLETION
-A1 1 0 3000 0.2 0.25 1.00E-4 GP 0 PERF 0
+--Well Branch Start End  Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number    MD  MD  Tubing   Casing            Content Joint   Type  Number
+--                       Diameter Diameter
+    A1      1     0 3000 0.2          0.25  1.00E-4      GP     0   PERF       0
 /
 """
 
@@ -69,15 +72,18 @@ def test_mix_in_branch(tmpdir):
     """
     tmpdir.chdir()
     case_file = """
-    COMPLETION
-    A1 1 0    2024 0.2 0.25 1.00E-4 GP 0 PERF 0
-    A1 1 2024 3000 0.2 0.25 1.00E-4 GP 1 AICD 1
-    /
+COMPLETION
+--Well Branch Start  End  Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number    MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                       Diameter Diameter
+    A1      1  0    2024    0.2     0.25    1.00E-4      GP     0    PERF       0
+    A1      1  2024 3000    0.2     0.25    1.00E-4      GP     1    AICD       1
+/
 
-    WSEGAICD
-    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
-    /
-    """
+WSEGAICD
+1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+/
+"""
     true_file = Path(_TESTDIR / "wb_perf_mix_inbranch.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE)
@@ -90,15 +96,19 @@ def test_mix_multibranch(tmpdir):
     """
     tmpdir.chdir()
     case_file = """
-    COMPLETION
-    A1 1 0 3000 0.2 0.25 1.00E-4 GP 0 PERF 0
-    A1 2 0 3000 0.2 0.25 1.00E-4 GP 1 AICD 1
-    /
+COMPLETION
+--Well Branch Start  End  Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number    MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                       Diameter Diameter
 
-    WSEGAICD
-    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
-    /
-    """
+    A1      1     0 3000    0.2     0.25    1.00E-4     GP      0    PERF       0
+    A1      2     0 3000    0.2     0.25    1.00E-4     GP      1    AICD       1
+/
+
+WSEGAICD
+1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+/
+"""
     with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as f:
         schedule_file = f.read()
     true_file = Path(_TESTDIR / "wb_perf_mix_multibranch.true")

@@ -4,7 +4,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy import typing as npt
 
 from completor.constants import Content, Headers, Keywords
 from completor.logger import logger
@@ -218,9 +217,7 @@ def set_welspecs(schedule_data: dict[str, dict[str, Any]], records: list[list[st
     return schedule_data
 
 
-def set_welsegs(
-    schedule_data: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
-) -> dict[str, dict[str, Any]]:
+def set_welsegs(schedule_data: dict[str, dict[str, Any]], recs: list[list[str]]) -> dict[str, dict[str, Any]]:
     """Update the well segments (WELSEGS) for a given well if it is an active well.
 
     * Pads missing record columns in header and contents with default values.
@@ -230,7 +227,6 @@ def set_welsegs(
 
     Args:
         schedule_data: Data containing multisegmented well schedules.
-        active_wells: Active wells.
         recs: Record set of header and contents data.
 
     Returns:
@@ -240,8 +236,10 @@ def set_welsegs(
         ValueError: If a well is not an active well.
     """
     well_name = recs[0][0]  # each WELL_SEGMENTS-chunk is for one well only
-    if well_name not in active_wells:
-        raise ValueError("The well must be active!")
+    # TODO: check this after fix.
+    #  Should be filtered later at least.
+    # if well_name not in active_wells:
+    #     raise ValueError("The well must be active!")
 
     # make df for header record
     columns_header = [
@@ -312,9 +310,7 @@ def set_welsegs(
     return schedule_data
 
 
-def set_compsegs(
-    schedule_data: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], recs: list[list[str]]
-) -> dict[str, dict[str, Any]]:
+def set_compsegs(schedule_data: dict[str, dict[str, Any]], recs: list[list[str]]) -> dict[str, dict[str, Any]]:
     """Update COMPLETION_SEGMENTS for a well if it is an active well.
 
     * Pads missing record columns in header and contents with default 1*.
@@ -323,7 +319,6 @@ def set_compsegs(
 
     Args:
         schedule_data: Data containing multisegmented well schedules.
-        active_wells: Active wells.
         recs: Record set of header and contents data.
 
     Returns:
@@ -333,8 +328,9 @@ def set_compsegs(
         ValueError: If a well is not an active well.
     """
     well_name = recs[0][0]  # each COMPLETION_SEGMENTS-chunk is for one well only
-    if well_name not in active_wells:
-        raise ValueError("The well must be active!")
+    # TODO: Check/Filter this later?
+    # if well_name not in active_wells:
+    #     raise ValueError("The well must be active!")
     columns = [
         Headers.I,
         Headers.J,
@@ -360,9 +356,7 @@ def set_compsegs(
     return schedule_data
 
 
-def handle_compdat(
-    schedule_data: dict[str, dict[str, Any]], active_wells: npt.NDArray[np.str_], records: list[list[str]]
-) -> dict[str, dict[str, Any]]:
+def set_compdat(schedule_data: dict[str, dict[str, Any]], records: list[list[str]]) -> dict[str, dict[str, Any]]:
     """Convert completion data (COMPDAT) record to a DataFrame.
 
     * Sets DataFrame column titles.
@@ -371,11 +365,10 @@ def handle_compdat(
 
     Args:
         schedule_data: Data containing multisegmented well schedules.
-        active_wells: Active wells, without duplicates.
         records: Record set of COMPLETION_DATA data.
 
     Returns:
-        Records for inactive wells.
+        Key (well name), subkey (keyword), data (DataFrame).
     """
     columns = [
         Headers.WELL,
@@ -412,7 +405,9 @@ def handle_compdat(
         errors="ignore",
     )
     # Compdat could be for multiple wells, split it.
-    for well_name in active_wells:
+    # for well_name in active_wells:
+    unique_wells = df[Headers.WELL].unique()
+    for well_name in unique_wells:
         if well_name not in schedule_data:
             if schedule_data.get(well_name) is None:
                 schedule_data[well_name] = {}
@@ -458,7 +453,7 @@ def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branc
 
 
 def get_well_segments(
-    well_data: dict[str, pd.DataFrame], branch: int | None = None
+    well_data: dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]], branch: int | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get-function for well segments.
 
