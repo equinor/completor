@@ -736,8 +736,8 @@ def prepare_completion_segments(
     Returns:
         COMPLETION_SEGMENTS DataFrame.
     """
-    df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]
-    df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
+    # df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]  # TODO: These shoudl not be nesseccary
+    # df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
     # compsegs is only for those who are either:
     # 1. open perforation in the device segment
     # 2. has number of device > 0
@@ -747,6 +747,7 @@ def prepare_completion_segments(
         | (df_reservoir[Headers.NUMBER_OF_DEVICES] > 0)
         | (df_reservoir[Headers.DEVICE_TYPE] == Content.PERFORATED)
     ]
+    # df_reservoir["BRANCH"] = df_reservoir["LATERAL"]
     # sort device dataframe by MEASURED_DEPTH to be used for pd.merge_asof
     if df_reservoir.shape[0] == 0:
         return pd.DataFrame()

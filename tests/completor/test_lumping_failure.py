@@ -250,10 +250,7 @@ def test_b1_lump_without_topbottom(tmpdir):
     and 0-x and y-99999 excluded."""
 
     tmpdir.chdir()
-    print(tmpdir)
     case_file = B1_LUMPING_WITHOUT_TOPBOTTOM
     true_file = Path(_TESTDIR / "b1_lumping_without_topbottom.true")
     utils_for_tests.open_files_run_create(case_file, B1, _TEST_FILE)
-    print(true_file)
-    print(_TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE)

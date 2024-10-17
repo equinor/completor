@@ -502,7 +502,6 @@ def test_user_segment_lumping_oa(tmpdir):
     schedule_file = Path(_TESTDIR / "drogon" / "drogon_input.sch")
     true_file = Path(_TESTDIR / "user_created_lumping_oa.true")
     utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
-    # TODO: The error seems to happen in wells.py::Well::_select_well when going through a lateral.
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 

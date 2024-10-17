@@ -1,6 +1,6 @@
 COMPLETION
 -- Well    Branch   StartMD   EndmD    Screen        Well   roughness  Annulus     Nvalve  ValveType   DeviceNumber
---         Number                      Tubing      Casin    roughness  Content     Joint
+--         Number                      Tubing      Casing   roughness  Content     Joint
 --                                    Diameter   Diameter
     OP5      1     3400.00  4010.28      0.151      0.216    0.00065     OA       1         AICD       1
     OP5      1     4010.28  4010.28      0.151      0.216    0.00065     PA       1         AICD       1

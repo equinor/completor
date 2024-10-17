@@ -24,7 +24,7 @@ from completor.wells import Lateral, Well
 class Output:
     """TODO: Attrs"""
 
-    def __init__(self, well: Well, lateral: Lateral, case: ReadCasefile, figure_name: str | None = None):
+    def __init__(self, well: Well, _: None, case: ReadCasefile, figure_name: str | None = None):
         """Formats the finished output string to be written to a file.
 
         Args:
@@ -58,8 +58,41 @@ class Output:
         start_branch = 1
 
         header_written = False
-        for lateral in well.active_laterals:
+        for lateral in well.all_laterals:
             _check_well_segments_header(lateral.df_welsegs_header, df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
+            if not lateral.active:
+                if not header_written:
+                    self.print_well_segments.append(
+                        f"{Keywords.WELL_SEGMENTS}\n{prepare_outputs.dataframe_tostring(lateral.df_welsegs_header, True)}"
+                    )
+                    header_written = True
+
+                self.print_well_segments.append(
+                    _format_well_segments(
+                        well.well_name, lateral.lateral_number, lateral.df_tubing, lateral.df_device, pd.DataFrame()
+                    )  # df_annulus)
+                )
+                df_completion_segments = prepare_outputs.prepare_completion_segments(
+                    well.well_name,
+                    lateral.lateral_number,
+                    lateral.df_reservoir,
+                    lateral.df_device,
+                    # df_annulus,
+                    pd.DataFrame(),
+                    lateral.df_completion,
+                    case.segment_length,
+                )
+                self.print_completion_segments.append(
+                    _format_completion_segments(well.well_name, lateral.lateral_number, df_completion_segments)
+                )
+                df_completion_data = prepare_outputs.prepare_completion_data(
+                    well.well_name, lateral.lateral_number, df_reservoir, lateral.df_completion
+                )
+                completion_data_list.append(
+                    _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data)
+                )
+
+                continue
 
             if not header_written:
                 self.print_well_segments.append(
@@ -67,32 +100,33 @@ class Output:
                 )
                 header_written = True
 
-            df_tubing, top = prepare_outputs.prepare_tubing_layer(
+            lateral.df_tubing, top = prepare_outputs.prepare_tubing_layer(
                 well, lateral, start_segment, start_branch, case.completion_table
             )
-            lateral.df_tubing = df_tubing
-            df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
-            lateral.df_device = df_device
+            lateral.df_device = prepare_outputs.prepare_device_layer(lateral.df_well, lateral.df_tubing)
 
-            if df_device.empty:
+            if lateral.df_device.empty:
                 logger.warning(
                     "No connection from reservoir to tubing in Well : %s Lateral : %d",
                     well.well_name,
                     lateral.lateral_number,
                 )
             df_annulus, df_well_segments_link = prepare_outputs.prepare_annulus_layer(
-                well.well_name, lateral.df_well, df_device
+                well.well_name, lateral.df_well, lateral.df_device
             )
             if df_annulus.empty:
                 logger.info("No annular flow in Well : %s Lateral : %d", well.well_name, lateral.lateral_number)
 
-            start_segment, start_branch = _update_segmentbranch(df_device, df_annulus)
+            start_segment, start_branch = _update_segmentbranch(lateral.df_device, df_annulus)
 
             df_tubing = _connect_lateral(well.well_name, lateral, top, well, case)
 
             df_tubing[Headers.BRANCH] = lateral.lateral_number
-            active_laterals = [lateral.lateral_number for lateral in well.active_laterals]
-            df_device, df_annulus = _branch_revision(lateral.lateral_number, active_laterals, df_device, df_annulus)
+            # active_laterals = [lateral.lateral_number for lateral in well.all_laterals]
+            # TODO: Might be it should have well.all_laterals here?
+            df_device, df_annulus = _branch_revision(
+                lateral.lateral_number, well.all_lateral_numbers, lateral.df_device, df_annulus
+            )
 
             completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == well.well_name]
             completion_table_lateral = completion_table_well[
@@ -101,8 +135,8 @@ class Output:
             df_completion_segments = prepare_outputs.prepare_completion_segments(
                 well.well_name,
                 lateral.lateral_number,
-                df_reservoir,
-                df_device,
+                lateral.df_reservoir,
+                lateral.df_device,
                 df_annulus,
                 completion_table_lateral,
                 case.segment_length,

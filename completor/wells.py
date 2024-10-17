@@ -58,22 +58,27 @@ class Well:
                 f"Well {well_name} is missing required data for keyword(s) '{', '.join(missing_keywords)}'"
             )
 
-        lateral_numbers = self._get_active_laterals(well_name, case.completion_table)
+        all_lateral_numbers = well_data[Keywords.COMPLETION_SEGMENTS][Headers.BRANCH].unique()
+        self.active_lateral_numbers = self._get_active_laterals(well_name, case.completion_table)
+        self.all_lateral_numbers = all_lateral_numbers
 
-        # TODO: Ahhh, we replace data well-based, not lateral-based so we replace too much probably
-        self.active_laterals = [Lateral(num, well_name, case, well_data) for num in lateral_numbers]
+        self.all_laterals = []
+        for num in all_lateral_numbers:
+            active = num in self.active_lateral_numbers
+            self.all_laterals.append(Lateral(num, well_name, case, well_data, active))
+        # self.all_laterals = [Lateral(num, well_name, case, well_data, active) for num in all_lateral_numbers]
+        # # TODO: Ahhh, we replace data well-based, not lateral-based so we replace too much probably
+        # self.active_laterals = [Lateral(num, well_name, case, well_data) for num in lateral_numbers]
 
         self.df_well_all_laterals = pd.DataFrame()
         self.df_reservoir_all_laterals = pd.DataFrame()
-        self.df_well_all_laterals = pd.concat([lateral.df_well for lateral in self.active_laterals], sort=False)
-        self.df_reservoir_all_laterals = pd.concat(
-            [lateral.df_reservoir for lateral in self.active_laterals], sort=False
-        )
+        self.df_well_all_laterals = pd.concat([lateral.df_well for lateral in self.all_laterals], sort=False)
+        self.df_reservoir_all_laterals = pd.concat([lateral.df_reservoir for lateral in self.all_laterals], sort=False)
         self.df_welsegs_header_all_laterals = pd.concat(
-            [lateral.df_welsegs_header for lateral in self.active_laterals], sort=False
+            [lateral.df_welsegs_header for lateral in self.all_laterals], sort=False
         )
         self.df_welsegs_content_all_laterals = pd.concat(
-            [lateral.df_welsegs_content for lateral in self.active_laterals], sort=False
+            [lateral.df_welsegs_content for lateral in self.all_laterals], sort=False
         )
 
     @staticmethod
@@ -105,6 +110,7 @@ class Lateral:
         df_reservoir: Data for reservoir-layer.
         df_tubing: Tubing data.
         df_device: Device data.
+        # TODO: active docs
     """
 
     lateral_number: int
@@ -124,6 +130,8 @@ class Lateral:
         well_name: str,
         case: ReadCasefile,
         well_data: dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]],
+        active: bool,
+        # TODO: Active can be swapped for df_completion.empty check
     ):
         """Create Lateral.
 
@@ -133,30 +141,35 @@ class Lateral:
             case: The case data.
             well_data: This wells' schedule data.
         """
+        self.active = active
         self.lateral_number = lateral_number
         self.df_completion = case.get_completion(well_name, lateral_number)
         self.df_welsegs_header, self.df_welsegs_content = read_schedule.get_well_segments(well_data, lateral_number)
 
-        self.df_device = pd.DataFrame()
+        # self.df_device = pd.DataFrame()
 
         self.df_reservoir = self._select_well(well_name, well_data, lateral_number)
         self.df_measured_true_vertical_depth = completion.well_trajectory(
             self.df_welsegs_header, self.df_welsegs_content
         )
-        self.df_completion = completion.define_annulus_zone(self.df_completion)
-        self.df_tubing = self._create_tubing_segments(
-            self.df_reservoir, self.df_completion, self.df_measured_true_vertical_depth, case
-        )
-        self.df_tubing = completion.insert_missing_segments(self.df_tubing, well_name)
-        self.df_well = completion.complete_the_well(self.df_tubing, self.df_completion, case.joint_length)
-        self.df_well = self._get_devices(self.df_completion, self.df_well, case)
-        self.df_well = completion.correct_annulus_zone(self.df_well)
-        self.df_reservoir = self._connect_cells_to_segments(
-            self.df_reservoir, self.df_well, self.df_tubing, case.method
-        )
-        self.df_well[Headers.WELL] = well_name
+        self.df_well = pd.DataFrame()
+        self.df_tubing = pd.DataFrame()
+
+        if self.active:
+            self.df_completion = completion.define_annulus_zone(self.df_completion)
+            self.df_tubing = self._create_tubing_segments(
+                self.df_reservoir, self.df_completion, self.df_measured_true_vertical_depth, case
+            )
+            self.df_tubing = completion.insert_missing_segments(self.df_tubing, well_name)
+            self.df_well = completion.complete_the_well(self.df_tubing, self.df_completion, case.joint_length)
+            self.df_well = self._get_devices(self.df_completion, self.df_well, case)
+            self.df_well = completion.correct_annulus_zone(self.df_well)
+            self.df_reservoir = self._connect_cells_to_segments(
+                self.df_reservoir, self.df_well, self.df_tubing, case.method
+            )
+            self.df_well[Headers.WELL] = well_name
+            self.df_well[Headers.LATERAL] = lateral_number
         self.df_reservoir[Headers.WELL] = well_name
-        self.df_well[Headers.LATERAL] = lateral_number
         self.df_reservoir[Headers.LATERAL] = lateral_number
 
     @staticmethod
@@ -203,6 +216,7 @@ class Lateral:
             Reservoir data with additional info on connected cells.
         """
         # drop BRANCH column, not needed
+        # TODO: Ehh?
         df_reservoir = df_reservoir.drop([Headers.BRANCH], axis=1)
         icv_device = (
             df_well[Headers.DEVICE_TYPE].nunique() > 1

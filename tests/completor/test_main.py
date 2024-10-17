@@ -7,7 +7,6 @@ import utils_for_tests
 
 from completor import main
 from completor.constants import Keywords
-from completor.exceptions import CompletorError
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
