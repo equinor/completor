@@ -736,8 +736,8 @@ def prepare_completion_segments(
     Returns:
         COMPLETION_SEGMENTS DataFrame.
     """
-    # df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]  # TODO: These shoudl not be nesseccary
-    # df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
+    df_reservoir = df_reservoir[df_reservoir[Headers.WELL] == well_name]  # TODO: These shoudl not be nesseccary
+    df_reservoir = df_reservoir[df_reservoir[Headers.LATERAL] == lateral]
     # compsegs is only for those who are either:
     # 1. open perforation in the device segment
     # 2. has number of device > 0
@@ -786,7 +786,7 @@ def prepare_completion_segments(
         compseg[Headers.J] = df_compseg_device[Headers.J].to_numpy()
         compseg[Headers.K] = df_compseg_device[Headers.K].to_numpy()
         # take the BRANCH column from df_device
-        compseg[Headers.BRANCH] = df_compseg_device[Headers.BRANCH].to_numpy()
+        compseg[Headers.BRANCH] = df_compseg_device["BRANCH_y"].to_numpy()
         compseg[Headers.START_MEASURED_DEPTH] = df_compseg_device[Headers.START_MEASURED_DEPTH].to_numpy()
         compseg[Headers.END_MEASURED_DEPTH] = df_compseg_device[Headers.END_MEASURED_DEPTH].to_numpy()
         compseg[Headers.COMPSEGS_DIRECTION] = df_compseg_device[Headers.COMPSEGS_DIRECTION].to_numpy()

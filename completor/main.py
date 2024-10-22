@@ -220,7 +220,8 @@ def create(
             new_welsegs = ""
             bonus = ""
             # for lateral in well.active_laterals:
-            output_object = create_output.Output(well, None, case, figure_name)
+            # output_object = create_output.Output(well, None, case, figure_name)
+            output = create_output.format_output(well, case, figure_name, paths)
 
             # TODO: Maybe reformat WELSPECS not touched as well for a more consistent look?
             # TODO: Consider using update instead of returning and setting the whole str file.
@@ -228,12 +229,15 @@ def create(
 
                 match keyword:
                     case Keywords.COMPLETION_DATA:
-                        new_compdat += output_object.print_completion_data
+                        ...
+                        # new_compdat += output_object.print_completion_data
                     case Keywords.COMPLETION_SEGMENTS:
-                        new_compsegs += output_object.print_completion_segments
-                        bonus += output_object.bonus_data
+                        ...
+                        # new_compsegs += output_object.print_completion_segments
+                        # bonus += output_object.bonus_data
                     case Keywords.WELL_SEGMENTS:
-                        new_welsegs += output_object.print_well_segments
+                        ...
+                        # new_welsegs += output_object.print_well_segments
 
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
                 tmp_data = find_well_keyword_data(well_name, keyword, schedule)
