@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from utils_for_tests import ReadSchedule
 
-import completor.parse as fr
+from completor import parse
 from completor import utils
 from completor.constants import Headers
 from completor.read_schedule import fix_compsegs, fix_welsegs
@@ -54,7 +54,7 @@ def test_reading_welspecs():
             Headers.POLYMER_MIXING_TABLE_NUMBER,
         ],
     )
-    df_true = fr.remove_string_characters(df_true)
+    df_true = parse.remove_string_characters(df_true)
     df_true = df_true.astype(str)
     pd.testing.assert_frame_equal(df_true, _SCHEDULE.welspecs)
 
@@ -92,7 +92,7 @@ def test_reading_compdat():
     """
     true_compdat = Path(_TESTDIR / "compdat.true")
     df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
-    df_true = fr.remove_string_characters(df_true)
+    df_true = parse.remove_string_characters(df_true)
     columns1 = [Headers.I, Headers.J, Headers.K, Headers.K2]
     columns2 = [Headers.CONNECTION_FACTOR, Headers.FORMATION_PERMEABILITY_THICKNESS, Headers.SKIN]
     df_true[columns1] = df_true[columns1].astype(np.int64)
@@ -151,11 +151,11 @@ def test_reading_welsegs():
             Headers.THERMAL_CONDUCTIVITY_PIPE_WALL,
         ],
     )
-    true_welsegs1 = fr.remove_string_characters(true_welsegs1)
+    true_welsegs1 = parse.remove_string_characters(true_welsegs1)
     true_welsegs1 = true_welsegs1.astype({Headers.TRUE_VERTICAL_DEPTH: np.float64, Headers.MEASURED_DEPTH: np.float64})
     true_well4 = Path(_TESTDIR / "welsegs_well4.true")
     true_well4 = pd.read_csv(true_well4, sep=",", dtype=object)
-    true_well4 = fr.remove_string_characters(true_well4)
+    true_well4 = parse.remove_string_characters(true_well4)
     true_well4 = true_well4.astype(
         {
             Headers.TUBING_SEGMENT: np.int64,
@@ -203,7 +203,7 @@ def test_reading_wsegvalv():
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
     )
-    df_true = fr.remove_string_characters(df_true)
+    df_true = parse.remove_string_characters(df_true)
     df_true = df_true.astype(
         {
             Headers.WELL: "string",

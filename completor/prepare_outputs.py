@@ -269,10 +269,33 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
         String header.
     """
     if keyword == Keywords.WELL_SEGMENTS:
-        header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
+        header = f"Well: {well_name}, Lateral: {lat}, Layer: {layer}"
     else:
-        header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
-    return "\n" + header + "-" * nchar + "\n"
+        header = f"Well: {well_name}, Lateral: {lat}"
+
+    pad = max((nchar - len(header)) // 2, 2)
+
+    return f"{'-' * pad} {header} {'-' * pad}\n"
+
+
+# def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 100) -> str:
+#     """Print the header.
+#
+#     Args:
+#         well_name: Well name.
+#         keyword: Table keyword e.g. WELL_SEGMENTS, COMPLETION_SEGMENTS, COMPLETION_DATA, etc.
+#         lat: Lateral number.
+#         layer: Layer description e.g. tubing, device and annulus.
+#         nchar: Number of characters for the line boundary. Default 100.
+#
+#     Returns:
+#         String header.
+#     """
+#     if keyword == Keywords.WELL_SEGMENTS:
+#         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
+#     else:
+#         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
+#     return "\n" + header + "-" * nchar + "\n"
 
 
 def prepare_tubing_layer(

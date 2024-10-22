@@ -10,13 +10,14 @@ from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
-import completor
 from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords
 from completor.create_output import format_header
 from completor.exceptions import CompletorError
+from completor.get_version import get_version
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
@@ -169,6 +170,7 @@ def create(
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
     schedule_data: dict[str, dict[str, Any]] = {}
+    schedule = schedule_file  # TODO: Refactor
     well = None
 
     figure_name = None
@@ -191,104 +193,169 @@ def create(
     line_number = 0
     prev_line_number = 0
     well_names = []
+    # with tqdm(total=len(lines)) as progress_bar:
+    #     while line_number < len(lines):
+    #         progress_bar.update(line_number - prev_line_number)
+    #         prev_line_number = line_number
+    #         line = lines[line_number]
+    #         keyword = line[:8].rstrip()
+    #
+    #         # Unrecognized (potential) keywords are written back untouched.
+    #         if keyword not in Keywords.main_keywords:
+    #             output_text += f"{line}\n"
+    #             line_number += 1
+    #             continue
+    #
+    #         # TODO(#164): Check that this works properly in multi-well environment.
+    #         well_name = _get_well_name(clean_lines_map, line_number)
+    #
+    #         if keyword == Keywords.WELL_SPECIFICATION:
+    #             if well_name not in list(active_wells):
+    #                 output_text += format_text(keyword, "")
+    #                 line_number += 1
+    #                 continue  # not an active well
+    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+    #             schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
+    #             raw = lines[line_number:after_content_line_number]
+    #             # Write it back 'untouched'.
+    #             output_text += format_text(keyword, raw, chunk=False, end_of_record=True)
+    #             line_number = after_content_line_number + 1
+    #             continue
+    #
+    #         elif keyword == Keywords.COMPLETION_DATA:
+    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+    #             untouched_content = [rec for rec in chunk if rec[0] not in list(active_wells)]
+    #             current_wells = {rec[0] for rec in chunk if rec[0]}
+    #             current_active_wells = np.array(list(current_wells.intersection(active_wells)))
+    #             if current_active_wells.size > 0:
+    #                 schedule_data = read_schedule.set_compdat(schedule_data, chunk)
+    #             if untouched_content:
+    #                 # Write untouched wells back as-is.
+    #                 output_text += format_text(keyword, untouched_content, end_of_record=True)
+    #             line_number = after_content_line_number + 1
+    #             continue
+    #
+    #         elif keyword == Keywords.WELL_SEGMENTS:
+    #             if well_name not in list(active_wells):
+    #                 output_text += format_text(keyword, "")
+    #                 line_number += 1
+    #                 continue  # not an active well
+    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+    #             schedule_data = read_schedule.set_welsegs(schedule_data, chunk)
+    #             line_number = after_content_line_number + 1
+    #             continue
+    #
+    #         elif keyword == Keywords.COMPLETION_SEGMENTS:
+    #             if well_name not in list(active_wells):
+    #                 output_text += format_text(keyword, "")
+    #                 line_number += 1
+    #                 continue  # not an active well
+    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+    #
+    #             schedule_data = read_schedule.set_compsegs(schedule_data, chunk)
+    #
+    #             line_number = after_content_line_number + 1
+    #             case.check_input(well_name, schedule_data)
+    #
+    #         well_names.append(well_name)
+    #
+    #     output_text += "\n" + format_header(paths)
+    #     for i, well_name_ in tqdm(enumerate(well_names), total=len(well_names)):
+    #         logger.debug("Writing new MSW info for well %s", well_name_)
+    #         # well = Well(well_name_, i, case, schedule_data[well_name_])
+    #         # output = create_output.format_output(well, case, figure_name, paths)
+    #         # output_text += "\n" + output
+    # line_number = 0
+    # prev_line_number = 0
+    # well_names = []
+    # schedule = schedule_file  # TODO: Refactor
+    # Add banner.
+    schedule = create_output.metadata_banner(paths) + schedule
+    # Strip trailing whitespace.
+    schedule = re.sub(r"[^\S\r\n]+$", "", schedule, flags=re.MULTILINE)
+    meaningful_data: dict[str, dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]]] = {}
+
     try:
-        with tqdm(total=len(lines)) as progress_bar:
-            while line_number < len(lines):
-                progress_bar.update(line_number - prev_line_number)
-                prev_line_number = line_number
-                line = lines[line_number]
-                keyword = line[:8].rstrip()
+        # TODO(#ANDRE): Consider using update instead of returning and setting the whole dict.
+        keyword = Keywords.WELL_SPECIFICATION
+        chunks = find_keyword_data(keyword, schedule)
+        for chunk in chunks:
+            clean_data = clean_raw_data(chunk, keyword)
+            meaningful_data = read_schedule.set_welspecs(meaningful_data, clean_data)
 
-                # Unrecognized (potential) keywords are written back untouched.
-                if keyword not in Keywords.main_keywords:
-                    output_text += f"{line}\n"
-                    line_number += 1
-                    continue
+        keyword = Keywords.COMPLETION_DATA
+        chunks = find_keyword_data(keyword, schedule)
+        for chunk in chunks:
+            clean_data = clean_raw_data(chunk, keyword)
+            meaningful_data = read_schedule.set_compdat(meaningful_data, clean_data)
 
-                # TODO(#164): Check that this works properly in multi-well environment.
-                well_name = _get_well_name(clean_lines_map, line_number)
+        keyword = Keywords.WELL_SEGMENTS
+        chunks = find_keyword_data(keyword, schedule)
+        for chunk in chunks:
+            clean_data = clean_raw_data(chunk, keyword)
+            meaningful_data = read_schedule.set_welsegs(meaningful_data, clean_data)
 
-                if keyword == Keywords.WELL_SPECIFICATION:
-                    if well_name not in list(active_wells):
-                        output_text += format_text(keyword, "")
-                        line_number += 1
-                        continue  # not an active well
-                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
-                    raw = lines[line_number:after_content_line_number]
-                    # Write it back 'untouched'.
-                    output_text += format_text(keyword, raw, chunk=False, end_of_record=True)
-                    line_number = after_content_line_number + 1
-                    continue
+        keyword = Keywords.COMPLETION_SEGMENTS
+        chunks = find_keyword_data(keyword, schedule)
+        for chunk in chunks:
+            clean_data = clean_raw_data(chunk, keyword)
+            meaningful_data = read_schedule.set_compsegs(meaningful_data, clean_data)
 
-                elif keyword == Keywords.COMPLETION_DATA:
-                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    untouched_content = [rec for rec in chunk if rec[0] not in list(active_wells)]
-                    current_wells = {rec[0] for rec in chunk if rec[0]}
-                    current_active_wells = np.array(list(current_wells.intersection(active_wells)))
-                    if current_active_wells.size > 0:
-                        schedule_data = read_schedule.handle_compdat(
-                            schedule_data, np.array(list(current_active_wells)), chunk
-                        )
-                    if untouched_content:
-                        # Write untouched wells back as-is.
-                        output_text += format_text(keyword, untouched_content, end_of_record=True)
-                    line_number = after_content_line_number + 1
-                    continue
+        for i, well_name in enumerate(active_wells.tolist()):
+            case.check_input(well_name, meaningful_data)  # TODO: This apparently have to be done first here!
+            well = Well(well_name, i, case, meaningful_data[well_name])
+            # well = Well(well_name_, i, case, schedule_data[well_name_])
+            compdat, welsegs, compsegs, bonus, _ = create_output.format_output(well, case, figure_name, paths)
 
-                elif keyword == Keywords.WELL_SEGMENTS:
-                    if well_name not in list(active_wells):
-                        output_text += format_text(keyword, "")
-                        line_number += 1
-                        continue  # not an active well
-                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-                    schedule_data = read_schedule.set_welsegs(schedule_data, active_wells, chunk)
-                    line_number = after_content_line_number + 1
-                    continue
+            # new_compdat = ""
+            # new_compsegs = ""
+            # new_welsegs = ""
+            # bonus = ""
+            # for lateral in well.active_laterals:
+            # output_object = create_output.Output(well, None, case, figure_name)
+            # output = create_output.format_output(well, case, figure_name, paths)
 
-                elif keyword == Keywords.COMPLETION_SEGMENTS:
-                    if well_name not in list(active_wells):
-                        output_text += format_text(keyword, "")
-                        line_number += 1
-                        continue  # not an active well
-                    chunk, after_content_line_number = process_content(line_number, clean_lines_map)
+            # TODO: Maybe reformat WELSPECS not touched as well for a more consistent look?
+            # TODO: Consider using update instead of returning and setting the whole str file.
 
-                    schedule_data = read_schedule.set_compsegs(schedule_data, active_wells, chunk)
+            for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
+                tmp_data = find_well_keyword_data(well_name, keyword, schedule)
+                old_data = str("\n".join(tmp_data))
+                try:
+                    # Check that nothing is lost.
+                    schedule.index(old_data)
+                    if not old_data:
+                        raise ValueError
+                except ValueError:
+                    raise CompletorError("Could not match the old data to schedule file. Please contact the team!")
 
-                    line_number = after_content_line_number + 1
-                    case.check_input(well_name, schedule_data)
-
-                well_names.append(well_name)
-
-            else:
-                progress_bar.update(len(lines) - prev_line_number)
-
-        output_text += "\n" + format_header(paths)
-        for i, well_name_ in tqdm(enumerate(well_names), total=len(well_names)):
-            logger.debug("Writing new MSW info for well %s", well_name_)
-            well = Well(well_name_, i, case, schedule_data[well_name_])
-            output = create_output.format_output(well, case, figure_name, paths)
-            output_text += "\n" + output
+                match keyword:
+                    case Keywords.COMPLETION_DATA:
+                        schedule = schedule.replace(old_data, compdat)
+                    case Keywords.COMPLETION_SEGMENTS:
+                        schedule = schedule.replace(old_data, compsegs + bonus)
+                    case Keywords.WELL_SEGMENTS:
+                        schedule = schedule.replace(old_data, welsegs)
 
     except Exception as e_:
         err = e_  # type: ignore
     finally:
         # Make sure the output thus far is written, and figure files are closed.
-        output_text = _replace_preprocessing_names(output_text, case.mapper)
+        schedule = _replace_preprocessing_names(schedule, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
-            file.write(output_text)
+            file.write(schedule)
 
     if err is not None:
         raise err
 
-    if output is None:
-        if len(active_wells) != 0:
-            raise ValueError(
-                "Inconsistent case and schedule files. Check well names, "
-                "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
-            )
-        return case, well
-    return case, well, output
+    # if output is None:
+    #     if len(active_wells) != 0:
+    #         raise ValueError(
+    #             "Inconsistent case and schedule files. Check well names, "
+    #             "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
+    #         )
+    #     return case, well
+    return case, well  # , output
 
 
 def main() -> None:
@@ -335,7 +402,7 @@ def main() -> None:
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
 
-    logger.info("Running Completor version %s. An advanced well modelling tool.", completor.__version__)
+    logger.info("Running Completor version %s. An advanced well modelling tool.", get_version())
     logger.debug("-" * 60)
     start_a = time.time()
 
@@ -392,6 +459,104 @@ def _format_content(text: str) -> list[list[str]]:
         if new_record:
             expanded_data.append(new_record.split())
     return expanded_data
+
+
+def find_keyword_data(keyword: str, text: str) -> list[str]:
+    """Finds the common pattern for the four keywords thats needed.
+
+    Args:
+        keyword: Current keyword.
+        text: The whole text to find matches in.
+
+    Returns:
+        The matches if any.
+
+    """
+    # Finds keyword followed by two slashes.
+    # Matches any characters followed by a newline, non-greedily, to allow for comments within the data.
+    # Matches new line followed by a single (can have leading whitespace) slash.
+    pattern = rf"^{keyword}(?:.*\n)*?\s*\/"
+    return re.findall(pattern, text, re.MULTILINE)
+
+
+def clean_raw_data(raw_record: str, keyword: str) -> list[list[str]]:
+    """Parse the record and clean its content.
+
+    Args:
+        raw_record: Raw data taken straight from schedule.
+        keyword: The current keyword.
+
+    Returns:
+        The contents of the keyword, cleaned.
+    """
+    record = re.split(rf"{keyword}\n", raw_record)
+    if len(record) != 2:
+        raise CompletorError(f"Something went wrong when reading keyword '{keyword}' from schedule:\n{raw_record}")
+    # Strip keyword and last line.
+    raw_content = record[1].splitlines()
+    if raw_content[-1].strip().startswith("/"):
+        raw_content = raw_content[:-1]
+
+    clean_content = []
+    for line in raw_content:
+        clean_line = clean_file_line(line, remove_quotation_marks=True)
+        if clean_line:
+            clean_content.append(_format_content(clean_line)[0])
+    return clean_content
+
+
+def find_well_keyword_data(well: str, keyword: str, text: str) -> list[str]:
+    """Find the data associated with keyword and well name, include leading comments.
+
+    Args:
+        well: Well name.
+        keyword: Keyword to search for.
+        text: Raw text to look for matches in.
+
+    Returns:
+        The correct match given keyword and well name.
+    """
+    matches = find_keyword_data(keyword, text)
+
+    lines = []
+    for match in matches:
+        if re.search(well, match) is None:
+            continue
+
+        match = match.splitlines()
+        once = False
+        for i, line in enumerate(match):
+            if not line:
+                if once:
+                    lines.append(line)
+                continue
+
+            if well in line.split()[0]:  # or f"'{well}'" == line.split()[0]: # TODO: This should be redundant.
+                if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
+                    # These keywords should just be the entire match as they never contain more than one well.
+                    return match
+                if not once:
+                    once = True
+                    # Remove contiguous comments above the first line by looking backwards,
+                    # adding it to the replaceable text match.
+                    for prev_line in match[i - 1 :: -1]:
+                        if not prev_line.strip().startswith("--") or not prev_line:
+                            break
+                        lines.append(prev_line)
+                    lines.reverse()
+
+                    lines.append(line)
+                else:
+                    lines.append(line)
+            elif not once:
+                continue
+            # All following comments inside data.
+            elif line.strip().startswith("--"):
+                lines.append(line)
+            else:
+                break
+
+    return lines
 
 
 if __name__ == "__main__":
