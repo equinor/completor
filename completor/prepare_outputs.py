@@ -269,7 +269,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
         String header.
     """
     if keyword == Keywords.WELL_SEGMENTS:
-        header = f"Well: {well_name}, Lateral: {lat}, Layer: {layer}"
+        header = f"Well: {well_name}, Lateral: {lat}, {layer} layer"
     else:
         header = f"Well: {well_name}, Lateral: {lat}"
 
