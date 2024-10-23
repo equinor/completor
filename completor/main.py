@@ -7,15 +7,12 @@ import os
 import re
 import time
 from collections.abc import Mapping
-from typing import Any
 
 import numpy as np
-import pandas as pd
 from tqdm import tqdm
 
 from completor import create_output, parse, read_schedule, utils
-from completor.constants import Keywords
-from completor.create_output import format_header
+from completor.constants import Keywords, ScheduleData
 from completor.exceptions import CompletorError
 from completor.get_version import get_version
 from completor.launch_args_parser import get_parser
@@ -152,7 +149,7 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
 
 def create(
     input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
-) -> tuple[ReadCasefile, Well | None, str] | tuple[ReadCasefile, Well | None]:
+) -> tuple[ReadCasefile, Well | None]:
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
@@ -165,13 +162,8 @@ def create(
     Returns:
         The case and schedule file, the well and output object.
     """
-    output_text = ""
-    output = None
     case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    schedule_data: dict[str, dict[str, Any]] = {}
-    schedule = schedule_file  # TODO: Refactor
-    well = None
 
     figure_name = None
     if show_fig:
@@ -189,91 +181,13 @@ def create(
             clean_lines_map[line_number] = line
 
     err: Exception | None = None
-
-    line_number = 0
-    prev_line_number = 0
-    well_names = []
-    # with tqdm(total=len(lines)) as progress_bar:
-    #     while line_number < len(lines):
-    #         progress_bar.update(line_number - prev_line_number)
-    #         prev_line_number = line_number
-    #         line = lines[line_number]
-    #         keyword = line[:8].rstrip()
-    #
-    #         # Unrecognized (potential) keywords are written back untouched.
-    #         if keyword not in Keywords.main_keywords:
-    #             output_text += f"{line}\n"
-    #             line_number += 1
-    #             continue
-    #
-    #         # TODO(#164): Check that this works properly in multi-well environment.
-    #         well_name = _get_well_name(clean_lines_map, line_number)
-    #
-    #         if keyword == Keywords.WELL_SPECIFICATION:
-    #             if well_name not in list(active_wells):
-    #                 output_text += format_text(keyword, "")
-    #                 line_number += 1
-    #                 continue  # not an active well
-    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-    #             schedule_data = read_schedule.set_welspecs(schedule_data, chunk)
-    #             raw = lines[line_number:after_content_line_number]
-    #             # Write it back 'untouched'.
-    #             output_text += format_text(keyword, raw, chunk=False, end_of_record=True)
-    #             line_number = after_content_line_number + 1
-    #             continue
-    #
-    #         elif keyword == Keywords.COMPLETION_DATA:
-    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-    #             untouched_content = [rec for rec in chunk if rec[0] not in list(active_wells)]
-    #             current_wells = {rec[0] for rec in chunk if rec[0]}
-    #             current_active_wells = np.array(list(current_wells.intersection(active_wells)))
-    #             if current_active_wells.size > 0:
-    #                 schedule_data = read_schedule.set_compdat(schedule_data, chunk)
-    #             if untouched_content:
-    #                 # Write untouched wells back as-is.
-    #                 output_text += format_text(keyword, untouched_content, end_of_record=True)
-    #             line_number = after_content_line_number + 1
-    #             continue
-    #
-    #         elif keyword == Keywords.WELL_SEGMENTS:
-    #             if well_name not in list(active_wells):
-    #                 output_text += format_text(keyword, "")
-    #                 line_number += 1
-    #                 continue  # not an active well
-    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-    #             schedule_data = read_schedule.set_welsegs(schedule_data, chunk)
-    #             line_number = after_content_line_number + 1
-    #             continue
-    #
-    #         elif keyword == Keywords.COMPLETION_SEGMENTS:
-    #             if well_name not in list(active_wells):
-    #                 output_text += format_text(keyword, "")
-    #                 line_number += 1
-    #                 continue  # not an active well
-    #             chunk, after_content_line_number = process_content(line_number, clean_lines_map)
-    #
-    #             schedule_data = read_schedule.set_compsegs(schedule_data, chunk)
-    #
-    #             line_number = after_content_line_number + 1
-    #             case.check_input(well_name, schedule_data)
-    #
-    #         well_names.append(well_name)
-    #
-    #     output_text += "\n" + format_header(paths)
-    #     for i, well_name_ in tqdm(enumerate(well_names), total=len(well_names)):
-    #         logger.debug("Writing new MSW info for well %s", well_name_)
-    #         # well = Well(well_name_, i, case, schedule_data[well_name_])
-    #         # output = create_output.format_output(well, case, figure_name, paths)
-    #         # output_text += "\n" + output
-    # line_number = 0
-    # prev_line_number = 0
-    # well_names = []
-    # schedule = schedule_file  # TODO: Refactor
+    well = None
+    schedule = schedule_file  # TODO: Refactor
     # Add banner.
     schedule = create_output.metadata_banner(paths) + schedule
     # Strip trailing whitespace.
     schedule = re.sub(r"[^\S\r\n]+$", "", schedule, flags=re.MULTILINE)
-    meaningful_data: dict[str, dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]]] = {}
+    meaningful_data: ScheduleData = {}
 
     try:
         # TODO(#ANDRE): Consider using update instead of returning and setting the whole dict.
@@ -301,19 +215,10 @@ def create(
             clean_data = clean_raw_data(chunk, keyword)
             meaningful_data = read_schedule.set_compsegs(meaningful_data, clean_data)
 
-        for i, well_name in enumerate(active_wells.tolist()):
+        for i, well_name in tqdm(enumerate(active_wells.tolist()), total=len(active_wells)):
             case.check_input(well_name, meaningful_data)  # TODO: This apparently have to be done first here!
             well = Well(well_name, i, case, meaningful_data[well_name])
-            # well = Well(well_name_, i, case, schedule_data[well_name_])
-            compdat, welsegs, compsegs, bonus, _ = create_output.format_output(well, case, figure_name, paths)
-
-            # new_compdat = ""
-            # new_compsegs = ""
-            # new_welsegs = ""
-            # bonus = ""
-            # for lateral in well.active_laterals:
-            # output_object = create_output.Output(well, None, case, figure_name)
-            # output = create_output.format_output(well, case, figure_name, paths)
+            compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, figure_name)
 
             # TODO: Maybe reformat WELSPECS not touched as well for a more consistent look?
             # TODO: Consider using update instead of returning and setting the whole str file.
@@ -322,10 +227,12 @@ def create(
                 tmp_data = find_well_keyword_data(well_name, keyword, schedule)
                 old_data = str("\n".join(tmp_data))
                 try:
+                    if not old_data:
+                        raise CompletorError(
+                            "Could not find the unmodified data in original schedule file. Please contact the team!"
+                        )
                     # Check that nothing is lost.
                     schedule.index(old_data)
-                    if not old_data:
-                        raise ValueError
                 except ValueError:
                     raise CompletorError("Could not match the old data to schedule file. Please contact the team!")
 
@@ -348,14 +255,7 @@ def create(
     if err is not None:
         raise err
 
-    # if output is None:
-    #     if len(active_wells) != 0:
-    #         raise ValueError(
-    #             "Inconsistent case and schedule files. Check well names, "
-    #             "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
-    #         )
-    #     return case, well
-    return case, well  # , output
+    return case, well
 
 
 def main() -> None:
@@ -523,18 +423,18 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> list[str]:
         if re.search(well, match) is None:
             continue
 
-        match = match.splitlines()
+        matchlines = match.splitlines()
         once = False
-        for i, line in enumerate(match):
+        for i, line in enumerate(matchlines):
             if not line:
                 if once:
                     lines.append(line)
                 continue
 
-            if well in line.split()[0]:  # or f"'{well}'" == line.split()[0]: # TODO: This should be redundant.
+            if well in line.split()[0]:
                 if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
                     # These keywords should just be the entire match as they never contain more than one well.
-                    return match
+                    return matchlines
                 if not once:
                     once = True
                     # Remove contiguous comments above the first line by looking backwards,

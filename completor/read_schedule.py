@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import pandas as pd
 
-from completor.constants import Content, Headers, Keywords
+from completor.constants import Content, Headers, Keywords, ScheduleData, WellData
 from completor.logger import logger
 from completor.utils import sort_by_midpoint
 
@@ -170,7 +168,7 @@ def fix_compsegs_by_priority(
     return df.drop("priority", axis=1)
 
 
-def set_welspecs(schedule_data: dict[str, dict[str, Any]], records: list[list[str]]) -> dict[str, dict[str, Any]]:
+def set_welspecs(schedule_data: ScheduleData, records: list[list[str]]) -> ScheduleData:
     """Convert the well specifications (WELSPECS) record to a Pandas DataFrame.
 
     * Sets DataFrame column titles.
@@ -217,7 +215,7 @@ def set_welspecs(schedule_data: dict[str, dict[str, Any]], records: list[list[st
     return schedule_data
 
 
-def set_welsegs(schedule_data: dict[str, dict[str, Any]], recs: list[list[str]]) -> dict[str, dict[str, Any]]:
+def set_welsegs(schedule_data: ScheduleData, recs: list[list[str]]) -> ScheduleData:
     """Update the well segments (WELSEGS) for a given well if it is an active well.
 
     * Pads missing record columns in header and contents with default values.
@@ -310,7 +308,7 @@ def set_welsegs(schedule_data: dict[str, dict[str, Any]], recs: list[list[str]])
     return schedule_data
 
 
-def set_compsegs(schedule_data: dict[str, dict[str, Any]], recs: list[list[str]]) -> dict[str, dict[str, Any]]:
+def set_compsegs(schedule_data: ScheduleData, recs: list[list[str]]) -> ScheduleData:
     """Update COMPLETION_SEGMENTS for a well if it is an active well.
 
     * Pads missing record columns in header and contents with default 1*.
@@ -356,7 +354,7 @@ def set_compsegs(schedule_data: dict[str, dict[str, Any]], recs: list[list[str]]
     return schedule_data
 
 
-def set_compdat(schedule_data: dict[str, dict[str, Any]], records: list[list[str]]) -> dict[str, dict[str, Any]]:
+def set_compdat(schedule_data: ScheduleData, records: list[list[str]]) -> ScheduleData:
     """Convert completion data (COMPDAT) record to a DataFrame.
 
     * Sets DataFrame column titles.
@@ -405,6 +403,7 @@ def set_compdat(schedule_data: dict[str, dict[str, Any]], records: list[list[str
         errors="ignore",
     )
     # Compdat could be for multiple wells, split it.
+    # TODO: Leftover comment
     # for well_name in active_wells:
     unique_wells = df[Headers.WELL].unique()
     for well_name in unique_wells:
@@ -416,11 +415,11 @@ def set_compdat(schedule_data: dict[str, dict[str, Any]], records: list[list[str
     return schedule_data
 
 
-def get_completion_data(schedule_data: dict[str, Any]) -> pd.DataFrame:
+def get_completion_data(well_data: WellData) -> pd.DataFrame:
     """Get-function for COMPLETION_DATA.
 
     Args:
-        schedule_data: Segment information.
+        well_data: Segment information.
 
     Returns:
         Completion data.
@@ -428,33 +427,31 @@ def get_completion_data(schedule_data: dict[str, Any]) -> pd.DataFrame:
     Raises:
         ValueError: If completion data keyword is missing in input schedule file.
     """
-    data = schedule_data.get(Keywords.COMPLETION_DATA)
+    data = well_data.get(Keywords.COMPLETION_DATA)
     if data is None:
         raise KeyError(f"Input schedule file missing {Keywords.COMPLETION_DATA} keyword.")
-    return data
+    return data  # type: ignore # TODO(#173): Use TypedDict for WellData.
 
 
-def get_completion_segments(schedule_data: dict[str, Any], well_name: str, branch: int | None = None) -> pd.DataFrame:
+def get_completion_segments(well_data: WellData, well_name: str, branch: int | None = None) -> pd.DataFrame:
     """Get-function for COMPLETION_SEGMENTS.
 
     Args:
-       schedule_data: Data containing multisegmented well segments.
+       well_data: Data containing multisegmented well segments.
        well_name: Well name.
        branch: Branch number.
 
     Returns:
         Completion segment data.
     """
-    df = schedule_data[Keywords.COMPLETION_SEGMENTS].copy()
+    df = well_data[Keywords.COMPLETION_SEGMENTS].copy()  # type: ignore # TODO(#173): Use TypedDict for WellData.
     if branch is not None:
         df = df[df[Headers.BRANCH] == branch]
     df = df.reset_index(drop=True)  # reset index after filtering
     return fix_compsegs(df, well_name)
 
 
-def get_well_segments(
-    well_data: dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]], branch: int | None = None
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+def get_well_segments(well_data: WellData, branch: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get-function for well segments.
 
     Args:

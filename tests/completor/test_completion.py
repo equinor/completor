@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -992,7 +991,6 @@ def test_skin():
             Headers.RO,
         ],
     )
-    active_wells = np.array(["A1"])
     schedule_data = read_schedule.set_compdat({}, compdat)
     df_out = schedule_data["A1"][Keywords.COMPLETION_DATA]
     pd.testing.assert_frame_equal(df_out, df_true)
@@ -1000,7 +998,6 @@ def test_skin():
 
 def test_set_welsegs_negative_length_segments(caplog):
     """Test that negative segments inside a branch give a warning."""
-    active_wells = np.array(["A1"])
     read_schedule.set_welsegs(
         {},
         [

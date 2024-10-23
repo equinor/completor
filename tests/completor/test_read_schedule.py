@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 from utils_for_tests import ReadSchedule
 
-from completor import parse
-from completor import utils
+from completor import parse, utils
 from completor.constants import Headers
 from completor.read_schedule import fix_compsegs, fix_welsegs
 
