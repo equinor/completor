@@ -15,7 +15,7 @@ from completor import main, parse  # type: ignore
 from completor.constants import Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
-from completor.utils import abort, clean_file_lines  # type: ignore
+from completor.utils import abort, check_width_lines, clean_file_lines  # type: ignore
 
 
 def open_files_run_create(
@@ -47,10 +47,18 @@ def assert_results(
     true_file: str | Path,
     test_file: str | Path,
     check_exact: bool = False,
-    relative_tolerance: float = 0.0001,
+    relative_tolerance: float = 1e-5,
     assert_text: bool = False,
+    width_to_check: int = 128,
 ) -> None:
     """Assert the final Completor output.
+
+    Notes:
+        1. The dfs are sorted so that the order of input is *not* important.
+           Also, the index is set to well so that the original order is not used as index.
+        2. We do the comparison numerically, so we don't care about fourth decimal place.
+           Use global variables CHECK_EXACT and N_DIGITS for this purpose.
+        3. WELL_SPECIFICATION is not included in the comparison since this keyword is left untouched by completor.
 
     Args:
         true_file: True solution file.
@@ -58,13 +66,11 @@ def assert_results(
         check_exact: Whether to compare number exactly.
         relative_tolerance: Relative tolerance, only used when check_exact is False.
         assert_text: If result and expected file text should be compared.
+        width_to_check: If not None, check output data. Defaults to 128.
 
-    Notes:
-        1. The dfs are sorted so that the order of input is *not* important.
-           Also, the index is set to well so that the original order is not used as index.
-        2. We do the comparison numerically, so we dont care about 4th decimal place.
-           Use global variables CHECK_EXACT and N_DIGITS for this purpose.
-        3. WELL_SPECIFICATION is not included in the comparison since this keyword is left untouched by completor.
+    Raises:
+        AssertionError: If the result and expected are not similar enough.
+
     """
 
     if isinstance(true_file, Path):
@@ -75,11 +81,23 @@ def assert_results(
 
     # test COMPLETION_DATA, COMPLETION_SEGMENTS and WELL_SEGMENTS
     with open(test_file, encoding="utf-8") as file:
-        test_output = ReadSchedule(file.read())
+        result = file.read()
+        test_output = ReadSchedule(result)
+
+    if width_to_check is not None:
+        too_long_lines = check_width_lines(result, width_to_check)
+        if too_long_lines:
+            number_of_lines = len(too_long_lines)
+            raise AssertionError(
+                f"Some data-lines in the output are wider than limit of {width_to_check} characters!\n"
+                f"This is concerning line-numbers: {[tup[0] for tup in too_long_lines]}\n"
+                f"{'An excerpt of the five first' if number_of_lines > 5 else 'The'} lines:\n"
+                + "\n".join([tup[1] for tup in too_long_lines[: min(number_of_lines, 5)]])
+            )
 
     # COMPLETION_DATA
     pd.testing.assert_frame_equal(
-        true_output.compdat, test_output.compdat, check_exact=check_exact, rtol=relative_tolerance
+        true_output.compdat, test_output.compdat, check_exact=check_exact, rtol=relative_tolerance, atol=1e-6
     )
     # WELL_SEGMENTS header
     wsh_true = true_output.welsegs_header

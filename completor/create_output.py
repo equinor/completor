@@ -10,10 +10,10 @@ import numpy.typing as npt
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
-import completor
 from completor import prepare_outputs
 from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
+from completor.get_version import get_version
 from completor.logger import logger
 from completor.pvt_model import CORRELATION_UDQ
 from completor.read_casefile import ReadCasefile
@@ -21,33 +21,30 @@ from completor.visualize_well import visualize_well
 from completor.wells import Lateral, Well
 
 
-def format_output(
-    well: Well, case: ReadCasefile, figure_name: str | None = None, paths: tuple[str, str] | None = None
-) -> str:
+def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None) -> tuple[str, str, str, str]:
     """Formats the finished output string to be written to a file.
 
     Args:
         well: Well data.
         case: Case data.
         figure_name: The name of the figure, if None, no figure is printed. Defaults to None.
-        paths: Paths of the case and schedule files. Defaults to None.
 
     Returns:
-        Properly formatted output string ready to be written to file.
-
+        Properly formatted output data divided into relevant keywords + bonus.
     """
     output = []
 
     if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
         output.append(CORRELATION_UDQ)
 
+    # TODO: Refactor, remove these and change usages to correct ones.
     df_reservoir = well.df_reservoir_all_laterals
     df_well = well.df_well_all_laterals
 
+    completion_data_list = []
     print_well_segments = ""
     print_well_segments_link = ""
     print_completion_segments = ""
-    print_completion_data = ""
     print_valve = ""
     print_inflow_control_valve = ""
     print_autonomous_inflow_control_device = ""
@@ -71,6 +68,7 @@ def format_output(
         df_tubing, top = prepare_outputs.prepare_tubing_layer(
             well, lateral, start_segment, start_branch, case.completion_table
         )
+        # TODO: Refactor names to just use lateral's
         lateral.df_tubing = df_tubing
         df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
         lateral.df_device = df_device
@@ -133,7 +131,7 @@ def format_output(
             case.completion_icv_tubing,
             case.wsegicv_table,
         )
-        print_completion_data += _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data)
+        completion_data_list.append(_format_completion_data(well.well_name, lateral.lateral_number, df_completion_data))
         print_well_segments += _format_well_segments(
             well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus
         )
@@ -168,23 +166,26 @@ def format_output(
                     orientation="landscape",
                 )
             logger.info("Creating schematics: %s.pdf", figure_name)
-
-    if print_completion_data:
-        output.append(f"{Keywords.COMPLETION_DATA}{print_completion_data}\n/\n\n\n")
+    bonus = []
+    print_completion_data = "\n".join(completion_data_list)
     if print_well_segments:
-        output.append(f"{print_well_segments}\n/\n\n")
+        print_well_segments = f"{print_well_segments}\n/\n\n"
     if print_well_segments_link:
-        output.append(f"{Keywords.WELL_SEGMENTS_LINK}{print_well_segments_link}\n/\n\n\n")
+        bonus.append(f"{Keywords.WELL_SEGMENTS_LINK}{print_well_segments_link}\n/\n\n\n")
     if print_completion_segments:
-        output.append(f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{print_completion_segments}\n/\n\n\n")
+        print_completion_segments = (
+            f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{print_completion_segments}\n/\n\n\n"
+        )
     if print_valve:
-        output.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_valve}\n/\n\n\n")
+        bonus.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_valve}\n/\n\n\n")
     if print_inflow_control_device:
-        output.append(f"{Keywords.INFLOW_CONTROL_DEVICE}{print_inflow_control_device}\n/\n\n\n")
+        bonus.append(f"{Keywords.INFLOW_CONTROL_DEVICE}{print_inflow_control_device}\n/\n\n\n")
+    # TODO: Look in e.g. wb_multilateral.true, there are some keywords that do not need duplicated headers along the way
+    #  WSEGLINK, WSEGAICD etc
     if print_autonomous_inflow_control_device:
-        output.append(f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}{print_autonomous_inflow_control_device}\n/\n\n\n")
+        bonus.append(f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}{print_autonomous_inflow_control_device}\n/\n\n\n")
     if print_inflow_control_valve:
-        output.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_inflow_control_valve}\n/\n\n\n")
+        bonus.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_inflow_control_valve}\n/\n\n\n")
     if print_density_activated_recovery:
         metadata = (
             f"{'-' * 100}\n"
@@ -196,7 +197,7 @@ def format_output(
             "-- volume fractions.\n"
             f"{'-' * 100}\n\n\n"
         )
-        output.append(metadata + print_density_activated_recovery + "\n\n\n\n")
+        bonus.append(metadata + print_density_activated_recovery + "\n\n\n\n")
     if print_autonomous_inflow_control_valve:
         metadata = (
             f"{'-' * 100}\n"
@@ -205,33 +206,9 @@ def format_output(
             "-- and gas volume fraction (at downhole condition)\n"
             f"{'-' * 100}\n\n\n"
         )
-        output.append(metadata + print_autonomous_inflow_control_valve + "\n\n\n\n")
+        bonus.append(metadata + print_autonomous_inflow_control_valve + "\n\n\n\n")
 
-    return "".join(output)
-
-
-def format_header(paths: tuple[str, str] | None) -> str:
-    """Formats the header banner, with metadata.
-
-    Args:
-        paths: The paths to case and schedule files.
-
-    Returns:
-        Formatted header.
-    """
-    header = f"{'-' * 100}\n-- Output from completor {completor.__version__}\n"
-    if paths is not None:
-        header += f"-- Case file: {paths[0]}\n-- Schedule file: {paths[1]}\n"
-    else:
-        logger.warning("Could not resolve case-file path to output file.")
-        header += "-- Case file: No path found\n-- Schedule file: No path found\n"
-
-    header += (
-        f"-- Created by : {(getpass.getuser()).upper()}\n"
-        f"-- Created at : {datetime.now().strftime('%Y %B %d %H:%M')}\n"
-        f"{'-' * 100}\n\n"
-    )
-    return header
+    return print_completion_data, print_well_segments, print_completion_segments, "".join(bonus)
 
 
 def _check_well_segments_header(welsegs_header: pd.DataFrame, start_measured_depths: pd.Series) -> pd.DataFrame:
@@ -312,16 +289,22 @@ def _format_well_segments(
     print_welsegs = ""
     nchar = prepare_outputs.get_number_of_characters(df_tubing)
     if not df_device.empty:
-        print_welsegs += prepare_outputs.get_header(
-            well_name, Keywords.WELL_SEGMENTS, lateral_number, "Tubing", nchar
-        ) + prepare_outputs.dataframe_tostring(df_tubing, True)
-        print_welsegs += prepare_outputs.get_header(
-            well_name, Keywords.WELL_SEGMENTS, lateral_number, "Device", nchar
-        ) + prepare_outputs.dataframe_tostring(df_device, True)
+        print_welsegs += (
+            "\n"
+            + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Tubing", nchar)
+            + prepare_outputs.dataframe_tostring(df_tubing, True)
+        )
+        print_welsegs += (
+            "\n"
+            + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Device", nchar)
+            + prepare_outputs.dataframe_tostring(df_device, True)
+        )
     if not df_annulus.empty:
-        print_welsegs += prepare_outputs.get_header(
-            well_name, Keywords.WELL_SEGMENTS, lateral_number, "Annulus", nchar
-        ) + prepare_outputs.dataframe_tostring(df_annulus, True)
+        print_welsegs += (
+            "\n"
+            + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS, lateral_number, "Annulus", nchar)
+            + prepare_outputs.dataframe_tostring(df_annulus, True)
+        )
     return print_welsegs
 
 
@@ -339,9 +322,11 @@ def _format_well_segments_link(well_name: str, lateral_number: int, df_well_segm
     if df_well_segments_link.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_well_segments_link)
-    return prepare_outputs.get_header(
-        well_name, Keywords.WELL_SEGMENTS_LINK, lateral_number, "", nchar
-    ) + prepare_outputs.dataframe_tostring(df_well_segments_link, True)
+    return (
+        "\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_LINK, lateral_number, "", nchar)
+        + prepare_outputs.dataframe_tostring(df_well_segments_link, True)
+    )
 
 
 def _format_completion_segments(well_name: str, lateral_number: int, df_compsegs: pd.DataFrame) -> str:
@@ -358,9 +343,11 @@ def _format_completion_segments(well_name: str, lateral_number: int, df_compsegs
     if df_compsegs.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_compsegs)
-    return prepare_outputs.get_header(
-        well_name, Keywords.COMPLETION_SEGMENTS, lateral_number, "", nchar
-    ) + prepare_outputs.dataframe_tostring(df_compsegs, True)
+    return (
+        "\n"
+        + prepare_outputs.get_header(well_name, Keywords.COMPLETION_SEGMENTS, lateral_number, "", nchar)
+        + prepare_outputs.dataframe_tostring(df_compsegs, True)
+    )
 
 
 def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int, df_wsegaicd: pd.DataFrame) -> str:
@@ -377,9 +364,11 @@ def _format_autonomous_inflow_control_device(well_name: str, lateral_number: int
     if df_wsegaicd.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegaicd)
-    return prepare_outputs.get_header(
-        well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar
-    ) + prepare_outputs.dataframe_tostring(df_wsegaicd, True)
+    return (
+        "\n"
+        + prepare_outputs.get_header(well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar)
+        + prepare_outputs.dataframe_tostring(df_wsegaicd, True)
+    )
 
 
 def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsicd: pd.DataFrame) -> str:
@@ -396,9 +385,11 @@ def _format_inflow_control_device(well_name: str, lateral_number: int, df_wsegsi
     if df_wsegsicd.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegsicd)
-    return prepare_outputs.get_header(
-        well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar
-    ) + prepare_outputs.dataframe_tostring(df_wsegsicd, True)
+    return (
+        "\n"
+        + prepare_outputs.get_header(well_name, Keywords.INFLOW_CONTROL_DEVICE, lateral_number, "", nchar)
+        + prepare_outputs.dataframe_tostring(df_wsegsicd, True)
+    )
 
 
 def _format_valve(well_name: str, lateral_number: int, df_wsegvalv) -> str:
@@ -415,9 +406,11 @@ def _format_valve(well_name: str, lateral_number: int, df_wsegvalv) -> str:
     if df_wsegvalv.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegvalv)
-    return prepare_outputs.get_header(
-        well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar
-    ) + prepare_outputs.dataframe_tostring(df_wsegvalv, True)
+    return (
+        "\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
+        + prepare_outputs.dataframe_tostring(df_wsegvalv, True)
+    )
 
 
 def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv: pd.DataFrame) -> str:
@@ -434,9 +427,11 @@ def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv
     if df_wsegicv.empty:
         return ""
     nchar = prepare_outputs.get_number_of_characters(df_wsegicv)
-    return prepare_outputs.get_header(
-        well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar
-    ) + prepare_outputs.dataframe_tostring(df_wsegicv, True)
+    return (
+        "\n"
+        + prepare_outputs.get_header(well_name, Keywords.WELL_SEGMENTS_VALVE, lateral_number, "", nchar)
+        + prepare_outputs.dataframe_tostring(df_wsegicv, True)
+    )
 
 
 def _format_density_activated_recovery(well_number: int, df_wsegdar: pd.DataFrame) -> str:
@@ -560,3 +555,28 @@ def _connect_lateral(
     out_segment = layer_to_connect.at[idx, Headers.START_SEGMENT_NUMBER]
     lateral.df_tubing.at[0, Headers.OUT] = out_segment
     return lateral.df_tubing
+
+
+def metadata_banner(paths: tuple[str, str] | None) -> str:
+    """Formats the header banner, with metadata.
+
+    Args:
+        paths: The paths to case and schedule files.
+
+    Returns:
+        Formatted header.
+    """
+    header = f"{'-' * 100}\n-- Output from completor {get_version()}\n"
+
+    if paths is not None:
+        header += f"-- Case file: {paths[0]}\n-- Schedule file: {paths[1]}\n"
+    else:
+        logger.warning("Could not resolve case-file path to output file.")
+        header += "-- Case file: No path found\n-- Schedule file: No path found\n"
+
+    header += (
+        f"-- Created by : {(getpass.getuser()).upper()}\n"
+        f"-- Created at : {datetime.now().strftime('%Y %B %d %H:%M')}\n"
+        f"{'-' * 100}\n\n"
+    )
+    return header

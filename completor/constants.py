@@ -4,6 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, auto
+from typing import TypeAlias
+
+import pandas as pd
+
+WellData: TypeAlias = dict[str, pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]]
+ScheduleData: TypeAlias = dict[str, WellData]
 
 
 @dataclass(frozen=True)
@@ -247,7 +253,8 @@ class _Keywords:
     SCHEDULE_FILE = "SCHFILE"
     OUT_FILE = "OUTFILE"
 
-    main_keywords = [WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS]
+    # Note: Alphabetically sorted, which matters for check vs. missing keys in input data.
+    main_keywords = [COMPLETION_DATA, COMPLETION_SEGMENTS, WELL_SEGMENTS, WELL_SPECIFICATION]
 
     _items = [WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, COMPLETION_SEGMENTS]
     _members = set(_items)

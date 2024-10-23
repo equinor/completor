@@ -1,8 +1,9 @@
+REPLACED
 WELSPECS
---	WELL	GROUP	I	J	BHP_DEPTH	PHASE	DR	FLAG	SHUT	CROSS	
+--	WELL	GROUP	I	J	BHP_DEPTH	PHASE	DR	FLAG	SHUT	CROSS
 	A1	MYGRP	1	1	2000	OIL	1*	SHUT	YES	1*	/
 	A2	MYGRP	1	1	2000	OIL	1*	SHUT	YES	1*	/
-/											
+/
 
 WELOPEN
 A1 /
@@ -10,136 +11,130 @@ A2 /
 /
 
 COMPDAT
- 'A2' 1 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
- 'A2' 2 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
- 'A2' 3 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
- 'A2' 4 1 1 1 OPEN 0 10 0.2 2 0 1* 1* 1* /
+-- WELL I   J   K   K2  FLAG   SAT  CF  DIAM   KH  SKIN  DFACT  DIR  RO
+---------------- Well: A1, Lateral: 1 ----------------
+-- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN
+   'A1'  1  1  1   1 OPEN      0 10  0.25  2   0.0 /
+   'A1'  2  1  1   1 OPEN      0 10  0.25  2   0.0 /
+---------------- Well: A1, Lateral: 2 ----------------
+-- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN
+   'A1'  1  1  1   1 OPEN      0 10  0.25  2   0.0 /
+   'A1'  1  2  1   1 OPEN      0 10  0.25  2   0.0 /
+	A2	1	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
+	A2	2	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
+	A2	3	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
+	A2	4	1	1	1	OPEN	0	10	0.2	2	0	1*	1*	1*	/
 /
-
-
-
-COMPDAT
--------------------------------------------------
--- Well : A1 : Lateral : 1
--------------------------------------------------
--- WELL  I  J  K  K2 FLAG SAT CF  DIAM KH  SKIN  
-   'A1'  1  1  1   1 OPEN   0 10  0.25  2   0.0 /
-   'A1'  2  1  1   1 OPEN   0 10  0.25  2   0.0 /
--------------------------------------------------
--- Well : A1 : Lateral : 2
--------------------------------------------------
--- WELL  I  J  K  K2 FLAG SAT CF  DIAM KH  SKIN  
-   'A1'  1  1  1   1 OPEN   0 10  0.25  2   0.0 /
-   'A1'  1  2  1   1 OPEN   0 10  0.25  2   0.0 /
-/
-
 
 WELSEGS
--- WELL  SEGMENTTVD  SEGMENTMD WBVOLUME INFOTYPE  
-   'A1'      2000.0     2000.0       1*      ABS /
---------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Tubing layer
---------------------------------------------------------------
---  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS  
-      2     2       1    1 2006.000 2000.000   0.2    0.0001 /
-      3     3       1    2 2018.000 2000.000   0.2    0.0001 /
---------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Device layer
---------------------------------------------------------------
---  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS                      
-      4     4       3    2 2006.100 2000.000   0.2    0.0001 / -- AICD types      
-      5     5       4    3 2018.100 2000.000   0.2    0.0001 / -- AICD types      
---------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Annulus layer
---------------------------------------------------------------
---  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS  
-      6     6       5    4 2006.200 2000.000  0.15    0.0001 /
-      7     7       5    6 2018.100 2000.000  0.15    0.0001 /
---------------------------------------------------------------
--- Well : A1 : Lateral : 2 : Tubing layer
---------------------------------------------------------------
---  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS  
-      8     8       2    1 2006.000 2000.000   0.2    0.0001 /
-      9     9       2    8 2018.000 2000.000   0.2    0.0001 /
---------------------------------------------------------------
--- Well : A1 : Lateral : 2 : Device layer
---------------------------------------------------------------
---  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS                      
-     10    10       6    8 2006.100 2000.000   0.2    0.0001 / -- AICD types      
-     11    11       7    9 2018.100 2000.000   0.2    0.0001 / -- AICD types      
---------------------------------------------------------------
--- Well : A1 : Lateral : 2 : Annulus layer
---------------------------------------------------------------
---  SEG  SEG2  BRANCH  OUT       MD      TVD  DIAM ROUGHNESS  
-     12    12       8   10 2006.200 2000.000  0.15    0.0001 /
-     13    13       8   12 2018.100 2000.000  0.15    0.0001 /
+-- WELL     TRUE MEASURED WBVOLUME INFOTYPE
+--      VERTICAL    DEPTH
+--         DEPTH
+   'A1' 2000.000   2000.0       1*      ABS /
+--------------- Well: A1, Lateral: 1, Tubing layer ---------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+         2       2      1   1   2006.0 2000.000  0.2    0.0001 /
+         3       3      1   2   2018.0 2000.000  0.2    0.0001 /
+--------------- Well: A1, Lateral: 1, Device layer ---------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+         4       4      3   2   2006.1 2000.000  0.2    0.0001 / -- AICD types
+         5       5      4   3   2018.1 2000.000  0.2    0.0001 / -- AICD types
+-------------- Well: A1, Lateral: 1, Annulus layer --------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+         6       6      5   4   2006.2 2000.000 0.15    0.0001 /
+         7       7      5   6   2018.1 2000.000 0.15    0.0001 /
+--------------- Well: A1, Lateral: 2, Tubing layer ---------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+         8       8      2   1   2006.0 2000.000  0.2    0.0001 /
+         9       9      2   8   2018.0 2000.000  0.2    0.0001 /
+--------------- Well: A1, Lateral: 2, Device layer ---------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+        10      10      6   8   2006.1 2000.000  0.2    0.0001 / -- AICD types
+        11      11      7   9   2018.1 2000.000  0.2    0.0001 / -- AICD types
+-------------- Well: A1, Lateral: 2, Annulus layer --------------
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+        12      12      8  10   2006.2 2000.000 0.15    0.0001 /
+        13      13      8  12   2018.1 2000.000 0.15    0.0001 /
 /
 
-
-WSEGLINK
---------------------------
--- Well : A1 : Lateral : 1
---------------------------
--- WELL  ANNULUS  DEVICE  
-   'A1'        7       5 /
---------------------------
--- Well : A1 : Lateral : 2
---------------------------
--- WELL  ANNULUS  DEVICE  
-   'A1'       13      11 /
-/
 
 
 COMPSEGS
 'A1' /
-----------------------------------------------------
--- Well : A1 : Lateral : 1
-----------------------------------------------------
---  I  J  K  BRANCH  STARTMD    ENDMD DIR DEF  SEG  
-    1  1  1       5 2000.000 2012.000  1*  3*    6 /
-    2  1  1       5 2012.000 2024.000  1*  3*    7 /
-----------------------------------------------------
--- Well : A1 : Lateral : 2
-----------------------------------------------------
---  I  J  K  BRANCH  STARTMD    ENDMD DIR DEF  SEG  
-    1  1  1       8 2000.000 2012.000  1*  3*   12 /
-    1  2  1       8 2012.000 2024.000  1*  3*   13 /
+------------------ Well: A1, Lateral: 1 ------------------
+-- I J K BRANCH    START      END  COMPSEGS DEF   START
+--              MEASURED MEASURED DIRECTION     SEGMENT
+--                 DEPTH    DEPTH                NUMBER
+   1 1 1      5 2000.000 2012.000        1*  3*       6 /
+   2 1 1      5 2012.000 2024.000        1*  3*       7 /
+------------------ Well: A1, Lateral: 2 ------------------
+-- I J K BRANCH    START      END  COMPSEGS DEF   START
+--              MEASURED MEASURED DIRECTION     SEGMENT
+--                 DEPTH    DEPTH                NUMBER
+   1 1 1      8 2000.000 2012.000        1*  3*      12 /
+   1 2 1      8 2012.000 2024.000        1*  3*      13 /
+/
+
+
+WSEGLINK
+--- Well: A1, Lateral: 1 ---
+-- WELL  ANNULUS  DEVICE
+   'A1'        7       5 /
+--- Well: A1, Lateral: 2 ---
+-- WELL  ANNULUS  DEVICE
+   'A1'       13      11 /
 /
 
 
 WSEGAICD
--------------------------------------------------------------------------------------
--- Well : A1 : Lateral : 1
--------------------------------------------------------------------------------------
--- WELL  SEG  SEG2   ALPHA SF     RHO  VIS DEF   X   Y FLAG   A   B   C   D   E   F  
-   'A1'    4     4 0.00021 -1 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
-   'A1'    5     5 0.00021 -1 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
--------------------------------------------------------------------------------------
--- Well : A1 : Lateral : 2
--------------------------------------------------------------------------------------
--- WELL  SEG  SEG2   ALPHA SF     RHO  VIS DEF   X   Y FLAG   A   B   C   D   E   F  
-   'A1'   10    10 0.00021 -1 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
-   'A1'   11    11 0.00021 -1 1000.25 1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
+------------------------------------------- Well: A1, Lateral: 1 -------------------------------------------
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
+   'A1'       4       4  0.00021   -1.0     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
+   'A1'       5       5  0.00021   -1.0     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
+------------------------------------------- Well: A1, Lateral: 2 -------------------------------------------
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
+   'A1'      10      10  0.00021   -1.0     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
+   'A1'      11      11  0.00021   -1.0     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
 /
+
 
 
 
 
 WELSEGS
---	WELL	TVD	MD	WBVOL	INF	CMP	MOD	
+--	WELL	TVD	MD	WBVOL	INF	CMP	MOD
 	A2	2000	2000	1*	ABS	1*	1*	/
---	SEG	SEG2	BRANCH	OUT	MD	TVD	DIAM	ROUGHNESS	
+--	SEG	SEG2	BRANCH	OUT	MD	TVD	DIAM	ROUGHNESS
 	2	2	1	1	2012	2000	0.2	1.00E-04	/
 	3	3	1	2	2024	2000	0.2	1.00E-04	/
 	4	4	2	1	2036	2000	0.2	1.00E-04	/
 	5	5	2	4	2048	2000	0.2	1.00E-04	/
-/									
+/
 
 COMPSEGS
-A2	/						
---	I	J	K	BRANCH	STARTMD	ENDMD	
+A2	/
+--	I	J	K	BRANCH	STARTMD	ENDMD
 	1	1	1	1	2000	2012	/
 	2	1	1	1	2012	2024	/
 	3	1	1	2	2024	2036	/
 	4	1	1	2	2036	2048	/
 /
+
+
+
