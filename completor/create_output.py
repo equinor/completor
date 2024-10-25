@@ -183,8 +183,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         bonus.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_valve}\n/\n\n\n")
     if print_inflow_control_device:
         bonus.append(f"{Keywords.INFLOW_CONTROL_DEVICE}{print_inflow_control_device}\n/\n\n\n")
-    # TODO: Look in e.g. wb_multilateral.true, there are some keywords that do not need duplicated headers along the way
-    #  WSEGLINK, WSEGAICD etc
     if print_autonomous_inflow_control_device:
         bonus.append(f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}{print_autonomous_inflow_control_device}\n/\n\n\n")
     if print_inflow_control_valve:
