@@ -621,29 +621,31 @@ class ReadCasefile:
                 f"Well '{well_name}' is missing keyword(s): '{', '.join(set(Keywords.main_keywords) - found_keys)}'!"
             )
         df_completion = self.completion_table[self.completion_table.WELL == well_name]
-        # check that all branches are defined in case-file
-        branch_nos = set(well_data[Keywords.COMPLETION_SEGMENTS][Headers.BRANCH]).difference(
+        # Check that all branches are defined in the case-file.
+
+        # TODO(#173): Use TypedDict for this, and remove the type: ignore.
+        branch_nos = set(well_data[Keywords.COMPLETION_SEGMENTS][Headers.BRANCH]).difference(  # type: ignore
             set(df_completion[Headers.BRANCH])
         )
         if len(branch_nos):
             logger.warning("Well %s has branch(es) not defined in case-file", well_name)
             if self.strict:
                 raise CompletorError("USE_STRICT True: Define all branches in case file.")
-            else:
-                for branch_no in branch_nos:
-                    logger.warning("Adding branch %s for Well %s", branch_no, well_name)
-                    # copy first entry
-                    lateral = pd.DataFrame(
-                        [self.completion_table.loc[self.completion_table.WELL == well_name].iloc[0]],
-                        columns=self.completion_table.columns,
-                    )
-                    lateral[Headers.START_MEASURED_DEPTH] = 0
-                    lateral[Headers.END_MEASURED_DEPTH] = 999999
-                    lateral[Headers.DEVICE_TYPE] = Content.PERFORATED
-                    lateral[Headers.ANNULUS] = "GP"
-                    lateral[Headers.BRANCH] = branch_no
-                    # add new entry
-                    self.completion_table = pd.concat([self.completion_table, lateral])
+
+            for branch_no in branch_nos:
+                logger.warning("Adding branch %s for Well %s", branch_no, well_name)
+                # copy first entry
+                lateral = pd.DataFrame(
+                    [self.completion_table.loc[self.completion_table.WELL == well_name].iloc[0]],
+                    columns=self.completion_table.columns,
+                )
+                lateral[Headers.START_MEASURED_DEPTH] = 0
+                lateral[Headers.END_MEASURED_DEPTH] = 999999
+                lateral[Headers.DEVICE_TYPE] = Content.PERFORATED
+                lateral[Headers.ANNULUS] = Content.GRAVEL_PACKED
+                lateral[Headers.BRANCH] = branch_no
+                # add new entry
+                self.completion_table = pd.concat([self.completion_table, lateral])
 
     def connect_to_tubing(self, well_name: str, lateral: int) -> bool:
         """Connect a branch to the tubing- or device-layer.

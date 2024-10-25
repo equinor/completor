@@ -63,7 +63,12 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
 
 
 def dataframe_tostring(
-    df_temp: pd.DataFrame, format_column: bool = False, trim_df: bool = True, header: bool = True, limit: int = 128
+    df_temp: pd.DataFrame,
+    format_column: bool = False,
+    trim_df: bool = True,
+    header: bool = True,
+    keep_header: bool = True,
+    limit: int = 128,
 ) -> str:
     """Convert DataFrame to string.
 
@@ -77,6 +82,7 @@ def dataframe_tostring(
     Returns:
         Text string of the DataFrame.
     """
+    number_of_levels = 1
     if df_temp.empty:
         return ""
     # check if the dataframe has first = "--" and last column ""
@@ -203,7 +209,9 @@ def dataframe_tostring(
                 + "\n".join([tup[1] for tup in too_long_lines[: min(number_of_lines, 5)]])
             )
 
-    return output_string
+    if keep_header:
+        return output_string
+    return "\n".join(output_string.splitlines()[number_of_levels:])
 
 
 def get_outlet_segment(

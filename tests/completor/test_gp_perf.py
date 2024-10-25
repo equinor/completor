@@ -79,8 +79,10 @@ def test_mix_in_branch(tmpdir):
     /
     """
     true_file = Path(_TESTDIR / "wb_perf_mix_inbranch.true")
+    # TODO: Look at results here, COMPDAT has differing lengths, and duplicate headers here.
+    #  WELSEGS end line slash is a bit weirdly formatted.
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    utils_for_tests.assert_results(true_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
 def test_mix_multibranch(tmpdir):

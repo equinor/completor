@@ -250,6 +250,12 @@ def create(
         # Make sure the output thus far is written, and figure files are closed.
         schedule = _replace_preprocessing_names(schedule, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
+            schedule = re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "", schedule, 0, re.MULTILINE)
+            fr = """----------------------------------------------------------------------------------------------------
+-- Output from Completor
+----------------------------------------------------------------------------------------------------
+"""
+            schedule = fr + schedule
             file.write(schedule)
 
     if err is not None:
@@ -427,10 +433,10 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> list[str]:
         once = False
         for i, line in enumerate(matchlines):
             if not line:
+                # Allow empty lines in the middle of a record.
                 if once:
                     lines.append(line)
                 continue
-
             if well in line.split()[0]:
                 if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
                     # These keywords should just be the entire match as they never contain more than one well.
@@ -439,15 +445,14 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> list[str]:
                     once = True
                     # Remove contiguous comments above the first line by looking backwards,
                     # adding it to the replaceable text match.
-                    for prev_line in match[i - 1 :: -1]:
+                    comments = []
+                    for prev_line in matchlines[i - 1 :: -1]:
                         if not prev_line.strip().startswith("--") or not prev_line:
                             break
-                        lines.append(prev_line)
-                    lines.reverse()
-
-                    lines.append(line)
-                else:
-                    lines.append(line)
+                        comments.append(prev_line)
+                    lines += sorted(comments, reverse=True)
+                # else:
+                lines.append(line)
             elif not once:
                 continue
             # All following comments inside data.
