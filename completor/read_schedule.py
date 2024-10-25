@@ -234,12 +234,6 @@ def set_welsegs(schedule_data: ScheduleData, recs: list[list[str]]) -> ScheduleD
         ValueError: If a well is not an active well.
     """
     well_name = recs[0][0]  # each WELL_SEGMENTS-chunk is for one well only
-    # TODO: check this after fix.
-    #  Should be filtered later at least.
-    # if well_name not in active_wells:
-    #     raise ValueError("The well must be active!")
-
-    # make df for header record
     columns_header = [
         Headers.WELL,
         Headers.TRUE_VERTICAL_DEPTH,
@@ -326,9 +320,6 @@ def set_compsegs(schedule_data: ScheduleData, recs: list[list[str]]) -> Schedule
         ValueError: If a well is not an active well.
     """
     well_name = recs[0][0]  # each COMPLETION_SEGMENTS-chunk is for one well only
-    # TODO: Check/Filter this later?
-    # if well_name not in active_wells:
-    #     raise ValueError("The well must be active!")
     columns = [
         Headers.I,
         Headers.J,
@@ -403,8 +394,6 @@ def set_compdat(schedule_data: ScheduleData, records: list[list[str]]) -> Schedu
         errors="ignore",
     )
     # Compdat could be for multiple wells, split it.
-    # TODO: Leftover comment
-    # for well_name in active_wells:
     unique_wells = df[Headers.WELL].unique()
     for well_name in unique_wells:
         if well_name not in schedule_data:

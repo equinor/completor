@@ -148,13 +148,13 @@ def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list
 
 
 def create(
-    input_file: str, schedule_file: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
+    case_file: str, schedule: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
 ) -> tuple[ReadCasefile, Well | None]:
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
-        input_file: Input case file.
-        schedule_file: Input schedule file.
+        case_file: Input case file.
+        schedule: Input schedule file.
         new_file: Output schedule file.
         show_fig: Flag indicating if a figure is to be shown.
         paths: Optional additional paths.
@@ -162,7 +162,7 @@ def create(
     Returns:
         The case and schedule file, the well and output object.
     """
-    case = ReadCasefile(case_file=input_file, schedule_file=schedule_file, output_file=new_file)
+    case = ReadCasefile(case_file=case_file, schedule_file=schedule, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
 
     figure_name = None
@@ -173,16 +173,8 @@ def create(
             figure_no += 1
             figure_name = f"Well_schematic_{figure_no:03d}.pdf"
 
-    lines = schedule_file.splitlines()
-    clean_lines_map = {}
-    for line_number, line in enumerate(lines):
-        line = clean_file_line(line, remove_quotation_marks=True)
-        if line:
-            clean_lines_map[line_number] = line
-
     err: Exception | None = None
     well = None
-    schedule = schedule_file  # TODO: Refactor
     # Add banner.
     schedule = create_output.metadata_banner(paths) + schedule
     # Strip trailing whitespace.
@@ -190,7 +182,6 @@ def create(
     meaningful_data: ScheduleData = {}
 
     try:
-        # TODO(#ANDRE): Consider using update instead of returning and setting the whole dict.
         keyword = Keywords.WELL_SPECIFICATION
         chunks = find_keyword_data(keyword, schedule)
         for chunk in chunks:
@@ -216,12 +207,10 @@ def create(
             meaningful_data = read_schedule.set_compsegs(meaningful_data, clean_data)
 
         for i, well_name in tqdm(enumerate(active_wells.tolist()), total=len(active_wells)):
-            case.check_input(well_name, meaningful_data)  # TODO: This apparently have to be done first here!
+            # Note: Important to run this check before creating wells as it fixes potential problems with cases.
+            case.check_input(well_name, meaningful_data)
             well = Well(well_name, i, case, meaningful_data[well_name])
             compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, figure_name)
-
-            # TODO: Maybe reformat WELSPECS not touched as well for a more consistent look?
-            # TODO: Consider using update instead of returning and setting the whole str file.
 
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
                 tmp_data = find_well_keyword_data(well_name, keyword, schedule)
@@ -245,7 +234,7 @@ def create(
                         schedule = schedule.replace(old_data, welsegs)
 
     except Exception as e_:
-        err = e_  # type: ignore
+        err = e_
     finally:
         # Make sure the output thus far is written, and figure files are closed.
         schedule = _replace_preprocessing_names(schedule, case.mapper)
