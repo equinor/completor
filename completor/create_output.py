@@ -37,10 +37,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
         output.append(CORRELATION_UDQ)
 
-    # TODO: Refactor, remove these and change usages to correct ones.
-    df_reservoir = well.df_reservoir_all_laterals
-    df_well = well.df_well_all_laterals
-
     completion_data_list = []
     print_well_segments = ""
     print_well_segments_link = ""
@@ -58,7 +54,9 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     header_written = False
     first = True
     for lateral in well.active_laterals:
-        _check_well_segments_header(lateral.df_welsegs_header, df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0])
+        _check_well_segments_header(
+            lateral.df_welsegs_header, well.df_reservoir_all_laterals[Headers.START_MEASURED_DEPTH].iloc[0]
+        )
 
         if not header_written:
             print_well_segments += (
@@ -66,33 +64,32 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             )
             header_written = True
 
-        df_tubing, top = prepare_outputs.prepare_tubing_layer(
+        lateral.df_tubing, top = prepare_outputs.prepare_tubing_layer(
             well, lateral, start_segment, start_branch, case.completion_table
         )
-        # TODO: Refactor names to just use lateral's
-        lateral.df_tubing = df_tubing
-        df_device = prepare_outputs.prepare_device_layer(lateral.df_well, df_tubing)
-        lateral.df_device = df_device
+        lateral.df_device = prepare_outputs.prepare_device_layer(lateral.df_well, lateral.df_tubing)
 
-        if df_device.empty:
+        if lateral.df_device.empty:
             logger.warning(
                 "No connection from reservoir to tubing in Well : %s Lateral : %d",
                 well.well_name,
                 lateral.lateral_number,
             )
         df_annulus, df_well_segments_link = prepare_outputs.prepare_annulus_layer(
-            well.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, lateral.df_device
         )
         if df_annulus.empty:
             logger.info("No annular flow in Well : %s Lateral : %d", well.well_name, lateral.lateral_number)
 
-        start_segment, start_branch = _update_segmentbranch(df_device, df_annulus)
+        start_segment, start_branch = _update_segmentbranch(lateral.df_device, df_annulus)
 
-        df_tubing = _connect_lateral(well.well_name, lateral, top, well, case)
+        lateral.df_tubing = _connect_lateral(well.well_name, lateral, top, well, case)
 
-        df_tubing[Headers.BRANCH] = lateral.lateral_number
+        lateral.df_tubing[Headers.BRANCH] = lateral.lateral_number
         active_laterals = [lateral.lateral_number for lateral in well.active_laterals]
-        df_device, df_annulus = _branch_revision(lateral.lateral_number, active_laterals, df_device, df_annulus)
+        lateral.df_device, df_annulus = _branch_revision(
+            lateral.lateral_number, active_laterals, lateral.df_device, df_annulus
+        )
 
         completion_table_well = case.completion_table[case.completion_table[Headers.WELL] == well.well_name]
         completion_table_lateral = completion_table_well[
@@ -101,34 +98,34 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         df_completion_segments = prepare_outputs.prepare_completion_segments(
             well.well_name,
             lateral.lateral_number,
-            df_reservoir,
-            df_device,
+            well.df_reservoir_all_laterals,
+            lateral.df_device,
             df_annulus,
             completion_table_lateral,
             case.segment_length,
         )
         df_completion_data = prepare_outputs.prepare_completion_data(
-            well.well_name, lateral.lateral_number, df_reservoir, completion_table_lateral
+            well.well_name, lateral.lateral_number, well.df_reservoir_all_laterals, completion_table_lateral
         )
-        df_valve = prepare_outputs.prepare_valve(well.well_name, lateral.df_well, df_device)
+        df_valve = prepare_outputs.prepare_valve(well.well_name, lateral.df_well, lateral.df_device)
         df_inflow_control_device = prepare_outputs.prepare_inflow_control_device(
-            well.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, lateral.df_device
         )
         df_autonomous_inflow_control_device = prepare_outputs.prepare_autonomous_inflow_control_device(
-            well.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, lateral.df_device
         )
         df_density_activated_recovery = prepare_outputs.prepare_density_activated_recovery(
-            well.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, lateral.df_device
         )
         df_autonomous_inflow_control_valve = prepare_outputs.prepare_autonomous_inflow_control_valve(
-            well.well_name, lateral.df_well, df_device
+            well.well_name, lateral.df_well, lateral.df_device
         )
         df_inflow_control_valve = prepare_outputs.prepare_inflow_control_valve(
             well.well_name,
             lateral.lateral_number,
-            df_well,
-            df_device,
-            df_tubing,
+            well.df_well_all_laterals,
+            lateral.df_device,
+            lateral.df_tubing,
             case.completion_icv_tubing,
             case.wsegicv_table,
         )
@@ -136,7 +133,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data, first)
         )
         print_well_segments += _format_well_segments(
-            well.well_name, lateral.lateral_number, df_tubing, df_device, df_annulus, first
+            well.well_name, lateral.lateral_number, lateral.df_tubing, lateral.df_device, df_annulus, first
         )
         print_well_segments_link += _format_well_segments_link(
             well.well_name, lateral.lateral_number, df_well_segments_link, first
@@ -165,7 +162,9 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
             with PdfPages(figure_name) as figure:
                 figure.savefig(
-                    visualize_well(well.well_name, df_well, df_reservoir, case.segment_length),
+                    visualize_well(
+                        well.well_name, well.df_well_all_laterals, well.df_reservoir_all_laterals, case.segment_length
+                    ),
                     orientation="landscape",
                 )
             logger.info("Creating schematics: %s.pdf", figure_name)
