@@ -250,12 +250,6 @@ def create(
         # Make sure the output thus far is written, and figure files are closed.
         schedule = _replace_preprocessing_names(schedule, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
-            schedule = re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "", schedule, 0, re.MULTILINE)
-            fr = """----------------------------------------------------------------------------------------------------
--- Output from Completor
-----------------------------------------------------------------------------------------------------
-"""
-            schedule = fr + schedule
             file.write(schedule)
 
     if err is not None:

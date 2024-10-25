@@ -1,4 +1,7 @@
-REPLACED
+----------------------------------------------------------------------------------------------------
+-- Output from Completor
+----------------------------------------------------------------------------------------------------
+
 WELSPECS
 --	WELL	GROUP	I	J	BHP_DEPTH	PHASE	DR	FLAG	SHUT	CROSS
 	A1	FIELD	1	1	2000	OIL	1*	SHUT	YES	1*	/
@@ -11,7 +14,6 @@ A2 /
 /
 
 COMPDAT
---	WELL	I	J	K	K2	FLAG	SAT	CF	DIAM	KH	SKIN	DFACT	DIR	RO
 ---------------- Well: A1, Lateral: 1 ----------------
 -- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN
    'A1'  1  1  1   1 OPEN      0 10  0.25  2   0.0 /
@@ -58,9 +60,6 @@ WELSEGS
         24      24      1  23   2045.0 2000.000  0.2    0.0001 /
         25      25      1  24   2047.0 2000.000  0.2    0.0001 /
 --------------- Well: A1, Lateral: 1, Device layer ---------------
---   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
--- SEGMENT SEGMENT               DEPTH VERTICAL
---  NUMBER  NUMBER                        DEPTH
         26      26      2   2   2001.1 2000.000  0.2    0.0001 / -- Valve types
         27      27      3   3   2003.1 2000.000  0.2    0.0001 / -- Valve types
         28      28      4   4   2005.1 2000.000  0.2    0.0001 / -- Valve types
@@ -86,9 +85,6 @@ WELSEGS
         48      48     24  24   2045.1 2000.000  0.2    0.0001  / -- AICD types
         49      49     25  25   2047.1 2000.000  0.2    0.0001  / -- AICD types
 -------------- Well: A1, Lateral: 1, Annulus layer --------------
---   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
--- SEGMENT SEGMENT               DEPTH VERTICAL
---  NUMBER  NUMBER                        DEPTH
         50      50     26  26   2001.2 2000.000 0.15    0.0001 /
         51      51     26  50   2003.1 2000.000 0.15    0.0001 /
         52      52     26  51   2005.1 2000.000 0.15    0.0001 /

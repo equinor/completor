@@ -9,8 +9,6 @@ A1   MYGRP 35  113  0.0   OIL   1*   STD   SHUT   YES   1   AVG   1* /
 /
 
 COMPDAT
---WELL                      I     J    K1    K2 OP/SH  SATN       TRAN      WBDIA         KH       SKIN DFACT   DIR      PEQVR
--------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------- Well: A1, Lateral: 1 -------------------------------------
 -- WELL  I   J  K K2 FLAG SATNUM          CF   DIAM           KH SKIN DFACT   COMPDAT         RO
 --                                                                          DIRECTION
@@ -111,9 +109,6 @@ WELSEGS
         44      44      1  43 6941.07650 1564.600 0.15   0.00065 /
         45      45      1  44 7034.81700 1564.373 0.15   0.00065 /
 --------------- Well: A1, Lateral: 1, Device layer ---------------
---   START     END BRANCH OUT  MEASURED     TRUE DIAM ROUGHNESS
--- SEGMENT SEGMENT                DEPTH VERTICAL
---  NUMBER  NUMBER                         DEPTH
         46      46      2   7 2190.2660 1566.315 0.15   0.00065 / -- AICD types
         47      47      3   8 2228.1085 1566.164 0.15   0.00065 / -- AICD types
         48      48      4   9 2284.5730 1565.757 0.15   0.00065 / -- AICD types

@@ -1,9 +1,5 @@
 ----------------------------------------------------------------------------------------------------
--- Output from completor 0.1.3
--- Case file: No path found
--- Schedule file: No path found
--- Created by : AMKA
--- Created at : 2024 October 23 13:15
+-- Output from Completor
 ----------------------------------------------------------------------------------------------------
 
 WELSPECS
@@ -18,7 +14,6 @@ A2 /
 /
 
 COMPDAT
---WELL	I	J	K	K2	FLAG	SAT	CF DIAM	KH SKIN	DFACT DIR RO
 ---------------- Well: A1, Lateral: 1 ----------------
 -- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN
    'A1'  1  1  1   1 OPEN      0 1*  0.25 1*   0.0 /
@@ -45,9 +40,6 @@ WELSEGS
          4       4      1   3   2030.0 2000.000  0.2    0.0001 /
          5       5      1   4   2042.0 2000.000  0.2    0.0001 /
 --------------- Well: A1, Lateral: 1, Device layer ---------------
---   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
--- SEGMENT SEGMENT               DEPTH VERTICAL
---  NUMBER  NUMBER                        DEPTH
          6       6      2   2   2006.1 2000.000  0.2    0.0001 / -- Open Perforation
          7       7      3   3   2018.1 2000.000  0.2    0.0001 / -- Open Perforation
          8       8      4   4   2030.1 2000.000  0.2    0.0001 / -- Open Perforation
