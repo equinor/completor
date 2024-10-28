@@ -9,6 +9,7 @@ import time
 from collections.abc import Mapping
 
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 from completor import create_output, parse, read_schedule, utils
@@ -20,6 +21,8 @@ from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ReadCasefile
 from completor.utils import abort, clean_file_line, clean_file_lines
 from completor.wells import Well
+
+pd.set_option("future.no_silent_downcasting", True)
 
 
 def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
