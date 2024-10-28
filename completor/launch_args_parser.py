@@ -31,6 +31,6 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-l", "--loglevel", action="store", type=int, help="(Optional) log-level. Lower values gives more info (0-50)."
     )
-    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s (completor version {get_version()}).")
+    parser.add_argument("-v", "--version", action="version", version=f"Completor version {get_version()}!")
 
     return parser
