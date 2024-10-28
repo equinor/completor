@@ -254,8 +254,10 @@ def check_width_lines(result: str, limit: int) -> list[tuple[int, str]]:
     lines_to_check = np.nonzero(lengths >= limit)[0]
     too_long_lines = []
     for line_index in lines_to_check:
-        cleaned_line = lines[line_index].rsplit("/")[0] + "/"
-        cleaned_line = cleaned_line.rsplit("--")[0] + "--"
+        # Well names can have slashes, therefore maxsplit must be 1.
+        cleaned_line = lines[line_index].rsplit("/", maxsplit=1)[0] + "/"
+        # Comment 'char' can be multiple and should not have maxsplit, nor the '--' added.
+        cleaned_line = cleaned_line.rsplit("--")[0]
 
         if len(cleaned_line) > limit:
             too_long_lines.append((line_index, lines[line_index]))
