@@ -28,11 +28,12 @@ from completor.utils import (
 from completor.wells import Well
 
 
-def _replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
+def replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
     """Expand start and end marker pairs for well pattern recognition as needed.
 
     Args:
-        text: Text with pre-processor reservoir modelling well names.
+        text: Text with pre-processor reservoir modeling well names.
+        mapper: Map of old to new names.
 
     Returns:
         Text with reservoir simulator well names.
@@ -234,7 +235,7 @@ def create(
         err = e_
     finally:
         # Make sure the output thus far is written, and figure files are closed.
-        schedule = _replace_preprocessing_names(schedule, case.mapper)
+        schedule = replace_preprocessing_names(schedule, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
             file.write(schedule)
 
