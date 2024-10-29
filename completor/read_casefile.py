@@ -10,7 +10,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.constants import Content, Headers, Keywords, Method, ScheduleData
+from completor.constants import Content, Headers, Keywords, Method, WellData
 from completor.exceptions import CaseReaderFormatError, CompletorError
 from completor.logger import logger
 from completor.utils import clean_file_lines
@@ -596,7 +596,7 @@ class ReadCasefile:
         df_temp = df_temp[df_temp[Headers.BRANCH] == branch]
         return df_temp
 
-    def check_input(self, well_name: str, schedule_data: ScheduleData) -> None:
+    def check_input(self, well_name: str, well_data: WellData) -> None:
         """Ensure that the completion table (given in the case-file) is complete.
 
         If one branch is completed, all branches must be completed, unless not 'strict'.
@@ -614,7 +614,6 @@ class ReadCasefile:
         Raises:
             CompletorError: If strict is true and there are undefined branches.
         """
-        well_data = schedule_data[well_name]
         if sorted(list(well_data.keys())) != Keywords.main_keywords:
             found_keys = set(well_data.keys())
             raise CompletorError(

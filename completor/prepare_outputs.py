@@ -179,7 +179,7 @@ def dataframe_tostring(
     except ValueError:
         if df_temp.isnull().values.any():
             raise CompletorError("Got NaN values in table, please report if encountered!")
-        df_temp.replace("*", "1*", inplace=False)
+        df_temp = df_temp.replace("*", "1*", inplace=False)
         columns_with_1_star = df_temp.columns[df_temp.eq("1*").any()]
         df_temp = df_temp.replace("1*", np.nan, inplace=False)
         # Probably find columns where this is the case and cast to numeric after replacing with nan?
@@ -282,28 +282,7 @@ def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 
         header = f"Well: {well_name}, Lateral: {lat}"
 
     pad = max((nchar - len(header)) // 2, 2)
-
     return f"{'-' * pad} {header} {'-' * pad}\n"
-
-
-# def get_header(well_name: str, keyword: str, lat: int, layer: str, nchar: int = 100) -> str:
-#     """Print the header.
-#
-#     Args:
-#         well_name: Well name.
-#         keyword: Table keyword e.g. WELL_SEGMENTS, COMPLETION_SEGMENTS, COMPLETION_DATA, etc.
-#         lat: Lateral number.
-#         layer: Layer description e.g. tubing, device and annulus.
-#         nchar: Number of characters for the line boundary. Default 100.
-#
-#     Returns:
-#         String header.
-#     """
-#     if keyword == Keywords.WELL_SEGMENTS:
-#         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat} : {layer} layer\n"
-#     else:
-#         header = f"{'-' * nchar}\n-- Well : {well_name} : Lateral : {lat}\n"
-#     return "\n" + header + "-" * nchar + "\n"
 
 
 def prepare_tubing_layer(

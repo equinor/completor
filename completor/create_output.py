@@ -30,7 +30,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         figure_name: The name of the figure, if None, no figure is printed. Defaults to None.
 
     Returns:
-        Properly formatted output data divided into relevant keywords + bonus.
+        Properly formatted output data for completion data, well segments, completion segments, and bonus.
     """
     output = []
 
@@ -169,16 +169,16 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
                 )
             logger.info("Creating schematics: %s.pdf", figure_name)
         first = False
-    bonus = []
     print_completion_data = "\n".join(completion_data_list)
     if print_well_segments:
         print_well_segments = f"{print_well_segments}\n/\n\n"
-    if print_well_segments_link:
-        bonus.append(f"{Keywords.WELL_SEGMENTS_LINK}{print_well_segments_link}\n/\n\n\n")
     if print_completion_segments:
         print_completion_segments = (
             f"{Keywords.COMPLETION_SEGMENTS}\n'{well.well_name}' /{print_completion_segments}\n/\n\n\n"
         )
+    bonus = []
+    if print_well_segments_link:
+        bonus.append(f"{Keywords.WELL_SEGMENTS_LINK}{print_well_segments_link}\n/\n\n\n")
     if print_valve:
         bonus.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_valve}\n/\n\n\n")
     if print_inflow_control_device:
