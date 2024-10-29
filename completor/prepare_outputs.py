@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Mapping
+from collections.abc import MutableMapping
 from typing import Any
 
 import numpy as np
@@ -10,6 +10,8 @@ import pandas as pd
 
 from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
+from completor.logger import logger
+from completor.utils import check_width_lines
 from completor.wells import Lateral, Well
 
 
@@ -61,11 +63,7 @@ def add_columns_first_last(df_temp: pd.DataFrame, add_first: bool = True, add_la
 
 
 def dataframe_tostring(
-    df_temp: pd.DataFrame,
-    format_column: bool = False,
-    trim_df: bool = True,
-    header: bool = True,
-    formatters: Mapping[str | int, Callable[..., Any]] | None = None,
+    df_temp: pd.DataFrame, format_column: bool = False, trim_df: bool = True, header: bool = True, limit: int = 128
 ) -> str:
     """Convert DataFrame to string.
 
@@ -73,8 +71,8 @@ def dataframe_tostring(
         df_temp: COMPLETION_DATA, COMPLETION_SEGMENTS, etc.
         format_column: If columns are to be formatted.
         trim_df: To trim or not to trim. Default: True.
-        formatters: Dictionary of the column format. Default: None.
         header: Keep header (True) or not (False).
+        limit: Limit width of DataFrame.
 
     Returns:
         Text string of the DataFrame.
@@ -91,42 +89,120 @@ def dataframe_tostring(
     if columns[0] != "--":
         # then add first column
         df_temp = add_columns_first_last(df_temp, add_first=True, add_last=False)
-    # Add single quotes around well names in output file
+
+    # Add single quotes around well names in an output file.
     if Headers.WELL in df_temp.columns:
         df_temp[Headers.WELL] = "'" + df_temp[Headers.WELL].astype(str) + "'"
-    output_string = df_temp.to_string(index=False, justify="justify", header=header)
+
+    formatters: MutableMapping[Any, Any] = {}
     if format_column:
-        if formatters is None:
-            formatters = {
-                Headers.STRENGTH: "{:.10g}".format,
-                Headers.SCALE_FACTOR: "{:.10g}".format,
-                Headers.ROUGHNESS: "{:.10g}".format,
-                Headers.CONNECTION_FACTOR: "{:.10g}".format,
-                Headers.FORMATION_PERMEABILITY_THICKNESS: "{:.10g}".format,
-                Headers.MEASURED_DEPTH: "{:.3f}".format,
-                Headers.TRUE_VERTICAL_DEPTH: "{:.3f}".format,
-                Headers.START_MEASURED_DEPTH: "{:.3f}".format,
-                Headers.END_MEASURED_DEPTH: "{:.3f}".format,
-                Headers.FLOW_COEFFICIENT: "{:.10g}".format,
-                Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
-                Headers.OIL_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
-                Headers.GAS_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
-                Headers.WATER_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
-                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
-                Headers.DEFAULTS: "{:.10s}".format,
-                Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
-                Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
-                Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
-                Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
-                Headers.ALPHA_MAIN: "{:.10g}".format,
-                Headers.ALPHA_PILOT: "{:.10g}".format,
-            }
-        try:
-            output_string = df_temp.to_string(index=False, justify="justify", formatters=formatters, header=header)
-        except ValueError:
-            pass
+        formatters = {
+            Headers.STRENGTH: "{:.10g}".format,
+            Headers.SCALE_FACTOR: "{:.10g}".format,
+            Headers.ROUGHNESS: "{:.10g}".format,
+            Headers.CONNECTION_FACTOR: "{:.10g}".format,
+            "CONNECTION_FACTOR": "{:.10g}".format,
+            Headers.FORMATION_PERMEABILITY_THICKNESS: "{:.10g}".format,
+            "FORMATION_PERMEABILITY_THICKNESS": "{:.10g}".format,
+            Headers.MEASURED_DEPTH: "{:.3f}".format,
+            "MD": "{:.3f}".format,
+            Headers.TRUE_VERTICAL_DEPTH: "{:.3f}".format,
+            "TVD": "{:.3f}".format,
+            Headers.START_MEASURED_DEPTH: "{:.3f}".format,
+            "START_MD": "{:.3f}".format,
+            Headers.END_MEASURED_DEPTH: "{:.3f}".format,
+            "END_MD": "{:.3f}".format,
+            Headers.FLOW_COEFFICIENT: "{:.10g}".format,
+            "CV": "{:.10g}".format,
+            Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+            "FLOW_CROSS_SECTIONAL_AREA": "{:.3e}".format,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
+            Headers.DEFAULTS: "{:.10s}".format,
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
+            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF: "{:.10g}".format,
+            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF: "{:.10g}".format,
+            Headers.ALPHA_MAIN: "{:.10g}".format,
+            Headers.ALPHA_PILOT: "{:.10g}".format,
+        }
+
+        if header:
+            # Modify headers to reduce width.
+            column_splits = [tuple(column.split("_")) for column in df_temp.columns]
+            number_of_levels = max([len(tup) for tup in column_splits])
+            if number_of_levels > 1:
+                formatters.update(
+                    {
+                        ("SCALE", "FACTOR"): "{:.10g}".format,
+                        ("CONNECTION", "FACTOR"): "{:.10g}".format,
+                        ("FORMATION", "PERMEABILITY", "THICKNESS"): "{:.10g}".format,
+                        ("MEASURED", "DEPTH"): "{:.3f}".format,
+                        ("TRUE", "VERTICAL", "DEPTH"): "{:.3f}".format,
+                        ("START", "MEASURED", "DEPTH"): "{:.3f}".format,
+                        ("START", "MD"): "{:.3f}".format,
+                        ("END", "MEASURED", "DEPTH"): "{:.3f}".format,
+                        ("END", "MD"): "{:.3f}".format,
+                        ("FLOW", "COEFFICIENT"): "{:.10g}".format,
+                        ("FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
+                        ("OIL", "FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
+                        ("GAS", "FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
+                        ("WATER", "FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
+                        ("MAX", "FLOW", "CROSS", "SECTIONAL", "AREA"): "{:.3e}".format,
+                        ("WATER", "HOLDUP", "FRACTION", "LOW", "CUTOFF"): "{:.10g}".format,
+                        ("WATER", "HOLDUP", "FRACTION", "HIGH", "CUTOFF"): "{:.10g}".format,
+                        ("GAS", "HOLDUP", "FRACTION", "LOW", "CUTOFF"): "{:.10g}".format,
+                        ("GAS", "HOLDUP", "FRACTION", "HIGH", "CUTOFF"): "{:.10g}".format,
+                        ("ALPHA", "MAIN"): "{:.10g}".format,
+                        ("ALPHA", "PILOT"): "{:.10g}".format,
+                    }
+                )
+                if column_splits[0][0].startswith("--"):
+                    # Make sure each level is commented out!
+                    column_splits[0] = tuple(["--"] * number_of_levels)
+                # Replace nan with empty for printing purposes.
+                new_cols = pd.DataFrame(column_splits).fillna("")
+                df_temp.columns = pd.MultiIndex.from_frame(new_cols)
+
+    try:
+        output_string = df_temp.to_string(
+            index=False, justify="justify", formatters=formatters, header=header, sparsify=False
+        )
+    except ValueError:
+        if df_temp.isnull().values.any():
+            raise CompletorError("Got NaN values in table, please report if encountered!")
+        df_temp = df_temp.replace("*", "1*", inplace=False)
+        columns_with_1_star = df_temp.columns[df_temp.eq("1*").any()]
+        df_temp = df_temp.replace("1*", np.nan, inplace=False)
+        # Probably find columns where this is the case and cast to numeric after replacing with nan?
+        df_temp[columns_with_1_star] = df_temp[columns_with_1_star].astype(np.float64, errors="ignore")
+        output_string = df_temp.to_string(
+            index=False, justify="justify", formatters=formatters, header=header, sparsify=False, na_rep="1*"
+        )
+
     if output_string is None:
         return ""
+
+    too_long_lines = check_width_lines(output_string, limit)
+    if too_long_lines:
+        output_string = df_temp.to_string(
+            index=False, justify="left", formatters=formatters, header=header, sparsify=False
+        )
+        if output_string is None:
+            return ""
+        too_long_lines2 = check_width_lines(output_string, limit)
+        if too_long_lines2:
+            # Still, some issues. Reporting on the original errors.
+            number_of_lines = len(too_long_lines)
+            logger.error(
+                f"Some data-lines in the output are wider than limit of {limit} characters for some reservoir "
+                f"simulators!\nThis is concerning line-numbers: {[tup[0] for tup in too_long_lines]}\n"
+                f"{'An excerpt of the five first' if number_of_lines > 5 else 'The'} lines:\n"
+                + "\n".join([tup[1] for tup in too_long_lines[: min(number_of_lines, 5)]])
+            )
+
     return output_string
 
 
@@ -909,7 +985,7 @@ def prepare_completion_data(
         (df_reservoir[Headers.ANNULUS_ZONE] > 0)
         | ((df_reservoir[Headers.NUMBER_OF_DEVICES] > 0) | (df_reservoir[Headers.DEVICE_TYPE] == Content.PERFORATED))
     ]
-    if df_reservoir.shape[0] == 0:
+    if df_reservoir.empty:
         return pd.DataFrame()
     compdat = pd.DataFrame()
     compdat[Headers.WELL] = [well_name] * df_reservoir.shape[0]
