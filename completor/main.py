@@ -129,7 +129,6 @@ def create(
             compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, figure_name)
 
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
-                # TODO: Move to utils? parsing?
                 old_data = find_well_keyword_data(well_name, keyword, schedule)
                 if not old_data:
                     raise CompletorError(
