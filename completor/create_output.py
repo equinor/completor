@@ -15,7 +15,6 @@ from completor.constants import Content, Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.get_version import get_version
 from completor.logger import logger
-from completor.pvt_model import CORRELATION_UDQ
 from completor.read_casefile import ReadCasefile
 from completor.visualize_well import visualize_well
 from completor.wells import Lateral, Well
@@ -33,9 +32,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         Properly formatted output data for completion data, well segments, completion segments, and bonus.
     """
     output = []
-
-    if case.completion_table[Headers.DEVICE_TYPE].isin([Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]).any():
-        output.append(CORRELATION_UDQ)
 
     completion_data_list = []
     print_well_segments = ""
