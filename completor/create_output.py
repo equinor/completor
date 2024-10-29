@@ -11,7 +11,7 @@ import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 from completor import prepare_outputs
-from completor.constants import Content, Headers, Keywords
+from completor.constants import Headers, Keywords
 from completor.exceptions import CompletorError
 from completor.get_version import get_version
 from completor.logger import logger
@@ -31,7 +31,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     Returns:
         Properly formatted output data for completion data, well segments, completion segments, and bonus.
     """
-    
+
     completion_data_list = []
     print_well_segments = ""
     print_well_segments_link = ""
