@@ -179,7 +179,7 @@ def dataframe_tostring(
     except ValueError:
         if df_temp.isnull().values.any():
             raise CompletorError("Got NaN values in table, please report if encountered!")
-        df_temp.replace("*", "1*", inplace=False)
+        df_temp = df_temp.replace("*", "1*", inplace=False)
         columns_with_1_star = df_temp.columns[df_temp.eq("1*").any()]
         df_temp = df_temp.replace("1*", np.nan, inplace=False)
         # Probably find columns where this is the case and cast to numeric after replacing with nan?

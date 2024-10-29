@@ -1,6 +1,5 @@
+from importlib.resources import files
 from pathlib import Path
-
-from pkg_resources import resource_filename
 
 from completor.logger import logger
 
@@ -17,7 +16,7 @@ except ModuleNotFoundError:
 @hook_implementation
 @plugin_response(plugin_name="completor")  # type: ignore
 def installable_jobs():
-    config_file = Path(resource_filename("completor", "config_jobs/run_completor"))
+    config_file = Path(files("completor") / "config_jobs/run_completor")
     return {config_file.name: config_file}
 
 
