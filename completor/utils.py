@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
+from collections.abc import Mapping
 from typing import Any, Literal, NoReturn, overload
 
 import numpy as np
@@ -388,3 +389,26 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> str:
                 break
 
     return str("\n".join(lines))
+
+
+def replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
+    """Expand start and end marker pairs for well pattern recognition as needed.
+
+    Args:
+        text: Text with pre-processor reservoir modeling well names.
+        mapper: Map of old to new names.
+
+    Returns:
+        Text with reservoir simulator well names.
+    """
+    if mapper is None:
+        return text
+    start_marks = ["'", " ", "\n", "\t"]
+    end_marks = ["'", " ", " ", " "]
+    for key, value in mapper.items():
+        for start, end in zip(start_marks, end_marks):
+            my_key = start + str(key) + start
+            if my_key in text:
+                my_value = start + str(value) + end
+                text = text.replace(my_key, my_value)
+    return text

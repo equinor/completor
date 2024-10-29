@@ -6,7 +6,6 @@ import logging
 import os
 import re
 import time
-from collections.abc import Mapping
 
 from tqdm import tqdm
 
@@ -23,69 +22,9 @@ from completor.utils import (
     clean_raw_data,
     find_keyword_data,
     find_well_keyword_data,
-    format_default_values,
+    replace_preprocessing_names,
 )
 from completor.wells import Well
-
-
-def replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> str:
-    """Expand start and end marker pairs for well pattern recognition as needed.
-
-    Args:
-        text: Text with pre-processor reservoir modeling well names.
-        mapper: Map of old to new names.
-
-    Returns:
-        Text with reservoir simulator well names.
-    """
-    if mapper is None:
-        return text
-    start_marks = ["'", " ", "\n", "\t"]
-    end_marks = ["'", " ", " ", " "]
-    for key, value in mapper.items():
-        for start, end in zip(start_marks, end_marks):
-            my_key = start + str(key) + start
-            if my_key in text:
-                my_value = start + str(value) + end
-                text = text.replace(my_key, my_value)
-    return text
-
-
-def format_text(
-    keyword: str | None, content: list[list[str]] | list[str] | str, chunk: bool = True, end_of_record: bool = False
-) -> str:
-    """Write the content of a keyword to the output file.
-
-    Args:
-        keyword: Reservoir simulator keyword.
-        content: Text to be written.
-        chunk: Flag for indicating this is a list of records.
-        end_of_record: Flag for adding end-of-record ('/').
-
-    Returns:
-        Formatted text.
-    """
-    text = ""
-    if keyword is None:
-        return content  # type: ignore # it's really a formatted string
-
-    text += f"{keyword:s}\n"
-    if chunk:
-        for recs in content:
-            text += f" {' '.join(recs)} /\n"
-    else:
-        for line in content[1:]:
-            if isinstance(line, list):
-                logger.warning(
-                    "Chunk is False, but content contains lists of lists, "
-                    "instead of a list of strings the lines will be concatenated."
-                )
-                line = " ".join(line)
-            text += line + "\n"
-    if end_of_record:
-        text += "/\n"
-
-    return text
 
 
 def get_content_and_path(case_content: str, file_path: str | None, keyword: str) -> tuple[str | None, str | None]:
@@ -131,27 +70,6 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
             ) from e
         return file_content, file_path
     return None, file_path
-
-
-def process_content(line_number: int, clean_lines: dict[int, str]) -> tuple[list[list[str]], int]:
-    """Process the contents
-
-    Args:
-        line_number: The current line number.
-        clean_lines: Clean line to line number mapping.
-
-    Returns:
-        The formatted contents, and the new number of lines after processing.
-
-    """
-    content = ""
-    # concatenate and look for 'end of records' => //
-    while not re.search(r"/\s*/$", content):
-        line_number += 1
-        if line_number in clean_lines:
-            content += clean_lines[line_number]
-    content = format_default_values(content)
-    return content, line_number
 
 
 def create(
