@@ -1,24 +1,17 @@
+----------------------------------------------------------------------------------------------------
+-- Output from Completor
+----------------------------------------------------------------------------------------------------
+
 -- One-branch well schedule for testing the NaN error
 
 WELSPECS
 A1   MYGRP 35  113  0.0   OIL   1*   STD   SHUT   YES   1   AVG   1* /
 /
 
-
-
-
-
-----------------------------------------------------------------------------------------------------
--- Output from completor
-----------------------------------------------------------------------------------------------------
-
-
 COMPDAT
------------------------------------------------------------------------------------------------
--- Well : A1 : Lateral : 1
------------------------------------------------------------------------------------------------
--- WELL  I   J  K K2 FLAG SATNUM          CF   DIAM           KH SKIN DFACT   COMPDAT         RO  
---                                                                          DIRECTION             
+------------------------------------- Well: A1, Lateral: 1 -------------------------------------
+-- WELL  I   J  K K2 FLAG SATNUM          CF   DIAM           KH SKIN DFACT   COMPDAT         RO
+--                                                                          DIRECTION
    'A1' 35 113 72 72 OPEN     1*  298.626067 0.2159 1.962179e+05 30.0    1*         Y 19.6401168 /
    'A1' 36 113 72 72 OPEN     1*  387.741486 0.2159 2.540759e+05 30.0    1*         Y 17.8369894 /
    'A1' 36 113 71 71 OPEN     1*  756.259143 0.2159 2.134440e+05 30.0    1*         Y  17.491487 /
@@ -62,18 +55,15 @@ COMPDAT
    'A1' 49  89 71 71 OPEN     1*    8.708245 0.2159 5.314864e+03 30.0    1*         Y         1* /
 /
 
-
 WELSEGS
--- WELL     TRUE MEASURED WBVOLUME INFOTYPE PDROPCOMP MPMODEL  
---      VERTICAL    DEPTH                                      
---         DEPTH                                               
+-- WELL     TRUE MEASURED WBVOLUME INFOTYPE PDROPCOMP MPMODEL
+--      VERTICAL    DEPTH
+--         DEPTH
    'A1' 1565.283   1893.0       1*      ABS       HF-      HO /
-----------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Tubing layer
-----------------------------------------------------------------
---   START     END BRANCH OUT   MEASURED     TRUE DIAM ROUGHNESS  
--- SEGMENT SEGMENT                 DEPTH VERTICAL                 
---  NUMBER  NUMBER                          DEPTH                 
+--------------- Well: A1, Lateral: 1, Tubing layer ---------------
+--   START     END BRANCH OUT   MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT                 DEPTH VERTICAL
+--  NUMBER  NUMBER                          DEPTH
          2       2      1   1 1902.00000 1565.668 0.15   0.00065 /
          3       3      1   2 1941.57416 1566.919 0.15   0.00065 /
          4       4      1   3 1951.00000 1567.217 0.15   0.00065 /
@@ -118,12 +108,7 @@ WELSEGS
         43      43      1  42 6788.30050 1564.643 0.15   0.00065 /
         44      44      1  43 6941.07650 1564.600 0.15   0.00065 /
         45      45      1  44 7034.81700 1564.373 0.15   0.00065 /
-----------------------------------------------------------------
--- Well : A1 : Lateral : 1 : Device layer
-----------------------------------------------------------------
---   START     END BRANCH OUT  MEASURED     TRUE DIAM ROUGHNESS                
--- SEGMENT SEGMENT                DEPTH VERTICAL                               
---  NUMBER  NUMBER                         DEPTH                               
+--------------- Well: A1, Lateral: 1, Device layer ---------------
         46      46      2   7 2190.2660 1566.315 0.15   0.00065 / -- AICD types
         47      47      3   8 2228.1085 1566.164 0.15   0.00065 / -- AICD types
         48      48      4   9 2284.5730 1565.757 0.15   0.00065 / -- AICD types
@@ -165,14 +150,14 @@ WELSEGS
         84      84     40  45 7034.9170 1564.373 0.15   0.00065 / -- AICD types
 /
 
+
+
 COMPSEGS
 'A1' /
--------------------------------------------------------------
--- Well : A1 : Lateral : 1
--------------------------------------------------------------
---  I   J  K BRANCH    START      END  COMPSEGS DEF   START  
---                  MEASURED MEASURED DIRECTION     SEGMENT  
---                     DEPTH    DEPTH                NUMBER  
+-------------------- Well: A1, Lateral: 1 --------------------
+--  I   J  K BRANCH    START      END  COMPSEGS DEF   START
+--                  MEASURED MEASURED DIRECTION     SEGMENT
+--                     DEPTH    DEPTH                NUMBER
    35 113 72      2 2178.280 2202.052        1*  3*      46 /
    36 113 72      3 2202.052 2253.965        1*  3*      47 /
    36 113 71      4 2253.965 2314.981        1*  3*      48 /
@@ -218,12 +203,10 @@ COMPSEGS
 
 
 WSEGAICD
--------------------------------------------------------------------------------------------------------------
--- Well : A1 : Lateral : 1
--------------------------------------------------------------------------------------------------------------
--- WELL   START     END STRENGTH      SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F  
---      SEGMENT SEGMENT              FACTOR       FLUID       FLUID                                           
---       NUMBER  NUMBER                         DENSITY   VISCOSITY                                           
+-------------------------------------------- Well: A1, Lateral: 1 --------------------------------------------
+-- WELL   START     END STRENGTH      SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT              FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                         DENSITY   VISCOSITY
    'A1'      46      46  0.00021  -0.504796     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
    'A1'      47      47  0.00021  -0.231156     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
    'A1'      48      48  0.00021  -0.196670     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
@@ -264,5 +247,7 @@ WSEGAICD
    'A1'      83      83  0.00021  -0.078516     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
    'A1'      84      84  0.00021  -0.346360     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 /
 /
+
+
 
 

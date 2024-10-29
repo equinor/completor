@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-import completor
+from completor.get_version import get_version
 
 COMPLETOR_DESCRIPTION = """Completor models advanced well completions for reservoir simulators.
 It generates all necessary keywords for reservoir simulation
@@ -31,8 +31,6 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-l", "--loglevel", action="store", type=int, help="(Optional) log-level. Lower values gives more info (0-50)."
     )
-    parser.add_argument(
-        "-v", "--version", action="version", version=f"%(prog)s (completor version {completor.__version__})."
-    )
+    parser.add_argument("-v", "--version", action="version", version=f"Completor version {get_version()}!")
 
     return parser
