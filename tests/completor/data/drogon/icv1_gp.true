@@ -1,25 +1,16 @@
+----------------------------------------------------------------------------------------------------
+-- Output from Completor
+----------------------------------------------------------------------------------------------------
+
 WELSPECS
 --WELL  GROUP  IHEEL JHEEL       DREF PHASE       DRAD INFEQ SIINS XFLOW PRTAB  DENS
  'OP5' 'GR'       34    42 1608.68942   OIL         1*    1*  SHUT    NO    1*    1* /
 /
 
-
-
-
-WSEGITER
-  50 5  0.3  2.0 /
-
-----------------------------------------------------------------------------------------------------
--- Output from completor
-----------------------------------------------------------------------------------------------------
-
-
 COMPDAT
----------------------------------------------------------------------------------------------
--- Well : OP5 : Lateral : 1
----------------------------------------------------------------------------------------------
---  WELL  I  J  K K2 FLAG SATNUM         CF  DIAM           KH SKIN DFACT   COMPDAT        RO  
---                                                                        DIRECTION            
+------------------------------------ Well: OP5, Lateral: 1 ------------------------------------
+--  WELL  I  J  K K2 FLAG SATNUM         CF  DIAM           KH SKIN DFACT   COMPDAT        RO
+--                                                                        DIRECTION
    'OP5' 33 42 29 29 OPEN     1* 380.824799 0.311 71616.847600  5.0    1*         Y 17.277783 /
    'OP5' 33 41 29 29 OPEN     1* 474.421727 0.311 89227.729900  5.0    1*         Y 17.295949 /
    'OP5' 33 40 29 29 OPEN     1* 106.580131 0.311 20059.204500  5.0    1*         Y 17.417685 /
@@ -37,11 +28,7 @@ COMPDAT
    'OP5' 31 35 30 30 OPEN     1*   0.001088 0.311     0.154803  5.0    1*         Y  1.483388 /
    'OP5' 30 35 30 30 OPEN     1*  11.062618 0.311  1650.033680  5.0    1*         Y  2.149233 /
    'OP5' 30 35 29 29 OPEN     1*   0.000082 0.311     0.014459  5.0    1*         Y  9.097747 /
-------------------------------------------------------------------------------------------
--- Well : OP5 : Lateral : 2
-------------------------------------------------------------------------------------------
---  WELL  I  J K K2 FLAG SATNUM         CF  DIAM            KH SKIN DFACT   COMPDAT        RO  
---                                                                        DIRECTION            
+---------------------------------- Well: OP5, Lateral: 2 ----------------------------------
    'OP5' 34 42 8  8 OPEN     1*   2.276063 0.311    412.221308  5.0    1*         Y 11.909033 /
    'OP5' 34 42 7  7 OPEN     1*   0.012740 0.311      1.744857  5.0    1*         Y  1.118452 /
    'OP5' 34 42 6  6 OPEN     1*   0.051492 0.311      9.058507  5.0    1*         Y  9.017756 /
@@ -65,18 +52,15 @@ COMPDAT
    'OP5' 34 35 5  5 OPEN     1*  30.321561 0.311   5676.679000  5.0    1*         Y 16.516305 /
 /
 
-
 WELSEGS
---  WELL     TRUE MEASURED WBVOLUME INFOTYPE PDROPCOMP MPMODEL  
---       VERTICAL    DEPTH                                      
---          DEPTH                                               
+--  WELL     TRUE MEASURED WBVOLUME INFOTYPE PDROPCOMP MPMODEL
+--       VERTICAL    DEPTH
+--          DEPTH
    'OP5' 1599.500   3350.0       1*      ABS       HF-      HO /
-----------------------------------------------------------------
--- Well : OP5 : Lateral : 1 : Tubing layer
-----------------------------------------------------------------
---   START     END BRANCH OUT   MEASURED     TRUE DIAM ROUGHNESS  
--- SEGMENT SEGMENT                 DEPTH VERTICAL                 
---  NUMBER  NUMBER                          DEPTH                 
+-------------- Well: OP5, Lateral: 1, Tubing layer --------------
+--   START     END BRANCH OUT   MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT                 DEPTH VERTICAL
+--  NUMBER  NUMBER                          DEPTH
          2       2      1   1 3400.00000 1599.997 0.22   0.00065 /
          3       3      1   2 3600.00000 1602.912 0.22   0.00065 /
          4       4      1   3 3610.00000 1603.212 0.22   0.00065 /
@@ -88,19 +72,9 @@ WELSEGS
         10      10      1   9 4266.73071 1613.074 0.22   0.00065 /
         11      11      1  10 4346.34975 1614.098 0.22   0.00065 /
         12      12      1  11 4394.70050 1614.721 0.22   0.00065 /
-----------------------------------------------------------------
--- Well : OP5 : Lateral : 1 : Device layer
-----------------------------------------------------------------
---   START     END BRANCH OUT  MEASURED     TRUE DIAM ROUGHNESS               
--- SEGMENT SEGMENT                DEPTH VERTICAL                              
---  NUMBER  NUMBER                         DEPTH                              
+-------------- Well: OP5, Lateral: 1, Device layer --------------
         13      13      3  12 4394.8005 1614.721 0.22   0.00065 / -- ICV types
-----------------------------------------------------------------
--- Well : OP5 : Lateral : 2 : Tubing layer
-----------------------------------------------------------------
---   START     END BRANCH OUT    MEASURED     TRUE DIAM ROUGHNESS  
--- SEGMENT SEGMENT                  DEPTH VERTICAL                 
---  NUMBER  NUMBER                           DEPTH                 
+-------------- Well: OP5, Lateral: 2, Tubing layer --------------
         14      14      2   2 3600.000000 1599.821 0.22   0.00065 /
         15      15      2  14 3610.000000 1599.802 0.22   0.00065 /
         16      16      2  15 3791.803300 1599.305 0.22   0.00065 /
@@ -116,23 +90,18 @@ WELSEGS
         26      26      2  25 4251.582490 1605.942 0.22   0.00065 /
         27      27      2  26 4315.730050 1608.035 0.22   0.00065 /
         28      28      2  27 4331.000875 1608.479 0.22   0.00065 /
-----------------------------------------------------------------
--- Well : OP5 : Lateral : 2 : Device layer
-----------------------------------------------------------------
---   START     END BRANCH OUT    MEASURED     TRUE DIAM ROUGHNESS               
--- SEGMENT SEGMENT                  DEPTH VERTICAL                              
---  NUMBER  NUMBER                           DEPTH                              
+-------------- Well: OP5, Lateral: 2, Device layer --------------
         29      29      4  28 4331.100875 1608.479 0.22   0.00065 / -- ICV types
 /
 
+
+
 COMPSEGS
 'OP5' /
-------------------------------------------------------------
--- Well : OP5 : Lateral : 1
-------------------------------------------------------------
---  I  J  K BRANCH    START      END  COMPSEGS DEF   START  
---                 MEASURED MEASURED DIRECTION     SEGMENT  
---                    DEPTH    DEPTH                NUMBER  
+------------------- Well: OP5, Lateral: 1 -------------------
+--  I  J  K BRANCH    START      END  COMPSEGS DEF   START
+--                 MEASURED MEASURED DIRECTION     SEGMENT
+--                    DEPTH    DEPTH                NUMBER
    33 42 29      3 3778.347 3932.424        1*  3*      13 /
    33 41 29      3 3932.424 4088.135        1*  3*      13 /
    33 40 29      3 4088.135 4108.708        1*  3*      13 /
@@ -150,12 +119,7 @@ COMPSEGS
    31 35 30      3 4897.663 4925.475        1*  3*      13 /
    30 35 30      3 4925.475 4967.110        1*  3*      13 /
    30 35 29      3 4967.110 5011.054        1*  3*      13 /
------------------------------------------------------------
--- Well : OP5 : Lateral : 2
------------------------------------------------------------
---  I  J K BRANCH    START      END  COMPSEGS DEF   START  
---                MEASURED MEASURED DIRECTION     SEGMENT  
---                   DEPTH    DEPTH                NUMBER  
+------------------- Well: OP5, Lateral: 2 -------------------
    34 42 8      4 3770.953 3812.653        1*  3*      29 /
    34 42 7      4 3812.653 3862.917        1*  3*      29 /
    34 42 6      4 3862.917 3917.681        1*  3*      29 /
@@ -181,24 +145,19 @@ COMPSEGS
 
 
 WSEGVALV
--------------------------------------------------------
--- Well : OP5 : Lateral : 1
--------------------------------------------------------
---  WELL   START        FLOW CROSS DEFAULTS       MAX  
---       SEGMENT COEFFICIENT                     FLOW  
---        NUMBER                                CROSS  
---                                          SECTIONAL  
---                                               AREA  
+----------------- Well: OP5, Lateral: 1 -----------------
+--  WELL   START        FLOW CROSS DEFAULTS       MAX
+--       SEGMENT COEFFICIENT                     FLOW
+--        NUMBER                                CROSS
+--                                          SECTIONAL
+--                                               AREA
    'OP5'      13        0.95   3.0       5* 4.000e+00 /
--------------------------------------------------------
--- Well : OP5 : Lateral : 2
--------------------------------------------------------
---  WELL   START        FLOW CROSS DEFAULTS       MAX  
---       SEGMENT COEFFICIENT                     FLOW  
---        NUMBER                                CROSS  
---                                          SECTIONAL  
---                                               AREA  
+----------------- Well: OP5, Lateral: 2 -----------------
    'OP5'      29         1.5   1.0       5* 5.000e+00 /
 /
 
 
+
+
+WSEGITER
+  50 5  0.3  2.0 /

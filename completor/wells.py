@@ -7,7 +7,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import completion, read_schedule
-from completor.constants import Content, Headers, Method
+from completor.constants import Content, Headers, Method, WellData
 from completor.read_casefile import ReadCasefile
 
 
@@ -34,14 +34,16 @@ class Well:
     df_welsegs_header_all_laterals: pd.DataFrame
     df_welsegs_content_all_laterals: pd.DataFrame
 
-    def __init__(self, well_name: str, well_number: int, case: ReadCasefile, well_data: dict[str, pd.DataFrame]):
+    def __init__(self, well_name: str, well_number: int, case: ReadCasefile, well_data: WellData):
         """Create well.
 
         Args:
             well_name: Well name.
-            case: Data from case file.
-            well_data: Data from schedule file.
+            case: Data from the case file.
+            well_data: Data from the schedule file.
         """
+        # Note: Important to run this check before creating wells as it fixes potential problems with cases.
+        case.check_input(well_name, well_data)
         self.well_name = well_name
         self.well_number = well_number
 
@@ -103,7 +105,7 @@ class Lateral:
     df_tubing: pd.DataFrame
     df_device: pd.DataFrame
 
-    def __init__(self, lateral_number: int, well_name: str, case: ReadCasefile, well_data: dict[str, pd.DataFrame]):
+    def __init__(self, lateral_number: int, well_name: str, case: ReadCasefile, well_data: WellData):
         """Create Lateral.
 
         Args:
@@ -141,19 +143,19 @@ class Lateral:
         self.df_reservoir[Headers.LATERAL] = lateral_number
 
     @staticmethod
-    def _select_well(well_name: str, schedule_data: dict[str, pd.DataFrame], lateral: int) -> pd.DataFrame:
+    def _select_well(well_name: str, well_data: WellData, lateral: int) -> pd.DataFrame:
         """Filter the reservoir data for this well and its laterals.
 
         Args:
             well_name: The name of the well.
-            schedule_data: Multisegmented well segment data.
+            well_data: Multisegmented well segment data.
             lateral: The lateral number.
 
         Returns:
             Filtered reservoir data.
         """
-        df_compsegs = read_schedule.get_completion_segments(schedule_data, well_name, lateral)
-        df_compdat = read_schedule.get_completion_data(schedule_data)
+        df_compsegs = read_schedule.get_completion_segments(well_data, well_name, lateral)
+        df_compdat = read_schedule.get_completion_data(well_data)
         df_reservoir = pd.merge(df_compsegs, df_compdat, how="inner", on=[Headers.I, Headers.J, Headers.K])
 
         # Remove WELL column in the df_reservoir.

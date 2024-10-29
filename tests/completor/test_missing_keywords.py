@@ -6,6 +6,7 @@ import pytest
 import utils_for_tests
 
 from completor.constants import Content
+from completor.exceptions import CompletorError
 
 COMPLETION = """
 COMPLETION
@@ -143,10 +144,10 @@ def test_missing_welspecs(tmpdir, capsys):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["compdat", "welsegs", "compsegs"], schedule_file)
-    utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
-    captured = capsys.readouterr()
-    assert captured.err == ""
-    assert captured.out == ""
+    expected_error_message = "Well 'A1' is missing keyword(s): 'WELSPECS'!"
+    with pytest.raises(CompletorError) as e:
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
+    assert expected_error_message in str(e.value)
 
 
 def test_missing_compdat(tmpdir):
@@ -155,33 +156,34 @@ def test_missing_compdat(tmpdir):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "welsegs", "compsegs"], schedule_file)
-    with pytest.raises(KeyError, match="Input schedule file missing COMPDAT keyword."):
+    expected_error_message = "Well 'A1' is missing keyword(s): 'COMPDAT'!"
+    with pytest.raises(CompletorError) as e:
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
+    assert expected_error_message in str(e.value)
 
 
 def test_missing_welsegs(tmpdir):
     """Test output to screen from Completor missing WELL_SEGMENTS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    expected_error_message = "Input schedule file missing WELSEGS keyword."
+    expected_error_message = "Well 'A1' is missing keyword(s): 'WELSEGS'!"
     set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "compsegs"], schedule_file)
-    with pytest.raises(ValueError, match=expected_error_message):
+    with pytest.raises(CompletorError) as e:
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
+    assert expected_error_message in str(e.value)
 
 
 def test_inconsistent_files(tmpdir):
     """Test output to screen from Completor missing COMPLETION_SEGMENTS."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    expected_error_message = (
-        "Inconsistent case and schedule files. Check well names, "
-        "WELL_SPECIFICATION, COMPLETION_DATA, WELL_SEGMENTS, and COMPLETION_SEGMENTS."
-    )
+    expected_error_message = "Well 'A1' is missing keyword(s): 'COMPSEGS'!"
     set_case(Content.PERFORATED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs"], schedule_file)
-    with pytest.raises(ValueError, match=expected_error_message):
+    with pytest.raises(CompletorError) as e:
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
+    assert expected_error_message in str(e.value)
 
 
 def test_missing_completion(tmpdir):
