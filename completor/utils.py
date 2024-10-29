@@ -97,7 +97,9 @@ def find_quote(string: str) -> re.Match | None:
     return re.search(rf"([{quotes}])(?:(?=(\\?))\2.)*?\1", string)
 
 
-def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_marks: bool = False) -> str:
+def clean_file_line(
+    line: str, comment_prefix: str = "--", remove_quotation_marks: bool = False, replace_tabs: bool = True
+) -> str:
     """Remove comments, tabs, newlines and consecutive spaces from a string.
 
     Also remove trailing '/' comments, but ignore lines containing a file path.
@@ -107,6 +109,7 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
         comment_prefix: The prefix used to denote a comment in the file.
         remove_quotation_marks: Whether quotation marks should be removed from the line.
             Used for cleaning schedule files.
+        replace_tabs: Whether tabs should be replaced with a space.
 
     Returns:
         A cleaned line. Returns an empty string in the case of a comment or empty line.
@@ -125,7 +128,8 @@ def clean_file_line(line: str, comment_prefix: str = "--", remove_quotation_mark
     if not line:
         return ""
     # Replace tabs with spaces, remove newlines and remove trailing spaces.
-    line = line.replace("\t", " ").replace("\n", "")
+    if replace_tabs:
+        line = line.replace("\t", " ").replace("\n", "")
     # Remove quotation marks if specified
     if remove_quotation_marks:
         line = line.replace("'", " ").replace('"', " ")
@@ -231,3 +235,30 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
             )
         return np.array(completion_table[Headers.WELL][mask].unique())
     return np.array(completion_table[Headers.WELL].unique())
+
+
+def check_width_lines(result: str, limit: int) -> list[tuple[int, str]]:
+    """Check the width of each line versus limit.
+
+    Disregarding all content after '/' and '--' characters.
+
+    Args:
+        result: Raw text.
+        limit: The character width limit.
+
+    Raises:
+        ValueError: If there exists any data that is too long.
+    """
+    lines = result.splitlines()
+    lengths = np.char.str_len(lines)
+    lines_to_check = np.nonzero(lengths >= limit)[0]
+    too_long_lines = []
+    for line_index in lines_to_check:
+        # Well names can have slashes, therefore maxsplit must be 1.
+        cleaned_line = lines[line_index].rsplit("/", maxsplit=1)[0] + "/"
+        # Comment 'char' can be multiple and should not have maxsplit, nor the '--' added.
+        cleaned_line = cleaned_line.rsplit("--")[0]
+
+        if len(cleaned_line) > limit:
+            too_long_lines.append((line_index, lines[line_index]))
+    return too_long_lines
