@@ -335,7 +335,7 @@ def main() -> None:
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
 
-    logger.debug("Running Completor %s. An advanced well modelling tool.", completor.__version__)
+    logger.info("Running Completor version %s. An advanced well modelling tool.", completor.__version__)
     logger.debug("-" * 60)
     start_a = time.time()
 

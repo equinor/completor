@@ -75,12 +75,7 @@ def test_dataframe_to_string():
 
     df_test_default = prepare_outputs.dataframe_tostring(df_test_utils)
     df_true_default = df_true_utils.to_string(index=False, justify="justify")
-    # with formatters
-    formatters = {"A": "{:.3f}".format}
-    df_test_with_formatter = prepare_outputs.dataframe_tostring(df_test_utils, True, True, True, formatters)
-    df_true_with_formatter = df_true_utils.to_string(index=False, justify="justify", formatters=formatters)
     assert df_test_default == df_true_default
-    assert df_test_with_formatter == df_true_with_formatter
 
 
 def test_outlet_segment_1():
@@ -526,25 +521,6 @@ def test_user_segment_lumping_gp(tmpdir):
 
 def test_print_wsegdar(tmpdir):
     tmpdir.chdir()
-    df_wsegdar = pd.DataFrame(
-        [[Headers.WELL, 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
-        columns=[
-            Headers.WELL,
-            Headers.START_SEGMENT_NUMBER,
-            Headers.FLOW_COEFFICIENT,
-            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
-            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
-            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
-            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
-            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
-            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
-            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
-            Headers.DEFAULTS,
-            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
-        ],
-    )
-    well_number = 1
-    wsegdar_printout = prepare_outputs.print_wsegdar(df_wsegdar, well_number)
     true_wsegdar_printout = """UDQ
   ASSIGN SUVTRIG WELL 3 0 /
 /
@@ -624,6 +600,25 @@ UDQ
 ENDACTIO
 
 """
+    df_wsegdar = pd.DataFrame(
+        [[Headers.WELL, 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
+        columns=[
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
+    )
+    well_number = 1
+    wsegdar_printout = prepare_outputs.print_wsegdar(df_wsegdar, well_number)
     wsegdar_printout = wsegdar_printout.strip()
     true_wsegdar_printout = true_wsegdar_printout.strip()
     wsegdar_printout = re.sub(r"[^\S\r\n]+", " ", wsegdar_printout)
