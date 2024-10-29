@@ -8,7 +8,6 @@ import re
 import time
 from collections.abc import Mapping
 
-import numpy as np
 from tqdm import tqdm
 
 from completor import create_output, parse, read_schedule, utils
@@ -299,22 +298,6 @@ def main() -> None:
 
     logger.debug("Total runtime: %d", (time.time() - start_a))
     logger.debug("-" * 60)
-
-
-def _get_well_name(schedule_lines: dict[int, str], i: int) -> str:
-    """Get the well name from line number.
-
-    Args:
-        schedule_lines: Dictionary of lines in schedule file.
-        i: Line index.
-
-    Returns:
-        Well name.
-    """
-    keys = np.array(sorted(list(schedule_lines.keys())))
-    j = np.where(keys == i)[0][0]
-    next_line = schedule_lines[int(keys[j + 1])]
-    return next_line.split()[0]
 
 
 if __name__ == "__main__":
