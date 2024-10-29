@@ -182,7 +182,7 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
 
 
 def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments valve (WELL_SEGMENTS_VALVE) table.
+    """Format the Well Segments Valve (WELSEGS) table.
 
     Args:
         df_temp: Well segments valve data.
@@ -203,7 +203,7 @@ def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments inflow control device (INFLOW_CONTROL_DEVICE) table.
+    """Format the well segments Inflow Control Device (ICD) table.
 
     Args:
         df_temp: Well segments inflow control device data.
@@ -224,7 +224,7 @@ def set_format_wsegsicd(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments automatic inflow control device (AUTONOMOUS_INFLOW_CONTROL_DEVICE) table.
+    """Format the well segments Automatic Inflow Control Device (AICD) table.
 
     Args:
         df_temp: Well segments automatic inflow control device data.
@@ -243,7 +243,7 @@ def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments DAR (DENSITY_ACTIVATED_RECOVERY) data.
+    """Format the well segments Density Activated Recovery (DAR) data.
 
     Args:
         df_temp: Well segments DAR device data.
@@ -261,7 +261,7 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments automatic inflow control valve (AUTONOMOUS_INFLOW_CONTROL_VALVE) table.
+    """Format the well segments Automatic Inflow Control Valve (AICV) table.
 
     Args:
         df_temp: Well segments automatic inflow control valve table.
@@ -279,7 +279,7 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegicv(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments inflow control valve (INFLOW_CONTROL_VALVE) table.
+    """Format the well segments Inflow Control Valve (ICV) table.
 
     Args:
         df_temp: Well segments inflow control valve table.
