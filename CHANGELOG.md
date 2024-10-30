@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.0.0](https://github.com/equinor/completor/compare/v0.1.3...v1.0.0) (2024-10-30)
+
+
+### 👷 Continuous Integration
+
+* Allow release-please to bump major versions! ([#182](https://github.com/equinor/completor/issues/182)) ([6dfb5de](https://github.com/equinor/completor/commit/6dfb5de1ad2daf2d96abbedcfe999a9cace1e614))
+
+
+### 🐛 Bug Fixes
+
+* Error when non-active wells are specified with separate WELSPECS ([#163](https://github.com/equinor/completor/issues/163)) ([92bf4b7](https://github.com/equinor/completor/commit/92bf4b7f57bd8c24859b06d9280fdb682864470f))
+* Explicitly opt in to future pandas option "no-silent-downcasting" ([#175](https://github.com/equinor/completor/issues/175)) ([2f9cb3d](https://github.com/equinor/completor/commit/2f9cb3d118bc64fd42d427c484495319e109e782))
+* Handle pandas deprecation warnings ([#156](https://github.com/equinor/completor/issues/156)) ([e5d101f](https://github.com/equinor/completor/commit/e5d101f1ef534608f9b733abe60f289beea3f941))
+* Output keyword ordering ([#172](https://github.com/equinor/completor/issues/172)) ([7499aaa](https://github.com/equinor/completor/commit/7499aaa4a875e4d9f27c1a8c528fa888a4943f36))
+* Output width limit ([#167](https://github.com/equinor/completor/issues/167)) ([0a184ef](https://github.com/equinor/completor/commit/0a184ef4dd785818590da04df56fa413e53a509b))
+* **security:** Update dependencies for documentation build ([#135](https://github.com/equinor/completor/issues/135)) ([5c51da4](https://github.com/equinor/completor/commit/5c51da4f8c9566aa4cbd51ab2ac891273ebbfb53))
+* Testing of string building ([#157](https://github.com/equinor/completor/issues/157)) ([d10a399](https://github.com/equinor/completor/commit/d10a3995e108c65365eea0cbd61d0cce70d0faa9))
+
+
+### 🧹 Chores
+
+* Bump aiohttp from 3.9.5 to 3.10.2 in the pip group across 1 directory ([#148](https://github.com/equinor/completor/issues/148)) ([e3cfc70](https://github.com/equinor/completor/commit/e3cfc701fcef8904879cc18ae69609277b07ae58))
+* Bump certifi from 2024.6.2 to 2024.7.4 in the pip group across 1 directory ([#129](https://github.com/equinor/completor/issues/129)) ([75d0dce](https://github.com/equinor/completor/commit/75d0dce54a7e7c8009075ee963986651cd03fa21))
+* Bump cryptography from 43.0.0 to 43.0.1 in the pip group across 1 directory ([#151](https://github.com/equinor/completor/issues/151)) ([7be0edb](https://github.com/equinor/completor/commit/7be0edbe40a72bb6c50fed6c6239181898a27276))
+* Bump http-proxy-middleware from 2.0.6 to 2.0.7 in /documentation in the npm_and_yarn group across 1 directory ([#174](https://github.com/equinor/completor/issues/174)) ([b23703b](https://github.com/equinor/completor/commit/b23703b8d6a60f5e90bd3e12bba16cd46079e095))
+* Bump starlette from 0.38.5 to 0.40.0 in the pip group across 1 directory ([#171](https://github.com/equinor/completor/issues/171)) ([d50c73c](https://github.com/equinor/completor/commit/d50c73c2876373064b4cac97ed5addcdb5842abb))
+* Bump the npm_and_yarn group across 1 directory with 3 updates ([#155](https://github.com/equinor/completor/issues/155)) ([dbb331f](https://github.com/equinor/completor/commit/dbb331fcb7fcb692faae0a57bcfbf490a1dd61a0))
+* Bump webpack from 5.93.0 to 5.94.0 in /documentation in the npm_and_yarn group across 1 directory ([#144](https://github.com/equinor/completor/issues/144)) ([d0a9275](https://github.com/equinor/completor/commit/d0a92754c4db9145b8c0a057ee9e6546308e42db))
+* Class-structure ([#136](https://github.com/equinor/completor/issues/136)) ([9e5fae2](https://github.com/equinor/completor/commit/9e5fae2be48daeae24fdd3a1a551eb920a01fe9a))
+* Make more conventional commit formats not hidden from release-please ([#176](https://github.com/equinor/completor/issues/176)) ([a5fc75a](https://github.com/equinor/completor/commit/a5fc75a845fb3cfbaa0cb34c5d34c544835d998c))
+* Make pdf figure context managed ([#138](https://github.com/equinor/completor/issues/138)) ([5681387](https://github.com/equinor/completor/commit/5681387e353cd24213244d5e13a5e67f8a46f5ac))
+* Migrate to `importlib` ([#177](https://github.com/equinor/completor/issues/177)) ([3b25258](https://github.com/equinor/completor/commit/3b2525850237572461211d0e0a3122f69766afdb))
+* Recast error to be more informative. ([#116](https://github.com/equinor/completor/issues/116)) ([668ce0c](https://github.com/equinor/completor/commit/668ce0cff869fe12ecc3ba7f347c4401c8f02650))
+* Remove TODO 142 ([#150](https://github.com/equinor/completor/issues/150)) ([9d80518](https://github.com/equinor/completor/commit/9d80518f4f045cc40813265c190f44b03b359dcd))
+
+
+### 📝 Documentation
+
+* Improve docstrings with too much find and replace ([#178](https://github.com/equinor/completor/issues/178)) ([ff2871b](https://github.com/equinor/completor/commit/ff2871be59d07ccc81193c0674d7d3ed790f291a))
+
+
+### ⚡️ Performance Improvements
+
+* Use list append when string building ([#154](https://github.com/equinor/completor/issues/154)) ([db7ed5c](https://github.com/equinor/completor/commit/db7ed5cac214108b1de7eb03eca8c10632d68b70))
+
+
+### ♻️ Code Refactoring
+
+* `main.py` ([#132](https://github.com/equinor/completor/issues/132)) ([b1343a1](https://github.com/equinor/completor/commit/b1343a18a939b549f1f6a2d40399944c94157d01))
+* Constants content ([#139](https://github.com/equinor/completor/issues/139)) ([e1b1984](https://github.com/equinor/completor/commit/e1b19847031a9327c2d02883803c0dcc67c0fbb7))
+* First pass `WellSchedule` class ([#134](https://github.com/equinor/completor/issues/134)) ([9f82069](https://github.com/equinor/completor/commit/9f820694e0130d16a89074902bb4755ccc45ea48))
+* Naming convention ([#143](https://github.com/equinor/completor/issues/143)) ([5a2e33d](https://github.com/equinor/completor/commit/5a2e33d91646506388e27715e763278bc7da287f))
+* Refactor `create_output.py` ([#140](https://github.com/equinor/completor/issues/140)) ([2fd5cc6](https://github.com/equinor/completor/commit/2fd5cc65acf18d7b5ebb91ffe01d4554df8eb32f))
+* Remove PVT Model ([#181](https://github.com/equinor/completor/issues/181)) ([d677e95](https://github.com/equinor/completor/commit/d677e95be49b7c649bae02efe2241df8936d88ba))
+* Rename `utils.py` in tests to `utils_for_tests.py` ([#141](https://github.com/equinor/completor/issues/141)) ([e589bef](https://github.com/equinor/completor/commit/e589befe111b1cf19ca5644280fa4d2a85d955ed))
+* Rename aliased imports `val` & `po` to their non-aliased names ([#137](https://github.com/equinor/completor/issues/137)) ([5b4d1fc](https://github.com/equinor/completor/commit/5b4d1fca2ae5c94113f4952513094ef51ecafaee))
+* Rename constants ([#130](https://github.com/equinor/completor/issues/130)) ([d7f4107](https://github.com/equinor/completor/commit/d7f410742280cc858c0fed8cd4cc07f2f9b145eb))
+* Structure ([#131](https://github.com/equinor/completor/issues/131)) ([d8fffc4](https://github.com/equinor/completor/commit/d8fffc411dbb1b2868d14055725c8e9ec3effea6))
+
+
+### 🧪 Tests
+
+* Add stricter file assertion test ([#153](https://github.com/equinor/completor/issues/153)) ([83778d9](https://github.com/equinor/completor/commit/83778d92eb776f1c59620d9ffb49dfd0b3168351))
+
 ## [0.1.3](https://github.com/equinor/completor/compare/v0.1.2...v0.1.3) (2024-07-04)
 
 
