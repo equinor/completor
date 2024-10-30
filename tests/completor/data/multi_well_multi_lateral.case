@@ -51,6 +51,12 @@ WSEGAICD
 --Number  Alpha      x     y   a   b   c   d   e   f   rhocal  viscal
        1  0.00021  0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1  1000.25    1.45
 /
+WSEGSICD
+-- Device no  Strength  Dens. cal.  Visc. cal.  Water fract.
+1              0.001          1000        1           0.3
+2              0.002          1000        1           0.4
+3              0.003          1000        1           0.5
+/
 
 WSEGVALV
 -- Device no    Cv     Ac       ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
@@ -63,3 +69,6 @@ SEGMENTLENGTH
   -1
 /
 
+USE_STRICT
+    FALSE
+/

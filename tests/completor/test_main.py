@@ -686,3 +686,13 @@ def test_rathole_oapa(tmpdir):
     true_file = Path(_TESTDIR / "rathole_oapa.true")
     utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE)
+
+
+def test_multi_well_multi_lateral(tmpdir):
+    """Test Completor with multiple wells containing multiple laterals."""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "multi_well_multi_lateral.case")
+    schedule_file = Path(_TESTDIR / "multi_well_multi_lateral.sch")
+    true_file = Path(_TESTDIR / "multi_well_multi_lateral.true")
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
