@@ -405,7 +405,7 @@ def get_completion(
 
     if idx0 == -1 or idx1 == -1:
         well_name = df_completion[Headers.WELL].iloc[0]
-        log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
+        CompletorError(f"No completion is defined on well {well_name} from {start} to {end}.")
 
     indices = np.arange(idx0, idx1 + 1)
     lengths = np.minimum(end_completion[indices], end) - np.maximum(start_completion[indices], start)
@@ -473,6 +473,7 @@ def complete_the_well(
         if any(idx0 == -1 or idx1 == -1 for idx0, idx1 in indices):
             well_name = df_completion[Headers.WELL].iloc[0]
             log_and_raise_exception(f"No completion is defined on well {well_name} from {start} to {end}.")
+            CompletorError(f"No completion is defined for well {well_name} from {start} to {end}.")
 
         completion_data = get_completion(start[i], end[i], df_completion, joint_length)
         number_of_devices.append(completion_data[0])
