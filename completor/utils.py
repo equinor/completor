@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import sys
 from collections.abc import Mapping
-from typing import Any, Literal, NoReturn, overload
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -55,35 +55,6 @@ def sort_by_midpoint(
     df[_temp_column] = df[[Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]].mean(axis=1)
     df = df.sort_values(by=[_temp_column])
     return df.drop([_temp_column], axis=1)
-
-
-@overload
-def log_and_raise_exception(message: str, kind: type = ..., throw: Literal[True] = ...) -> NoReturn: ...
-
-
-@overload
-def log_and_raise_exception(message: str, kind: type = ..., throw: Literal[False] = ...) -> BaseException: ...
-
-
-def log_and_raise_exception(message: str, kind: type = ValueError, throw: bool = False) -> BaseException | None:
-    """Log and throw an exception.
-
-    Arguments:
-        message: The message to be logged, and given to the exception.
-        kind: The type of exception to be thrown.
-        throw: Flag to toggle whether this function actually raises the exception or not.
-
-    Raises:
-        Exception: In general it can be any exception.
-        ValueError: This is the default exception.
-    """
-    logger.error(message)
-    if not isinstance(kind, (Exception, BaseException)):
-        raise ValueError(f"The provided exception type ({kind}) does not inherit from Exception")
-    if throw:
-        raise kind(message)
-    else:
-        return kind(message)
 
 
 def find_quote(string: str) -> re.Match | None:
