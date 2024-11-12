@@ -6,7 +6,7 @@ import pytest
 import utils_for_tests
 
 from completor.constants import Content
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 
 COMPLETION = """
 COMPLETION

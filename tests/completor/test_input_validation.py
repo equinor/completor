@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.input_validation import validate_minimum_segment_length
 from completor.read_casefile import ReadCasefile
 
