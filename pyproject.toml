@@ -21,22 +21,22 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.11, <3.12"
 matplotlib = "^3.9.2"
-numpy = "^1.26.4"
-pandas = "^2.2.2"
+numpy = "<2.0.0"
+pandas = "^2.2.3"
 scipy = "^1.14.1"
 tqdm = "^4.66.5"
 pytest-env = "^1.1.4"
 
 docutils = {version="0.20.1", optional=true} # Pinned due to problems with OS spesific builds
 rstcheck-core = {version="^1.2.1", optional=true}
-ert = {version="^10.1.2", optional=true}
+ert = {version="^11.0.7", optional=true}
 pyqt5-qt5 = {version="5.15.2", optional=true} # Pinned due to problems with OS spesific builds
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 flake8 = "^7.0.0"
-pre-commit = ">3"
-pytest = "^8.2.0"
+pre-commit = "^4.0.1"
+pytest = "^8.3.3"
 pytest-xdist = "^3.6.1"
 
 [tool.poetry.extras]

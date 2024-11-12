@@ -325,7 +325,7 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> str:
     """
     matches = find_keyword_data(keyword, text)
 
-    lines = []
+    lines: list[str] = []
     for match in matches:
         if re.search(well, match) is None:
             continue

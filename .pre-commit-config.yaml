@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
     - id: no-commit-to-branch
       args: ['--branch', 'main']
@@ -45,26 +45,26 @@ repos:
         args: ["--settings-path", "pyproject.toml"]
 
 -   repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.10.0
     hooks:
     -   id: black
         args: ["--config", "pyproject.toml"]
 
 -   repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
     -   id: flake8
         name: flake8
         additional_dependencies: [Flake8-pyproject]
 
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.19.0
     hooks:
     -   id: pyupgrade
         args: ["--py310-plus"]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.10.0
+  rev: v1.13.0
   hooks:
   - id: mypy
     args:
@@ -74,5 +74,5 @@ repos:
     - "types-setuptools==67.2.0.1"
     - "pandas-stubs==1.2.0.61"
     - "pytest-mypy-plugins==1.9.3"
-    - "typing-extensions==4.2.0"  # May use future type annotations
+    - "typing-extensions==4.6.0"  # May use future type annotations
     - "types-tqdm==4.66.0.20240417"
