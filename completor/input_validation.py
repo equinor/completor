@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from completor.constants import Content, Headers
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 
 
 def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:

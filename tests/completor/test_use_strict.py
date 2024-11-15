@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import utils_for_tests
 
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "ml_well.sch"

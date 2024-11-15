@@ -8,7 +8,7 @@ import pytest
 import utils_for_tests
 
 from completor.constants import Method  # type: ignore
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.read_casefile import ReadCasefile  # type: ignore
 
 _TESTDIR = Path(__file__).absolute().parent / "data"

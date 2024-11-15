@@ -8,7 +8,8 @@ import pandas as pd
 import pytest
 
 from completor.constants import Content, Headers, Keywords
-from completor.exceptions import CaseReaderFormatError, CompletorError  # type: ignore
+from completor.exceptions.clean_exceptions import CompletorError
+from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.main import get_content_and_path  # type: ignore
 from completor.read_casefile import ReadCasefile  # type: ignore
 
