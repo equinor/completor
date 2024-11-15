@@ -13,7 +13,7 @@ import pandas as pd
 
 from completor import main, parse  # type: ignore
 from completor.constants import Headers, Keywords
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
 from completor.utils import abort, check_width_lines, clean_file_lines  # type: ignore
 

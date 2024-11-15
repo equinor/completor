@@ -12,7 +12,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor.constants import Content, Headers, Keywords
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.logger import logger
 
 
@@ -346,7 +346,7 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> str:
                     once = True
                     # Remove contiguous comments above the first line by looking backwards,
                     # adding it to the replaceable text match.
-                    comments = []
+                    comments: list[str] = []
                     for prev_line in matchlines[i - 1 :: -1]:
                         if not prev_line.strip().startswith("--") or not prev_line:
                             break

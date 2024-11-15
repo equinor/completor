@@ -12,7 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 
 from completor import prepare_outputs
 from completor.constants import Headers, Keywords
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.get_version import get_version
 from completor.logger import logger
 from completor.read_casefile import ReadCasefile
