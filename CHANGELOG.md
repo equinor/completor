@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.1](https://github.com/equinor/completor/compare/v1.0.0...v1.0.1) (2024-11-15)
+
+
+### 🐛 Bug Fixes
+
+* Ert dependency ([#189](https://github.com/equinor/completor/issues/189)) ([49a77b5](https://github.com/equinor/completor/commit/49a77b5bbfa17b2820eb2742d3106c8d1c9113a2))
+* Partially initialized module ([#188](https://github.com/equinor/completor/issues/188)) ([df17a3c](https://github.com/equinor/completor/commit/df17a3c528da1c8c3d703abda3b39c0fc67fad57))
+* Replace shortened imports with full versions ([df17a3c](https://github.com/equinor/completor/commit/df17a3c528da1c8c3d703abda3b39c0fc67fad57))
+
+
+### 🧹 Chores
+
+* Improved error message ([#185](https://github.com/equinor/completor/issues/185)) ([505e941](https://github.com/equinor/completor/commit/505e941392225b1c6aaf7ba2dbdd69e055b6028c))
+* **SNYK:** Upgrade ([#186](https://github.com/equinor/completor/issues/186)) ([d07ae95](https://github.com/equinor/completor/commit/d07ae95793b03034183f61c3cf627dfa8a89d736))
+* **SNYK:** Upgrade ([#187](https://github.com/equinor/completor/issues/187)) ([75a40ff](https://github.com/equinor/completor/commit/75a40ffb2767d4e9ac078ffd68e556c3ba869127))
+* Update documentation dependency ([#191](https://github.com/equinor/completor/issues/191)) ([5fb1e05](https://github.com/equinor/completor/commit/5fb1e05c72e5a19c038194bb48a0496e5aca1351))
+
+
+### 🧪 Tests
+
+* Add tests for [#163](https://github.com/equinor/completor/issues/163) ([#165](https://github.com/equinor/completor/issues/165)) ([475d149](https://github.com/equinor/completor/commit/475d14959106ecc00aea61ed9f537b2c7ce195e6))
+
 ## [1.0.0](https://github.com/equinor/completor/compare/v0.1.3...v1.0.0) (2024-10-30)
 
 
