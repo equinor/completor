@@ -25,13 +25,8 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install Ubuntu dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install xvfb libxcb-image0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-shm0 libxcb-xfixes0 libxcb-xinerama0 libfontconfig1 libxcb-xkb1 libxkbcommon-x11-0 libdbus-1-3
-
     - name: Install poetry
-      run: pipx install poetry==1.8.3
+      run: pipx install poetry==1.8.4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -40,12 +35,12 @@ jobs:
         cache: "poetry"
 
     - name: Install dependencies
-      run: poetry install --with dev -E ert --no-interaction
-
-    - name: List all installed packages
-      run: poetry show
+      run: |
+        poetry install --with dev -E ert --no-interaction
+        poetry show
 
     - name: Test completor in ERT
       run: |
         cd tests/completor/data/ert/
+        echo "\nStarting Ert ensemble experiment test..."
         poetry run ert ensemble_experiment ert_test.ert

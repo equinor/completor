@@ -1,27 +1,36 @@
-from importlib.resources import files
+import sys
 from pathlib import Path
 
 from completor.logger import logger
 
-SKIP_TESTS = False
 try:
-    from ert.shared.plugins.plugin_manager import hook_implementation  # type: ignore
-    from ert.shared.plugins.plugin_response import plugin_response  # type: ignore
-
+    from ert import plugin as ert_plugin  # type: ignore
 except ModuleNotFoundError:
+
+    def ert_plugin(name: str = ""):
+        """Dummy decorator"""
+
+        def decorator(func):
+            return func
+
+        return decorator
+
     logger.warning("Cannot import ERT, did you install Completor with ert option enabled?")
-    pass
 
 
-@hook_implementation
-@plugin_response(plugin_name="completor")  # type: ignore
+def _get_jobs_from_directory(directory):
+    resources = Path(sys.modules["completor"].__file__).parent / directory
+
+    all_files = [resources / filename for filename in resources.glob("*") if (resources / filename).exists()]
+    return {path.name: str(path) for path in all_files}
+
+
+@ert_plugin(name="completor")
 def installable_jobs():
-    config_file = Path(files("completor") / "config_jobs/run_completor")
-    return {config_file.name: config_file}
+    return _get_jobs_from_directory("config_jobs")
 
 
-@hook_implementation
-@plugin_response(plugin_name="completor")  # type: ignore  # pylint: disable=no-value-for-parameter
+@ert_plugin(name="completor")
 def job_documentation(job_name):
     if job_name != "run_completor":
         return None
