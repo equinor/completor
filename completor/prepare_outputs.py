@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor.constants import Content, Headers, Keywords
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.logger import logger
 from completor.utils import check_width_lines
 from completor.wells import Lateral, Well

@@ -7,7 +7,7 @@ import pytest
 
 from completor import completion, read_schedule
 from completor.constants import Content, Headers, Keywords, Method
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 
 
 def test_completion_index():

@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords, ScheduleData
-from completor.exceptions import CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.get_version import get_version
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger

@@ -11,7 +11,8 @@ import pandas as pd
 
 from completor import input_validation, parse
 from completor.constants import Content, Headers, Keywords, Method, WellData
-from completor.exceptions import CaseReaderFormatError, CompletorError
+from completor.exceptions.clean_exceptions import CompletorError
+from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.logger import logger
 from completor.utils import clean_file_lines
 
