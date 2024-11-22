@@ -22,7 +22,7 @@ classifiers = [
 python = ">=3.11, <3.12"
 matplotlib = "^3.9.2"
 numpy = "<2.0.0"
-pandas = "^2.2.3"
+pandas = "^2.1.4"
 scipy = "^1.14.1"
 tqdm = "^4.66.5"
 pytest-env = "^1.1.4"
