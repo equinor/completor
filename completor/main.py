@@ -27,8 +27,6 @@ from completor.utils import (
 )
 from completor.wells import Well
 
-pd.set_option("future.no_silent_downcasting", True)
-
 
 def get_content_and_path(case_content: str, file_path: str | None, keyword: str) -> tuple[str | None, str | None]:
     """Get the contents of a file from a path defined by user or case file.
