@@ -76,7 +76,8 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         if df_annulus.empty:
             logger.info("No annular flow in Well : %s Lateral : %d", well.well_name, lateral.lateral_number)
 
-        start_segment, start_branch = _update_segmentbranch(lateral.df_device, df_annulus)
+        if not lateral.df_device.empty:
+            start_segment, start_branch = _update_segmentbranch(lateral.df_device, df_annulus)
 
         lateral.df_tubing = _connect_lateral(well.well_name, lateral, top, well, case)
 
@@ -234,15 +235,11 @@ def _update_segmentbranch(df_device: pd.DataFrame, df_annulus: pd.DataFrame) -> 
     Returns:
         The numbers for starting segment and branch.
 
-    Raises:
-        ValueError: If there is neither device nor annulus data.
     """
-    if df_annulus.empty and df_device.empty:
-        raise ValueError("Cannot determine starting segment and branch without device and annulus data.")
     if df_annulus.empty and not df_device.empty:
         start_segment = max(df_device[Headers.START_SEGMENT_NUMBER].to_numpy()) + 1
         start_branch = max(df_device[Headers.BRANCH].to_numpy()) + 1
-    else:
+    elif not df_annulus.empty:
         start_segment = max(df_annulus[Headers.START_SEGMENT_NUMBER].to_numpy()) + 1
         start_branch = max(df_annulus[Headers.BRANCH].to_numpy()) + 1
     return start_segment, start_branch
