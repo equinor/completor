@@ -7,7 +7,6 @@ import os
 import re
 import time
 
-import pandas as pd
 from tqdm import tqdm
 
 from completor import create_output, parse, read_schedule, utils
@@ -26,8 +25,6 @@ from completor.utils import (
     replace_preprocessing_names,
 )
 from completor.wells import Well
-
-pd.set_option("future.no_silent_downcasting", True)
 
 
 def get_content_and_path(case_content: str, file_path: str | None, keyword: str) -> tuple[str | None, str | None]:
