@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.0](https://github.com/equinor/completor/compare/v1.0.1...v1.1.0) (2024-11-25)
+
+
+### ✨ Features
+
+* Make completor compatible with pandas 2.1.4 ([d74d019](https://github.com/equinor/completor/commit/d74d019a6f58b8777dd6f49607e9716ddd60f14d))
+* Make completor compatible with Pandas 2.1.4 ([#194](https://github.com/equinor/completor/issues/194)) ([d74d019](https://github.com/equinor/completor/commit/d74d019a6f58b8777dd6f49607e9716ddd60f14d))
+
+
+### 🐛 Bug Fixes
+
+* Revert after refactor ([#192](https://github.com/equinor/completor/issues/192)) ([965222d](https://github.com/equinor/completor/commit/965222d7c2f37cf7e394741a0918f563abcd6902))
+
+
+### 🧹 Chores
+
+* Update poetry.lock ([#198](https://github.com/equinor/completor/issues/198)) ([7a20a5b](https://github.com/equinor/completor/commit/7a20a5b96fd7a74e7ec7f984332aeb8d863acd98))
+
 ## [1.0.1](https://github.com/equinor/completor/compare/v1.0.0...v1.0.1) (2024-11-15)
 
 
