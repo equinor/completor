@@ -7,7 +7,6 @@ import os
 import re
 import time
 
-import pandas as pd
 from tqdm import tqdm
 
 from completor import create_output, parse, read_schedule, utils
