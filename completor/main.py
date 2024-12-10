@@ -89,7 +89,6 @@ def create(
     """
     case = ReadCasefile(case_file=case_file, schedule_file=schedule, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-
     figure_name = None
     if show_fig:
         figure_no = 1
@@ -123,11 +122,13 @@ def create(
         for chunk in find_keyword_data(Keywords.COMPLETION_SEGMENTS, schedule):
             clean_data = clean_raw_data(chunk, Keywords.COMPLETION_SEGMENTS)
             meaningful_data = read_schedule.set_compsegs(meaningful_data, clean_data)
-
         for i, well_name in tqdm(enumerate(active_wells.tolist()), total=len(active_wells)):
-            well = Well(well_name, i, case, meaningful_data[well_name])
+            try:
+                well = Well(well_name, i, case, meaningful_data[well_name])
+            except KeyError:
+                logger.warning(f"Well {well_name} is written in case file but not exist in schedule file.")
+                continue
             compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, figure_name)
-
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
                 old_data = find_well_keyword_data(well_name, keyword, schedule)
                 if not old_data:
