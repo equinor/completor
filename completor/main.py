@@ -126,7 +126,7 @@ def create(
             try:
                 well = Well(well_name, i, case, meaningful_data[well_name])
             except KeyError:
-                logger.warning(f"Well {well_name} is written in case file but not exist in schedule file.")
+                logger.warning(f"Well '{well_name}' is written in case file but does not exist in schedule file.")
                 continue
             compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, figure_name)
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
