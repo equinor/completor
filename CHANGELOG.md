@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/equinor/completor/compare/v1.1.1...v1.1.2) (2024-12-16)
+
+
+### 🧹 Chores
+
+* Bump python-multipart from 0.0.17 to 0.0.18 in the pip group across 1 directory ([#199](https://github.com/equinor/completor/issues/199)) ([4c93998](https://github.com/equinor/completor/commit/4c93998484072fd697928b82abc5844ebe2df220))
+
 ## [1.1.1](https://github.com/equinor/completor/compare/v1.1.0...v1.1.1) (2024-12-16)
 
 
