@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.1](https://github.com/equinor/completor/compare/v1.1.0...v1.1.1) (2024-12-16)
+
+
+### 🐛 Bug Fixes
+
+* Additional wells on case file and schedule file should be untouched ([#200](https://github.com/equinor/completor/issues/200)) ([ebf0b33](https://github.com/equinor/completor/commit/ebf0b33b500c0e569df449cdf4f200ef4b249703))
+* Similar well name is mixed while replacing schedule files ([#207](https://github.com/equinor/completor/issues/207)) ([88211f5](https://github.com/equinor/completor/commit/88211f5c9325ece0b599acc251da4e83516cf0fa))
+
+
+### 🧹 Chores
+
+* Docusaurus dependencies ([#206](https://github.com/equinor/completor/issues/206)) ([26dce1d](https://github.com/equinor/completor/commit/26dce1db412b195b6592b4f2ee1a1ae25667c536))
+* Relax dependencies ([#205](https://github.com/equinor/completor/issues/205)) ([ca79c34](https://github.com/equinor/completor/commit/ca79c3488a0a92432e391edca89e154b685eeca8))
+
 ## [1.1.0](https://github.com/equinor/completor/compare/v1.0.1...v1.1.0) (2024-11-25)
 
 
