@@ -338,7 +338,7 @@ def find_well_keyword_data(well: str, keyword: str, text: str) -> str:
                 if once:
                     lines.append(line)
                 continue
-            if well in line.split()[0]:
+            if well == line.split()[0].replace("'", "").replace('"', ""):
                 if keyword in [Keywords.WELL_SEGMENTS, Keywords.COMPLETION_SEGMENTS]:
                     # These keywords should just be the entire match as they never contain more than one well.
                     return match
