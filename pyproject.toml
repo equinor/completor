@@ -43,11 +43,7 @@ pytest-env = "^1"
 ert = ["rstcheck-core", "ert", "pyqt5-qt5", "docutils"]
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-xdist",
-    "pytest-env"
-]
+test = ["pytest", "pytest-xdist", "pytest-env"]
 
 [tool.poetry.scripts]
 completor = "completor.main:main"
