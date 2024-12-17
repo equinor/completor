@@ -5,10 +5,5 @@ copy_test_files () {
 }
 
 install_test_dependencies () {
-    pip install -e ".[ert]"
-    pip install pytest
-}
-
-start_tests () {
-    pytest
+    pip install -e .
 }
