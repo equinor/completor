@@ -25,7 +25,6 @@ numpy = "<2"
 pandas = "^2.1.4"
 scipy = "^1.10"
 tqdm = "^4.50"
-pytest-env = "^1"
 
 docutils = {version="0.20.1", optional=true} # Pinned due to problems with OS spesific builds
 rstcheck-core = {version="^1.2.1", optional=true}
@@ -38,6 +37,7 @@ flake8 = "^7.0.0"
 pre-commit = "^4.0.1"
 pytest = "^8.3.3"
 pytest-xdist = "^3.6.1"
+pytest-env = "^1"
 
 [tool.poetry.extras]
 ert = ["rstcheck-core", "ert", "pyqt5-qt5", "docutils"]
