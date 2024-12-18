@@ -20,7 +20,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/equinor/completor/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.11, <3.13"
+python = "^3.11 || ^3.12"
 matplotlib = "^3.6"
 numpy = "<2"
 pandas = "^2.1.4"
