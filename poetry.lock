@@ -4163,5 +4163,5 @@ ert = ["docutils", "ert", "pyqt5-qt5", "rstcheck-core"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.11 || ^3.12"
-content-hash = "8117b0e8e0852f510f37a6bf18314227d4f8e0c809c9e560a38c7c9608bf56d5"
+python-versions = "^3.11"
+content-hash = "99bf8de829f7e8b8dc0273571b6b893f8cd4a683353df34cf1c62d4fc80c065f"
