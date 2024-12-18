@@ -6,4 +6,5 @@ copy_test_files () {
 
 install_test_dependencies () {
     pip install -e ".[test]"
+    pip install -e ".[ert]"
 }
