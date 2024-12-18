@@ -401,7 +401,10 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">1.13.3", markers = "python_version < \"3.12.0.rc1\""}
+numpy = [
+    {version = ">1.13.3", markers = "python_version < \"3.12.0.rc1\""},
+    {version = ">=1.26.0b1", markers = "python_version >= \"3.12.0.rc1\""},
+]
 
 [[package]]
 name = "charset-normalizer"
@@ -2466,7 +2469,10 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.23.2", markers = "python_version == \"3.11\""}
+numpy = [
+    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.7"
@@ -4157,5 +4163,5 @@ ert = ["docutils", "ert", "pyqt5-qt5", "rstcheck-core"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.11, <3.12"
-content-hash = "967e65607e6b54e94b5706f25ed8c3574cb38d3c956db05bde4a256df1d54293"
+python-versions = ">=3.11, <3.13"
+content-hash = "94ee7f7fc5b416a2b9472012cbf7037636607b9c1f24cc0f06b2b0129ca7ebe6"
