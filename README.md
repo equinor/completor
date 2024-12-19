@@ -12,7 +12,7 @@ Detailed documentation for usage of completor can be found at https://equinor.gi
 ## Getting started as a user
 
 ### Prerequisites
-* [Python](https://www.python.org/), version 3.11 or 3.12
+* [Python](https://www.python.org/), version 3.11
 * [ERT](https://github.com/equinor/ert) (optional, and only available on Linux.)
 
 ### Installation

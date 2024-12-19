@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12']
+        python-version: ['3.11']
     env:
       PYTHONPATH: ${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/site-packages:${{ github.workspace }}/install/lib/python${{ matrix.python-version }}/dist-packages
 
