@@ -4162,4 +4162,4 @@ test = ["pytest", "pytest-env", "pytest-xdist"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "eb9b2b687f2dbaae03e83c14ca132ca45cabd84cf699abfcf7094818ff270953"
+content-hash = "474ca7f463b32171d1c3401dcd19f2fb59139fb7ec61cd0366de38733ba72e36"
