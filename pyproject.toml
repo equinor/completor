@@ -30,6 +30,9 @@ docutils = {version="0.20.1", optional=true} # Pinned due to problems with OS sp
 rstcheck-core = {version="^1.2.1", optional=true}
 ert = {version=">11.1.0", optional=true}
 pyqt5-qt5 = {version="5.15.2", optional=true} # Pinned due to problems with OS spesific builds
+pytest = "^8.3.3"
+pytest-xdist = "^3.6.1"
+pytest-env = "^1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
@@ -41,8 +44,6 @@ pytest-env = "^1"
 
 [tool.poetry.extras]
 ert = ["rstcheck-core", "ert", "pyqt5-qt5", "docutils"]
-
-[project.optional-dependencies]
 test = ["pytest", "pytest-xdist", "pytest-env"]
 
 [tool.poetry.scripts]
