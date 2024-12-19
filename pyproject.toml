@@ -19,7 +19,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/equinor/completor/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.11, <3.12"
+python = "^3.11"
 matplotlib = "^3.6"
 numpy = "<2"
 pandas = "^2.1.4"
@@ -44,6 +44,9 @@ pytest-env = "^1"
 
 [tool.poetry.extras]
 ert = ["rstcheck-core", "ert", "pyqt5-qt5", "docutils"]
+test = ["pytest", "pytest-xdist", "pytest-env"]
+
+[project.optional-dependencies]
 test = ["pytest", "pytest-xdist", "pytest-env"]
 
 [tool.poetry.scripts]

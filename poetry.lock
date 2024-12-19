@@ -402,7 +402,10 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">1.13.3", markers = "python_version < \"3.12.0.rc1\""}
+numpy = [
+    {version = ">1.13.3", markers = "python_version < \"3.12.0.rc1\""},
+    {version = ">=1.26.0b1", markers = "python_version >= \"3.12.0.rc1\""},
+]
 
 [[package]]
 name = "charset-normalizer"
@@ -2467,7 +2470,10 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.23.2", markers = "python_version == \"3.11\""}
+numpy = [
+    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.7"
@@ -4155,5 +4161,5 @@ test = ["pytest", "pytest-env", "pytest-xdist"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.11, <3.12"
-content-hash = "2923605a0d666eaccf303f047ba27ad6b32c198de611a5e5031f1d3bac1a375b"
+python-versions = "^3.11"
+content-hash = "eb9b2b687f2dbaae03e83c14ca132ca45cabd84cf699abfcf7094818ff270953"
