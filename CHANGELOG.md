@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/equinor/completor/compare/v1.1.2...v1.1.3) (2024-12-17)
+
+
+### 🐛 Bug Fixes
+
+* Dev-dependencies ([#210](https://github.com/equinor/completor/issues/210)) ([3b2350e](https://github.com/equinor/completor/commit/3b2350ea56e94d3e6bbbdd158289713a4c261903))
+
 ## [1.1.2](https://github.com/equinor/completor/compare/v1.1.1...v1.1.2) (2024-12-16)
 
 
