@@ -171,7 +171,7 @@ def create_tubing_segments(
     start_measured_depth: npt.NDArray[np.float64]
     end_measured_depth: npt.NDArray[np.float64]
     if method == Method.CELLS:
-        # Create the tubing layer one cell one segment while honoring df_reservoir[Headers.SEGMENT]
+        #  Create the tubing layer one cell one segment while honoring df_reservoir[Headers.SEGMENT]
         start_measured_depth = df_reservoir[Headers.START_MEASURED_DEPTH].to_numpy()
         end_measured_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
         if Headers.SEGMENT in df_reservoir.columns:
