@@ -561,7 +561,14 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str)
     """
     columns = [Headers.DEVICE_TYPE, Headers.DEVICE_NUMBER]
     try:
-        df_well = pd.merge(df_well, df_device, how="left", on=columns)
+        df_well = pd.merge(df_well, df_device, how="left", on=columns, suffixes=("", "_drop"))
+        # check for duplicates if merging two WSEGVALV-es
+        for col in df_well.columns:
+            if col.endswith("_drop"):
+                base_col = col.replace("_drop", "")
+                if base_col in df_well.columns:
+                    df_well[base_col] = df_well[base_col].fillna(df_well[col])  # Fill NaN values
+        df_well = df_well.drop(columns=[col for col in df_well.columns if col.endswith("_drop")])
     except KeyError as err:
         if f"'{Headers.DEVICE_TYPE}'" in str(err):
             raise ValueError(f"Missing keyword 'DEVICETYPE {device_type}' in input files.") from err
