@@ -652,6 +652,17 @@ def test_wsegicv_mix(tmpdir):
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
+def test_wsegicv_wsegvalv(tmpdir):
+    """Test completor case with ICV to create a special tubing segmentation.
+    Completor will produce mixes of tubing segmentation ICV and nozzle ICD"""
+    tmpdir.chdir()
+    case_file = Path(_TESTDIR / "icv_valve.case")
+    schedule_file = Path(_TESTDIR / "icv_sch.sch")
+    true_file = Path(_TESTDIR / "icv_valve.true")
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
+
+
 def test_wsegicv_mid(tmpdir):
     """Test completor case with ICV to create a special tubing segmentation.
     Completor will produce mixes of tubing segmentation between lumped and default.
