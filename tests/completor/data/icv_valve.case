@@ -1,0 +1,29 @@
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1    1     0   2010    0.2    0.25    1.00E-4     GP      0    VALVE       1
+   A1    1  2010   2010    0.2    0.25    1.00E-4     GP      1    ICV         1
+   A1    1  2010   2015    0.2    0.25    1.00E-4     GP      1    VALVE       1
+   A1    1  2015   2040    0.2    0.25    1.00E-4     GP      1    ICV         1
+   A1    1  2040   3000    0.2    0.25    1.00E-4     GP      1    VALVE       1
+------------------------------------- LATERAL 2 --------------------------------------
+   A1    2     0   2010    0.2    0.25    1.00E-4     GP      0    VALVE       1
+   A1    2  2010   3000    0.2    0.25    1.00E-4     GP      1    VALVE       1
+   A1    2  3000   4000    0.2    0.25    1.00E-4     GP      0    VALVE       1 
+   A2    1     0   2010    0.2    0.25    1.00E-4     GP      1    VALVE       2           
+   A2    1  2010   2010    0.2    0.25    1.00E-4     GP      1    ICV         2      
+   A2    1  2010   2025    0.2    0.25    1.00E-4     GP      1    VALVE       2      
+   A2    1  2025   3000    0.2    0.25    1.00E-4     GP      1    ICV         2   
+/
+
+WSEGVALV
+1              0.95    0.001      5* 0.001
+2              0.95    0.003      1* 0.003
+/
+
+WSEGICV
+-- DEVICE   CV      AC    AC_MAX
+1           0.95    3      4
+2           2       4      4
+/
