@@ -852,6 +852,7 @@ def prepare_completion_segments(
             }
         )
     compseg[Headers.EMPTY] = "/"
+    compseg.sort_values(Headers.START_MEASURED_DEPTH, inplace=True)
     return compseg
 
 
