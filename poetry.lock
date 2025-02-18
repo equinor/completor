@@ -131,7 +131,7 @@ frozenlist = ">=1.1.0"
 name = "annotated-types"
 version = "0.7.0"
 description = "Reusable constraint types to use with typing.Annotated"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"},
@@ -760,7 +760,7 @@ wmi = ["wmi (>=1.5.1)"]
 name = "docutils"
 version = "0.20.1"
 description = "Docutils -- Python Documentation Utilities"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "docutils-0.20.1-py3-none-any.whl", hash = "sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6"},
@@ -2863,7 +2863,7 @@ files = [
 name = "pydantic"
 version = "2.10.6"
 description = "Data validation using Python type hints"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pydantic-2.10.6-py3-none-any.whl", hash = "sha256:427d664bf0b8a2b34ff5dd0f5a18df00591adcee7198fbd71981054cef37b584"},
@@ -2883,7 +2883,7 @@ timezone = ["tzdata"]
 name = "pydantic-core"
 version = "2.27.2"
 description = "Core functionality for Pydantic validation and serialization"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pydantic_core-2.27.2-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:2d367ca20b2f14095a8f4fa1210f5a7b78b8a20009ecced6b12818f455b1e9fa"},
@@ -3445,7 +3445,7 @@ numpy = "*"
 name = "rstcheck-core"
 version = "1.2.1"
 description = "Checks syntax of reStructuredText and code blocks nested within it"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "rstcheck-core-1.2.1.tar.gz", hash = "sha256:9b330020d912e2864f23f332c1a0569463ca3b06b8fee7b7bdd201b055f7f831"},
@@ -3752,7 +3752,7 @@ telegram = ["requests"]
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
@@ -4128,4 +4128,4 @@ test = ["pytest", "pytest-env", "pytest-xdist", "rstcheck-core"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "d8f2d378b952950d2ca3b8b254ca7383c40a4cbd5a98239e925add09bd08fcf0"
+content-hash = "44f6a69624eccdd94c32ff96ad57e387749da7df6a31877d80376cd58db1ca15"

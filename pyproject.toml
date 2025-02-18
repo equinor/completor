@@ -41,6 +41,7 @@ pre-commit = "^4.0.1"
 pytest = "^8.3.3"
 pytest-xdist = "^3.6.1"
 pytest-env = "^1"
+rstcheck-core = "^1.2.1"
 
 [tool.poetry.extras]
 ert = ["ert", "pyqt6-qt6", "docutils"]
