@@ -27,6 +27,7 @@ scipy = "^1.10"
 tqdm = "^4.50"
 
 docutils = {version="0.20.1", optional=true} # Pinned due to problems with OS spesific builds
+rstcheck-core = {version="^1.2.1", optional=true}
 ert = {version=">11.1.0", optional=true}
 pyqt6-qt6 = {version="6.8.1", optional=true} # Pinned due to problems with OS spesific builds
 pytest = {version="^8.3.3", optional=true}
@@ -43,7 +44,7 @@ pytest-env = "^1"
 
 [tool.poetry.extras]
 ert = ["ert", "pyqt6-qt6", "docutils"]
-test = ["pytest", "pytest-xdist", "pytest-env"]
+test = ["pytest", "pytest-xdist", "pytest-env", "rstcheck-core"]
 
 [tool.poetry.scripts]
 completor = "completor.main:main"

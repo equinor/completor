@@ -3442,6 +3442,30 @@ files = [
 numpy = "*"
 
 [[package]]
+name = "rstcheck-core"
+version = "1.2.1"
+description = "Checks syntax of reStructuredText and code blocks nested within it"
+optional = true
+python-versions = ">=3.8"
+files = [
+    {file = "rstcheck-core-1.2.1.tar.gz", hash = "sha256:9b330020d912e2864f23f332c1a0569463ca3b06b8fee7b7bdd201b055f7f831"},
+    {file = "rstcheck_core-1.2.1-py3-none-any.whl", hash = "sha256:1c100de418b6c9e14d9cf6558644d0ab103fdc447f891313882d02df3a3c52ba"},
+]
+
+[package.dependencies]
+docutils = ">=0.7"
+pydantic = ">=2"
+
+[package.extras]
+dev = ["rstcheck-core[docs,sphinx,testing,toml,type-check,yaml]", "tox (>=3.15)"]
+docs = ["m2r2 (>=0.3.2)", "sphinx (>=5.0,!=7.2.5)", "sphinx-autobuild (>=2021.3.14)", "sphinx-autodoc-typehints (>=1.15)", "sphinx-rtd-theme (>=1.2)", "sphinxcontrib-apidoc (>=0.3)", "sphinxcontrib-spelling (>=7.3)"]
+sphinx = ["sphinx (>=5.0)"]
+testing = ["coverage-conditional-plugin (>=0.5)", "coverage[toml] (>=6.0)", "pytest (>=7.2)", "pytest-cov (>=3.0)", "pytest-mock (>=3.7)", "pytest-randomly (>=3.0)", "pytest-sugar (>=0.9.5)"]
+toml = ["tomli (>=2.0)"]
+type-check = ["mypy (>=1.0)", "types-PyYAML (>=6.0.0)", "types-docutils (>=0.18)"]
+yaml = ["pyyaml (>=6.0.0)"]
+
+[[package]]
 name = "scipy"
 version = "1.14.1"
 description = "Fundamental algorithms for scientific computing in Python"
@@ -4099,9 +4123,9 @@ type = ["pytest-mypy"]
 
 [extras]
 ert = ["docutils", "ert", "pyqt6-qt6"]
-test = ["pytest", "pytest-env", "pytest-xdist"]
+test = ["pytest", "pytest-env", "pytest-xdist", "rstcheck-core"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "79fa38d78ef894fbbb8454a752f331ad60e9ef1c7c0babc938ba1db1bd1c8b6c"
+content-hash = "d8f2d378b952950d2ca3b8b254ca7383c40a4cbd5a98239e925add09bd08fcf0"
