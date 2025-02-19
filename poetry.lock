@@ -4034,4 +4034,4 @@ test = ["pytest", "pytest-env", "pytest-xdist", "rstcheck-core"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ba224396d28ecc071ec0b747164125c7358756699507857dee7d0c7359b0ea90"
+content-hash = "309568a186a535ff39d93af875ce92166a7409e406558b2c6d6d3f04b668076e"
