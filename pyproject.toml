@@ -21,7 +21,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.11"
 matplotlib = "^3"
-numpy = "<2" # Pinned below 2 because ert is still on numpy 1.
+numpy = ">=1.0, <3.0"
 pandas = "^2"
 scipy = "^1"
 tqdm = "^4"
