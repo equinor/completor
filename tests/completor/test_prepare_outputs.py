@@ -519,9 +519,9 @@ def test_user_segment_lumping_gp(tmpdir):
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
-def test_print_wsegdar(tmpdir):
+def test_print_wsegrcp(tmpdir):
     tmpdir.chdir()
-    true_wsegdar_printout = """UDQ
+    true_wsegrcp_printout = """UDQ
   ASSIGN SUVTRIG WELL 3 0 /
 /
 
@@ -600,7 +600,7 @@ UDQ
 ENDACTIO
 
 """
-    df_wsegdar = pd.DataFrame(
+    df_wsegrcp = pd.DataFrame(
         [[Headers.WELL, 3, 1.0, 7.852e-6, 2.590e-06, 1.590e-06, 0.7, 0.8, 0.9, 0.99, "5*", 7.852e-6]],
         columns=[
             Headers.WELL,
@@ -618,12 +618,12 @@ ENDACTIO
         ],
     )
     well_number = 1
-    wsegdar_printout = prepare_outputs.print_wsegdar(df_wsegdar, well_number)
-    wsegdar_printout = wsegdar_printout.strip()
-    true_wsegdar_printout = true_wsegdar_printout.strip()
-    wsegdar_printout = re.sub(r"[^\S\r\n]+", " ", wsegdar_printout)
-    true_wsegdar_printout = re.sub(r"[^\S\r\n]+", " ", true_wsegdar_printout)
-    assert wsegdar_printout == true_wsegdar_printout
+    wsegrcp_printout = prepare_outputs.print_wsegrcp(df_wsegrcp, well_number)
+    wsegrcp_printout = wsegrcp_printout.strip()
+    true_wsegrcp_printout = true_wsegrcp_printout.strip()
+    wsegrcp_printout = re.sub(r"[^\S\r\n]+", " ", wsegrcp_printout)
+    true_wsegrcp_printout = re.sub(r"[^\S\r\n]+", " ", true_wsegrcp_printout)
+    assert wsegrcp_printout == true_wsegrcp_printout
 
 
 def test_prepare_wsegvalv():

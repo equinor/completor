@@ -96,9 +96,9 @@ COMPLETION keyword is mandatory and contains the following items:
 9. **Number of valves per joint**: Any floating point number.
    Set to 0 in intervals with blanks.
 10. **Valve type**: Permitted entries: PERF (standard perforation no inflow control valves),
-   ICD, VALVE, AICD, DAR, AICV, or ICV.
+   ICD, VALVE, AICD, RCP, DUALRCP, or ICV.
 11. **Device number**: The device reference number specified in the Completor® configuration file keywords `WSEGVALV`,
-   `WSEGSICD`, `WSEGAICD`, `WSEGDAR`, `WSEGAICV`, or `WSEGICV`.
+   `WSEGSICD`, `WSEGAICD`, `WSEGRCP`, `WSEGDUALRCP`, or `WSEGICV`.
    End the record with `/`.
 
 ```
@@ -317,26 +317,26 @@ WSEGVALV
 /
 ```
 
-### WSEGDAR
+### WSEGRCP
 
-Defines full parameter sets for the Density Activated Recovery (DAR) valve.
-Required only if DAR is used in the `COMPLETION` keyword.
+Defines full parameter sets for the Rate Controlled Production (RCP) valve.
+Required only if RCP is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
 1.  Device number: From 1, 2, .., n etc.
-2.  Cv: Item 3 in WSEGVALV keyword. Always set to 1.0 with DAR.
+2.  Cv: Item 3 in WSEGVALV keyword. Always set to 1.0 with RCP.
 3.  Cross-sectional flow area of the oil nozzle: Ac_o.
 4.  Cross sectional flow area of the gas nozzle: Ac_g.
 5.  Cross-sectional flow area of the water nozzle: Ac_w.
-6.  Water volume fraction (reservoir condition) at which DAR re-opens, WVF "low cut-off": wvf_low.
-7.  Water volume fraction (reservoir condition) at with DAR closes, WVF "high cut-off": wvf_high.
-8.  Gas volume fraction (reservoir condition) at which DAR re-opens, GVF "low cut-off": gvf_low.
-9.  Gas volume fraction (reservoir condition) at with DAR closes, GVF "high cut-off": gvf_high.
+6.  Water volume fraction (reservoir condition) at which RCP re-opens, WVF "low cut-off": wvf_low.
+7.  Water volume fraction (reservoir condition) at with RCP closes, WVF "high cut-off": wvf_high.
+8.  Gas volume fraction (reservoir condition) at which RCP re-opens, GVF "low cut-off": gvf_low.
+9.  Gas volume fraction (reservoir condition) at with RCP closes, GVF "high cut-off": gvf_high.
 
 ```
-WSEGDAR
--- Define two DAR devices with slightly different paramters.
+WSEGRCP
+-- Define two RCP devices with slightly different paramters.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DN   CV  Ac_o  Ac_g  Ac_w  wvf_low  wvf_high  gvf_low  vf_high
@@ -345,10 +345,10 @@ WSEGDAR
 /
 ```
 
-### WSEGAICV
+### WSEGDUALRCP
 
 This keyword utilizes two different `WSEGAICD` parameter.
-Required only if AICV is used in the `COMPLETION` keyword.
+Required only if DUALRCP is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
@@ -357,16 +357,16 @@ The items are as follows:
 - GVF: Cut-off gas volume fraction at which the flow goes to the pilot channel.
 - Rho_cal: Calibration density.
 - Mu_cal: Calibration viscosity.
-- (6–14) Parameters for the AICV main channel.
+- (6–14) Parameters for the DUALRCP main channel.
 The same parameters as AICD e.g., alpha, x, y, a, b, c, d, e, f.
 See WSEGAICD keyword.
-- (15-23) Parameters for the AICV pilot channel.
+- (15-23) Parameters for the DUALRCP pilot channel.
 The same parameters as AICD e.g., alpha, x, y, a, b, c, d, e, f.
 See WSEGAICD keyword.
 
 ```
-WSEGAICV
--- Defines full parameter sets for the AICV inflow control technology using two sets of AICD equation.
+WSEGDUALRCP
+-- Defines full parameter sets for the DUALRCP inflow control technology using two sets of AICD equation.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DB  WVF  GVF  rho_cal  mu_cal  alpha1  x1  y1  a1  b1  c1  1  e1  f1 alpha2  x2  y2  a2  b2  c2  d2  e2  f2
