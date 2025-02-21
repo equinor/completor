@@ -5,8 +5,8 @@ COMPLETION
 --Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber
 --        Number                      Tubing     Casing              Roughness       Content 
 --                                    Diameter   Diameter
-'A2'       1        0         500      0.1        0.2                 1*            OA          3                RCP           1
- A2        1        500       500      0.1        0.2                 1*            PA          3                RCP           1
+'A2'       1        0         500      0.1        0.2                 1*            OA          3                DENSITY           1
+ A2        1        500       500      0.1        0.2                 1*            PA          3                DENSITY           1
 /
 
 JOINTLENGTH
@@ -17,7 +17,7 @@ SEGMENTLENGTH
  12
 / 
 
-WSEGRCP
+WSEGDENSITY
 -- Number    Cv      Big_Ac      Small_Ac      Smallest_Ac     wvf_cutoff  gvf_cutoff
 1            0.1       0.5          0.3            0.01             0.8          0.5
 2            0.2       0.4          0.2            0.02             0.7          0.6

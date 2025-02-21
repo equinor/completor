@@ -40,10 +40,15 @@ WELSEGS
          4       4      1   3   2030.0 2000.000  0.2    0.0001 /
          5       5      1   4   2042.0 2000.000  0.2    0.0001 /
 --------------- Well: A1, Lateral: 1, Device layer ---------------
-         6       6      2   2   2006.1 2000.000  0.2    0.0001 / -- RCP types
-         7       7      3   3   2018.1 2000.000  0.2    0.0001 / -- RCP types
-         8       8      4   4   2030.1 2000.000  0.2    0.0001 / -- RCP types
-         9       9      5   5   2042.1 2000.000  0.2    0.0001 / -- RCP types
+         6       6      2   2   2006.1 2000.000  0.2    0.0001 / -- DENSITY types
+         7       7      3   3   2018.1 2000.000  0.2    0.0001 / -- DENSITY types
+         8       8      4   4   2030.1 2000.000  0.2    0.0001 / -- DUALRCP types
+         9       9      5   5   2042.1 2000.000  0.2    0.0001 / -- DUALRCP types
+-------------- Well: A1, Lateral: 1, Annulus layer --------------
+        10      10      6   6   2006.2 2000.000 0.15    0.0001 /
+        11      11      6  10   2018.1 2000.000 0.15    0.0001 /
+        12      12      7   8   2030.2 2000.000 0.15    0.0001 /
+        13      13      7  12   2042.1 2000.000 0.15    0.0001 /
 /
 
 
@@ -54,15 +59,23 @@ COMPSEGS
 -- I J K BRANCH    START      END  COMPSEGS DEF   START
 --              MEASURED MEASURED DIRECTION     SEGMENT
 --                 DEPTH    DEPTH                NUMBER
-   1 1 1      2 2000.000 2012.000        1*  3*       6 /
-   2 1 1      3 2012.000 2024.000        1*  3*       7 /
-   3 1 1      4 2024.000 2036.000        1*  3*       8 /
-   4 1 1      5 2036.000 2048.000        1*  3*       9 /
+   1 1 1      6 2000.000 2012.000        1*  3*      10 /
+   2 1 1      6 2012.000 2024.000        1*  3*      11 /
+   3 1 1      7 2024.000 2036.000        1*  3*      12 /
+   4 1 1      7 2036.000 2048.000        1*  3*      13 /
+/
+
+
+WSEGLINK
+--- Well: A1, Lateral: 1 ---
+-- WELL  ANNULUS  DEVICE
+   'A1'       11       7 /
+   'A1'       13       9 /
 /
 
 
 ----------------------------------------------------------------------------------------------------
--- This is how we model RCP technology using sets of ACTIONX keywords.
+-- This is how we model DENSITY technology using sets of ACTIONX keywords.
 -- The segment dP curves changes according to the segment water-
 -- and gas volume fractions at downhole condition.
 -- The value of Cv is adjusted according to the segment length and the number of
@@ -74,16 +87,12 @@ COMPSEGS
 UDQ
   ASSIGN SUVTRIG A1 6 0 /
   ASSIGN SUVTRIG A1 7 0 /
-  ASSIGN SUVTRIG A1 8 0 /
-  ASSIGN SUVTRIG A1 9 0 /
 /
 
 WSEGVALV
 --  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
   'A1' 6 0.1 4.000e-01 5* 4.000e-01 /
   'A1' 7 0.1 4.000e-01 5* 4.000e-01 /
-  'A1' 8 0.1 4.000e-01 5* 4.000e-01 /
-  'A1' 9 0.1 4.000e-01 5* 4.000e-01 /
 /
 
 ACTIONX
@@ -224,142 +233,67 @@ UDQ
 
 ENDACTIO
 
+
+
+
+
+----------------------------------------------------------------------------------------------------
+-- This is how we model DUALRCP technology using sets of ACTIONX keyword
+-- the DP parameters change according to the segment water cut (at downhole condition )
+-- and gas volume fraction (at downhole condition)
+----------------------------------------------------------------------------------------------------
+
+
 ACTIONX
-D0010081 1000000 /
-SWHF 'A1' 8 <= 0.7 AND /
-SGHF 'A1' 8 > 0.9 AND /
-SUVTRIG 'A1' 8 = 0 /
+V0010081 1000000 /
+SUWCT 'A1' 8 < 0.95 AND /
+SGHF 'A1' 8 < 0.95 /
 /
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  GAS_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 8 0.1 3.000e-01 5* 4.000e-01 /
+WSEGAICD
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
+   'A1'       8       8    0.001   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
-
-UDQ
-  ASSIGN SUVTRIG 'A1' 8 1 /
-/
-
 ENDACTIO
 
 ACTIONX
-D0010082 1000000 /
-SWHF 'A1' 8 > 0.7 AND /
-SGHF 'A1' 8 <= 0.9 AND /
-SUVTRIG 'A1' 8 = 0 /
+V0010082 1000000 /
+SUWCT 'A1' 8 >= 0.95 OR /
+SGHF 'A1' 8 >= 0.95 /
 /
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  WATER_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 8 0.1 2.000e-01 5* 4.000e-01 /
+WSEGAICD
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
+   'A1'       8       8    0.002   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
-
-UDQ
-  ASSIGN SUVTRIG 'A1' 8 2 /
-/
-
 ENDACTIO
 
 ACTIONX
-D0010083 1000000 /
-SGHF 'A1' 8 < 0.8 AND /
-SUVTRIG 'A1' 8 = 1 /
+V0010091 1000000 /
+SUWCT 'A1' 9 < 0.95 AND /
+SGHF 'A1' 9 < 0.95 /
 /
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 8 0.1 4.000e-01 5* 4.000e-01 /
+WSEGAICD
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
+   'A1'       9       9    0.001   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
-
-UDQ
-  ASSIGN SUVTRIG A1 8 0 /
-/
-
 ENDACTIO
 
 ACTIONX
-D0010084 1000000 /
-SWHF 'A1' 8 < 0.6 AND /
-SUVTRIG 'A1' 8 = 2 /
+V0010092 1000000 /
+SUWCT 'A1' 9 >= 0.95 OR /
+SGHF 'A1' 9 >= 0.95 /
 /
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 8 0.1 4.000e-01 5* 4.000e-01 /
+WSEGAICD
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
+   'A1'       9       9    0.002   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
-UDQ
-  ASSIGN SUVTRIG A1 8 0 /
-/
-
-ENDACTIO
-
-ACTIONX
-D0010091 1000000 /
-SWHF 'A1' 9 <= 0.7 AND /
-SGHF 'A1' 9 > 0.9 AND /
-SUVTRIG 'A1' 9 = 0 /
-/
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  GAS_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 9 0.1 3.000e-01 5* 4.000e-01 /
-/
-
-UDQ
-  ASSIGN SUVTRIG 'A1' 9 1 /
-/
-
-ENDACTIO
-
-ACTIONX
-D0010092 1000000 /
-SWHF 'A1' 9 > 0.7 AND /
-SGHF 'A1' 9 <= 0.9 AND /
-SUVTRIG 'A1' 9 = 0 /
-/
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  WATER_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 9 0.1 2.000e-01 5* 4.000e-01 /
-/
-
-UDQ
-  ASSIGN SUVTRIG 'A1' 9 2 /
-/
-
-ENDACTIO
-
-ACTIONX
-D0010093 1000000 /
-SGHF 'A1' 9 < 0.8 AND /
-SUVTRIG 'A1' 9 = 1 /
-/
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 9 0.1 4.000e-01 5* 4.000e-01 /
-/
-
-UDQ
-  ASSIGN SUVTRIG A1 9 0 /
-/
-
-ENDACTIO
-
-ACTIONX
-D0010094 1000000 /
-SWHF 'A1' 9 < 0.6 AND /
-SUVTRIG 'A1' 9 = 2 /
-/
-
-WSEGVALV
---  WELL  START_SEGMENT_NUMBER  FLOW_COEFFICIENT  OIL_FLOW_CROSS_SECTIONAL_AREA  DEFAULTS  MAX_FLOW_CROSS_SECTIONAL_AREA
-  'A1' 9 0.1 4.000e-01 5* 4.000e-01 /
-/
-UDQ
-  ASSIGN SUVTRIG A1 9 0 /
-/
-
 ENDACTIO
 
 

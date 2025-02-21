@@ -7,7 +7,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import completion, read_schedule
-from completor.constants import Content, Headers, Method, WellData
+from completor.constants import Content, Headers, Method, WellData, DensitySelector, DualrcpSelector
 from completor.read_casefile import ReadCasefile
 
 
@@ -218,10 +218,10 @@ class Lateral:
             df_well = completion.get_device(df_well, case.wsegsicd_table, Content.INFLOW_CONTROL_DEVICE)
         if Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE in active_devices:
             df_well = completion.get_device(df_well, case.wsegaicd_table, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE)
-        if Content.RATE_CONTROLLED_PRODUCTION in active_devices:
-            df_well = completion.get_device(df_well, case.wsegrcp_table, Content.RATE_CONTROLLED_PRODUCTION)
-        if Content.DUAL_RATE_CONTROLLED_PRODUCTION in active_devices:
-            df_well = completion.get_device(df_well, case.wsegdualrcp_table, Content.DUAL_RATE_CONTROLLED_PRODUCTION)
+        if DensitySelector.get_selected(Content.DENSITY_DRIVEN) in active_devices:
+            df_well = completion.get_device(df_well, case.wsegdensity_table, DensitySelector.get_selected(Content.DENSITY_DRIVEN))
+        if DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION) in active_devices:
+            df_well = completion.get_device(df_well, case.wsegdualrcp_table, DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION))
         if Content.INFLOW_CONTROL_VALVE in active_devices:
             df_well = completion.get_device(df_well, case.wsegicv_table, Content.INFLOW_CONTROL_VALVE)
         return df_well

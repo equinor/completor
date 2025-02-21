@@ -10,7 +10,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.constants import Content, Headers, Keywords, Method, WellData
+from completor.constants import Content, Headers, Keywords, Method, WellData, DensitySelector, DualrcpSelector
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.logger import logger
@@ -48,7 +48,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     SCHEDULE_FILE, OUT_FILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    INFLOW_CONTROL_DEVICE, RATE_CONTROLLED_PRODUCTION, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
+    INFLOW_CONTROL_DEVICE, DENSITY_DRIVEN, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -63,7 +63,7 @@ class ReadCasefile:
         wsegsicd_table (pd.DataFrame): INFLOW_CONTROL_DEVICE.
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
-        wsegrcp_table (pd.DataFrame): RATE_CONTROLLED_PRODUCTION.
+        wsegdensity_table (pd.DataFrame): DENSITY_DRIVEN.
         wsegdualrcp_table (pd.DataFrame): DUAL_RATE_CONTROLLED_PRODUCTION.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
@@ -98,7 +98,7 @@ class ReadCasefile:
         self.wsegaicd_table = pd.DataFrame()
         self.wsegsicd_table = pd.DataFrame()
         self.wsegvalv_table = pd.DataFrame()
-        self.wsegrcp_table = pd.DataFrame()
+        self.wsegdensity_table = pd.DataFrame()
         self.wsegdualrcp_table = pd.DataFrame()
         self.wsegicv_table = pd.DataFrame()
         self.lat2device = pd.DataFrame()
@@ -116,7 +116,7 @@ class ReadCasefile:
         self.read_wsegaicd()
         self.read_wsegvalv()
         self.read_wsegsicd()
-        self.read_wsegrcp()
+        self.read_wsegdensity()
         self.read_wsegdualrcp()
         self.read_wsegicv()
         self.read_lat2device()
@@ -457,19 +457,31 @@ class ReadCasefile:
                     f"Not all device in COMPLETION is specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}"
                 )
 
-    def read_wsegrcp(self) -> None:
-        """Read the RATE_CONTROLLED_PRODUCTION keyword in the case file.
+    def read_wsegdensity(self) -> None:
+        """Read the DENSITY_DRIVEN keyword in the case file.
 
         Raises:
-            ValueError: If there are invalid entries in RATE_CONTROLLED_PRODUCTION.
-            CompletorError: If not all device in COMPLETION is specified in RATE_CONTROLLED_PRODUCTION.
-                If RATE_CONTROLLED_PRODUCTION keyword not defined, when RCP is used in the completion.
+            ValueError: If there are invalid entries in DENSITY_DRIVEN.
+            CompletorError: If not all device in COMPLETION is specified in DENSITY_DRIVEN.
+                If DENSITY_DRIVEN keyword not defined, when DENSITY is used in the completion.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.RATE_CONTROLLED_PRODUCTION)
+        density_index = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[0])
+        density_deprecated_index = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[1])
+
+        # Determine which keyword is present
+        if density_index[0] != density_index[1]:  # If WSEGDENSITY exists
+            start_index, end_index = density_index
+            DensitySelector.update_selection(use_deprecated=False)
+        elif density_deprecated_index[0] != density_deprecated_index[1]:  # If WSEGDAR exists
+            start_index, end_index = density_deprecated_index
+            DensitySelector.update_selection(use_deprecated=True)
+        else:
+            start_index, end_index = 0, 0  # Default values when no keyword is found
+
         if start_index == end_index:
-            if Content.RATE_CONTROLLED_PRODUCTION in self.completion_table[Headers.DEVICE_TYPE]:
+            if DensitySelector.get_selected(Content.DENSITY_DRIVEN) in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError(
-                    f"{Keywords.RATE_CONTROLLED_PRODUCTION} keyword must be defined, if RCP is used in the completion"
+                    f"{DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)} keyword must be defined, if DENSITY is used in the completion"
                 )
         else:
             # Table headers
@@ -486,16 +498,16 @@ class ReadCasefile:
             ]
 
             # Fix table format
-            if self.completion_table[Headers.DEVICE_TYPE].str.contains(Content.RATE_CONTROLLED_PRODUCTION).any():
-                self.wsegrcp_table = input_validation.set_format_wsegrcp(
+            if (self.completion_table[Headers.DEVICE_TYPE].str.contains(DensitySelector.get_selected(Content.DENSITY_DRIVEN)).any()):
+                self.wsegdensity_table = input_validation.set_format_wsegdensity(
                     self._create_dataframe_with_columns(header, start_index, end_index)
                 )
                 device_checks = self.completion_table[
-                    self.completion_table[Headers.DEVICE_TYPE] == Content.RATE_CONTROLLED_PRODUCTION
+                    self.completion_table[Headers.DEVICE_TYPE] == DensitySelector.get_selected(Content.DENSITY_DRIVEN)
                 ][Headers.DEVICE_NUMBER].to_numpy()
-                if not check_contents(device_checks, self.wsegrcp_table[Headers.DEVICE_NUMBER].to_numpy()):
+                if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
                     raise CompletorError(
-                        f"Not all device in COMPLETION is specified in {Keywords.RATE_CONTROLLED_PRODUCTION}"
+                        f"Not all device in COMPLETION is specified in {DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)}"
                     )
 
     def read_wsegdualrcp(self) -> None:
@@ -506,11 +518,23 @@ class ReadCasefile:
             CompletorError: DUAL_RATE_CONTROLLED_PRODUCTION keyword not defined when DUALRCP is used in completion.
                 If all devices in COMPLETION are not specified in DUAL_RATE_CONTROLLED_PRODUCTION.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION)
+        dualrcp_index = parse.locate_keyword(self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[0])
+        dualrcp_deprecated_index = parse.locate_keyword(self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[1])
+
+        # Determine which keyword is present
+        if dualrcp_index[0] != dualrcp_index[1]:  # If WSEGDUALRCP exists
+            start_index, end_index = dualrcp_index
+            DualrcpSelector.update_selection(use_deprecated=False)
+        elif dualrcp_deprecated_index[0] != dualrcp_deprecated_index[1]:  # If WSEGAICV exists
+            start_index, end_index = dualrcp_deprecated_index
+            DualrcpSelector.update_selection(use_deprecated=True)
+        else:
+            start_index, end_index = 0, 0  # Default values when no keyword is found
+
         if start_index == end_index:
-            if Content.DUAL_RATE_CONTROLLED_PRODUCTION in self.completion_table[Headers.DEVICE_TYPE]:
+            if DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION) in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError(
-                    f"{Keywords.DUAL_RATE_CONTROLLED_PRODUCTION} keyword must be defined, "
+                    f"{DualrcpSelector.get_selected(Keywords.DUAL_RATE_CONTROLLED_PRODUCTION)} keyword must be defined, "
                     "if DUALRCP is used in the completion."
                 )
         else:
@@ -546,11 +570,11 @@ class ReadCasefile:
             )
             # Check if the device in COMPLETION is exist in DUAL_RATE_CONTROLLED_PRODUCTION
             device_checks = self.completion_table[
-                self.completion_table[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION
+                self.completion_table[Headers.DEVICE_TYPE] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)
             ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegdualrcp_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(
-                    f"Not all devices in COMPLETION are specified in {Keywords.DUAL_RATE_CONTROLLED_PRODUCTION}"
+                    f"Not all devices in COMPLETION are specified in {DualrcpSelector.get_selected(Keywords.DUAL_RATE_CONTROLLED_PRODUCTION)}"
                 )
 
     def read_wsegicv(self) -> None:

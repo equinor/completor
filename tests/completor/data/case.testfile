@@ -6,13 +6,13 @@ COMPLETION
 --                                    Diameter   Diameter
 'A1'       1        0         1000     0.1        0.2                 1E-4            OA          3                AICD          1
 'A1'       2        500       1000     0.1        0.2                 1E-4            GP          0                VALVE         1
-'A2'       1        0         500      0.1        0.2                 1*            OA          3                RCP           1
-A2       1        500       500      0.1        0.2                 1*            PA          3                RCP           1            -- PACKER
+'A2'       1        0         500      0.1        0.2                 1*            OA          3                DENSITY           1
+A2       1        500       500      0.1        0.2                 1*            PA          3                DENSITY           1            -- PACKER
 A2       1        500       1000     0.1        0.2                 1E-4            OA          3                PERF          1
 	'A3'       1        0         1000     0.1        0.2                 1E-4            OA          3                AICD          2
 A3       2        500       1000     0.1        0.2                 1E-4            GP          1                VALVE         2
- 11       1        0         500      0.1        0.2                 1E-4            OA          3                RCP           2
-	11       1        500       500      0.1        0.2                 1E-4            PA          3                RCP           2
+ 11       1        0         500      0.1        0.2                 1E-4            OA          3                DENSITY           2
+	11       1        500       500      0.1        0.2                 1E-4            PA          3                DENSITY           2
  11       1        500       1000     0.1        0.2                 1E-4            OA          3                DUALRCP          2
 /
 
@@ -24,7 +24,7 @@ A3       2        500       1000     0.1        0.2                 1E-4        
 12
 /
 
-WSEGRCP
+WSEGDENSITY
 -- -- Number   Cv  Oil_Ac 	Gas_Ac 		Water_Ac 	whf_low  	whf_high 	ghf_low  	ghf_high
 1            0.1      0.4        0.3           0.2                  0.6             0.70                0.8         0.9
 2            0.1      0.4        0.3           0.2                  0.5             0.60                0.7         0.8

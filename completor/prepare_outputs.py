@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Content, Headers, Keywords
+from completor.constants import Content, Headers, Keywords, DensitySelector, DualrcpSelector
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.logger import logger
 from completor.utils import check_width_lines
@@ -448,10 +448,10 @@ def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_
                     df_well[Headers.DEVICE_TYPE] == Content.VALVE,
                     "/ -- Valve types",
                     np.where(
-                        df_well[Headers.DEVICE_TYPE] == Content.RATE_CONTROLLED_PRODUCTION,
-                        "/ -- RCP types",
+                        df_well[Headers.DEVICE_TYPE] == DensitySelector.get_selected(Content.DENSITY_DRIVEN),
+                        "/ -- DENSITY types",
                         np.where(
-                            df_well[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION,
+                            df_well[Headers.DEVICE_TYPE] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION),
                             "/ -- DUALRCP types",
                             np.where(
                                 df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
@@ -1250,8 +1250,8 @@ def prepare_inflow_control_valve(
     return wsegicv
 
 
-def prepare_rate_controlled_production(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
-    """Prepare data frame for RCP.
+def prepare_density_driven(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """Prepare data frame for DENSITY.
 
     Args:
         well_name: Well name.
@@ -1259,7 +1259,7 @@ def prepare_rate_controlled_production(well_name: str, df_well: pd.DataFrame, df
         df_device: Device data for this well and lateral.
 
     Returns:
-        DataFrame for RCP.
+        DataFrame for DENSITY.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -1271,28 +1271,36 @@ def prepare_rate_controlled_production(well_name: str, df_well: pd.DataFrame, df
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.RATE_CONTROLLED_PRODUCTION]
-    wsegrcp = pd.DataFrame()
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == DensitySelector.get_selected(Content.DENSITY_DRIVEN)]
+    wsegdensity = pd.DataFrame()
     if df_merge.shape[0] > 0:
-        wsegrcp[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegrcp[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegdensity[Headers.WELL] = [well_name] * df_merge.shape[0]
+        wsegdensity[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         # the Cv is already corrected by the scaling factor
-        wsegrcp[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
-        wsegrcp[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegrcp[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegrcp[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegrcp[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[
+        wsegdensity[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
+        wsegdensity[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdensity[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegdensity[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA] = df_merge[
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA
+        ].to_numpy()
+        wsegdensity[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[
             Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF
         ].to_numpy()
-        wsegrcp[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[
+        wsegdensity[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[
             Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF
         ].to_numpy()
-        wsegrcp[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].to_numpy()
-        wsegrcp[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].to_numpy()
-        wsegrcp[Headers.DEFAULTS] = "5*"
-        wsegrcp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegrcp[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegrcp[Headers.EMPTY] = "/"
-    return wsegrcp
+        wsegdensity[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[
+            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF
+        ].to_numpy()
+        wsegdensity[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[
+            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF
+        ].to_numpy()
+        wsegdensity[Headers.DEFAULTS] = "5*"
+        wsegdensity[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegdensity[
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA
+        ].to_numpy()
+        wsegdensity[Headers.EMPTY] = "/"
+    return wsegdensity
 
 
 def prepare_dual_rate_controlled_production(
@@ -1318,7 +1326,7 @@ def prepare_dual_rate_controlled_production(
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)]
     wsegdualrcp = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegdualrcp[Headers.WELL] = [well_name] * df_merge.shape[0]
@@ -1353,18 +1361,18 @@ def prepare_dual_rate_controlled_production(
     return wsegdualrcp
 
 
-def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
-    """Print RCP devices.
+def print_wsegdensity(df_wsegdensity: pd.DataFrame, well_number: int) -> str:
+    """Print DENSITY devices.
 
     Args:
-        df_wsegrcp: Output from function prepare_wsegrcp.
+        df_wsegdensity: Output from function prepare_wsegdensity.
         well_number: Well number.
 
     Returns:
         Formatted actions to be included in the output file.
 
     Raises:
-        CompletorError: If there are to many wells and/or segments with RCP.
+        CompletorError: If there are to many wells and/or segments with DENSITY.
     """
     header = [
         [
@@ -1404,9 +1412,9 @@ def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
     sign_gas = [">", "<=", "<", ""]
     suvtrig = ["0", "0", "1", "2"]
     action = "UDQ\n"
-    for idx in range(df_wsegrcp.shape[0]):
-        segment_number = df_wsegrcp[Headers.START_SEGMENT_NUMBER].iloc[idx]
-        well_name = df_wsegrcp[Headers.WELL].iloc[idx]
+    for idx in range(df_wsegdensity.shape[0]):
+        segment_number = df_wsegdensity[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        well_name = df_wsegdensity[Headers.WELL].iloc[idx]
         action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
     action += "/\n\n"
     iaction = 3
@@ -1415,25 +1423,25 @@ def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
     for itm in header[iaction]:
         header_string += "  " + itm
     action += header_string.rstrip() + "\n"
-    for idx in range(df_wsegrcp.shape[0]):
-        segment_number = df_wsegrcp[Headers.START_SEGMENT_NUMBER].iloc[idx]
-        print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
+    for idx in range(df_wsegdensity.shape[0]):
+        segment_number = df_wsegdensity[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        print_df = df_wsegdensity[df_wsegdensity[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]
         print_df = dataframe_tostring(print_df, True, False, False) + "\n"
         action += print_df
     action += "/\n\n"
-    for idx in range(df_wsegrcp.shape[0]):
-        segment_number = df_wsegrcp[Headers.START_SEGMENT_NUMBER].iloc[idx]
-        well_name = df_wsegrcp[Headers.WELL].iloc[idx]
-        water_holdup_fraction_low_cutoff = df_wsegrcp[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
-        water_holdup_fraction_high_cutoff = df_wsegrcp[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
-        gas_holdup_fraction_low_cutoff = df_wsegrcp[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
-        gas_holdup_fraction_high_cutoff = df_wsegrcp[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
+    for idx in range(df_wsegdensity.shape[0]):
+        segment_number = df_wsegdensity[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        well_name = df_wsegdensity[Headers.WELL].iloc[idx]
+        water_holdup_fraction_low_cutoff = df_wsegdensity[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        water_holdup_fraction_high_cutoff = df_wsegdensity[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
+        gas_holdup_fraction_low_cutoff = df_wsegdensity[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        gas_holdup_fraction_high_cutoff = df_wsegdensity[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
         for iaction in range(2):
             act_number = iaction + 1
             act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
             if len(act_name) > 8:
-                raise CompletorError("Too many wells and/or too many segments with RCP")
+                raise CompletorError("Too many wells and/or too many segments with DENSITY")
             action += (
                 f"ACTIONX\n{act_name} 1000000 /\n"
                 f"SWHF '{well_name}' {segment_number} "
@@ -1443,7 +1451,7 @@ def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
                 f"SUVTRIG '{well_name}' {segment_number} "
                 f"= {suvtrig[iaction]} /\n/\n\n"
             )
-            print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
+            print_df = df_wsegdensity[df_wsegdensity[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]  # type: ignore
             header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
             for item in header[iaction]:
@@ -1461,7 +1469,7 @@ def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
         act_number = iaction + 1
         act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
         if len(act_name) > 8:
-            raise CompletorError("Too many wells and/or too many segments with RCP")
+            raise CompletorError("Too many wells and/or too many segments with DENSITY")
         action += (
             f"ACTIONX\n{act_name} 1000000 /\n"
             f"SGHF '{well_name}' {segment_number} "
@@ -1469,7 +1477,7 @@ def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
             f"SUVTRIG '{well_name}' {segment_number} "
             f"= {suvtrig[iaction]} /\n/\n\n"
         )
-        print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
+        print_df = df_wsegdensity[df_wsegdensity[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:
@@ -1484,7 +1492,7 @@ def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
         act_number = iaction + 1
         act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
         if len(act_name) > 8:
-            raise CompletorError("Too many wells and/or too many segments with RCP")
+            raise CompletorError("Too many wells and/or too many segments with DENSITY")
         action += (
             f"ACTIONX\n{act_name} 1000000 /\n"
             f"SWHF '{well_name}' {segment_number} "
@@ -1492,7 +1500,7 @@ def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
             f"SUVTRIG '{well_name}' {segment_number} "
             f"= {suvtrig[iaction]} /\n/\n\n"
         )
-        print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
+        print_df = df_wsegdensity[df_wsegdensity[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:

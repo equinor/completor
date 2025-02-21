@@ -41,8 +41,8 @@ MINIMUM_SEGMENT_LENGTH
 /
 """
 
-WSEGRCP = """
-WSEGRCP
+WSEGDENSITY = """
+WSEGDENSITY
 -- Number   Cv      Oil_Ac  Gas_Ac Water_Ac whf_low  whf_high ghf_low  ghf_high
     1       0.1     0.4     0.3     0.2     0.6         0.70    0.8     0.9
 /
@@ -287,9 +287,9 @@ def test_inc(tmpdir):
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
-def test_rcp(tmpdir):
+def test_density(tmpdir):
     """
-    Test completor case with RCP.
+    Test completor case with DENSITY.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -297,12 +297,12 @@ COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
 --     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
-   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    RCP      1
+   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    DENSITY      1
 /
 {WSEGAICD}
-{WSEGRCP}
+{WSEGDENSITY}
     """
-    true_file = Path(_TESTDIR / "wb_rcp.true")
+    true_file = Path(_TESTDIR / "wb_density.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
@@ -323,7 +323,7 @@ COMPLETION
    A1    1     0   3000   0.2     0.25    1.00E-4     GP     1     DUALRCP    1
 /
 {WSEGAICD}
-{WSEGRCP}
+{WSEGDENSITY}
 {WSEGDUALRCP}
     """
     true_file = Path(_TESTDIR / "wb_dualrcp.true")
@@ -331,9 +331,9 @@ COMPLETION
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
-def test_rcpdualrcp(tmpdir):
+def test_densitydualrcp(tmpdir):
     """
-    Test completor case with RCP DUALRCP.
+    Test completor case with DENSITY DUALRCP.
 
     1. 1 passive well & 1 active well
     2. Single lateral well
@@ -344,15 +344,15 @@ COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
 --     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
-   A1    1       0 2024   0.2     0.25    1.00E-4     OA     1     RCP      1
+   A1    1       0 2024   0.2     0.25    1.00E-4     OA     1     DENSITY      1
    A1    1    2024 2024   0.2     0.25    1.00E-4     PA     1     AICD     1
    A1    1    2024 3000   0.2     0.25    1.00E-4     OA     1     DUALRCP     1
 /
 {WSEGAICD}
-{WSEGRCP}
+{WSEGDENSITY}
 {WSEGDUALRCP}
     """
-    true_file = Path(_TESTDIR / "wb_rcpdualrcp.true")
+    true_file = Path(_TESTDIR / "wb_densitydualrcp.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 

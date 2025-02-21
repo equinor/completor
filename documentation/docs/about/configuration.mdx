@@ -96,9 +96,9 @@ COMPLETION keyword is mandatory and contains the following items:
 9. **Number of valves per joint**: Any floating point number.
    Set to 0 in intervals with blanks.
 10. **Valve type**: Permitted entries: PERF (standard perforation no inflow control valves),
-   ICD, VALVE, AICD, RCP, DUALRCP, or ICV.
+   ICD, VALVE, AICD, DENSITY, DUALRCP, or ICV.
 11. **Device number**: The device reference number specified in the Completor® configuration file keywords `WSEGVALV`,
-   `WSEGSICD`, `WSEGAICD`, `WSEGRCP`, `WSEGDUALRCP`, or `WSEGICV`.
+   `WSEGSICD`, `WSEGAICD`, `WSEGDENSITY`, `WSEGDUALRCP`, or `WSEGICV`.
    End the record with `/`.
 
 ```
@@ -317,26 +317,26 @@ WSEGVALV
 /
 ```
 
-### WSEGRCP
+### WSEGDENSITY
 
-Defines full parameter sets for the Rate Controlled Production (RCP) valve.
-Required only if RCP is used in the `COMPLETION` keyword.
+Defines full parameter sets for the Density Driven (DENSITY) valve.
+Required only if DENSITY is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
 1.  Device number: From 1, 2, .., n etc.
-2.  Cv: Item 3 in WSEGVALV keyword. Always set to 1.0 with RCP.
+2.  Cv: Item 3 in WSEGVALV keyword. Always set to 1.0 with DENSITY.
 3.  Cross-sectional flow area of the oil nozzle: Ac_o.
 4.  Cross sectional flow area of the gas nozzle: Ac_g.
 5.  Cross-sectional flow area of the water nozzle: Ac_w.
-6.  Water volume fraction (reservoir condition) at which RCP re-opens, WVF "low cut-off": wvf_low.
-7.  Water volume fraction (reservoir condition) at with RCP closes, WVF "high cut-off": wvf_high.
-8.  Gas volume fraction (reservoir condition) at which RCP re-opens, GVF "low cut-off": gvf_low.
-9.  Gas volume fraction (reservoir condition) at with RCP closes, GVF "high cut-off": gvf_high.
+6.  Water volume fraction (reservoir condition) at which DENSITY re-opens, WVF "low cut-off": wvf_low.
+7.  Water volume fraction (reservoir condition) at with DENSITY closes, WVF "high cut-off": wvf_high.
+8.  Gas volume fraction (reservoir condition) at which DENSITY re-opens, GVF "low cut-off": gvf_low.
+9.  Gas volume fraction (reservoir condition) at with DENSITY closes, GVF "high cut-off": gvf_high.
 
 ```
-WSEGRCP
--- Define two RCP devices with slightly different paramters.
+WSEGDENSITY
+-- Define two DENSITY devices with slightly different paramters.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DN   CV  Ac_o  Ac_g  Ac_w  wvf_low  wvf_high  gvf_low  vf_high
