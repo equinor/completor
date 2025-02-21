@@ -305,22 +305,23 @@ The items are as follows:
 1.  Device number: From 1, 2, .., n etc.
 2.  Cv: Item 3 in WSEGVALV keyword.
 3.  Ac: Item 4 in WSEGVALV keyword.
-4.  L: Item 5 in WSEGVALV keyword.
+4.  Defaults: Item 5-9 in WSEGVALV keyword.
+5.  Ac_Max: Item 10 in WSEGVALV keyword.
 
 ```
 WSEGVALV
 -- Define two VALVE devices with slightly different arameters.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
--- DN    CV      AC  L
-    1  0.01  1.0E-4  1*
+-- DN    CV      AC  Defaults   Ac_Max
+    1  0.01  1.0E-4  5*         1.0E-4
 /
 ```
 
-### WSEGDAR
+### WSEGDENSITY
 
-Defines full parameter sets for the Density Activated Recovery (DAR) valve.
-Required only if DAR is used in the `COMPLETION` keyword.
+Defines full parameter sets for the density driven AICD type.
+Required only if DENSITY is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
@@ -329,14 +330,14 @@ The items are as follows:
 3.  Cross-sectional flow area of the oil nozzle: Ac_o.
 4.  Cross sectional flow area of the gas nozzle: Ac_g.
 5.  Cross-sectional flow area of the water nozzle: Ac_w.
-6.  Water volume fraction (reservoir condition) at which DAR re-opens, WVF "low cut-off": wvf_low.
-7.  Water volume fraction (reservoir condition) at with DAR closes, WVF "high cut-off": wvf_high.
-8.  Gas volume fraction (reservoir condition) at which DAR re-opens, GVF "low cut-off": gvf_low.
-9.  Gas volume fraction (reservoir condition) at with DAR closes, GVF "high cut-off": gvf_high.
+6.  Water volume fraction (reservoir condition) at which valve re-opens, WVF "low cut-off": wvf_low.
+7.  Water volume fraction (reservoir condition) at with valve closes, WVF "high cut-off": wvf_high.
+8.  Gas volume fraction (reservoir condition) at which valve re-opens, GVF "low cut-off": gvf_low.
+9.  Gas volume fraction (reservoir condition) at with valve closes, GVF "high cut-off": gvf_high.
 
 ```
-WSEGDAR
--- Define two DAR devices with slightly different paramters.
+WSEGDENSITY
+-- Define two density driven AICD with slightly different paramters.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DN   CV  Ac_o  Ac_g  Ac_w  wvf_low  wvf_high  gvf_low  vf_high
@@ -345,10 +346,11 @@ WSEGDAR
 /
 ```
 
-### WSEGAICV
+### WSEGDUALRCP
 
 This keyword utilizes two different `WSEGAICD` parameter.
-Required only if AICV is used in the `COMPLETION` keyword.
+This keyword acts as two different `RCP` equation at certain cutoff to cover steep performance curve.
+Required only if DUALRCP is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
@@ -357,16 +359,16 @@ The items are as follows:
 - GVF: Cut-off gas volume fraction at which the flow goes to the pilot channel.
 - Rho_cal: Calibration density.
 - Mu_cal: Calibration viscosity.
-- (6–14) Parameters for the AICV main channel.
+- (6–14) Parameters for the AICD main channel.
 The same parameters as AICD e.g., alpha, x, y, a, b, c, d, e, f.
 See WSEGAICD keyword.
-- (15-23) Parameters for the AICV pilot channel.
+- (15-23) Parameters for the AICD pilot channel.
 The same parameters as AICD e.g., alpha, x, y, a, b, c, d, e, f.
 See WSEGAICD keyword.
 
 ```
-WSEGAICV
--- Defines full parameter sets for the AICV inflow control technology using two sets of AICD equation.
+WSEGDUALRCP
+-- Defines full parameter sets for the inflow control technology using two sets of AICD equation.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DB  WVF  GVF  rho_cal  mu_cal  alpha1  x1  y1  a1  b1  c1  1  e1  f1 alpha2  x2  y2  a2  b2  c2  d2  e2  f2
