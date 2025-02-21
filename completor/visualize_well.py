@@ -46,9 +46,9 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
             axs.plot(xpar, ypar, "rs-", markevery=[1])
         elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.VALVE:
             axs.plot(xpar, ypar, "rv-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.DENSITY_ACTIVATED_RECOVERY:
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.RATE_CONTROLLED_PRODUCTION:
             axs.plot(xpar, ypar, "rP-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE:
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.DUAL_RATE_CONTROLLED_PRODUCTION:
             axs.plot(xpar, ypar, "r*-", markevery=[1])
     return axs
 

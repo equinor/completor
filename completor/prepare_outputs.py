@@ -448,11 +448,11 @@ def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_
                     df_well[Headers.DEVICE_TYPE] == Content.VALVE,
                     "/ -- Valve types",
                     np.where(
-                        df_well[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY,
-                        "/ -- DAR types",
+                        df_well[Headers.DEVICE_TYPE] == Content.RATE_CONTROLLED_PRODUCTION,
+                        "/ -- RCP types",
                         np.where(
-                            df_well[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
-                            "/ -- AICV types",
+                            df_well[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION,
+                            "/ -- DUALRCP types",
                             np.where(
                                 df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
                             ),
@@ -1250,8 +1250,8 @@ def prepare_inflow_control_valve(
     return wsegicv
 
 
-def prepare_density_activated_recovery(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
-    """Prepare data frame for DAR.
+def prepare_rate_controlled_production(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """Prepare data frame for RCP.
 
     Args:
         well_name: Well name.
@@ -1259,7 +1259,7 @@ def prepare_density_activated_recovery(well_name: str, df_well: pd.DataFrame, df
         df_device: Device data for this well and lateral.
 
     Returns:
-        DataFrame for DAR.
+        DataFrame for RCP.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -1271,34 +1271,34 @@ def prepare_density_activated_recovery(well_name: str, df_well: pd.DataFrame, df
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY]
-    wsegdar = pd.DataFrame()
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.RATE_CONTROLLED_PRODUCTION]
+    wsegrcp = pd.DataFrame()
     if df_merge.shape[0] > 0:
-        wsegdar[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegdar[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegrcp[Headers.WELL] = [well_name] * df_merge.shape[0]
+        wsegrcp[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
         # the Cv is already corrected by the scaling factor
-        wsegdar[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
-        wsegdar[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegdar[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegdar[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegdar[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[
+        wsegrcp[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
+        wsegrcp[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegrcp[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegrcp[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA] = df_merge[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegrcp[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[
             Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF
         ].to_numpy()
-        wsegdar[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[
+        wsegrcp[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[
             Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF
         ].to_numpy()
-        wsegdar[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].to_numpy()
-        wsegdar[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].to_numpy()
-        wsegdar[Headers.DEFAULTS] = "5*"
-        wsegdar[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegdar[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
-        wsegdar[Headers.EMPTY] = "/"
-    return wsegdar
+        wsegrcp[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].to_numpy()
+        wsegrcp[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF] = df_merge[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].to_numpy()
+        wsegrcp[Headers.DEFAULTS] = "5*"
+        wsegrcp[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wsegrcp[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wsegrcp[Headers.EMPTY] = "/"
+    return wsegrcp
 
 
-def prepare_autonomous_inflow_control_valve(
+def prepare_dual_rate_controlled_production(
     well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
 ) -> pd.DataFrame:
-    """Prepare data frame for AICV.
+    """Prepare data frame for DUALRCP.
 
     Args:
         well_name: Well name.
@@ -1306,7 +1306,7 @@ def prepare_autonomous_inflow_control_valve(
         df_device: Device data for this well and lateral.
 
     Returns:
-        DataFrame for AICV.
+        DataFrame for DUALRCP.
     """
     df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
     if df_well.shape[0] == 0:
@@ -1318,53 +1318,53 @@ def prepare_autonomous_inflow_control_valve(
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE]
-    wsegaicv = pd.DataFrame()
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION]
+    wsegdualrcp = pd.DataFrame()
     if df_merge.shape[0] > 0:
-        wsegaicv[Headers.WELL] = [well_name] * df_merge.shape[0]
-        wsegaicv[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
-        wsegaicv[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
-        wsegaicv[Headers.ALPHA_MAIN] = df_merge[Headers.ALPHA_MAIN].to_numpy()
-        wsegaicv[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
-        wsegaicv[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.AICV_CALIBRATION_FLUID_DENSITY].to_numpy()
-        wsegaicv[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.AICV_FLUID_VISCOSITY].to_numpy()
-        wsegaicv[Headers.DEF] = ["5*"] * df_merge.shape[0]
-        wsegaicv[Headers.X_MAIN] = df_merge[Headers.X_MAIN].to_numpy()
-        wsegaicv[Headers.Y_MAIN] = df_merge[Headers.Y_MAIN].to_numpy()
-        wsegaicv[Headers.FLAG] = [Headers.OPEN] * df_merge.shape[0]
-        wsegaicv[Headers.A_MAIN] = df_merge[Headers.A_MAIN].to_numpy()
-        wsegaicv[Headers.B_MAIN] = df_merge[Headers.B_MAIN].to_numpy()
-        wsegaicv[Headers.C_MAIN] = df_merge[Headers.C_MAIN].to_numpy()
-        wsegaicv[Headers.D_MAIN] = df_merge[Headers.D_MAIN].to_numpy()
-        wsegaicv[Headers.E_MAIN] = df_merge[Headers.E_MAIN].to_numpy()
-        wsegaicv[Headers.F_MAIN] = df_merge[Headers.F_MAIN].to_numpy()
-        wsegaicv[Headers.ALPHA_PILOT] = df_merge[Headers.ALPHA_PILOT].to_numpy()
-        wsegaicv[Headers.X_PILOT] = df_merge[Headers.X_PILOT].to_numpy()
-        wsegaicv[Headers.Y_PILOT] = df_merge[Headers.Y_PILOT].to_numpy()
-        wsegaicv[Headers.A_PILOT] = df_merge[Headers.A_PILOT].to_numpy()
-        wsegaicv[Headers.B_PILOT] = df_merge[Headers.B_PILOT].to_numpy()
-        wsegaicv[Headers.C_PILOT] = df_merge[Headers.C_PILOT].to_numpy()
-        wsegaicv[Headers.D_PILOT] = df_merge[Headers.D_PILOT].to_numpy()
-        wsegaicv[Headers.E_PILOT] = df_merge[Headers.E_PILOT].to_numpy()
-        wsegaicv[Headers.F_PILOT] = df_merge[Headers.F_PILOT].to_numpy()
-        wsegaicv[Headers.AICV_WATER_CUT] = df_merge[Headers.AICV_WATER_CUT].to_numpy()
-        wsegaicv[Headers.AICV_GAS_HOLDUP_FRACTION] = df_merge[Headers.AICV_GAS_HOLDUP_FRACTION].to_numpy()
-        wsegaicv[Headers.EMPTY] = "/"
-    return wsegaicv
+        wsegdualrcp[Headers.WELL] = [well_name] * df_merge.shape[0]
+        wsegdualrcp[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegdualrcp[Headers.END_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        wsegdualrcp[Headers.ALPHA_MAIN] = df_merge[Headers.ALPHA_MAIN].to_numpy()
+        wsegdualrcp[Headers.SCALE_FACTOR] = df_merge[Headers.SCALE_FACTOR].to_numpy()
+        wsegdualrcp[Headers.CALIBRATION_FLUID_DENSITY] = df_merge[Headers.DUALRCP_CALIBRATION_FLUID_DENSITY].to_numpy()
+        wsegdualrcp[Headers.CALIBRATION_FLUID_VISCOSITY] = df_merge[Headers.DUALRCP_FLUID_VISCOSITY].to_numpy()
+        wsegdualrcp[Headers.DEF] = ["5*"] * df_merge.shape[0]
+        wsegdualrcp[Headers.X_MAIN] = df_merge[Headers.X_MAIN].to_numpy()
+        wsegdualrcp[Headers.Y_MAIN] = df_merge[Headers.Y_MAIN].to_numpy()
+        wsegdualrcp[Headers.FLAG] = [Headers.OPEN] * df_merge.shape[0]
+        wsegdualrcp[Headers.A_MAIN] = df_merge[Headers.A_MAIN].to_numpy()
+        wsegdualrcp[Headers.B_MAIN] = df_merge[Headers.B_MAIN].to_numpy()
+        wsegdualrcp[Headers.C_MAIN] = df_merge[Headers.C_MAIN].to_numpy()
+        wsegdualrcp[Headers.D_MAIN] = df_merge[Headers.D_MAIN].to_numpy()
+        wsegdualrcp[Headers.E_MAIN] = df_merge[Headers.E_MAIN].to_numpy()
+        wsegdualrcp[Headers.F_MAIN] = df_merge[Headers.F_MAIN].to_numpy()
+        wsegdualrcp[Headers.ALPHA_PILOT] = df_merge[Headers.ALPHA_PILOT].to_numpy()
+        wsegdualrcp[Headers.X_PILOT] = df_merge[Headers.X_PILOT].to_numpy()
+        wsegdualrcp[Headers.Y_PILOT] = df_merge[Headers.Y_PILOT].to_numpy()
+        wsegdualrcp[Headers.A_PILOT] = df_merge[Headers.A_PILOT].to_numpy()
+        wsegdualrcp[Headers.B_PILOT] = df_merge[Headers.B_PILOT].to_numpy()
+        wsegdualrcp[Headers.C_PILOT] = df_merge[Headers.C_PILOT].to_numpy()
+        wsegdualrcp[Headers.D_PILOT] = df_merge[Headers.D_PILOT].to_numpy()
+        wsegdualrcp[Headers.E_PILOT] = df_merge[Headers.E_PILOT].to_numpy()
+        wsegdualrcp[Headers.F_PILOT] = df_merge[Headers.F_PILOT].to_numpy()
+        wsegdualrcp[Headers.DUALRCP_WATER_CUT] = df_merge[Headers.DUALRCP_WATER_CUT].to_numpy()
+        wsegdualrcp[Headers.DUALRCP_GAS_HOLDUP_FRACTION] = df_merge[Headers.DUALRCP_GAS_HOLDUP_FRACTION].to_numpy()
+        wsegdualrcp[Headers.EMPTY] = "/"
+    return wsegdualrcp
 
 
-def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
-    """Print DAR devices.
+def print_wsegrcp(df_wsegrcp: pd.DataFrame, well_number: int) -> str:
+    """Print RCP devices.
 
     Args:
-        df_wsegdar: Output from function prepare_wsegdar.
+        df_wsegrcp: Output from function prepare_wsegrcp.
         well_number: Well number.
 
     Returns:
         Formatted actions to be included in the output file.
 
     Raises:
-        CompletorError: If there are to many wells and/or segments with DAR.
+        CompletorError: If there are to many wells and/or segments with RCP.
     """
     header = [
         [
@@ -1404,9 +1404,9 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
     sign_gas = [">", "<=", "<", ""]
     suvtrig = ["0", "0", "1", "2"]
     action = "UDQ\n"
-    for idx in range(df_wsegdar.shape[0]):
-        segment_number = df_wsegdar[Headers.START_SEGMENT_NUMBER].iloc[idx]
-        well_name = df_wsegdar[Headers.WELL].iloc[idx]
+    for idx in range(df_wsegrcp.shape[0]):
+        segment_number = df_wsegrcp[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        well_name = df_wsegrcp[Headers.WELL].iloc[idx]
         action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
     action += "/\n\n"
     iaction = 3
@@ -1415,25 +1415,25 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
     for itm in header[iaction]:
         header_string += "  " + itm
     action += header_string.rstrip() + "\n"
-    for idx in range(df_wsegdar.shape[0]):
-        segment_number = df_wsegdar[Headers.START_SEGMENT_NUMBER].iloc[idx]
-        print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
+    for idx in range(df_wsegrcp.shape[0]):
+        segment_number = df_wsegrcp[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]
         print_df = dataframe_tostring(print_df, True, False, False) + "\n"
         action += print_df
     action += "/\n\n"
-    for idx in range(df_wsegdar.shape[0]):
-        segment_number = df_wsegdar[Headers.START_SEGMENT_NUMBER].iloc[idx]
-        well_name = df_wsegdar[Headers.WELL].iloc[idx]
-        water_holdup_fraction_low_cutoff = df_wsegdar[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
-        water_holdup_fraction_high_cutoff = df_wsegdar[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
-        gas_holdup_fraction_low_cutoff = df_wsegdar[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
-        gas_holdup_fraction_high_cutoff = df_wsegdar[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
+    for idx in range(df_wsegrcp.shape[0]):
+        segment_number = df_wsegrcp[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        well_name = df_wsegrcp[Headers.WELL].iloc[idx]
+        water_holdup_fraction_low_cutoff = df_wsegrcp[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        water_holdup_fraction_high_cutoff = df_wsegrcp[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
+        gas_holdup_fraction_low_cutoff = df_wsegrcp[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF].iloc[idx]
+        gas_holdup_fraction_high_cutoff = df_wsegrcp[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF].iloc[idx]
         for iaction in range(2):
             act_number = iaction + 1
             act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
             if len(act_name) > 8:
-                raise CompletorError("Too many wells and/or too many segments with DAR")
+                raise CompletorError("Too many wells and/or too many segments with RCP")
             action += (
                 f"ACTIONX\n{act_name} 1000000 /\n"
                 f"SWHF '{well_name}' {segment_number} "
@@ -1443,7 +1443,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
                 f"SUVTRIG '{well_name}' {segment_number} "
                 f"= {suvtrig[iaction]} /\n/\n\n"
             )
-            print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
+            print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]  # type: ignore
             header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
             for item in header[iaction]:
@@ -1461,7 +1461,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         act_number = iaction + 1
         act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
         if len(act_name) > 8:
-            raise CompletorError("Too many wells and/or too many segments with DAR")
+            raise CompletorError("Too many wells and/or too many segments with RCP")
         action += (
             f"ACTIONX\n{act_name} 1000000 /\n"
             f"SGHF '{well_name}' {segment_number} "
@@ -1469,7 +1469,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             f"SUVTRIG '{well_name}' {segment_number} "
             f"= {suvtrig[iaction]} /\n/\n\n"
         )
-        print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
+        print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:
@@ -1484,7 +1484,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
         act_number = iaction + 1
         act_name = f"D{well_number:03d}{segment_number:03d}{act_number:1d}"
         if len(act_name) > 8:
-            raise CompletorError("Too many wells and/or too many segments with DAR")
+            raise CompletorError("Too many wells and/or too many segments with RCP")
         action += (
             f"ACTIONX\n{act_name} 1000000 /\n"
             f"SWHF '{well_name}' {segment_number} "
@@ -1492,7 +1492,7 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
             f"SUVTRIG '{well_name}' {segment_number} "
             f"= {suvtrig[iaction]} /\n/\n\n"
         )
-        print_df = df_wsegdar[df_wsegdar[Headers.START_SEGMENT_NUMBER] == segment_number]
+        print_df = df_wsegrcp[df_wsegrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
         for item in header[iaction]:
@@ -1505,18 +1505,18 @@ def print_wsegdar(df_wsegdar: pd.DataFrame, well_number: int) -> str:
     return action
 
 
-def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
-    """Print for AICV devices.
+def print_wsegdualrcp(df_wsegdualrcp: pd.DataFrame, well_number: int) -> str:
+    """Print for DUALRCP devices.
 
     Args:
-        df_wsegaicv: Output from function prepare_wsegaicv.
+        df_wsegdualrcp: Output from function prepare_wsegdualrcp.
         well_number: Well number.
 
     Returns:
         Formatted actions to be included in the output file.
 
     Raises:
-        CompletorError: If there are too many wells and/or segments with AICV.
+        CompletorError: If there are too many wells and/or segments with DUALRCP.
     """
     header = [
         [
@@ -1584,17 +1584,17 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
     sign_gas = ["<", ">="]
     operator = ["AND", "OR"]
     action = ""
-    for idx in range(df_wsegaicv.shape[0]):
-        segment_number = df_wsegaicv[Headers.START_SEGMENT_NUMBER].iloc[idx]
-        well_name = df_wsegaicv[Headers.WELL].iloc[idx]
-        wct = df_wsegaicv[Headers.AICV_WATER_CUT].iloc[idx]
-        ghf = df_wsegaicv[Headers.AICV_GAS_HOLDUP_FRACTION].iloc[idx]
+    for idx in range(df_wsegdualrcp.shape[0]):
+        segment_number = df_wsegdualrcp[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        well_name = df_wsegdualrcp[Headers.WELL].iloc[idx]
+        wct = df_wsegdualrcp[Headers.DUALRCP_WATER_CUT].iloc[idx]
+        ghf = df_wsegdualrcp[Headers.DUALRCP_GAS_HOLDUP_FRACTION].iloc[idx]
         # LOWWCT_LOWGHF
         for iaction in range(2):
             act_number = iaction + 1
             act_name = f"V{well_number:03d}{segment_number:03d}{act_number:1d}"
             if len(act_name) > 8:
-                raise CompletorError("Too many wells and/or too many segments with AICV")
+                raise CompletorError("Too many wells and/or too many segments with DUALRCP")
             action += (
                 f"ACTIONX\n{act_name} 1000000 /\n"
                 f"SUWCT '{well_name}' {segment_number} {sign_water[iaction]} "
@@ -1602,7 +1602,7 @@ def print_wsegaicv(df_wsegaicv: pd.DataFrame, well_number: int) -> str:
                 f"SGHF '{well_name}' {segment_number} {sign_gas[iaction]} {ghf} /\n/\n"
             )
 
-            print_df = df_wsegaicv[df_wsegaicv[Headers.START_SEGMENT_NUMBER] == segment_number]
+            print_df = df_wsegdualrcp[df_wsegdualrcp[Headers.START_SEGMENT_NUMBER] == segment_number]
             print_df = print_df[header[iaction]]
             print_df.columns = new_column
             print_df = Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE + "\n" + dataframe_tostring(print_df, True)

@@ -36,14 +36,14 @@ def test_read_case_completion():
                 1,
             ],
             ["A1", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 0, Content.VALVE, 1],
-            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, Content.DENSITY_ACTIVATED_RECOVERY, 1],
+            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, Content.RATE_CONTROLLED_PRODUCTION, 1],
             ["A2", 1, 500, 500, 0, 0, 0, Content.PACKER, 0.0, Content.PERFORATED, 0],
             ["A2", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 0.0, Content.PERFORATED, 0],
             ["A3", 1, 0, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, 2],
             ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, Content.VALVE, 2],
-            ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DENSITY_ACTIVATED_RECOVERY, 2],
+            ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.RATE_CONTROLLED_PRODUCTION, 2],
             ["11", 1, 500, 500, 0, 0, 0, Content.PACKER, 0, Content.PERFORATED, 0],
-            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, 2],
+            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DUAL_RATE_CONTROLLED_PRODUCTION, 2],
         ],
         columns=[
             Headers.WELL,
@@ -186,12 +186,12 @@ def test_read_case_wsegsicd():
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegsicd_table)
 
 
-def test_read_case_wsegdar():
-    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
+def test_read_case_wsegrcp():
+    """Test the function which reads RATE_CONTROLLED_PRODUCTION keyword."""
     df_true = pd.DataFrame(
         [
-            [Content.DENSITY_ACTIVATED_RECOVERY, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
-            [Content.DENSITY_ACTIVATED_RECOVERY, 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
+            [Content.RATE_CONTROLLED_PRODUCTION, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
+            [Content.RATE_CONTROLLED_PRODUCTION, 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -208,27 +208,27 @@ def test_read_case_wsegdar():
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
-    pd.testing.assert_frame_equal(df_true, _THECASE.wsegdar_table)
+    pd.testing.assert_frame_equal(df_true, _THECASE.wsegrcp_table)
 
 
-def test_new_dar_old_parameters():
-    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
-    with open(Path(_TESTDIR / "dar.testfile"), encoding="utf-8") as old_dar_case:
-        _OLDDARCASE = old_dar_case.read()
+def test_new_rcp_old_parameters():
+    """Test the function which reads RATE_CONTROLLED_PRODUCTION keyword."""
+    with open(Path(_TESTDIR / "rcp.testfile"), encoding="utf-8") as old_rcp_case:
+        _OLDRCPCASE = old_rcp_case.read()
 
     with pytest.raises(CaseReaderFormatError) as err:
-        ReadCasefile(_OLDDARCASE)
+        ReadCasefile(_OLDRCPCASE)
 
-    expected_err = f"Too few entries in data for keyword '{Keywords.DENSITY_ACTIVATED_RECOVERY}', expected 9"
+    expected_err = f"Too few entries in data for keyword '{Keywords.RATE_CONTROLLED_PRODUCTION}', expected 9"
     assert expected_err in str(err.value)
 
 
-def test_read_case_wsegaicv():
-    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
+def test_read_case_wsegdualrcp():
+    """Test the function which reads DUAL_RATE_CONTROLLED_PRODUCTION keyword."""
     df_true = pd.DataFrame(
         [
             [
-                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 1,
                 0.95,
                 0.95,
@@ -254,7 +254,7 @@ def test_read_case_wsegaicv():
                 1.3,
             ],
             [
-                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 2,
                 0.80,
                 0.85,
@@ -283,10 +283,10 @@ def test_read_case_wsegaicv():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.AICV_WATER_CUT,
-            Headers.AICV_GAS_HOLDUP_FRACTION,
-            Headers.AICV_CALIBRATION_FLUID_DENSITY,
-            Headers.AICV_FLUID_VISCOSITY,
+            Headers.DUALRCP_WATER_CUT,
+            Headers.DUALRCP_GAS_HOLDUP_FRACTION,
+            Headers.DUALRCP_CALIBRATION_FLUID_DENSITY,
+            Headers.DUALRCP_FLUID_VISCOSITY,
             Headers.ALPHA_MAIN,
             Headers.X_MAIN,
             Headers.Y_MAIN,
@@ -308,7 +308,7 @@ def test_read_case_wsegaicv():
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
-    pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicv_table)
+    pd.testing.assert_frame_equal(df_true, _THECASE.wsegdualrcp_table)
 
 
 def test_error_missing_column_completion():
