@@ -155,6 +155,10 @@ class ReadCasefile:
         df_temp = input_validation.check_default_non_packer(df_temp)
         # Fix the data types format
         df_temp = input_validation.set_format_completion(df_temp)
+        # Fix the Density based
+        df_temp = input_validation.set_density_based(df_temp)
+        # Fix the Dual RCP
+        df_temp = input_validation.set_dualrcp(df_temp)
         # Check overall user inputs on completion
         input_validation.assess_completion(df_temp)
         df_temp = self.read_icv_tubing(df_temp)

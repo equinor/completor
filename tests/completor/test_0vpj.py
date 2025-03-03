@@ -541,6 +541,8 @@ def test_gp_cells(tmpdir):
     case_file = CASE_GP_CELLS
     true_file = Path(_TESTDIR / "gp_cells.true")
     utils_for_tests.open_files_run_create(case_file, SCHEDULE, _TEST_FILE)
+    with open(_TEST_FILE) as test:
+        coba = test.read()
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 

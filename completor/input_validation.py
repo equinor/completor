@@ -111,6 +111,34 @@ def set_format_completion(df_comp: pd.DataFrame) -> pd.DataFrame:
         }
     )
 
+def set_density_based(df_comp: pd.DataFrame) -> pd.DataFrame:
+    """Set the column data format.
+
+    Args:
+        df_comp: Completion data.
+
+    Returns:
+        Updated device type to all density based.
+    """
+    df_comp[Headers.DEVICE_TYPE] = np.where(
+        df_comp[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY, Content.DENSITY_BASED, df_comp[Headers.DEVICE_TYPE]
+    )
+    return df_comp
+
+def set_dualrcp(df_comp: pd.DataFrame) -> pd.DataFrame:
+    """Set the column data format.
+
+    Args:
+        df_comp: Completion data.
+
+    Returns:
+        Updated device type to all dual RCP based.
+    """
+    df_comp[Headers.DEVICE_TYPE] = np.where(
+        df_comp[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, Content.DUAL_RCP, df_comp[Headers.DEVICE_TYPE]
+    )
+    return df_comp
+
 
 def assess_completion(df_comp: pd.DataFrame) -> None:
     """Assess the user completion inputs.
