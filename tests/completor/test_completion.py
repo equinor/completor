@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from completor import completion, read_schedule
-from completor.constants import Content, Headers, Keywords, Method, DensitySelector
+from completor.constants import Content, Headers, Keywords, Method
 from completor.exceptions.clean_exceptions import CompletorError
 
 
@@ -838,7 +838,7 @@ def test_complete_the_well():
             [0, 20, 1, 1.2, 2.1, 1.1, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, 1, 1],
             [20, 30, 2, 1, 5, 2.0, Content.INFLOW_CONTROL_DEVICE, 2, 0],
             [30, 40, 3, 2, 3, 3.0, Content.VALVE, 3, 2],
-            [40, 50, 3.5, 3, 4, 4.0, DensitySelector.get_selected(Content.DENSITY_DRIVEN), 4, 3],
+            [40, 50, 3.5, 3, 4, 4.0, Content.DENSITY_BASED, 4, 3],
         ],
         columns=[
             Headers.START_MEASURED_DEPTH,
@@ -890,7 +890,7 @@ def test_complete_the_well():
                 "OriginalSegment",
                 5,
                 4,
-                DensitySelector.get_selected(Content.DENSITY_DRIVEN),
+                Content.DENSITY_BASED,
                 3,
                 2.645751311,
                 4,

@@ -239,10 +239,14 @@ class _Keywords:
     WELL_SEGMENTS_LINK = "WSEGLINK"
     WELL_SEGMENTS_VALVE = "WSEGVALV"
     AUTONOMOUS_INFLOW_CONTROL_DEVICE = "WSEGAICD"
-    DUAL_RATE_CONTROLLED_PRODUCTION = ("WSEGDUALRCP", "WSEGAICV")
+    DUAL_RCP = "WSEGDUALRCP"
+    AUTONOMOUS_INFLOW_CONTROL_VALVE = "WSEGAICV"
+    DUAL_RATE_CONTROLLED = [DUAL_RCP, AUTONOMOUS_INFLOW_CONTROL_VALVE]
     INFLOW_CONTROL_VALVE = "WSEGICV"
     INFLOW_CONTROL_DEVICE = "WSEGSICD"
-    DENSITY_DRIVEN = ("WSEGDENSITY", "WSEGDAR")
+    DENSITY_DRIVEN_VALVE = "WSEGDENSITY"
+    DENSITY_ACTIVATED_RECOVERY = "WSEGDAR"
+    DENSITY_DRIVEN = [DENSITY_DRIVEN_VALVE, DENSITY_ACTIVATED_RECOVERY]
     LATERAL_TO_DEVICE = "LATERAL_TO_DEVICE"
     JOINT_LENGTH = "JOINTLENGTH"
     SEGMENT_LENGTH = "SEGMENTLENGTH"
@@ -282,17 +286,19 @@ class _Content:
 
     PERFORATED = "PERF"
     INFLOW_CONTROL_VALVE = "ICV"
-    DUAL_RATE_CONTROLLED_PRODUCTION = ("DUALRCP", "AICV")
+    DUAL_RCP = "DUAL_RCP"
+    AUTONOMOUS_INFLOW_CONTROL_VALVE = "AICV"
+    DUAL_RATE_CONTROLLED_PRODUCTION = ["DUALRCP", "AICV"]
     INFLOW_CONTROL_DEVICE = "ICD"
     AUTONOMOUS_INFLOW_CONTROL_DEVICE = "AICD"
-    DENSITY_DRIVEN = ("DENSITY", "DAR")
+    DENSITY_ACTIVATED_RECOVERY = "DAR"
+    DENSITY_BASED = "DENSITY"
+    DENSITY_DRIVEN = ["DENSITY", "DAR"]
     VALVE = "VALVE"
     DEVICE_TYPES = [
         AUTONOMOUS_INFLOW_CONTROL_DEVICE,
-        DUAL_RATE_CONTROLLED_PRODUCTION[0],
-        DUAL_RATE_CONTROLLED_PRODUCTION[1],
-        DENSITY_DRIVEN[0],
-        DENSITY_DRIVEN[1],
+        DENSITY_DRIVEN,
+        DUAL_RATE_CONTROLLED_PRODUCTION,
         INFLOW_CONTROL_DEVICE,
         VALVE,
         INFLOW_CONTROL_VALVE,
@@ -329,31 +335,3 @@ class Method(Enum):
         elif isinstance(other, str):
             return self.name == other
         return False
-
-
-class DensitySelector:
-    _selected_index = 0  # Default to the first value
-
-    @classmethod
-    def update_selection(cls, use_deprecated: bool):
-        """Update selection index (0 for normal, 1 for deprecated)."""
-        cls._selected_index = 1 if use_deprecated else 0
-
-    @classmethod
-    def get_selected(cls, values: tuple):
-        """Get the selected value from the given tuple."""
-        return values[cls._selected_index]
-
-
-class DualrcpSelector:
-    _selected_index = 0  # Default to the first value
-
-    @classmethod
-    def update_selection(cls, use_deprecated: bool):
-        """Update selection index (0 for normal, 1 for deprecated)."""
-        cls._selected_index = 1 if use_deprecated else 0
-
-    @classmethod
-    def get_selected(cls, values: tuple):
-        """Get the selected value from the given tuple."""
-        return values[cls._selected_index]

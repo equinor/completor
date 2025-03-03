@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Content, Headers, Keywords, DensitySelector, DualrcpSelector
+from completor.constants import Content, Headers, Keywords
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.logger import logger
 from completor.utils import check_width_lines
@@ -448,10 +448,10 @@ def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_
                     df_well[Headers.DEVICE_TYPE] == Content.VALVE,
                     "/ -- Valve types",
                     np.where(
-                        df_well[Headers.DEVICE_TYPE] == DensitySelector.get_selected(Content.DENSITY_DRIVEN),
+                        df_well[Headers.DEVICE_TYPE] == Content.DENSITY_DRIVEN[0],
                         "/ -- DENSITY types",
                         np.where(
-                            df_well[Headers.DEVICE_TYPE] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION),
+                            df_well[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION[0],
                             "/ -- DUALRCP types",
                             np.where(
                                 df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
@@ -1271,7 +1271,7 @@ def prepare_density_driven(well_name: str, df_well: pd.DataFrame, df_device: pd.
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == DensitySelector.get_selected(Content.DENSITY_DRIVEN)]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.DENSITY_BASED]
     wsegdensity = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegdensity[Headers.WELL] = [well_name] * df_merge.shape[0]
@@ -1326,7 +1326,7 @@ def prepare_dual_rate_controlled_production(
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.DUAL_RCP]
     wsegdualrcp = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegdualrcp[Headers.WELL] = [well_name] * df_merge.shape[0]

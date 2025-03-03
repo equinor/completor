@@ -11,7 +11,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Content, Headers, Keywords, DensitySelector, DualrcpSelector
+from completor.constants import Content, Headers, Keywords
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.logger import logger
 
@@ -191,8 +191,8 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
         perf_check = completion_table[Headers.DEVICE_TYPE].isin(
             [
                 Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
-                DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION),
-                DensitySelector.get_selected(Content.DENSITY_DRIVEN),
+                Content.DUAL_RCP,
+                Content.DENSITY_BASED,
                 Content.INFLOW_CONTROL_DEVICE,
                 Content.VALVE,
                 Content.INFLOW_CONTROL_VALVE,

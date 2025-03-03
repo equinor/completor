@@ -5,7 +5,7 @@ from matplotlib.axes import Axes  # type: ignore
 from matplotlib.figure import Figure  # type: ignore
 
 from completor import visualization
-from completor.constants import Content, Headers, DensitySelector, DualrcpSelector
+from completor.constants import Content, Headers
 
 
 def visualize_tubing(axs: Axes, df_well: pd.DataFrame) -> Axes:
@@ -46,9 +46,9 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
             axs.plot(xpar, ypar, "rs-", markevery=[1])
         elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.VALVE:
             axs.plot(xpar, ypar, "rv-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == DensitySelector.get_selected(Content.DENSITY_DRIVEN):
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.DENSITY_BASED:
             axs.plot(xpar, ypar, "rP-", markevery=[1])
-        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION):
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.DUAL_RCP:
             axs.plot(xpar, ypar, "r*-", markevery=[1])
     return axs
 

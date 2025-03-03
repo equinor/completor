@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import utils_for_tests
 
-from completor.constants import Content, DensitySelector, DualrcpSelector
+from completor.constants import Content
 from completor.exceptions.clean_exceptions import CompletorError
 
 COMPLETION = """
@@ -239,7 +239,7 @@ def test_full_wsegdensity(tmpdir, capsys):
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case(DensitySelector.get_selected(Content.DENSITY_DRIVEN), ["completion", "wsegdensity"], case_file)
+    set_case(Content.DENSITY_BASED, ["completion", "wsegdensity"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
@@ -252,7 +252,7 @@ def test_missing_wsegdensity(tmpdir):
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE DENSITY' in input files."
-    set_case(DensitySelector.get_selected(Content.DENSITY_DRIVEN), ["completion"], case_file)
+    set_case(Content.DENSITY_BASED, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
@@ -267,7 +267,7 @@ def test_full_wsegdualrcp(tmpdir, capsys):
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case(DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION), ["completion", "wsegdualrcp"], case_file)
+    set_case(Content.DUAL_RCP, ["completion", "wsegdualrcp"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
@@ -280,7 +280,7 @@ def test_missing_wsegdualrcp(tmpdir):
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE DUALRCP' in input files."
-    set_case(DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION), ["completion"], case_file)
+    set_case(Content.DUAL_RCP, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)

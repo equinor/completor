@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from completor.constants import Content, Headers, DensitySelector, DualrcpSelector
+from completor.constants import Content, Headers
 from completor.exceptions.clean_exceptions import CompletorError
 
 
@@ -256,9 +256,7 @@ def set_format_wsegdensity(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(
-        0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], DensitySelector.get_selected(Content.DENSITY_DRIVEN))
-    )
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.DENSITY_DRIVEN[0]))
     return df_temp
 
 
@@ -276,7 +274,11 @@ def set_format_wsegdualrcp(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)))
+    df_temp.insert(
+        0,
+        Headers.DEVICE_TYPE,
+        np.full(df_temp.shape[0], Content.DUAL_RATE_CONTROLLED_PRODUCTION[0]),
+    )
     return df_temp
 
 
