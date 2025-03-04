@@ -10,7 +10,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.constants import Content, Headers, Keywords, Method, WellData, DensitySelector, DualrcpSelector
+from completor.constants import Content, Headers, Keywords, Method, WellData
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.logger import logger
@@ -155,6 +155,10 @@ class ReadCasefile:
         df_temp = input_validation.check_default_non_packer(df_temp)
         # Fix the data types format
         df_temp = input_validation.set_format_completion(df_temp)
+        # Fix the Density based
+        df_temp = input_validation.set_density_based(df_temp)
+        # Fix the Dual RCP
+        df_temp = input_validation.set_dualrcp(df_temp)
         # Check overall user inputs on completion
         input_validation.assess_completion(df_temp)
         df_temp = self.read_icv_tubing(df_temp)
@@ -465,23 +469,17 @@ class ReadCasefile:
             CompletorError: If not all device in COMPLETION is specified in DENSITY_DRIVEN.
                 If DENSITY_DRIVEN keyword not defined, when DENSITY is used in the completion.
         """
-        density_index = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[0])
-        density_deprecated_index = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[1])
+        density_index_start, density_index_end = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[0])
+        dar_index_start, dar_index_end = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[1])
 
         # Determine which keyword is present
-        if density_index[0] != density_index[1]:  # If WSEGDENSITY exists
-            start_index, end_index = density_index
-            DensitySelector.update_selection(use_deprecated=False)
-        elif density_deprecated_index[0] != density_deprecated_index[1]:  # If WSEGDAR exists
-            start_index, end_index = density_deprecated_index
-            DensitySelector.update_selection(use_deprecated=True)
-        else:
-            start_index, end_index = 0, 0  # Default values when no keyword is found
-
-        if start_index == end_index:
-            if DensitySelector.get_selected(Content.DENSITY_DRIVEN) in self.completion_table[Headers.DEVICE_TYPE]:
+        if density_index_start == density_index_end and dar_index_start == dar_index_end:
+            if (
+                Content.DENSITY in self.completion_table[Headers.DEVICE_TYPE]
+                or Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]
+            ):
                 raise CompletorError(
-                    f"{DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)} keyword must be defined, if DENSITY is used in the completion"
+                    f"{Keywords.DENSITY} keyword must be defined, " "if DENSITY is used in the completion."
                 )
         else:
             # Table headers
@@ -497,18 +495,24 @@ class ReadCasefile:
                 Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
             ]
 
+            # Get start and end index from correct keyword
+            if not density_index_start == density_index_end:
+                start_index, end_index = density_index_start, density_index_end
+                choice_index = 0
+            else:
+                start_index, end_index = dar_index_start, dar_index_end
+                choice_index = 1
             # Fix table format
-            if (self.completion_table[Headers.DEVICE_TYPE].str.contains(DensitySelector.get_selected(Content.DENSITY_DRIVEN)).any()):
-                self.wsegdensity_table = input_validation.set_format_wsegdensity(
-                    self._create_dataframe_with_columns(header, start_index, end_index)
+            self.wsegdensity_table = input_validation.set_format_wsegdensity(
+                self._create_dataframe_with_columns(header, start_index, end_index)
+            )
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.DENSITY_DRIVEN[choice_index]
+            ][Headers.DEVICE_NUMBER].to_numpy()
+            if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
+                raise CompletorError(
+                    f"Not all device in COMPLETION is specified in {Content.DENSITY_DRIVEN[choice_index]}"
                 )
-                device_checks = self.completion_table[
-                    self.completion_table[Headers.DEVICE_TYPE] == DensitySelector.get_selected(Content.DENSITY_DRIVEN)
-                ][Headers.DEVICE_NUMBER].to_numpy()
-                if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
-                    raise CompletorError(
-                        f"Not all device in COMPLETION is specified in {DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)}"
-                    )
 
     def read_wsegdualrcp(self) -> None:
         """Read the DUAL_RATE_CONTROLLED_PRODUCTION keyword in the case file.
@@ -518,24 +522,21 @@ class ReadCasefile:
             CompletorError: DUAL_RATE_CONTROLLED_PRODUCTION keyword not defined when DUALRCP is used in completion.
                 If all devices in COMPLETION are not specified in DUAL_RATE_CONTROLLED_PRODUCTION.
         """
-        dualrcp_index = parse.locate_keyword(self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[0])
-        dualrcp_deprecated_index = parse.locate_keyword(self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[1])
+        dualrcp_index_start, dualrcp_index_end = parse.locate_keyword(
+            self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[0]
+        )
+        aicv_index_start, aicv_index_end = parse.locate_keyword(
+            self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[1]
+        )
 
         # Determine which keyword is present
-        if dualrcp_index[0] != dualrcp_index[1]:  # If WSEGDUALRCP exists
-            start_index, end_index = dualrcp_index
-            DualrcpSelector.update_selection(use_deprecated=False)
-        elif dualrcp_deprecated_index[0] != dualrcp_deprecated_index[1]:  # If WSEGAICV exists
-            start_index, end_index = dualrcp_deprecated_index
-            DualrcpSelector.update_selection(use_deprecated=True)
-        else:
-            start_index, end_index = 0, 0  # Default values when no keyword is found
-
-        if start_index == end_index:
-            if DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION) in self.completion_table[Headers.DEVICE_TYPE]:
+        if dualrcp_index_start == dualrcp_index_end and aicv_index_start == aicv_index_end:
+            if (
+                Content.D_RCP in self.completion_table[Headers.DEVICE_TYPE]
+                or Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]
+            ):
                 raise CompletorError(
-                    f"{DualrcpSelector.get_selected(Keywords.DUAL_RATE_CONTROLLED_PRODUCTION)} keyword must be defined, "
-                    "if DUALRCP is used in the completion."
+                    f"{Keywords.D_RCP} keyword must be defined, " "if DUALRCP is used in the completion."
                 )
         else:
             # Table headers
@@ -564,17 +565,24 @@ class ReadCasefile:
                 Headers.E_PILOT,
                 Headers.F_PILOT,
             ]
+            # Get start and end index from correct keyword
+            if not dualrcp_index_start == dualrcp_index_end:
+                start_index, end_index = dualrcp_index_start, dualrcp_index_end
+                choice_index = 0
+            else:
+                start_index, end_index = aicv_index_start, aicv_index_end
+                choice_index = 1
             # Fix table format
             self.wsegdualrcp_table = input_validation.set_format_wsegdualrcp(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
             # Check if the device in COMPLETION is exist in DUAL_RATE_CONTROLLED_PRODUCTION
             device_checks = self.completion_table[
-                self.completion_table[Headers.DEVICE_TYPE] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)
+                self.completion_table[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION[choice_index]
             ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wsegdualrcp_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(
-                    f"Not all devices in COMPLETION are specified in {DualrcpSelector.get_selected(Keywords.DUAL_RATE_CONTROLLED_PRODUCTION)}"
+                    f"Not all devices in COMPLETION are specified in {Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[choice_index]}"
                 )
 
     def read_wsegicv(self) -> None:

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from completor.constants import Content, Headers, Keywords, DensitySelector, DualrcpSelector
+from completor.constants import Content, Headers, Keywords
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.main import get_content_and_path  # type: ignore
@@ -36,14 +36,14 @@ def test_read_case_completion():
                 1,
             ],
             ["A1", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 0, Content.VALVE, 1],
-            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, DensitySelector.get_selected(Content.DENSITY_DRIVEN), 1],
+            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, Content.DENSITY, 1],
             ["A2", 1, 500, 500, 0, 0, 0, Content.PACKER, 0.0, Content.PERFORATED, 0],
             ["A2", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 0.0, Content.PERFORATED, 0],
             ["A3", 1, 0, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, 2],
             ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, Content.VALVE, 2],
-            ["11",1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, DensitySelector.get_selected(Content.DENSITY_DRIVEN), 2],
+            ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DENSITY, 2],
             ["11", 1, 500, 500, 0, 0, 0, Content.PACKER, 0, Content.PERFORATED, 0],
-            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION), 2],
+            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.D_RCP, 2],
         ],
         columns=[
             Headers.WELL,
@@ -190,8 +190,8 @@ def test_read_case_wsegdensity():
     """Test the function which reads DENSITY_DRIVEN keyword."""
     df_true = pd.DataFrame(
         [
-            [DensitySelector.get_selected(Content.DENSITY_DRIVEN), 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
-            [DensitySelector.get_selected(Content.DENSITY_DRIVEN), 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
+            [Content.DENSITY, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
+            [Content.DENSITY, 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -219,9 +219,7 @@ def test_new_density_old_parameters():
     with pytest.raises(CaseReaderFormatError) as err:
         ReadCasefile(_OLDDENSITYCASE)
 
-    expected_err = (
-        f"Too few entries in data for keyword '{DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)}', expected 9"
-    )
+    expected_err = f"Too few entries in data for keyword '{Content.DENSITY}', expected 9"
     assert expected_err in str(err.value)
 
 
@@ -230,7 +228,7 @@ def test_read_case_wsegdualrcp():
     df_true = pd.DataFrame(
         [
             [
-                DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION),
+                Content.D_RCP,
                 1,
                 0.95,
                 0.95,
@@ -256,7 +254,7 @@ def test_read_case_wsegdualrcp():
                 1.3,
             ],
             [
-                DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION),
+                Content.D_RCP,
                 2,
                 0.80,
                 0.85,

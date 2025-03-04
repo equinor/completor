@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from completor.constants import Content, Headers, DensitySelector, DualrcpSelector
+from completor.constants import Content, Headers
 from completor.exceptions.clean_exceptions import CompletorError
 
 
@@ -181,6 +181,36 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
         )
 
 
+def set_density_based(df_comp: pd.DataFrame) -> pd.DataFrame:
+    """Set the column data format.
+    Args:
+        df_comp: Completion data.
+    Returns:
+        Updated device type to all density based.
+    """
+    df_comp[Headers.DEVICE_TYPE] = np.where(
+        df_comp[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY,
+        Content.DENSITY,
+        df_comp[Headers.DEVICE_TYPE],
+    )
+    return df_comp
+
+
+def set_dualrcp(df_comp: pd.DataFrame) -> pd.DataFrame:
+    """Set the column data format.
+    Args:
+        df_comp: Completion data.
+    Returns:
+        Updated device type to all dual RCP based.
+    """
+    df_comp[Headers.DEVICE_TYPE] = np.where(
+        df_comp[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
+        Content.D_RCP,
+        df_comp[Headers.DEVICE_TYPE],
+    )
+    return df_comp
+
+
 def set_format_wsegvalv(df_temp: pd.DataFrame) -> pd.DataFrame:
     """Format the Well Segments Valve (WELSEGS) table.
 
@@ -256,9 +286,7 @@ def set_format_wsegdensity(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(
-        0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], DensitySelector.get_selected(Content.DENSITY_DRIVEN))
-    )
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.DENSITY))
     return df_temp
 
 
@@ -276,7 +304,7 @@ def set_format_wsegdualrcp(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.D_RCP))
     return df_temp
 
 

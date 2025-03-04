@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Content, Headers, Method, DensitySelector
+from completor.constants import Content, Headers, Method
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.logger import logger
 from completor.utils import shift_array
@@ -577,7 +577,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str)
         # rescale the Cv
         # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
-    elif device_type == DensitySelector.get_selected(Content.DENSITY_DRIVEN):
+    elif device_type == Content.DENSITY:
         # rescale the Cv
         # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
