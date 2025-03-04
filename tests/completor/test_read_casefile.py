@@ -267,7 +267,7 @@ def test_new_density_old_parameters():
     with pytest.raises(CaseReaderFormatError) as err:
         ReadCasefile(_OLDDENSITYCASE)
 
-    expected_err = f"Too few entries in data for keyword '{Content.DENSITY}', expected 9"
+    expected_err = f"Too few entries in data for keyword '{Keywords.DENSITY_ACTIVATED_RECOVERY}', expected 9"
     assert expected_err in str(err.value)
 
 
