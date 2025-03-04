@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import utils_for_tests
 
-from completor.constants import Content
+from completor.constants import Content, DensitySelector, DualrcpSelector
 from completor.exceptions.clean_exceptions import CompletorError
 
 COMPLETION = """
@@ -42,19 +42,19 @@ WSEGVALV
         1     0.1234 1.234e-4 5*
 /
 """
-WSEGAICV_MAIN = """
-WSEGAICV
+WSEGDUALRCP_MAIN = """
+WSEGDUALRCP
 --NUMBER WCT GVF RhoCal VisCal Alp.Main x.Main y.Main a.Main b.Main c.Main d.Main e.Main
 --f.Main Alp.Pilot x.Pilot y.Pilot a.Pilot b.Pilot c.Pilot d.Pilot e.Pilot f.Pilot /
 1 0.95 0.95 1000 0.45 0.001 0.9 1.0 1.0 1.0 1.0 1.1 1.2 1.3"""
 
-WSEGAICV_PILOT = """ 0.002 0.9 1.0 1.0 1.0 1.0 1.1 1.2 1.3
+WSEGDUALRCP_PILOT = """ 0.002 0.9 1.0 1.0 1.0 1.0 1.1 1.2 1.3
 /
 """
 
-WSEGAICV = WSEGAICV_MAIN + WSEGAICV_PILOT
-WSEGDAR = """
-WSEGDAR
+WSEGDUALRCP = WSEGDUALRCP_MAIN + WSEGDUALRCP_PILOT
+WSEGDENSITY = """
+WSEGDENSITY
 -- Number   Cv  Oil_Ac Gas_Ac Water_Ac whf_low  whf_high ghf_low  ghf_high
 1   0.1 0.4 0.3 0.2 0.6 0.70    0.8 0.9
 /
@@ -91,8 +91,8 @@ CASE_KEYWORDS = {
     "wsegaicd": WSEGAICD,
     "wsegsicd": WSEGSICD,
     "wsegvalv": WSEGVALV,
-    "wsegaicv": WSEGAICV,
-    "wsegdar": WSEGDAR,
+    "wsegdualrcp": WSEGDUALRCP,
+    "wsegdensity": WSEGDENSITY,
 }
 SCHEDULE_KEYWORDS = {"welspecs": WELSPECS, "compdat": COMPDAT, "welsegs": WELSEGS, "compsegs": COMPSEGS}
 
@@ -230,16 +230,16 @@ def test_missing_wsegvalv(tmpdir):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
-def test_full_wsegdar(tmpdir, capsys):
+def test_full_wsegdensity(tmpdir, capsys):
     """
-    Test output to screen from Completor with full DAR input.
+    Test output to screen from Completor with full DENSITY input.
 
     Make a separate test for this keyword as it requires more input
     that need to be correct.
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case(Content.DENSITY_ACTIVATED_RECOVERY, ["completion", "wsegdar"], case_file)
+    set_case(DensitySelector.get_selected(Content.DENSITY_DRIVEN), ["completion", "wsegdensity"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
@@ -247,27 +247,27 @@ def test_full_wsegdar(tmpdir, capsys):
     assert captured.out == ""
 
 
-def test_missing_wsegdar(tmpdir):
-    """Test output to screen from Completor with missing DENSITY_ACTIVATED_RECOVERY keyword."""
+def test_missing_wsegdensity(tmpdir):
+    """Test output to screen from Completor with missing DENSITY_DRIVEN keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    expected_error_message = "Missing keyword 'DEVICETYPE DAR' in input files."
-    set_case(Content.DENSITY_ACTIVATED_RECOVERY, ["completion"], case_file)
+    expected_error_message = "Missing keyword 'DEVICETYPE DENSITY' in input files."
+    set_case(DensitySelector.get_selected(Content.DENSITY_DRIVEN), ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
 
 
-def test_full_wsegaicv(tmpdir, capsys):
+def test_full_wsegdualrcp(tmpdir, capsys):
     """
-    Test output to screen from Completor with full AICV input.
+    Test output to screen from Completor with full DUALRCP input.
 
     Make a separate test for this keyword as it requires more input
     that need to be correct.
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case(Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, ["completion", "wsegaicv"], case_file)
+    set_case(DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION), ["completion", "wsegdualrcp"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
@@ -275,12 +275,12 @@ def test_full_wsegaicv(tmpdir, capsys):
     assert captured.out == ""
 
 
-def test_missing_wsegaicv(tmpdir):
-    """Test output to screen from Completor with missing AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
+def test_missing_wsegdualrcp(tmpdir):
+    """Test output to screen from Completor with missing DUAL_RATE_CONTROLLED_PRODUCTION keyword."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    expected_error_message = "Missing keyword 'DEVICETYPE AICV' in input files."
-    set_case(Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, ["completion"], case_file)
+    expected_error_message = "Missing keyword 'DEVICETYPE DUALRCP' in input files."
+    set_case(DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION), ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)

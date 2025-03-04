@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from completor.constants import Content, Headers
+from completor.constants import Content, Headers, DensitySelector, DualrcpSelector
 from completor.exceptions.clean_exceptions import CompletorError
 
 
@@ -173,7 +173,7 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
     if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in Content.DEVICE_TYPES:
         raise CompletorError(
             f"{df_comp[Headers.DEVICE_TYPE].iloc[idx]} is not a valid device type. "
-            "Valid types are PERF, AICD, ICD, VALVE, DAR, AICV, and ICV."
+            "Valid types are PERF, AICD, ICD, VALVE, DENSITY, DUALRCP, and ICV."
         )
     if df_comp[Headers.ANNULUS].iloc[idx] not in Content.ANNULUS_TYPES:
         raise CompletorError(
@@ -242,11 +242,11 @@ def set_format_wsegaicd(df_temp: pd.DataFrame) -> pd.DataFrame:
     return df_temp
 
 
-def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments Density Activated Recovery (DAR) data.
+def set_format_wsegdensity(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """Format the well segments Density Driven (DENSITY) data.
 
     Args:
-        df_temp: Well segments DAR device data.
+        df_temp: Well segments DENSITY device data.
 
     Returns:
         Updated data.
@@ -256,15 +256,17 @@ def set_format_wsegdar(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.DENSITY_ACTIVATED_RECOVERY))
+    df_temp.insert(
+        0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], DensitySelector.get_selected(Content.DENSITY_DRIVEN))
+    )
     return df_temp
 
 
-def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments Automatic Inflow Control Valve (AICV) table.
+def set_format_wsegdualrcp(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """Format the well segments Dual Density Driven (DUALRCP) table.
 
     Args:
-        df_temp: Well segments automatic inflow control valve table.
+        df_temp: Well segments dual density driven table.
 
     Returns:
         Updated data.
@@ -274,7 +276,7 @@ def set_format_wsegaicv(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.AUTONOMOUS_INFLOW_CONTROL_VALVE))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)))
     return df_temp
 
 

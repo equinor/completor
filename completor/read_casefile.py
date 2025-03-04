@@ -10,7 +10,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.constants import Content, Headers, Keywords, Method, WellData
+from completor.constants import Content, Headers, Keywords, Method, WellData, DensitySelector, DualrcpSelector
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.logger import logger
@@ -48,7 +48,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     SCHEDULE_FILE, OUT_FILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    INFLOW_CONTROL_DEVICE, DENSITY_ACTIVATED_RECOVERY, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
+    INFLOW_CONTROL_DEVICE, DENSITY_DRIVEN, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -63,8 +63,8 @@ class ReadCasefile:
         wsegsicd_table (pd.DataFrame): INFLOW_CONTROL_DEVICE.
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
-        wsegdar_table (pd.DataFrame): DENSITY_ACTIVATED_RECOVERY.
-        wsegaicv_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_VALVE.
+        wsegdensity_table (pd.DataFrame): DENSITY_DRIVEN.
+        wsegdualrcp_table (pd.DataFrame): DUAL_RATE_CONTROLLED_PRODUCTION.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
         gp_perf_devicelayer (bool): GRAVEL_PACKED_PERFORATED_DEVICELAYER. If TRUE all wells with
@@ -98,8 +98,8 @@ class ReadCasefile:
         self.wsegaicd_table = pd.DataFrame()
         self.wsegsicd_table = pd.DataFrame()
         self.wsegvalv_table = pd.DataFrame()
-        self.wsegdar_table = pd.DataFrame()
-        self.wsegaicv_table = pd.DataFrame()
+        self.wsegdensity_table = pd.DataFrame()
+        self.wsegdualrcp_table = pd.DataFrame()
         self.wsegicv_table = pd.DataFrame()
         self.lat2device = pd.DataFrame()
         self.mapfile: pd.DataFrame | str | None = None
@@ -116,8 +116,8 @@ class ReadCasefile:
         self.read_wsegaicd()
         self.read_wsegvalv()
         self.read_wsegsicd()
-        self.read_wsegdar()
-        self.read_wsegaicv()
+        self.read_wsegdensity()
+        self.read_wsegdualrcp()
         self.read_wsegicv()
         self.read_lat2device()
         self.read_minimum_segment_length()
@@ -457,19 +457,31 @@ class ReadCasefile:
                     f"Not all device in COMPLETION is specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}"
                 )
 
-    def read_wsegdar(self) -> None:
-        """Read the DENSITY_ACTIVATED_RECOVERY keyword in the case file.
+    def read_wsegdensity(self) -> None:
+        """Read the DENSITY_DRIVEN keyword in the case file.
 
         Raises:
-            ValueError: If there are invalid entries in DENSITY_ACTIVATED_RECOVERY.
-            CompletorError: If not all device in COMPLETION is specified in DENSITY_ACTIVATED_RECOVERY.
-                If DENSITY_ACTIVATED_RECOVERY keyword not defined, when DAR is used in the completion.
+            ValueError: If there are invalid entries in DENSITY_DRIVEN.
+            CompletorError: If not all device in COMPLETION is specified in DENSITY_DRIVEN.
+                If DENSITY_DRIVEN keyword not defined, when DENSITY is used in the completion.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.DENSITY_ACTIVATED_RECOVERY)
+        density_index = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[0])
+        density_deprecated_index = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[1])
+
+        # Determine which keyword is present
+        if density_index[0] != density_index[1]:  # If WSEGDENSITY exists
+            start_index, end_index = density_index
+            DensitySelector.update_selection(use_deprecated=False)
+        elif density_deprecated_index[0] != density_deprecated_index[1]:  # If WSEGDAR exists
+            start_index, end_index = density_deprecated_index
+            DensitySelector.update_selection(use_deprecated=True)
+        else:
+            start_index, end_index = 0, 0  # Default values when no keyword is found
+
         if start_index == end_index:
-            if Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]:
+            if DensitySelector.get_selected(Content.DENSITY_DRIVEN) in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError(
-                    f"{Keywords.DENSITY_ACTIVATED_RECOVERY} keyword must be defined, if DAR is used in the completion"
+                    f"{DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)} keyword must be defined, if DENSITY is used in the completion"
                 )
         else:
             # Table headers
@@ -486,41 +498,53 @@ class ReadCasefile:
             ]
 
             # Fix table format
-            if self.completion_table[Headers.DEVICE_TYPE].str.contains(Content.DENSITY_ACTIVATED_RECOVERY).any():
-                self.wsegdar_table = input_validation.set_format_wsegdar(
+            if (self.completion_table[Headers.DEVICE_TYPE].str.contains(DensitySelector.get_selected(Content.DENSITY_DRIVEN)).any()):
+                self.wsegdensity_table = input_validation.set_format_wsegdensity(
                     self._create_dataframe_with_columns(header, start_index, end_index)
                 )
                 device_checks = self.completion_table[
-                    self.completion_table[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY
+                    self.completion_table[Headers.DEVICE_TYPE] == DensitySelector.get_selected(Content.DENSITY_DRIVEN)
                 ][Headers.DEVICE_NUMBER].to_numpy()
-                if not check_contents(device_checks, self.wsegdar_table[Headers.DEVICE_NUMBER].to_numpy()):
+                if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
                     raise CompletorError(
-                        f"Not all device in COMPLETION is specified in {Keywords.DENSITY_ACTIVATED_RECOVERY}"
+                        f"Not all device in COMPLETION is specified in {DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)}"
                     )
 
-    def read_wsegaicv(self) -> None:
-        """Read the AUTONOMOUS_INFLOW_CONTROL_VALVE keyword in the case file.
+    def read_wsegdualrcp(self) -> None:
+        """Read the DUAL_RATE_CONTROLLED_PRODUCTION keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in AUTONOMOUS_INFLOW_CONTROL_VALVE.
-            CompletorError: AUTONOMOUS_INFLOW_CONTROL_VALVE keyword not defined when AICV is used in completion.
-                If all devices in COMPLETION are not specified in AUTONOMOUS_INFLOW_CONTROL_VALVE.
+            ValueError: If invalid entries in DUAL_RATE_CONTROLLED_PRODUCTION.
+            CompletorError: DUAL_RATE_CONTROLLED_PRODUCTION keyword not defined when DUALRCP is used in completion.
+                If all devices in COMPLETION are not specified in DUAL_RATE_CONTROLLED_PRODUCTION.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE)
+        dualrcp_index = parse.locate_keyword(self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[0])
+        dualrcp_deprecated_index = parse.locate_keyword(self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[1])
+
+        # Determine which keyword is present
+        if dualrcp_index[0] != dualrcp_index[1]:  # If WSEGDUALRCP exists
+            start_index, end_index = dualrcp_index
+            DualrcpSelector.update_selection(use_deprecated=False)
+        elif dualrcp_deprecated_index[0] != dualrcp_deprecated_index[1]:  # If WSEGAICV exists
+            start_index, end_index = dualrcp_deprecated_index
+            DualrcpSelector.update_selection(use_deprecated=True)
+        else:
+            start_index, end_index = 0, 0  # Default values when no keyword is found
+
         if start_index == end_index:
-            if Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
+            if DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION) in self.completion_table[Headers.DEVICE_TYPE]:
                 raise CompletorError(
-                    f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE} keyword must be defined, "
-                    "if AICV is used in the completion."
+                    f"{DualrcpSelector.get_selected(Keywords.DUAL_RATE_CONTROLLED_PRODUCTION)} keyword must be defined, "
+                    "if DUALRCP is used in the completion."
                 )
         else:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.AICV_WATER_CUT,
-                Headers.AICV_GAS_HOLDUP_FRACTION,
-                Headers.AICV_CALIBRATION_FLUID_DENSITY,
-                Headers.AICV_FLUID_VISCOSITY,
+                Headers.DUALRCP_WATER_CUT,
+                Headers.DUALRCP_GAS_HOLDUP_FRACTION,
+                Headers.DUALRCP_CALIBRATION_FLUID_DENSITY,
+                Headers.DUALRCP_FLUID_VISCOSITY,
                 Headers.ALPHA_MAIN,
                 Headers.X_MAIN,
                 Headers.Y_MAIN,
@@ -541,16 +565,16 @@ class ReadCasefile:
                 Headers.F_PILOT,
             ]
             # Fix table format
-            self.wsegaicv_table = input_validation.set_format_wsegaicv(
+            self.wsegdualrcp_table = input_validation.set_format_wsegdualrcp(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            # Check if the device in COMPLETION is exist in AUTONOMOUS_INFLOW_CONTROL_VALVE
+            # Check if the device in COMPLETION is exist in DUAL_RATE_CONTROLLED_PRODUCTION
             device_checks = self.completion_table[
-                self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE
+                self.completion_table[Headers.DEVICE_TYPE] == DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION)
             ][Headers.DEVICE_NUMBER].to_numpy()
-            if not check_contents(device_checks, self.wsegaicv_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not check_contents(device_checks, self.wsegdualrcp_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(
-                    f"Not all devices in COMPLETION are specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE}"
+                    f"Not all devices in COMPLETION are specified in {DualrcpSelector.get_selected(Keywords.DUAL_RATE_CONTROLLED_PRODUCTION)}"
                 )
 
     def read_wsegicv(self) -> None:

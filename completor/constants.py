@@ -153,7 +153,7 @@ class _Headers:
     # 11. The length of the valve, lVAL (Scale factor).
     # 12. An integer which determines how the flow scaling factor is calculated.
 
-    # Density Activated Recovery Well Segments (WSEGDAR)
+    # Density Driven Well Segments (WSEGDENSITY)
     # DEVICE_NUMBER
     # FLOW_COEFFICIENT / Cv
     # FLOW_CROSS_SECTIONAL_AREA
@@ -186,10 +186,10 @@ class _Headers:
     LATERAL = "LATERAL"
     NUMBER_OF_DEVICES = "NUMBER_OF_DEVICES"
     SEGMENT_DESC = "SEGMENT_DESC"
-    AICV_WATER_CUT = "AICV_WATER_CUT"
-    AICV_GAS_HOLDUP_FRACTION = "AICV_GAS_HOLDUP_FRACTION"
-    AICV_CALIBRATION_FLUID_DENSITY = "AICV_CALIBRATION_FLUID_DENSITY"
-    AICV_FLUID_VISCOSITY = "AICV_FLUID_VISCOSITY"
+    DUALRCP_WATER_CUT = "DUALRCP_WATER_CUT"
+    DUALRCP_GAS_HOLDUP_FRACTION = "DUALRCP_GAS_HOLDUP_FRACTION"
+    DUALRCP_CALIBRATION_FLUID_DENSITY = "DUALRCP_CALIBRATION_FLUID_DENSITY"
+    DUALRCP_FLUID_VISCOSITY = "DUALRCP_FLUID_VISCOSITY"
     AICD_CALIBRATION_FLUID_DENSITY = "AICD_CALIBRATION_FLUID_DENSITY"
     AICD_FLUID_VISCOSITY = "AICD_FLUID_VISCOSITY"
     ALPHA_MAIN = "ALPHA_MAIN"
@@ -239,10 +239,10 @@ class _Keywords:
     WELL_SEGMENTS_LINK = "WSEGLINK"
     WELL_SEGMENTS_VALVE = "WSEGVALV"
     AUTONOMOUS_INFLOW_CONTROL_DEVICE = "WSEGAICD"
-    AUTONOMOUS_INFLOW_CONTROL_VALVE = "WSEGAICV"
+    DUAL_RATE_CONTROLLED_PRODUCTION = ("WSEGDUALRCP", "WSEGAICV")
     INFLOW_CONTROL_VALVE = "WSEGICV"
     INFLOW_CONTROL_DEVICE = "WSEGSICD"
-    DENSITY_ACTIVATED_RECOVERY = "WSEGDAR"
+    DENSITY_DRIVEN = ("WSEGDENSITY", "WSEGDAR")
     LATERAL_TO_DEVICE = "LATERAL_TO_DEVICE"
     JOINT_LENGTH = "JOINTLENGTH"
     SEGMENT_LENGTH = "SEGMENTLENGTH"
@@ -282,15 +282,17 @@ class _Content:
 
     PERFORATED = "PERF"
     INFLOW_CONTROL_VALVE = "ICV"
-    AUTONOMOUS_INFLOW_CONTROL_VALVE = "AICV"
+    DUAL_RATE_CONTROLLED_PRODUCTION = ("DUALRCP", "AICV")
     INFLOW_CONTROL_DEVICE = "ICD"
     AUTONOMOUS_INFLOW_CONTROL_DEVICE = "AICD"
-    DENSITY_ACTIVATED_RECOVERY = "DAR"
+    DENSITY_DRIVEN = ("DENSITY", "DAR")
     VALVE = "VALVE"
     DEVICE_TYPES = [
         AUTONOMOUS_INFLOW_CONTROL_DEVICE,
-        AUTONOMOUS_INFLOW_CONTROL_VALVE,
-        DENSITY_ACTIVATED_RECOVERY,
+        DUAL_RATE_CONTROLLED_PRODUCTION[0],
+        DUAL_RATE_CONTROLLED_PRODUCTION[1],
+        DENSITY_DRIVEN[0],
+        DENSITY_DRIVEN[1],
         INFLOW_CONTROL_DEVICE,
         VALVE,
         INFLOW_CONTROL_VALVE,
@@ -327,3 +329,31 @@ class Method(Enum):
         elif isinstance(other, str):
             return self.name == other
         return False
+
+
+class DensitySelector:
+    _selected_index = 0  # Default to the first value
+
+    @classmethod
+    def update_selection(cls, use_deprecated: bool):
+        """Update selection index (0 for normal, 1 for deprecated)."""
+        cls._selected_index = 1 if use_deprecated else 0
+
+    @classmethod
+    def get_selected(cls, values: tuple):
+        """Get the selected value from the given tuple."""
+        return values[cls._selected_index]
+
+
+class DualrcpSelector:
+    _selected_index = 0  # Default to the first value
+
+    @classmethod
+    def update_selection(cls, use_deprecated: bool):
+        """Update selection index (0 for normal, 1 for deprecated)."""
+        cls._selected_index = 1 if use_deprecated else 0
+
+    @classmethod
+    def get_selected(cls, values: tuple):
+        """Get the selected value from the given tuple."""
+        return values[cls._selected_index]

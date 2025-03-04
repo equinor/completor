@@ -41,8 +41,8 @@ MINIMUM_SEGMENT_LENGTH
 /
 """
 
-WSEGDAR = """
-WSEGDAR
+WSEGDENSITY = """
+WSEGDENSITY
 -- Number   Cv      Oil_Ac  Gas_Ac Water_Ac whf_low  whf_high ghf_low  ghf_high
     1       0.1     0.4     0.3     0.2     0.6         0.70    0.8     0.9
 /
@@ -63,17 +63,17 @@ WSEGAICD
 /
 """
 
-WSEGAICV_MAIN = """
-WSEGAICV
+WSEGDUALRCP_MAIN = """
+WSEGDUALRCP
 --NUMBER WCT GVF RhoCal VisCal Alp.Main x.Main y.Main a.Main b.Main c.Main d.Main e.Main
 --f.Main Alp.Pilot x.Pilot y.Pilot a.Pilot b.Pilot c.Pilot d.Pilot e.Pilot f.Pilot /
 1 0.95 0.95 1000 0.45 0.001 0.9 1.0 1.0 1.0 1.0 1.1 1.2 1.3"""
 
-WSEGAICV_PILOT = """ 0.002 0.9 1.0 1.0 1.0 1.0 1.1 1.2 1.3
+WSEGDUALRCP_PILOT = """ 0.002 0.9 1.0 1.0 1.0 1.0 1.1 1.2 1.3
 /
 """
 
-WSEGAICV = WSEGAICV_MAIN + WSEGAICV_PILOT
+WSEGDUALRCP = WSEGDUALRCP_MAIN + WSEGDUALRCP_PILOT
 
 WSEGVALV = """
 WSEGVALV
@@ -287,9 +287,9 @@ def test_inc(tmpdir):
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
-def test_dar(tmpdir):
+def test_density(tmpdir):
     """
-    Test completor case with DAR.
+    Test completor case with DENSITY.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -297,19 +297,19 @@ COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
 --     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
-   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    DAR      1
+   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    DENSITY      1
 /
 {WSEGAICD}
-{WSEGDAR}
+{WSEGDENSITY}
     """
-    true_file = Path(_TESTDIR / "wb_dar.true")
+    true_file = Path(_TESTDIR / "wb_density.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
-def test_aicv(tmpdir):
+def test_dualrcp(tmpdir):
     """
-    Test completor case with AICV.
+    Test completor case with DUALRCP.
 
     1. 1 passive well & 1 active well
     2. Single lateral well
@@ -320,20 +320,20 @@ COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
 --     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
-   A1    1     0   3000   0.2     0.25    1.00E-4     GP     1     AICV    1
+   A1    1     0   3000   0.2     0.25    1.00E-4     GP     1     DUALRCP    1
 /
 {WSEGAICD}
-{WSEGDAR}
-{WSEGAICV}
+{WSEGDENSITY}
+{WSEGDUALRCP}
     """
-    true_file = Path(_TESTDIR / "wb_aicv.true")
+    true_file = Path(_TESTDIR / "wb_dualrcp.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
-def test_daraicv(tmpdir):
+def test_densitydualrcp(tmpdir):
     """
-    Test completor case with DAR AICV.
+    Test completor case with DENSITY DUALRCP.
 
     1. 1 passive well & 1 active well
     2. Single lateral well
@@ -344,15 +344,15 @@ COMPLETION
 --Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
 --     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
 --                      Diameter Diameter
-   A1    1       0 2024   0.2     0.25    1.00E-4     OA     1     DAR      1
+   A1    1       0 2024   0.2     0.25    1.00E-4     OA     1     DENSITY      1
    A1    1    2024 2024   0.2     0.25    1.00E-4     PA     1     AICD     1
-   A1    1    2024 3000   0.2     0.25    1.00E-4     OA     1     AICV     1
+   A1    1    2024 3000   0.2     0.25    1.00E-4     OA     1     DUALRCP     1
 /
 {WSEGAICD}
-{WSEGDAR}
-{WSEGAICV}
+{WSEGDENSITY}
+{WSEGDUALRCP}
     """
-    true_file = Path(_TESTDIR / "wb_daraicv.true")
+    true_file = Path(_TESTDIR / "wb_densitydualrcp.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 

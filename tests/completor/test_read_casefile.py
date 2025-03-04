@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from completor.constants import Content, Headers, Keywords
+from completor.constants import Content, Headers, Keywords, DensitySelector, DualrcpSelector
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.main import get_content_and_path  # type: ignore
@@ -36,14 +36,14 @@ def test_read_case_completion():
                 1,
             ],
             ["A1", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 0, Content.VALVE, 1],
-            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, Content.DENSITY_ACTIVATED_RECOVERY, 1],
+            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, DensitySelector.get_selected(Content.DENSITY_DRIVEN), 1],
             ["A2", 1, 500, 500, 0, 0, 0, Content.PACKER, 0.0, Content.PERFORATED, 0],
             ["A2", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 0.0, Content.PERFORATED, 0],
             ["A3", 1, 0, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, 2],
             ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, Content.VALVE, 2],
-            ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DENSITY_ACTIVATED_RECOVERY, 2],
+            ["11",1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, DensitySelector.get_selected(Content.DENSITY_DRIVEN), 2],
             ["11", 1, 500, 500, 0, 0, 0, Content.PACKER, 0, Content.PERFORATED, 0],
-            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_VALVE, 2],
+            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION), 2],
         ],
         columns=[
             Headers.WELL,
@@ -186,12 +186,12 @@ def test_read_case_wsegsicd():
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegsicd_table)
 
 
-def test_read_case_wsegdar():
-    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
+def test_read_case_wsegdensity():
+    """Test the function which reads DENSITY_DRIVEN keyword."""
     df_true = pd.DataFrame(
         [
-            [Content.DENSITY_ACTIVATED_RECOVERY, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
-            [Content.DENSITY_ACTIVATED_RECOVERY, 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
+            [DensitySelector.get_selected(Content.DENSITY_DRIVEN), 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
+            [DensitySelector.get_selected(Content.DENSITY_DRIVEN), 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
         ],
         columns=[
             Headers.DEVICE_TYPE,
@@ -208,27 +208,29 @@ def test_read_case_wsegdar():
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
-    pd.testing.assert_frame_equal(df_true, _THECASE.wsegdar_table)
+    pd.testing.assert_frame_equal(df_true, _THECASE.wsegdensity_table)
 
 
-def test_new_dar_old_parameters():
-    """Test the function which reads DENSITY_ACTIVATED_RECOVERY keyword."""
-    with open(Path(_TESTDIR / "dar.testfile"), encoding="utf-8") as old_dar_case:
-        _OLDDARCASE = old_dar_case.read()
+def test_new_density_old_parameters():
+    """Test the function which reads DENSITY_DRIVEN keyword."""
+    with open(Path(_TESTDIR / "density.testfile"), encoding="utf-8") as old_density_case:
+        _OLDDENSITYCASE = old_density_case.read()
 
     with pytest.raises(CaseReaderFormatError) as err:
-        ReadCasefile(_OLDDARCASE)
+        ReadCasefile(_OLDDENSITYCASE)
 
-    expected_err = f"Too few entries in data for keyword '{Keywords.DENSITY_ACTIVATED_RECOVERY}', expected 9"
+    expected_err = (
+        f"Too few entries in data for keyword '{DensitySelector.get_selected(Keywords.DENSITY_DRIVEN)}', expected 9"
+    )
     assert expected_err in str(err.value)
 
 
-def test_read_case_wsegaicv():
-    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_VALVE keyword."""
+def test_read_case_wsegdualrcp():
+    """Test the function which reads DUAL_RATE_CONTROLLED_PRODUCTION keyword."""
     df_true = pd.DataFrame(
         [
             [
-                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
+                DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION),
                 1,
                 0.95,
                 0.95,
@@ -254,7 +256,7 @@ def test_read_case_wsegaicv():
                 1.3,
             ],
             [
-                Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
+                DualrcpSelector.get_selected(Content.DUAL_RATE_CONTROLLED_PRODUCTION),
                 2,
                 0.80,
                 0.85,
@@ -283,10 +285,10 @@ def test_read_case_wsegaicv():
         columns=[
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
-            Headers.AICV_WATER_CUT,
-            Headers.AICV_GAS_HOLDUP_FRACTION,
-            Headers.AICV_CALIBRATION_FLUID_DENSITY,
-            Headers.AICV_FLUID_VISCOSITY,
+            Headers.DUALRCP_WATER_CUT,
+            Headers.DUALRCP_GAS_HOLDUP_FRACTION,
+            Headers.DUALRCP_CALIBRATION_FLUID_DENSITY,
+            Headers.DUALRCP_FLUID_VISCOSITY,
             Headers.ALPHA_MAIN,
             Headers.X_MAIN,
             Headers.Y_MAIN,
@@ -308,7 +310,7 @@ def test_read_case_wsegaicv():
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
-    pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicv_table)
+    pd.testing.assert_frame_equal(df_true, _THECASE.wsegdualrcp_table)
 
 
 def test_error_missing_column_completion():
