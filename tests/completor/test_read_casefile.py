@@ -17,6 +17,9 @@ _TESTDIR = Path(__file__).absolute().parent / "data"
 with open(Path(_TESTDIR / "case.testfile"), encoding="utf-8") as case_file:
     _THECASE = ReadCasefile(case_file.read())
 
+with open(Path(_TESTDIR / "case_old.testfile"), encoding="utf-8") as case_old_file:
+    _THECASE_OLD = ReadCasefile(case_old_file.read())
+
 
 def test_read_case_completion():
     """Test the function which reads the COMPLETION keyword."""
@@ -61,6 +64,51 @@ def test_read_case_completion():
     )
 
     pd.testing.assert_frame_equal(df_true, _THECASE.completion_table, check_exact=False, rtol=0.0001)
+
+
+def test_read_case_completion_old():
+    """Test the function which reads the COMPLETION keyword."""
+    df_true = pd.DataFrame(
+        [
+            [
+                "A1",
+                1,
+                0.0,
+                1000.0,
+                0.1,
+                0.2,
+                1e-4,
+                Content.OPEN_ANNULUS,
+                3,
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+            ],
+            ["A1", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 0, Content.VALVE, 1],
+            ["A2", 1, 0, 500, 0.1, 0.2, 1e-5, Content.OPEN_ANNULUS, 3, Content.DENSITY, 1],
+            ["A2", 1, 500, 500, 0, 0, 0, Content.PACKER, 0.0, Content.PERFORATED, 0],
+            ["A2", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 0.0, Content.PERFORATED, 0],
+            ["A3", 1, 0, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE, 2],
+            ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, Content.VALVE, 2],
+            ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DENSITY, 2],
+            ["11", 1, 500, 500, 0, 0, 0, Content.PACKER, 0, Content.PERFORATED, 0],
+            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.D_RCP, 2],
+        ],
+        columns=[
+            Headers.WELL,
+            Headers.BRANCH,
+            Headers.START_MEASURED_DEPTH,
+            Headers.END_MEASURED_DEPTH,
+            Headers.INNER_DIAMETER,
+            Headers.OUTER_DIAMETER,
+            Headers.ROUGHNESS,
+            Headers.ANNULUS,
+            Headers.VALVES_PER_JOINT,
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+        ],
+    )
+
+    pd.testing.assert_frame_equal(df_true, _THECASE_OLD.completion_table, check_exact=False, rtol=0.0001)
 
 
 def test_read_case_joint_length():
@@ -523,3 +571,116 @@ def test_read_case_completion_icv_tubing():
         ],
     )
     pd.testing.assert_frame_equal(df_true, case.completion_icv_tubing, check_exact=False)
+
+
+def test_read_case_old_density():
+    """Test the function which reads old Density driven keyword."""
+    df_true = pd.DataFrame(
+        [
+            [Content.DENSITY, 1, 0.1, 0.4, 0.3, 0.2, 0.6, 0.70, 0.8, 0.9],
+            [Content.DENSITY, 2, 0.1, 0.4, 0.3, 0.2, 0.5, 0.60, 0.7, 0.8],
+        ],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.OIL_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.GAS_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF,
+            Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
+        ],
+    )
+    df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
+    df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
+    pd.testing.assert_frame_equal(df_true, _THECASE_OLD.wsegdensity_table)
+
+
+def test_read_case_old_dualrcp():
+    """Test the function which reads DUAL_RATE_CONTROLLED_PRODUCTION keyword."""
+    df_true = pd.DataFrame(
+        [
+            [
+                Content.D_RCP,
+                1,
+                0.95,
+                0.95,
+                1000.0,
+                0.45,
+                0.001,
+                0.9,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.1,
+                1.2,
+                1.3,
+                0.002,
+                0.9,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.1,
+                1.2,
+                1.3,
+            ],
+            [
+                Content.D_RCP,
+                2,
+                0.80,
+                0.85,
+                1001.0,
+                0.55,
+                0.005,
+                0.1,
+                1.1,
+                1.0,
+                1.0,
+                1.0,
+                1.4,
+                1.5,
+                1.6,
+                0.022,
+                0.1,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                2.1,
+                2.2,
+                2.3,
+            ],
+        ],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.DUALRCP_WATER_CUT,
+            Headers.DUALRCP_GAS_HOLDUP_FRACTION,
+            Headers.DUALRCP_CALIBRATION_FLUID_DENSITY,
+            Headers.DUALRCP_FLUID_VISCOSITY,
+            Headers.ALPHA_MAIN,
+            Headers.X_MAIN,
+            Headers.Y_MAIN,
+            Headers.A_MAIN,
+            Headers.B_MAIN,
+            Headers.C_MAIN,
+            Headers.D_MAIN,
+            Headers.E_MAIN,
+            Headers.F_MAIN,
+            Headers.ALPHA_PILOT,
+            Headers.X_PILOT,
+            Headers.Y_PILOT,
+            Headers.A_PILOT,
+            Headers.B_PILOT,
+            Headers.C_PILOT,
+            Headers.D_PILOT,
+            Headers.E_PILOT,
+            Headers.F_PILOT,
+        ],
+    )
+    df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
+    pd.testing.assert_frame_equal(df_true, _THECASE_OLD.wsegdualrcp_table)

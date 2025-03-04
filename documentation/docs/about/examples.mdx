@@ -84,7 +84,7 @@ WSEGSICD
 
 ## Completion with nozzle ICDs
 Example the use of Completor to set up a nozzle ICD. The use of nozzle ICD will produce a keyword of `WSEGVALV`.
-This keyword is widely used on other types of devices in Completor for example `ICV` and `DENSITY`.
+This keyword is widely used on other types of devices in Completor for example `ICV` and `DAR`.
 ```
 COMPLETION
 --Well  Branch  StartMD  EndMD  Screen    Well/   Roughness  Annulus  Nvalve  ValveType  DeviceNumber
@@ -103,8 +103,8 @@ WSEGVALV
 /
 ```
 
-## Completion with DENSITY
-An example with DENSITY (Density Driven).
+## Completion with DAR
+An example with DAR (Density Activated Recovery).
 This keyword will generate sets of `WSEGVALV`,
 `ACTIONX`, and `UDQ`.
 
@@ -113,11 +113,11 @@ COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing    Casing                    Content
 --                                  Diameter   Diameter
-OP1     1        0        10000     0.15364    0.1905    1.524E-005      GP          1                DENSITY         1
-OP1     2        0        10000     0.15364    0.1905    1.524E-005      GP          1                DENSITY         2
+OP1     1        0        10000     0.15364    0.1905    1.524E-005      GP          1                DAR         1
+OP1     2        0        10000     0.15364    0.1905    1.524E-005      GP          1                DAR         2
 /
 
-WSEGDENSITY
+WSEGDAR
 -- NB: Dummy parameters.
 -- Number    Cv      Oil_Ac      Gas_Ac       Water_Ac     wvf_low  wvf_high     gvf_low   gvf_high
 1            1.0     7.5e-4      1.56e-4      1.53e-4      0.75     0.80         0.70      0.90
@@ -125,19 +125,19 @@ WSEGDENSITY
 /
 ```
 
-## Completion with DUALRCP
-This keyword `WSEGDUALRCP` will act like `WSEGAICD` keyword and acting dependent on the working criteria using `ACTIONX`.
+## Completion with AICV
+This keyword `WSEGAICV` will act like `WSEGAICD` keyword and acting dependent on the working criteria using `ACTIONX`.
 
 ```
 COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/     Roughness       Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing     Casing                    Content
 --                                  Diameter   Diameter
-OP1     1        0        10000     0.15364    0.1905     1.524E-005      GP          1                DUALRCP         1
-OP1     2        0        10000     0.15364    0.1905     1.524E-005      GP          1                DUALRCP         1
+OP1     1        0        10000     0.15364    0.1905     1.524E-005      GP          1                AICV         1
+OP1     2        0        10000     0.15364    0.1905     1.524E-005      GP          1                AICV         1
 /
 
-WSEGDUALRCP
+WSEGAICV
 -- NB: Dummy parameters.
 --NUMBER WCT  GVF   RhoCal  VisCal  Alp.Main  x.Main  y.Main  aMain  b.Main  c.Main  d.Main  e.Main  f.Main  Alp.Pilot  x.Pilot  yPilot  a.Pilot  b.Pilot  c.Pilot  d.Pilot  e.Pilot  f.Pilot
 1        0.95 0.95  1000    1       7.677e-5  2.99    1.543  1       1       1       0.39    0.64    1       4.98e-5    3.37    1.492    1        1        1        1.8      0.11     1.0
