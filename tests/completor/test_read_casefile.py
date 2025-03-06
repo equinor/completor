@@ -259,7 +259,7 @@ def test_read_case_wsegdensity():
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegdensity_table)
 
 
-def test_new_density_old_parameters():
+def test_dar_with_old_parameters():
     """Test the function which reads DENSITY_DRIVEN keyword."""
     with open(Path(_TESTDIR / "density.testfile"), encoding="utf-8") as old_density_case:
         _OLDDENSITYCASE = old_density_case.read()
