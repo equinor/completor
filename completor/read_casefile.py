@@ -47,8 +47,8 @@ class ReadCasefile:
 
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
-    SCHEDULE_FILE, OUT_FILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    INFLOW_CONTROL_DEVICE, DENSITY_DRIVEN, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
+    COMPLETION, SEGMENTLENGTH, JOINTLENGTH, AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
+    INFLOW_CONTROL_DEVICE, DENSITY_DRIVEN, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -462,12 +462,12 @@ class ReadCasefile:
                 )
 
     def read_wsegdensity(self) -> None:
-        """Read the DENSITY_DRIVEN keyword in the case file.
+        """Read the DENSITY keyword in the case file.
 
         Raises:
-            ValueError: If there are invalid entries in DENSITY_DRIVEN.
-            CompletorError: If not all device in COMPLETION is specified in DENSITY_DRIVEN.
-                If DENSITY_DRIVEN keyword not defined, when DENSITY is used in the completion.
+            ValueError: If there are invalid entries in DENSITY.
+            CompletorError: If not all device in COMPLETION is specified in DENSITY.
+                If DENSITY keyword not defined, when DENSITY is used in the completion.
         """
         density_index_start, density_index_end = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[0])
         dar_index_start, dar_index_end = parse.locate_keyword(self.content, Keywords.DENSITY_DRIVEN[1])
@@ -515,12 +515,12 @@ class ReadCasefile:
                 )
 
     def read_wsegdualrcp(self) -> None:
-        """Read the DUAL_RATE_CONTROLLED_PRODUCTION keyword in the case file.
+        """Read the DUALRCP keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in DUAL_RATE_CONTROLLED_PRODUCTION.
-            CompletorError: DUAL_RATE_CONTROLLED_PRODUCTION keyword not defined when DUALRCP is used in completion.
-                If all devices in COMPLETION are not specified in DUAL_RATE_CONTROLLED_PRODUCTION.
+            ValueError: If invalid entries in DUALRCP.
+            CompletorError: DUALRCP keyword not defined when DUALRCP is used in completion.
+                If all devices in COMPLETION are not specified in DUALRCP.
         """
         dualrcp_index_start, dualrcp_index_end = parse.locate_keyword(
             self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION[0]
@@ -576,7 +576,7 @@ class ReadCasefile:
             self.wsegdualrcp_table = input_validation.set_format_wsegdualrcp(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            # Check if the device in COMPLETION is exist in DUAL_RATE_CONTROLLED_PRODUCTION
+            # Check if the device in COMPLETION is exist in DUALRCP
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION[choice_index]
             ][Headers.DEVICE_NUMBER].to_numpy()
