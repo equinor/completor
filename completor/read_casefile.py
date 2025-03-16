@@ -479,7 +479,7 @@ class ReadCasefile:
                 or Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]
             ):
                 raise CompletorError(
-                    f"{Keywords.DENSITY} keyword must be defined, " "if DENSITY is used in the completion."
+                    f"{Keywords.DENSITY} keyword must be defined, if DENSITY is used in the completion."
                 )
         else:
             # Table headers
