@@ -96,9 +96,9 @@ COMPLETION keyword is mandatory and contains the following items:
 9. **Number of valves per joint**: Any floating point number.
    Set to 0 in intervals with blanks.
 10. **Valve type**: Permitted entries: PERF (standard perforation no inflow control valves),
-   ICD, VALVE, AICD, DAR, AICV, or ICV.
+   ICD, VALVE, AICD, DENSITY, DUALRCP, or ICV.
 11. **Device number**: The device reference number specified in the Completor® configuration file keywords `WSEGVALV`,
-   `WSEGSICD`, `WSEGAICD`, `WSEGDAR`, `WSEGAICV`, or `WSEGICV`.
+   `WSEGSICD`, `WSEGAICD`, `WSEGDENSITY`, `WSEGDUALRCP`, or `WSEGICV`.
    End the record with `/`.
 
 ```
@@ -326,7 +326,7 @@ End the record with /.
 The items are as follows:
 
 1.  Device number: From 1, 2, .., n etc.
-2.  Cv: Item 3 in WSEGVALV keyword. Always set to 1.0 with DAR.
+2.  Cv: Item 3 in WSEGVALV keyword. Always set to 1.0 for density driven type.
 3.  Cross-sectional flow area of the oil nozzle: Ac_o.
 4.  Cross sectional flow area of the gas nozzle: Ac_g.
 5.  Cross-sectional flow area of the water nozzle: Ac_w.
