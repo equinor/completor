@@ -451,7 +451,7 @@ def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_
                         df_well[Headers.DEVICE_TYPE] == Content.DENSITY,
                         "/ -- DENSITY types",
                         np.where(
-                            df_well[Headers.DEVICE_TYPE] == Content.D_RCP,
+                            df_well[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                             "/ -- DUALRCP types",
                             np.where(
                                 df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
@@ -1326,7 +1326,7 @@ def prepare_dual_rate_controlled_production(
         right_on=[Headers.TUBING_MEASURED_DEPTH],
         direction="nearest",
     )
-    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.D_RCP]
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION]
     wsegdualrcp = pd.DataFrame()
     if df_merge.shape[0] > 0:
         wsegdualrcp[Headers.WELL] = [well_name] * df_merge.shape[0]

@@ -46,7 +46,7 @@ def test_read_case_completion():
             ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, Content.VALVE, 2],
             ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DENSITY, 2],
             ["11", 1, 500, 500, 0, 0, 0, Content.PACKER, 0, Content.PERFORATED, 0],
-            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.D_RCP, 2],
+            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DUAL_RATE_CONTROLLED_PRODUCTION, 2],
         ],
         columns=[
             Headers.WELL,
@@ -91,7 +91,7 @@ def test_read_case_completion_old():
             ["A3", 2, 500, 1000, 0.1, 0.2, 1e-4, "GP", 1, Content.VALVE, 2],
             ["11", 1, 0, 500, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DENSITY, 2],
             ["11", 1, 500, 500, 0, 0, 0, Content.PACKER, 0, Content.PERFORATED, 0],
-            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.D_RCP, 2],
+            ["11", 1, 500, 1000, 0.1, 0.2, 1e-4, Content.OPEN_ANNULUS, 3, Content.DUAL_RATE_CONTROLLED_PRODUCTION, 2],
         ],
         columns=[
             Headers.WELL,
@@ -276,7 +276,7 @@ def test_read_case_wsegdualrcp():
     df_true = pd.DataFrame(
         [
             [
-                Content.D_RCP,
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 1,
                 0.95,
                 0.95,
@@ -302,7 +302,7 @@ def test_read_case_wsegdualrcp():
                 1.3,
             ],
             [
-                Content.D_RCP,
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 2,
                 0.80,
                 0.85,
@@ -603,7 +603,7 @@ def test_read_case_old_dualrcp():
     df_true = pd.DataFrame(
         [
             [
-                Content.D_RCP,
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 1,
                 0.95,
                 0.95,
@@ -629,7 +629,7 @@ def test_read_case_old_dualrcp():
                 1.3,
             ],
             [
-                Content.D_RCP,
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 2,
                 0.80,
                 0.85,

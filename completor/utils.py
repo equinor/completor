@@ -191,7 +191,7 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
         perf_check = completion_table[Headers.DEVICE_TYPE].isin(
             [
                 Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
-                Content.D_RCP,
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 Content.DENSITY,
                 Content.INFLOW_CONTROL_DEVICE,
                 Content.VALVE,

@@ -267,7 +267,7 @@ def test_full_wsegdualrcp(tmpdir, capsys):
     """
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    set_case(Content.D_RCP, ["completion", "wsegdualrcp"], case_file)
+    set_case(Content.DUAL_RATE_CONTROLLED_PRODUCTION, ["completion", "wsegdualrcp"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
@@ -280,7 +280,7 @@ def test_missing_wsegdualrcp(tmpdir):
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE DUALRCP' in input files."
-    set_case(Content.D_RCP, ["completion"], case_file)
+    set_case(Content.DUAL_RATE_CONTROLLED_PRODUCTION, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)

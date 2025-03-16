@@ -205,7 +205,7 @@ def set_dualrcp(df_comp: pd.DataFrame) -> pd.DataFrame:
     """
     df_comp[Headers.DEVICE_TYPE] = np.where(
         df_comp[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE,
-        Content.D_RCP,
+        Content.DUAL_RATE_CONTROLLED_PRODUCTION,
         df_comp[Headers.DEVICE_TYPE],
     )
     return df_comp
@@ -291,10 +291,10 @@ def set_format_wsegdensity(df_temp: pd.DataFrame) -> pd.DataFrame:
 
 
 def set_format_wsegdualrcp(df_temp: pd.DataFrame) -> pd.DataFrame:
-    """Format the well segments Dual Density Driven (DUALRCP) table.
+    """Format the well segments Dual RCP (DUALRCP) table.
 
     Args:
-        df_temp: Well segments dual density driven table.
+        df_temp: Well segments dual RCP table.
 
     Returns:
         Updated data.
@@ -304,7 +304,7 @@ def set_format_wsegdualrcp(df_temp: pd.DataFrame) -> pd.DataFrame:
     columns = df_temp.columns.to_numpy()[1:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
-    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.D_RCP))
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.DUAL_RATE_CONTROLLED_PRODUCTION))
     return df_temp
 
 
