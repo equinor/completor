@@ -47,8 +47,8 @@ class ReadCasefile:
 
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
-    SCHEDULE_FILE, OUT_FILE, COMPLETION, SEGMENTLENGTH, JOINTLENGTH AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    INFLOW_CONTROL_DEVICE, DENSITY_ACTIVATED_RECOVERY, AUTONOMOUS_INFLOW_CONTROL_VALVE, INFLOW_CONTROL_VALVE, PVTFILE, PVTTABLE.
+    COMPLETION, SEGMENTLENGTH, JOINTLENGTH, AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
+    INFLOW_CONTROL_DEVICE, DENSITY_DRIVEN, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -63,8 +63,8 @@ class ReadCasefile:
         wsegsicd_table (pd.DataFrame): INFLOW_CONTROL_DEVICE.
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
-        wsegdar_table (pd.DataFrame): DENSITY_ACTIVATED_RECOVERY.
-        wsegaicv_table (pd.DataFrame): AUTONOMOUS_INFLOW_CONTROL_VALVE.
+        wsegdensity_table (pd.DataFrame): DENSITY_DRIVEN.
+        wsegdualrcp_table (pd.DataFrame): DUAL_RATE_CONTROLLED_PRODUCTION.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
         gp_perf_devicelayer (bool): GRAVEL_PACKED_PERFORATED_DEVICELAYER. If TRUE all wells with
@@ -98,8 +98,8 @@ class ReadCasefile:
         self.wsegaicd_table = pd.DataFrame()
         self.wsegsicd_table = pd.DataFrame()
         self.wsegvalv_table = pd.DataFrame()
-        self.wsegdar_table = pd.DataFrame()
-        self.wsegaicv_table = pd.DataFrame()
+        self.wsegdensity_table = pd.DataFrame()
+        self.wsegdualrcp_table = pd.DataFrame()
         self.wsegicv_table = pd.DataFrame()
         self.lat2device = pd.DataFrame()
         self.mapfile: pd.DataFrame | str | None = None
@@ -116,8 +116,8 @@ class ReadCasefile:
         self.read_wsegaicd()
         self.read_wsegvalv()
         self.read_wsegsicd()
-        self.read_wsegdar()
-        self.read_wsegaicv()
+        self.read_wsegdensity()
+        self.read_wsegdualrcp()
         self.read_wsegicv()
         self.read_lat2device()
         self.read_minimum_segment_length()
@@ -155,6 +155,10 @@ class ReadCasefile:
         df_temp = input_validation.check_default_non_packer(df_temp)
         # Fix the data types format
         df_temp = input_validation.set_format_completion(df_temp)
+        # Fix the Density based
+        df_temp = input_validation.set_density_based(df_temp)
+        # Fix the Dual RCP
+        df_temp = input_validation.set_dualrcp(df_temp)
         # Check overall user inputs on completion
         input_validation.assess_completion(df_temp)
         df_temp = self.read_icv_tubing(df_temp)
@@ -457,19 +461,25 @@ class ReadCasefile:
                     f"Not all device in COMPLETION is specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}"
                 )
 
-    def read_wsegdar(self) -> None:
-        """Read the DENSITY_ACTIVATED_RECOVERY keyword in the case file.
+    def read_wsegdensity(self) -> None:
+        """Read the DENSITY keyword in the case file.
 
         Raises:
-            ValueError: If there are invalid entries in DENSITY_ACTIVATED_RECOVERY.
-            CompletorError: If not all device in COMPLETION is specified in DENSITY_ACTIVATED_RECOVERY.
-                If DENSITY_ACTIVATED_RECOVERY keyword not defined, when DAR is used in the completion.
+            ValueError: If there are invalid entries in DENSITY.
+            CompletorError: If not all device in COMPLETION is specified in DENSITY.
+                If DENSITY keyword not defined, when DENSITY is used in the completion.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.DENSITY_ACTIVATED_RECOVERY)
-        if start_index == end_index:
-            if Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]:
+        density_index_start, density_index_end = parse.locate_keyword(self.content, Keywords.DENSITY)
+        dar_index_start, dar_index_end = parse.locate_keyword(self.content, Keywords.DENSITY_ACTIVATED_RECOVERY)
+
+        # Determine which keyword is present
+        if density_index_start == density_index_end and dar_index_start == dar_index_end:
+            if (
+                Content.DENSITY in self.completion_table[Headers.DEVICE_TYPE]
+                or Content.DENSITY_ACTIVATED_RECOVERY in self.completion_table[Headers.DEVICE_TYPE]
+            ):
                 raise CompletorError(
-                    f"{Keywords.DENSITY_ACTIVATED_RECOVERY} keyword must be defined, if DAR is used in the completion"
+                    f"{Keywords.DENSITY} keyword must be defined, if DENSITY is used in the completion."
                 )
         else:
             # Table headers
@@ -485,42 +495,56 @@ class ReadCasefile:
                 Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF,
             ]
 
+            # Get start and end index from correct keyword
+            if not density_index_start == density_index_end:
+                start_index, end_index = density_index_start, density_index_end
+                key = Keywords.DENSITY
+                content = Content.DENSITY
+            else:
+                start_index, end_index = dar_index_start, dar_index_end
+                key = Keywords.DENSITY_ACTIVATED_RECOVERY
+                content = Content.DENSITY_ACTIVATED_RECOVERY
             # Fix table format
-            if self.completion_table[Headers.DEVICE_TYPE].str.contains(Content.DENSITY_ACTIVATED_RECOVERY).any():
-                self.wsegdar_table = input_validation.set_format_wsegdar(
-                    self._create_dataframe_with_columns(header, start_index, end_index)
-                )
-                device_checks = self.completion_table[
-                    self.completion_table[Headers.DEVICE_TYPE] == Content.DENSITY_ACTIVATED_RECOVERY
-                ][Headers.DEVICE_NUMBER].to_numpy()
-                if not check_contents(device_checks, self.wsegdar_table[Headers.DEVICE_NUMBER].to_numpy()):
-                    raise CompletorError(
-                        f"Not all device in COMPLETION is specified in {Keywords.DENSITY_ACTIVATED_RECOVERY}"
-                    )
+            self.wsegdensity_table = input_validation.set_format_wsegdensity(
+                self._create_dataframe_with_columns(header, start_index, end_index)
+            )
+            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == content][
+                Headers.DEVICE_NUMBER
+            ].to_numpy()
+            if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
+                raise CompletorError(f"Not all device in COMPLETION is specified in {key}")
 
-    def read_wsegaicv(self) -> None:
-        """Read the AUTONOMOUS_INFLOW_CONTROL_VALVE keyword in the case file.
+    def read_wsegdualrcp(self) -> None:
+        """Read the DUALRCP keyword in the case file.
 
         Raises:
-            ValueError: If invalid entries in AUTONOMOUS_INFLOW_CONTROL_VALVE.
-            CompletorError: AUTONOMOUS_INFLOW_CONTROL_VALVE keyword not defined when AICV is used in completion.
-                If all devices in COMPLETION are not specified in AUTONOMOUS_INFLOW_CONTROL_VALVE.
+            ValueError: If invalid entries in DUALRCP.
+            CompletorError: DUALRCP keyword not defined when DUALRCP is used in completion.
+                If all devices in COMPLETION are not specified in DUALRCP.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE)
-        if start_index == end_index:
-            if Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
+        dualrcp_index_start, dualrcp_index_end = parse.locate_keyword(
+            self.content, Keywords.DUAL_RATE_CONTROLLED_PRODUCTION
+        )
+        aicv_index_start, aicv_index_end = parse.locate_keyword(self.content, Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE)
+
+        # Determine which keyword is present
+        if dualrcp_index_start == dualrcp_index_end and aicv_index_start == aicv_index_end:
+            if (
+                Content.DUAL_RATE_CONTROLLED_PRODUCTION in self.completion_table[Headers.DEVICE_TYPE]
+                or Content.AUTONOMOUS_INFLOW_CONTROL_VALVE in self.completion_table[Headers.DEVICE_TYPE]
+            ):
                 raise CompletorError(
-                    f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE} keyword must be defined, "
-                    "if AICV is used in the completion."
+                    f"{Keywords.DUAL_RATE_CONTROLLED_PRODUCTION} keyword must be defined, "
+                    "if DUALRCP is used in the completion."
                 )
         else:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
-                Headers.AICV_WATER_CUT,
-                Headers.AICV_GAS_HOLDUP_FRACTION,
-                Headers.AICV_CALIBRATION_FLUID_DENSITY,
-                Headers.AICV_FLUID_VISCOSITY,
+                Headers.DUALRCP_WATER_CUT,
+                Headers.DUALRCP_GAS_HOLDUP_FRACTION,
+                Headers.DUALRCP_CALIBRATION_FLUID_DENSITY,
+                Headers.DUALRCP_FLUID_VISCOSITY,
                 Headers.ALPHA_MAIN,
                 Headers.X_MAIN,
                 Headers.Y_MAIN,
@@ -540,18 +564,25 @@ class ReadCasefile:
                 Headers.E_PILOT,
                 Headers.F_PILOT,
             ]
+            # Get start and end index from correct keyword
+            if not dualrcp_index_start == dualrcp_index_end:
+                start_index, end_index = dualrcp_index_start, dualrcp_index_end
+                key = Keywords.DUAL_RATE_CONTROLLED_PRODUCTION
+                content = Content.DUAL_RATE_CONTROLLED_PRODUCTION
+            else:
+                start_index, end_index = aicv_index_start, aicv_index_end
+                key = Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE
+                content = Content.AUTONOMOUS_INFLOW_CONTROL_VALVE
             # Fix table format
-            self.wsegaicv_table = input_validation.set_format_wsegaicv(
+            self.wsegdualrcp_table = input_validation.set_format_wsegdualrcp(
                 self._create_dataframe_with_columns(header, start_index, end_index)
             )
-            # Check if the device in COMPLETION is exist in AUTONOMOUS_INFLOW_CONTROL_VALVE
-            device_checks = self.completion_table[
-                self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_VALVE
-            ][Headers.DEVICE_NUMBER].to_numpy()
-            if not check_contents(device_checks, self.wsegaicv_table[Headers.DEVICE_NUMBER].to_numpy()):
-                raise CompletorError(
-                    f"Not all devices in COMPLETION are specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_VALVE}"
-                )
+            # Check if the device in COMPLETION is exist in DUALRCP
+            device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == content][
+                Headers.DEVICE_NUMBER
+            ].to_numpy()
+            if not check_contents(device_checks, self.wsegdualrcp_table[Headers.DEVICE_NUMBER].to_numpy()):
+                raise CompletorError(f"Not all devices in COMPLETION are specified in {key}")
 
     def read_wsegicv(self) -> None:
         """Read INFLOW_CONTROL_VALVE keyword in the case file.

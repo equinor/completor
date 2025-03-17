@@ -40,8 +40,8 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     print_inflow_control_valve = ""
     print_autonomous_inflow_control_device = ""
     print_inflow_control_device = ""
-    print_density_activated_recovery = ""
-    print_autonomous_inflow_control_valve = ""
+    print_density_driven = ""
+    print_dual_rate_controlled_production = ""
 
     start_segment = 2
     start_branch = 1
@@ -110,10 +110,8 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         df_autonomous_inflow_control_device = prepare_outputs.prepare_autonomous_inflow_control_device(
             well.well_name, lateral.df_well, lateral.df_device
         )
-        df_density_activated_recovery = prepare_outputs.prepare_density_activated_recovery(
-            well.well_name, lateral.df_well, lateral.df_device
-        )
-        df_autonomous_inflow_control_valve = prepare_outputs.prepare_autonomous_inflow_control_valve(
+        df_density_driven = prepare_outputs.prepare_density_driven(well.well_name, lateral.df_well, lateral.df_device)
+        df_dual_rate_controlled_production = prepare_outputs.prepare_dual_rate_controlled_production(
             well.well_name, lateral.df_well, lateral.df_device
         )
         df_inflow_control_valve = prepare_outputs.prepare_inflow_control_valve(
@@ -147,11 +145,9 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         print_inflow_control_valve += _format_inflow_control_valve(
             well.well_name, lateral.lateral_number, df_inflow_control_valve, first
         )
-        print_density_activated_recovery += _format_density_activated_recovery(
-            well.well_number, df_density_activated_recovery
-        )
-        print_autonomous_inflow_control_valve += _format_autonomous_inflow_control_valve(
-            well.well_number, df_autonomous_inflow_control_valve
+        print_density_driven += _format_density_driven(well.well_number, df_density_driven)
+        print_dual_rate_controlled_production += _format_dual_rate_controlled_production(
+            well.well_number, df_dual_rate_controlled_production
         )
 
         if figure_name is not None:
@@ -183,10 +179,10 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         bonus.append(f"{Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}{print_autonomous_inflow_control_device}\n/\n\n\n")
     if print_inflow_control_valve:
         bonus.append(f"{Keywords.WELL_SEGMENTS_VALVE}{print_inflow_control_valve}\n/\n\n\n")
-    if print_density_activated_recovery:
+    if print_density_driven:
         metadata = (
             f"{'-' * 100}\n"
-            "-- This is how we model DAR technology using sets of ACTIONX keywords.\n"
+            "-- This is how we model DENSITY technology using sets of ACTIONX keywords.\n"
             "-- The segment dP curves changes according to the segment water-\n"
             "-- and gas volume fractions at downhole condition.\n"
             "-- The value of Cv is adjusted according to the segment length and the number of\n"
@@ -194,16 +190,16 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             "-- volume fractions.\n"
             f"{'-' * 100}\n\n\n"
         )
-        bonus.append(metadata + print_density_activated_recovery + "\n\n\n\n")
-    if print_autonomous_inflow_control_valve:
+        bonus.append(metadata + print_density_driven + "\n\n\n\n")
+    if print_dual_rate_controlled_production:
         metadata = (
             f"{'-' * 100}\n"
-            "-- This is how we model AICV technology using sets of ACTIONX keyword\n"
+            "-- This is how we model DUALRCP technology using sets of ACTIONX keyword\n"
             "-- the DP parameters change according to the segment water cut (at downhole condition )\n"
             "-- and gas volume fraction (at downhole condition)\n"
             f"{'-' * 100}\n\n\n"
         )
-        bonus.append(metadata + print_autonomous_inflow_control_valve + "\n\n\n\n")
+        bonus.append(metadata + print_dual_rate_controlled_production + "\n\n\n\n")
 
     return print_completion_data, print_well_segments, print_completion_segments, "".join(bonus)
 
@@ -439,34 +435,34 @@ def _format_inflow_control_valve(well_name: str, lateral_number: int, df_wsegicv
     )
 
 
-def _format_density_activated_recovery(well_number: int, df_wsegdar: pd.DataFrame) -> str:
-    """Formats well-segments for density activated recovery valve.
+def _format_density_driven(well_number: int, df_wsegdensity: pd.DataFrame) -> str:
+    """Formats well-segments for density driven valve.
 
     Args:
         well_number: The well's number
-        df_wsegdar: Data to print.
+        df_wsegdensity: Data to print.
 
     Returns:
         Formatted string.
     """
-    if df_wsegdar.empty:
+    if df_wsegdensity.empty:
         return ""
-    return prepare_outputs.print_wsegdar(df_wsegdar, well_number + 1)
+    return prepare_outputs.print_wsegdensity(df_wsegdensity, well_number + 1)
 
 
-def _format_autonomous_inflow_control_valve(well_number: int, df_wsegaicv: pd.DataFrame) -> str:
-    """Formats the AICV section.
+def _format_dual_rate_controlled_production(well_number: int, df_wsegdualrcp: pd.DataFrame) -> str:
+    """Formats the DUALRCP section.
 
     Args:
         well_number: The well's number
-        df_wsegaicv: Data to print.
+        df_wsegdualrcp: Data to print.
 
     Returns:
         Formatted string.
     """
-    if df_wsegaicv.empty:
+    if df_wsegdualrcp.empty:
         return ""
-    return prepare_outputs.print_wsegaicv(df_wsegaicv, well_number + 1)
+    return prepare_outputs.print_wsegdualrcp(df_wsegdualrcp, well_number + 1)
 
 
 def _branch_revision(
