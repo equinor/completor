@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.1.3](https://github.com/equinor/completor/compare/v1.1.2...v1.1.3) (2025-03-17)
+
+
+### 🐛 Bug Fixes
+
+* Conflicting WSEGVALV-es ([#230](https://github.com/equinor/completor/issues/230)) ([d54f134](https://github.com/equinor/completor/commit/d54f134b1011d4351f4708be8e12275d9318df67))
+* Dev-dependencies ([#210](https://github.com/equinor/completor/issues/210)) ([3b2350e](https://github.com/equinor/completor/commit/3b2350ea56e94d3e6bbbdd158289713a4c261903))
+* Fix inconsistent compseg order ([#234](https://github.com/equinor/completor/issues/234)) ([cb21f00](https://github.com/equinor/completor/commit/cb21f0025df1eacca92e41da86e126a1b00be704))
+* Python versions in `pyproject.toml` ([#215](https://github.com/equinor/completor/issues/215)) ([cfceee5](https://github.com/equinor/completor/commit/cfceee5beb4267884609d363e15c94e504bd883c))
+
+
+### 🧹 Chores
+
+* Add support for python 3.12 ([#213](https://github.com/equinor/completor/issues/213)) ([fb82d90](https://github.com/equinor/completor/commit/fb82d90bb29fce4f663f26284d5ce98c96cdd3ee))
+* Bump prismjs ([c163f45](https://github.com/equinor/completor/commit/c163f452d397e736b14cff4ed031f7cc6e99346e))
+* Bump prismjs from 1.29.0 to 1.30.0 in /documentation in the npm_and_yarn group across 1 directory ([#243](https://github.com/equinor/completor/issues/243)) ([c163f45](https://github.com/equinor/completor/commit/c163f452d397e736b14cff4ed031f7cc6e99346e))
+* Bump the npm_and_yarn group across 1 directory with 3 updates ([#244](https://github.com/equinor/completor/issues/244)) ([ea882d8](https://github.com/equinor/completor/commit/ea882d839a14d51a41ee190f4031fb58ebc958ab))
+* Temporary disable check for title until modified ([#225](https://github.com/equinor/completor/issues/225)) ([a5376e1](https://github.com/equinor/completor/commit/a5376e1cf7c9c0e5b5845980cb5d896e34b72ef8))
+
+
+### 📝 Documentation
+
+* Upgrade documentation after [#232](https://github.com/equinor/completor/issues/232) ([#239](https://github.com/equinor/completor/issues/239)) ([6973305](https://github.com/equinor/completor/commit/69733051884b7f7672d1bc5f49e960a2e3f06283))
+
+
+### ♻️ Code Refactoring
+
+* Fix naming for density based and dual RCP curve ([#242](https://github.com/equinor/completor/issues/242)) ([8c0a56f](https://github.com/equinor/completor/commit/8c0a56f22e07e0d641f5aeb108e975a02d7b9119))
+
 ## [1.1.2](https://github.com/equinor/completor/compare/v1.1.1...v1.1.2) (2024-12-16)
 
 
