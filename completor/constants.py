@@ -126,6 +126,7 @@ class _Headers:
     # This stops making sense from here on out?
     X = "X"
     Y = "Y"
+    Z = "Z"
     # FLAG
     A = "A"
     B = "B"

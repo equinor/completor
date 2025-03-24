@@ -17,8 +17,8 @@ _TESTDIR = Path(__file__).absolute().parent / "data"
 with open(Path(_TESTDIR / "case.testfile"), encoding="utf-8") as case_file:
     _THECASE = ReadCasefile(case_file.read())
 
-with open(Path(_TESTDIR / "case_old.testfile"), encoding="utf-8") as case_old_file:
-    _THECASE_OLD = ReadCasefile(case_old_file.read())
+with open(Path(_TESTDIR / "case_vers.testfile"), encoding="utf-8") as case_vers_file:
+    _THECASE_VERS = ReadCasefile(case_vers_file.read())
 
 
 def test_read_case_completion():
@@ -108,7 +108,7 @@ def test_read_case_completion_old():
         ],
     )
 
-    pd.testing.assert_frame_equal(df_true, _THECASE_OLD.completion_table, check_exact=False, rtol=0.0001)
+    pd.testing.assert_frame_equal(df_true, _THECASE_VERS.completion_table, check_exact=False, rtol=0.0001)
 
 
 def test_read_case_joint_length():
@@ -176,6 +176,64 @@ def test_read_case_wsegaicd():
                 2.1,
                 1000.25,
                 1.45,
+                1.0,
+            ],
+            [
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                2,
+                0.00042,
+                0.1,
+                1.1,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1001.25,
+                1.55,
+                2.5,
+            ],
+        ],
+        columns=[
+            Headers.DEVICE_TYPE,
+            Headers.DEVICE_NUMBER,
+            Headers.STRENGTH,
+            Headers.X,
+            Headers.Y,
+            Headers.A,
+            Headers.B,
+            Headers.C,
+            Headers.D,
+            Headers.E,
+            Headers.F,
+            Headers.AICD_CALIBRATION_FLUID_DENSITY,
+            Headers.AICD_FLUID_VISCOSITY,
+            Headers.Z,
+        ],
+    )
+    df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
+    df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
+    pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicd_table)
+
+def test_read_case_wsegaicd_with_z():
+    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword."""
+    df_true = pd.DataFrame(
+        [
+            [
+                Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
+                1,
+                0.00021,
+                0.0,
+                1.0,
+                1.1,
+                1.2,
+                0.9,
+                1.3,
+                1.4,
+                2.1,
+                1000.25,
+                1.45,
             ],
             [
                 Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
@@ -207,11 +265,11 @@ def test_read_case_wsegaicd():
             Headers.F,
             Headers.AICD_CALIBRATION_FLUID_DENSITY,
             Headers.AICD_FLUID_VISCOSITY,
-        ],
+            ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
-    pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicd_table)
+    pd.testing.assert_frame_equal(df_true, _THECASE_VERS.wsegaicd_table)
 
 
 def test_read_case_wsegsicd():
@@ -595,7 +653,7 @@ def test_read_case_old_density():
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
-    pd.testing.assert_frame_equal(df_true, _THECASE_OLD.wsegdensity_table)
+    pd.testing.assert_frame_equal(df_true, _THECASE_VERS.wsegdensity_table)
 
 
 def test_read_case_old_dualrcp():
@@ -683,4 +741,4 @@ def test_read_case_old_dualrcp():
         ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
-    pd.testing.assert_frame_equal(df_true, _THECASE_OLD.wsegdualrcp_table)
+    pd.testing.assert_frame_equal(df_true, _THECASE_VERS.wsegdualrcp_table)

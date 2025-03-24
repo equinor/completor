@@ -75,11 +75,14 @@ def test_mix_in_branch(tmpdir):
     /
 
     WSEGAICD
-    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45    1.1
     /
     """
     true_file = Path(_TESTDIR / "wb_perf_mix_inbranch.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    with open(_TEST_FILE) as out:
+        file = out.read()
+    print(0)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
@@ -96,7 +99,7 @@ def test_mix_multibranch(tmpdir):
     /
 
     WSEGAICD
-    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+    1   0.00021 0.0 1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45 1.2
     /
     """
     with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as f:

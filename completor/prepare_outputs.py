@@ -1068,6 +1068,9 @@ def prepare_autonomous_inflow_control_device(
         wsegaicd[Headers.D] = df_merge[Headers.D].to_numpy()
         wsegaicd[Headers.E] = df_merge[Headers.E].to_numpy()
         wsegaicd[Headers.F] = df_merge[Headers.F].to_numpy()
+        if Headers.Z in df_merge.columns and df_merge[Headers.Z].shape[0] > 0:
+            df_merge[Headers.Z].fillna = ""
+            wsegaicd[Headers.Z] = df_merge[Headers.Z].to_numpy()
         wsegaicd[Headers.EMPTY] = "/"
     return wsegaicd
 
