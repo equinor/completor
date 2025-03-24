@@ -57,15 +57,15 @@ WSEGDAR
 
 WSEGAICD = """
 WSEGAICD
---Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal   Z  
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal   Z
 1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45  1.5
 /
 """
 
 WSEGAICD_WITHOUT_Z = """
 WSEGAICD
---Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal  
-1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45 
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
+1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
 /
 """
 
@@ -164,6 +164,7 @@ COMPLETION
     true_file = Path(_TESTDIR / "wb_aicd.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
+
 
 def test_aicd_without_z(tmpdir):
     """

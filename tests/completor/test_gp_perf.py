@@ -80,9 +80,6 @@ def test_mix_in_branch(tmpdir):
     """
     true_file = Path(_TESTDIR / "wb_perf_mix_inbranch.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
-    with open(_TEST_FILE) as out:
-        file = out.read()
-    print(0)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 

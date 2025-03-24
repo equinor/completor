@@ -216,6 +216,7 @@ def test_read_case_wsegaicd():
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicd_table)
 
+
 def test_read_case_wsegaicd_with_z():
     """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword."""
     df_true = pd.DataFrame(
@@ -265,7 +266,7 @@ def test_read_case_wsegaicd_with_z():
             Headers.F,
             Headers.AICD_CALIBRATION_FLUID_DENSITY,
             Headers.AICD_FLUID_VISCOSITY,
-            ],
+        ],
     )
     df_true[Headers.DEVICE_NUMBER] = df_true[Headers.DEVICE_NUMBER].astype(np.int64)
     df_true.iloc[:, 2:] = df_true.iloc[:, 2:].astype(np.float64)
