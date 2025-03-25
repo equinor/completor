@@ -8,15 +8,8 @@ description: Example of Completor Case File and Setup
 
 ## Standard completion with no inflow control devices
 Example of Completor setup with no inflow control device, however, the device layer will be printed in the output.
-This example is also stating that the `schedule` file is defined in the case file as `tubing_msw_def.well`.
 
 ```
-SCHFILE
---This keyword is optional. To be included if the input schedule file is not called directly from the command line.
---Used for including schedule file containing the tubing ulti-segment well (MSW) definition in terms of
---WELSPECS, COMPDAT, WELSEGS and COMPSEGS.
-tubing_msw_def.well
-/
 COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness      Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing     asing                   Content
