@@ -41,6 +41,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     print_autonomous_inflow_control_device = ""
     print_inflow_control_device = ""
     print_density_driven = ""
+    print_injection_valve = ""
     print_dual_rate_controlled_production = ""
 
     start_segment = 2
@@ -111,6 +112,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             well.well_name, lateral.df_well, lateral.df_device
         )
         df_density_driven = prepare_outputs.prepare_density_driven(well.well_name, lateral.df_well, lateral.df_device)
+        df_injection_valve = prepare_outputs.prepare_injection_valve(well.well_name, lateral.df_well, lateral.df_device)
         df_dual_rate_controlled_production = prepare_outputs.prepare_dual_rate_controlled_production(
             well.well_name, lateral.df_well, lateral.df_device
         )
@@ -146,6 +148,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             well.well_name, lateral.lateral_number, df_inflow_control_valve, first
         )
         print_density_driven += _format_density_driven(well.well_number, df_density_driven)
+        print_injection_valve += _format_injection_valve(well.well_number, df_injection_valve)
         print_dual_rate_controlled_production += _format_dual_rate_controlled_production(
             well.well_number, df_dual_rate_controlled_production
         )
@@ -191,6 +194,18 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             f"{'-' * 100}\n\n\n"
         )
         bonus.append(metadata + print_density_driven + "\n\n\n\n")
+    if print_injection_valve:
+        metadata = (
+            f"{'-' * 100}\n"
+            "-- This is how we model INJV technology using sets of ACTIONX keywords.\n"
+            "-- The segment dP curves changes according to the segment water-\n"
+            "-- and pressure drop at downhole condition.\n"
+            "-- The value of Cv is adjusted according to the segment length and the number of\n"
+            "-- devices per joint. The constriction area varies according to values of\n"
+            "-- volume fractions.\n"
+            f"{'-' * 100}\n\n\n"
+        )
+        bonus.append(metadata + print_injection_valve + "\n\n\n\n")    
     if print_dual_rate_controlled_production:
         metadata = (
             f"{'-' * 100}\n"
@@ -448,6 +463,21 @@ def _format_density_driven(well_number: int, df_wsegdensity: pd.DataFrame) -> st
     if df_wsegdensity.empty:
         return ""
     return prepare_outputs.print_wsegdensity(df_wsegdensity, well_number + 1)
+
+
+def _format_injection_valve(well_number: int, df_wseginjv: pd.DataFrame) -> str:
+    """Formats well-segments for injection valve.
+
+    Args:
+        well_number: The well's number
+        df_wsegdinjv: Data to print.
+
+    Returns:
+        Formatted string.
+    """
+    if df_wseginjv.empty:
+        return ""
+    return prepare_outputs.print_wseginjv(df_wseginjv, well_number + 1)
 
 
 def _format_dual_rate_controlled_production(well_number: int, df_wsegdualrcp: pd.DataFrame) -> str:

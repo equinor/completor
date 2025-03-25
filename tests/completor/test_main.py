@@ -55,6 +55,13 @@ WSEGDAR
 /
 """
 
+WSEGINJV = """
+WSEGINJV
+-- Number    Cv_Inj      Primary_Ac      Secondary_Ac      Water_Rate_cutoff     Pressure_drop_cutoff       Ac_max 
+    1        0.1        4.700e-04       8e-5              -150                  -0.5        4.700e-04
+/
+"""
+
 WSEGAICD = """
 WSEGAICD
 --Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
@@ -324,6 +331,25 @@ COMPLETION
     true_file = Path(_TESTDIR / "wb_density.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
+
+
+def test_injection_valve(tmpdir):
+    """
+    Test completor case with Injection valve.
+    """
+    tmpdir.chdir()
+    case_file = f"""
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    INJV      1
+/
+{WSEGINJV}
+    """
+    true_file = Path(_TESTDIR / "wb_injection_valve.true")
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
 def test_dualrcp(tmpdir):

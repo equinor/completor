@@ -48,7 +48,7 @@ class ReadCasefile:
     This class reads the case/input file of the Completor program.
     It reads the following keywords:
     COMPLETION, SEGMENTLENGTH, JOINTLENGTH, AUTONOMOUS_INFLOW_CONTROL_DEVICE, WELL_SEGMENTS_VALVE,
-    INFLOW_CONTROL_DEVICE, DENSITY_DRIVEN, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE.
+    INFLOW_CONTROL_DEVICE, DENSITY_DRIVEN, INJECTION_VALVE, DUAL_RATE_CONTROLLED_PRODUCTION, INFLOW_CONTROL_VALVE.
     In the absence of some keywords, the program uses the default values.
 
     Attributes:
@@ -64,6 +64,7 @@ class ReadCasefile:
         wsegvalv_table (pd.DataFrame): WELL_SEGMENTS_VALVE.
         wsegicv_table (pd.DataFrame): INFLOW_CONTROL_VALVE.
         wsegdensity_table (pd.DataFrame): DENSITY_DRIVEN.
+        wseginjv_table (pd.DataFrame): INJECTION_VALVE.
         wsegdualrcp_table (pd.DataFrame): DUAL_RATE_CONTROLLED_PRODUCTION.
         strict (bool): USE_STRICT. If TRUE it will exit if any lateral is not defined in the case-file. Default to TRUE.
         lat2device (pd.DataFrame): LATERAL_TO_DEVICE.
@@ -99,6 +100,7 @@ class ReadCasefile:
         self.wsegsicd_table = pd.DataFrame()
         self.wsegvalv_table = pd.DataFrame()
         self.wsegdensity_table = pd.DataFrame()
+        self.wseginjv_table = pd.DataFrame()
         self.wsegdualrcp_table = pd.DataFrame()
         self.wsegicv_table = pd.DataFrame()
         self.lat2device = pd.DataFrame()
@@ -117,6 +119,7 @@ class ReadCasefile:
         self.read_wsegvalv()
         self.read_wsegsicd()
         self.read_wsegdensity()
+        self.read_wseginjv()
         self.read_wsegdualrcp()
         self.read_wsegicv()
         self.read_lat2device()
@@ -156,7 +159,7 @@ class ReadCasefile:
         # Fix the data types format
         df_temp = input_validation.set_format_completion(df_temp)
         # Fix the Density based
-        df_temp = input_validation.set_density_based(df_temp)
+        df_temp = input_validation.set_density_based(df_temp)      
         # Fix the Dual RCP
         df_temp = input_validation.set_dualrcp(df_temp)
         # Check overall user inputs on completion
@@ -513,7 +516,42 @@ class ReadCasefile:
             ].to_numpy()
             if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {key}")
+            
+    def read_wseginjv(self) -> None:
+        """Read the INJECTION_VALVE keyword in the case file.
 
+        Raises:
+            CompletorError: If INJECTION_VALVE is not defined and INJV is used in COMPLETION,
+                or if the device number is not found.
+                If not all devices in COMPLETION are specified in INJECTION_VALVE.
+        """
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.INJECTION_VALVE)
+        if start_index == end_index:
+            if Content.INJECTION_VALVE in self.completion_table[Headers.DEVICE_TYPE]:
+                raise CompletorError(
+                    f"{Keywords.INJECTION_VALVE} keyword must be defined, if INJV is used in the completion."
+                )
+        else:
+            # Table headers
+            header = [
+                Headers.DEVICE_NUMBER,
+                Headers.FLOW_COEFFICIENT,
+                Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA, 
+                Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA, 
+                Headers.WATER_RATE_CUTOFF, 
+                Headers.PRESSURE_DROP_CUTOFF,
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA, 
+            ]
+            self.wseginjv_table = input_validation.set_format_wseginjv(
+                self._create_dataframe_with_columns(header, start_index, end_index)
+            )
+            # Check if the device in COMPLETION is exist in INJECTION_VALVE
+            device_checks = self.completion_table[
+                self.completion_table[Headers.DEVICE_TYPE] == Content.INJECTION_VALVE
+            ][Headers.DEVICE_NUMBER].to_numpy()
+            if not check_contents(device_checks, self.wseginjv_table[Headers.DEVICE_NUMBER].to_numpy()):
+                raise CompletorError(f"Not all device in COMPLETION is specified in {Keywords.INJECTION_VALVE}")
+                
     def read_wsegdualrcp(self) -> None:
         """Read the DUALRCP keyword in the case file.
 

@@ -220,6 +220,8 @@ class Lateral:
             df_well = completion.get_device(df_well, case.wsegaicd_table, Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE)
         if Content.DENSITY in active_devices:
             df_well = completion.get_device(df_well, case.wsegdensity_table, Content.DENSITY)
+        if Content.INJECTION_VALVE in active_devices:
+            df_well = completion.get_device(df_well, case.wseginjv_table, Content.INJECTION_VALVE)  
         if Content.DUAL_RATE_CONTROLLED_PRODUCTION in active_devices:
             df_well = completion.get_device(df_well, case.wsegdualrcp_table, Content.DUAL_RATE_CONTROLLED_PRODUCTION)
         if Content.INFLOW_CONTROL_VALVE in active_devices:
