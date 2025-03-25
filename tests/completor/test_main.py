@@ -57,6 +57,13 @@ WSEGDAR
 
 WSEGAICD = """
 WSEGAICD
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal   Z
+1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45  1.5
+/
+"""
+
+WSEGAICD_WITHOUT_Z = """
+WSEGAICD
 --Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
 1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
 /
@@ -64,9 +71,9 @@ WSEGAICD
 
 WSEGAICD_TWO_AICD = """
 WSEGAICD
---Number    Alpha       x   y       a       b       c       d       e       f       rhocal  viscal
-1           0.00021   0.0   1.0     1.1     1.2     0.9     1.3     1.4     2.1     1000.25    1.45
-2           0.00042   0.1   1.1     1.0     1.0     1.0     1.0     1.0     1.0     1001.25    1.55
+--Number    Alpha       x   y       a       b       c       d       e       f       rhocal  viscal      Z
+1           0.00021   0.0   1.0     1.1     1.2     0.9     1.3     1.4     2.1     1000.25    1.45     1.5
+2           0.00042   0.1   1.1     1.0     1.0     1.0     1.0     1.0     1.0     1001.25    1.55     5.0
 /
 """
 
@@ -159,6 +166,28 @@ COMPLETION
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
 
 
+def test_aicd_without_z(tmpdir):
+    """
+    Test completor case with old keyword of AICD without parameter z.
+
+    1. 1 passive well & 1 active well
+    2. Single lateral well
+    """
+    tmpdir.chdir()
+    case_file = f"""
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1     1    0   3000   0.2     0.25    1.00E-4    GP      1     AICD    1
+/
+{WSEGAICD_WITHOUT_Z}
+    """
+    true_file = Path(_TESTDIR / "wb_aicd_without_z.true")
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
+
+
 def test_oa(tmpdir):
     """
     Test completor case with open annulus.
@@ -196,7 +225,7 @@ COMPLETION
 --                      Diameter Diameter
    A1    1       0 2024   0.2     0.25    1.00E-4    OA      1     AICD     1
    A1    1    2024 2024   0.2     0.25    1.00E-4    PA      1     AICD     1
-   A1    1    2024 3000   0.2     0.25    1.00E-4    OA      1     AICD     1
+   A1    1    2024 3000   0.2     0.25    1.00E-4    OA      1     AICD     2
 /
 {WSEGAICD_TWO_AICD}
     """
@@ -378,7 +407,7 @@ COMPLETION
 
 def test_old_density(tmpdir):
     """
-    Test completor case with DENSITY.
+    Test completor case with DAR.
     """
     tmpdir.chdir()
     case_file = f"""
@@ -398,7 +427,7 @@ COMPLETION
 
 def test_old_dualrcp(tmpdir):
     """
-    Test completor case with DUALRCP.
+    Test completor case with AICV.
 
     1. 1 passive well & 1 active well
     2. Single lateral well

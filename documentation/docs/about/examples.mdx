@@ -8,15 +8,8 @@ description: Example of Completor Case File and Setup
 
 ## Standard completion with no inflow control devices
 Example of Completor setup with no inflow control device, however, the device layer will be printed in the output.
-This example is also stating that the `schedule` file is defined in the case file as `tubing_msw_def.well`.
 
 ```
-SCHFILE
---This keyword is optional. To be included if the input schedule file is not called directly from the command line.
---Used for including schedule file containing the tubing ulti-segment well (MSW) definition in terms of
---WELSPECS, COMPDAT, WELSEGS and COMPSEGS.
-tubing_msw_def.well
-/
 COMPLETION
 --Well  Branch   StartMD   EndMD    Screen     Well/    Roughness      Annulus     Nvalve/Joint     ValveType    DeviceNumber
 --      Number                      Tubing     asing                   Content
@@ -54,17 +47,18 @@ OP1  2
 /
 
 WSEGAICD
--- NB: Dummy parameters
---Number  Alpha        x     y     a  b  c  d     e     f     rhocal  viscal
-1         0.000017253  3.05  0.67  1  1  1  2.43  1.18  10.0  1000       1
-2         0.000021059  2.94  0.69  1  1  1  1.96  1.22  4.64  1000       1
-3         0.000019331  2.98  0.65  1  1  1  2.13  1.27  5.60  1000       1
+-- NB: Dummy parameters.
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal  z
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1       1.2
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1       1.3
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1       1.4
 /
 ```
 
 ## Completion with spiral ICDs
 
 Example with the use of sICD.
+Do not use this keyword for nozzle ICD.
 
 ```
 COMPLETION
@@ -161,10 +155,10 @@ OP1      2         0        10000     0.15364    0.1905    1.524E-005      OA   
 
 WSEGAICD
 -- NB: Dummy parameters.
---Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
-1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
-2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
-3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal  z
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1       1.2
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1       1.3
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1       1.4
 /
 ```
 
@@ -195,10 +189,10 @@ OP1     2        1960      2110     0.15364    0.1905    1.524E-005      OA     
 
 WSEGAICD
 -- NB: Dummy parameters.
---Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
-1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
-2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
-3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal  z
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1       1.2
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1       1.3
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1       1.4
 /
 ```
 
@@ -228,10 +222,10 @@ OP1     2        1960      2110     0.15364    0.1905    1.524E-005      OA     
 
 WSEGAICD
 -- NB: Dummy parameters.
---Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
-1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
-2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
-3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal  z
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1       1.2
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1       1.3
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1       1.4
 /
 ```
 
@@ -251,10 +245,10 @@ OP1     2        0        10000     0.15364    0.1905    1.524E-005      GP     
 
 WSEGAICD
 -- NB: Dummy parameters.
---Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal
-1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1
-2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1
-3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1
+--Number   Alpha           x        y        a     b     c    d        e        f        rhocal   viscal  z
+1          0.000017253     3.05     0.67     1     1     1     243     1.18     10.0     1000     1       1.2
+2          0.000021059     2.94     0.69     1     1     1     196     1.22     4.64     1000     1       1.3
+3          0.000019331     2.98     0.65     1     1     1     213     1.27     5.60     1000     1       1.4
 /
 ```
 

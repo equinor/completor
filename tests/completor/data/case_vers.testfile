@@ -1,4 +1,5 @@
 -- This file is only for testing purposes
+-- This file is testing weird and deviating case file from normal or common condition found in Completor
 
 COMPLETION
 --Well    Branch   StartMD   EndmD    Screen     Well/CasingDiameter Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber

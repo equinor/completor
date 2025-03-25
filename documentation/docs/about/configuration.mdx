@@ -47,22 +47,6 @@ Completor has several keywords to cover variations of well completion and its se
 There are several keywords that can be set as `optional` while the one with `*` is mandatory to be set,
 otherwise Completor will fail and exit.
 
-### SCHFILE (optional)
-
-The input schedule file to Completor® (describing the multi-segment tubing definition)
-may be called directly from the command line or it may be specified by starting the case-file like this:
-```shell
-SCHFILE
--- Input schedule file at specified path.
-  '../include/schedule/field.sch'
-/
-```
-
-The keyword `SCHFILE` is mandatory if the `-s <schedule_file>` option is not specified in the command line.
-Note that the input schedule file should NOT include any definitions related to inflow control for the wells to be modeled by Completor®.
-This includes keywords such as `WSEGAICD`, `WSEGSICD`, and `WSEGVALV`.
-Completor® will add these keywords.
-
 ### COMPLETION
 
 The content of this keyword describes the completion configuration. The
@@ -239,12 +223,19 @@ GP_PERF_DEVICELAYER
 Below are the keywords related into the column number 10 in the `COMPLETION` keyword specified above.
 
 The valve keywords are mandatory if the valve is specified in the `COMPLETION` table.
-Otherwise, Completor will fail and exit.
+Otherwise, Completor will fail and exit. Below are the explanations on devices supported in Completor:
+
+1. `AICD`, the usage is followed by `WSEGAICD` keyword. This will generate a device based on standard RCP equation.
+2. `VALVE`, the usage is followed by `WSEGVALV` keyword. This device and keyword will generate a nozzle ICD that accepts discharge coefficient (Cv), opening area, and maximum opening area of the nozzle throat.
+3. `ICD`, the usage is followed by `WSEGSICD` keyword. This will generate a spiral ICD equation.
+4. `DENSITY`, the usage is followed by `WSEGDENSITY` keyword. This will generate a density driven device with certain limit on opening and closing of devices dependent on water or gas volume fraction.
+5. `DUALRCP`, the usage is followed by `WSEGDUALRCP` keyword. This keyword is intended to mimic performance curve with a step-rate based on certain gas or water volume fraction.
+6. `ICV`, the usage is followed by `WSEGICV` keyword. This keyword will generate either zonal or branch ICV dependent on length or interval given in the `COMPLETION` keyword.
 
 ### WSEGAICD
 
-Define full parameter sets for any number of AICDs.
-Required only if AICD is used in the `COMPLETION` keyword.
+This keyword will define AICD devices based on RCP equation.
+Required only if `AICD` is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
@@ -260,22 +251,24 @@ The items are as follows:
 10. f: Item 21 in WSEGAICD keyword.
 11. Calibration density: Item 6 in WSEGAICD  keyword.
 12. Calibration viscosity: Item 7 in WSEGAICD  keyword.
+13. z: Item 22 in WSEGAICD keyword.
 
 ```
 WSEGAICD
 -- Define two AICD devices with sligthly different parameters.
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
--- DN  Alpha   x   y  a  b  c  d  e  f  den_cal  mu_cal
-    1 1.0e-4 0.1 1.2  1  1  1  1  1  5     1000       1
-    2 5.0e-5 0.4 3.1  1  1  1  2  1  1     1000       1
+-- DN  Alpha   x   y  a  b  c  d  e  f  den_cal  mu_cal z
+    1 1.0e-4 0.1 1.2  1  1  1  1  1  5     1000       1 2
+    2 5.0e-5 0.4 3.1  1  1  1  2  1  1     1000       1 5
 /
 ```
 
 ### WSEGSICD
 
-Define full parameter sets for any number of ICDs.
-Required only if ICD is used in the `COMPLETION` keyword.
+This keyword will produce spiral ICDs device based on SICD equation.
+For a nozzle ICD, use `WSEGVALV` and `VALVE` keyword.
+Required only if `ICD` is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 1.  Device number: From 1, 2, .., n etc.
@@ -297,8 +290,9 @@ WSEGSICD
 
 ### WSEGVALV
 
-Define full parameter sets for nozzle or ICV type completions.
-Required only if VALVE is used in the `COMPLETION` keyword.
+Define full parameter sets for nozzle ICD or e-ICD type completions.
+Required only if `VALVE` is used in the `COMPLETION` keyword.
+Use this if you want to model nozzle ÌCD.
 End the record with /.
 The items are as follows:
 
@@ -320,8 +314,8 @@ WSEGVALV
 
 ### WSEGDENSITY
 
-Defines full parameter sets for the density driven AICD type.
-Required only if DENSITY is used in the `COMPLETION` keyword.
+Density driven AICD, requires trigger for water and/or gas volume fraction.
+Required only if `DENSITY` is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
@@ -350,7 +344,7 @@ WSEGDENSITY
 
 This keyword utilizes two different `WSEGAICD` parameter.
 This keyword acts as two different `RCP` equation at certain cutoff to cover steep performance curve.
-Required only if DUALRCP is used in the `COMPLETION` keyword.
+Required only if `DUALRCP` is used in the `COMPLETION` keyword.
 End the record with /.
 The items are as follows:
 
@@ -379,8 +373,8 @@ WSEGDUALRCP
 
 ### WSEGICV
 
-Defines ICV type of valve for both zonal and lateral control.
-Required only if ICV is used in the `COMPLETION` keyword.
+Defines ICV type of valve for both zonal and branch control.
+Required only if `ICV` is used in the `COMPLETION` keyword.
 It will produce `WSEGVALV` keyword similar to nozzle ICD setup.
 End the record with /.
 The items are as follows:
