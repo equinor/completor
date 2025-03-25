@@ -98,15 +98,6 @@ COMPLETION
 /
 ```
 
-Following record number 11 in `COMPLETION` keyword, below are the explanations on devices supported in Completor:
-
-1. `AICD`, the usage is followed by `WSEGÀICD` keyword. This will generate a device based on standard RCP equation.
-2. `VALVE`, the usage is followed by `WSEGVALV` keyword. This device and keyword will generate a nozzle ICD that accepts discharge coefficient (Cv), opening area, and maximum opening area of the nozzle throat.
-3. `ICD`, the usage is followed by `WSEGSICD` keyword. This will generate a spiral ICD equation.
-4. `DENSITY`, the usage is followed by `WSEGDENSITY` keyword. This will generate a density driven device with certain limit on opening and closing of devices dependent on water or gas volume fraction.
-5. `DUALRCP`, the usage is followed by `WSEGDUALRCP` keyword. This keyword is intended to mimic performance curve with a step-rate based on certain gas or water volume fraction.
-6. `ICV`, the usage is followed by `WSEGICV` keyword. This keyword will generate either zonal or branch ICV dependent on length or interval given in the `COMPLETION` keyword.
-
 ### JOINTLENGTH (optional)
 
 The length (in meter) of a joint.
@@ -232,7 +223,14 @@ GP_PERF_DEVICELAYER
 Below are the keywords related into the column number 10 in the `COMPLETION` keyword specified above.
 
 The valve keywords are mandatory if the valve is specified in the `COMPLETION` table.
-Otherwise, Completor will fail and exit.
+Otherwise, Completor will fail and exit. Below are the explanations on devices supported in Completor:
+
+1. `AICD`, the usage is followed by `WSEGÀICD` keyword. This will generate a device based on standard RCP equation.
+2. `VALVE`, the usage is followed by `WSEGVALV` keyword. This device and keyword will generate a nozzle ICD that accepts discharge coefficient (Cv), opening area, and maximum opening area of the nozzle throat.
+3. `ICD`, the usage is followed by `WSEGSICD` keyword. This will generate a spiral ICD equation.
+4. `DENSITY`, the usage is followed by `WSEGDENSITY` keyword. This will generate a density driven device with certain limit on opening and closing of devices dependent on water or gas volume fraction.
+5. `DUALRCP`, the usage is followed by `WSEGDUALRCP` keyword. This keyword is intended to mimic performance curve with a step-rate based on certain gas or water volume fraction.
+6. `ICV`, the usage is followed by `WSEGICV` keyword. This keyword will generate either zonal or branch ICV dependent on length or interval given in the `COMPLETION` keyword.
 
 ### WSEGAICD
 
