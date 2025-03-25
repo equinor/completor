@@ -205,7 +205,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             "-- volume fractions.\n"
             f"{'-' * 100}\n\n\n"
         )
-        bonus.append(metadata + print_injection_valve + "\n\n\n\n")    
+        bonus.append(metadata + print_injection_valve + "\n\n\n\n")
     if print_dual_rate_controlled_production:
         metadata = (
             f"{'-' * 100}\n"

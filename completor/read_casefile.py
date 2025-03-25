@@ -159,7 +159,7 @@ class ReadCasefile:
         # Fix the data types format
         df_temp = input_validation.set_format_completion(df_temp)
         # Fix the Density based
-        df_temp = input_validation.set_density_based(df_temp)      
+        df_temp = input_validation.set_density_based(df_temp)
         # Fix the Dual RCP
         df_temp = input_validation.set_dualrcp(df_temp)
         # Check overall user inputs on completion
@@ -516,7 +516,7 @@ class ReadCasefile:
             ].to_numpy()
             if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {key}")
-            
+
     def read_wseginjv(self) -> None:
         """Read the INJECTION_VALVE keyword in the case file.
 
@@ -536,11 +536,11 @@ class ReadCasefile:
             header = [
                 Headers.DEVICE_NUMBER,
                 Headers.FLOW_COEFFICIENT,
-                Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA, 
-                Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA, 
-                Headers.WATER_RATE_CUTOFF, 
+                Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA,
+                Headers.WATER_RATE_CUTOFF,
                 Headers.PRESSURE_DROP_CUTOFF,
-                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA, 
+                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             ]
             self.wseginjv_table = input_validation.set_format_wseginjv(
                 self._create_dataframe_with_columns(header, start_index, end_index)
@@ -551,7 +551,7 @@ class ReadCasefile:
             ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wseginjv_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {Keywords.INJECTION_VALVE}")
-                
+
     def read_wsegdualrcp(self) -> None:
         """Read the DUALRCP keyword in the case file.
 

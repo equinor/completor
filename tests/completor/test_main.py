@@ -57,7 +57,7 @@ WSEGDAR
 
 WSEGINJV = """
 WSEGINJV
--- Number    Cv_Inj      Primary_Ac      Secondary_Ac      Water_Rate_cutoff     Pressure_drop_cutoff       Ac_max 
+-- Number    Cv_Inj      Primary_Ac      Secondary_Ac      Water_Rate_cutoff     Pressure_drop_cutoff       Ac_max
     1        0.1        4.700e-04       8e-5              -150                  -0.5        4.700e-04
 /
 """

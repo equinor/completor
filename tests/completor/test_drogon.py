@@ -84,9 +84,9 @@ def test_drogon_cases(drogon_case: str, tmpdir):
     schedule_path = Path(_TESTDIR_DROGON / schedule_name)
     true_file = Path(_TESTDIR_DROGON / drogon_case.replace(".case", ".true"))
     utils_for_tests.open_files_run_create(case_path, schedule_path, _TEST_FILE)
-    #with open(_TEST_FILE, encoding="utf-8") as file:
-    #    result = file.read() 
-    #print(result)    
+    # with open(_TEST_FILE, encoding="utf-8") as file:
+    #    result = file.read()
+    # print(result)
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 

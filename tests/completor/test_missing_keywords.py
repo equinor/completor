@@ -62,7 +62,7 @@ WSEGDENSITY
 WSEGINJV = """
 WSEGINJV
 -- Number   Cv      Ac_Primary 		Ac_Secondary 		Water_rate_cf 		Pressure_drop_cf  		Ac_Max
-1           0.96    4.700e-04       8e-5                -150                -0.5                    4.700e-04 
+1           0.96    4.700e-04       8e-5                -150                -0.5                    4.700e-04
 /
 """
 WELSPECS = """

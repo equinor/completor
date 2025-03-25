@@ -454,9 +454,10 @@ def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_
                             df_well[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                             "/ -- DUALRCP types",
                             np.where(
-                                df_well[Headers.DEVICE_TYPE] == Content.INJECTION_VALVE, "/ -- INJV types", 
+                                df_well[Headers.DEVICE_TYPE] == Content.INJECTION_VALVE,
+                                "/ -- INJV types",
                                 np.where(
-                                    df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types",""
+                                    df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
                                 ),
                             ),
                         ),
@@ -1340,16 +1341,10 @@ def prepare_injection_valve(well_name: str, df_well: pd.DataFrame, df_device: pd
         wseginjv[Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA] = df_merge[
             Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA
         ].to_numpy()
-        wseginjv[Headers.WATER_RATE_CUTOFF] = df_merge[
-            Headers.WATER_RATE_CUTOFF
-        ].to_numpy()
-        wseginjv[Headers.PRESSURE_DROP_CUTOFF] = df_merge[
-            Headers.PRESSURE_DROP_CUTOFF
-        ].to_numpy()
+        wseginjv[Headers.WATER_RATE_CUTOFF] = df_merge[Headers.WATER_RATE_CUTOFF].to_numpy()
+        wseginjv[Headers.PRESSURE_DROP_CUTOFF] = df_merge[Headers.PRESSURE_DROP_CUTOFF].to_numpy()
         wseginjv[Headers.DEFAULTS] = "5*"
-        wseginjv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wseginjv[
-            Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA
-        ].to_numpy()
+        wseginjv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wseginjv[Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
         wseginjv[Headers.EMPTY] = "/"
     return wseginjv
 
@@ -1595,9 +1590,9 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
     ]
-    
-    sign = ["<",">"]  
-    suvtrig = ["0", "1"]  
+
+    sign = ["<", ">"]
+    suvtrig = ["0", "1"]
     action = "UDQ\n"
     for idx in range(df_wseginjv.shape[0]):
         segment_number = df_wseginjv[Headers.START_SEGMENT_NUMBER].iloc[idx]
@@ -1621,9 +1616,9 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
     for idx in range(df_wseginjv.shape[0]):
         segment_number = df_wseginjv[Headers.START_SEGMENT_NUMBER].iloc[idx]
         well_name = df_wseginjv[Headers.WELL].iloc[idx]
-        water_segment_rate_cutoff = df_wseginjv[Headers.WATER_RATE_CUTOFF].iloc[idx] 
+        water_segment_rate_cutoff = df_wseginjv[Headers.WATER_RATE_CUTOFF].iloc[idx]
         pressure_drop_cutoff = df_wseginjv[Headers.PRESSURE_DROP_CUTOFF].iloc[idx]
-        
+
         iaction = 0
         act_number = iaction + 1
         act_name = f"INJVOP{well_number:03d}{segment_number:03d}{act_number:1d}"
@@ -1639,7 +1634,7 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
         print_df = df_wseginjv[df_wseginjv[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
-        
+
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"
@@ -1647,7 +1642,7 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
         print_df += "\n/\n"
         print_df += f"\nUDQ\n  ASSIGN SUVTRIG {well_name} {segment_number} 1 /\n/\n"
         action += print_df + "\nENDACTIO\n\n"
-        
+
         iaction = 1
         act_number = iaction + 1
         act_name = f"INJVCL{well_number:03d}{segment_number:03d}{act_number:1d}"
@@ -1663,7 +1658,7 @@ def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
         print_df = df_wseginjv[df_wseginjv[Headers.START_SEGMENT_NUMBER] == segment_number]
         print_df = print_df[header[iaction]]  # type: ignore
         header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
-        
+
         for item in header[iaction]:
             header_string += "  " + item
         header_string = header_string.rstrip() + "\n"

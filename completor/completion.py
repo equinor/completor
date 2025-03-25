@@ -584,7 +584,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str)
     elif device_type == Content.INJECTION_VALVE:
         # rescale the Cv
         # because no scaling factor in WELL_SEGMENTS_VALVE
-        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]        
+        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     return df_well
 
 
