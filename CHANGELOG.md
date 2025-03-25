@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/equinor/completor/compare/v1.1.3...v1.2.0) (2025-03-25)
+
+
+### ✨ Features
+
+* New variable in WSEGAICD keyword ([#246](https://github.com/equinor/completor/issues/246)) ([8d3e05b](https://github.com/equinor/completor/commit/8d3e05b4311d930e99e0471a3b86273e78278a09))
+
 ## [1.1.3](https://github.com/equinor/completor/compare/v1.1.2...v1.1.3) (2025-03-17)
 
 
