@@ -26,8 +26,8 @@ data/file.sch
 """
 WSEGAICD = """
 WSEGAICD
---Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
-1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal      z
+1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45     1.9
 /
 """
 WSEGSICD = """

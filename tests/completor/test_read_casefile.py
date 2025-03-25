@@ -217,8 +217,8 @@ def test_read_case_wsegaicd():
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegaicd_table)
 
 
-def test_read_case_wsegaicd_with_z():
-    """Test the function which reads AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword."""
+def test_read_case_wsegaicd_without_z():
+    """Test the function which reads old AUTONOMOUS_INFLOW_CONTROL_DEVICE keyword."""
     df_true = pd.DataFrame(
         [
             [
@@ -490,9 +490,9 @@ WSEGSICD
 /
 
 WSEGAICD
---Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal
-1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45
-2           0.00042   0.1   1.1 1.0 1.0 1.0 1.0 1.0 1.0 1001.25    1.55
+--Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal     z
+1           0.00021   0.0   1.0 1.1 1.2 0.9 1.3 1.4 2.1 1000.25    1.45   1.2
+2           0.00042   0.1   1.1 1.0 1.0 1.0 1.0 1.0 1.0 1001.25    1.55   1.1
 /
 
 """  # noqa: more human readable at this width.
