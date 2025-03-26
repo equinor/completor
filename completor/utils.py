@@ -193,6 +193,7 @@ def get_active_wells(completion_table: pd.DataFrame, gp_perf_devicelayer: bool) 
                 Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE,
                 Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                 Content.DENSITY,
+                Content.INJECTION_VALVE,
                 Content.INFLOW_CONTROL_DEVICE,
                 Content.VALVE,
                 Content.INFLOW_CONTROL_VALVE,

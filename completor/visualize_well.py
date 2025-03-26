@@ -48,6 +48,8 @@ def visualize_device(axs: Axes, df_well: pd.DataFrame) -> Axes:
             axs.plot(xpar, ypar, "rv-", markevery=[1])
         elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.DENSITY:
             axs.plot(xpar, ypar, "rP-", markevery=[1])
+        elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.INJECTION_VALVE:
+            axs.plot(xpar, ypar, "rP-", markevery=[1])
         elif df_device[Headers.DEVICE_TYPE].iloc[idx] == Content.DUAL_RATE_CONTROLLED_PRODUCTION:
             axs.plot(xpar, ypar, "r*-", markevery=[1])
     return axs
