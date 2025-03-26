@@ -452,10 +452,14 @@ class ReadCasefile:
                 Headers.F,
                 Headers.AICD_CALIBRATION_FLUID_DENSITY,
                 Headers.AICD_FLUID_VISCOSITY,
+                Headers.Z,
             ]
-            self.wsegaicd_table = input_validation.set_format_wsegaicd(
-                self._create_dataframe_with_columns(header, start_index, end_index)
-            )
+            try:
+                df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
+            except CaseReaderFormatError:
+                header.remove(Headers.Z)
+                df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
+            self.wsegaicd_table = input_validation.set_format_wsegaicd(df_temp)
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE
             ][Headers.DEVICE_NUMBER].to_numpy()
