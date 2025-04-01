@@ -85,7 +85,7 @@ WSEGVALV
 
 ACTIONX
  INJVOP6   1000000 /
- SWFR 'A1' 6 <  -150 AND /
+ SPRD 'A1' 6 <  -0.5 AND /
  SUVTRIG 'A1' 6 = 0 /
 /
 
@@ -121,7 +121,7 @@ ENDACTIO
 
 ACTIONX
  INJVOP7   1000000 /
- SWFR 'A1' 7 <  -150 AND /
+ SPRD 'A1' 7 <  -0.5 AND /
  SUVTRIG 'A1' 7 = 0 /
 /
 
@@ -157,7 +157,7 @@ ENDACTIO
 
 ACTIONX
  INJVOP8   100000 /
- SWFR 'A1' 8 <  -150 AND /
+ SPRD 'A1' 8 <  -0.5 AND /
  SUVTRIG 'A1' 8 = 0 /
 /
 
@@ -193,7 +193,7 @@ ENDACTIO
 
 ACTIONX
  INJVOP9   100000 /
- SWFR 'A1' 9 <  -150 AND /
+ SPRD 'A1' 9 <  -0.5 AND /
  SUVTRIG 'A1' 9 = 0 /
 /
 

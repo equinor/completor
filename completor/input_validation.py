@@ -300,8 +300,9 @@ def set_format_wseginjv(df_temp: pd.DataFrame) -> pd.DataFrame:
         Updated data.
     """
     df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
-    # left out devicenumber because it has been formatted as integer
-    columns = df_temp.columns.to_numpy()[1:]
+    # left out devicenumber and trigger parameter because devicenumber has been formatted as integer
+    # trigger parameter is a string
+    columns = df_temp.columns.to_numpy()[2:]
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
     df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.INJECTION_VALVE))

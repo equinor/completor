@@ -57,8 +57,9 @@ WSEGDAR
 
 WSEGINJV = """
 WSEGINJV
--- Number    Cv_Inj      Primary_Ac      Secondary_Ac      Water_Rate_cutoff     Pressure_drop_cutoff       Ac_max
-    1        0.1        4.700e-04       8e-5              -150                  -0.5        4.700e-04
+-- Number   Trigger_Parameter   Trigger value   Cv_Inj   Ac_Primary   Ac_Secondary
+1           SPRD                0.5             0.10     4.700e-04    8e-5
+2           SWFR                150             0.10     4.700e-04    8e-5
 /
 """
 

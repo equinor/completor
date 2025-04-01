@@ -21,7 +21,7 @@ JOINTLENGTH
 /
 
 WSEGINJV
--- Number   Cv      Ac_Primary 		Ac_Secondary 		Water_rate_cf 		Pressure_drop_cf  		Ac_Max
-1           0.10    4.700e-04       8e-5                -150                -0.5                    4.700e-04                
-2           0.10    3.700e-04       7e-5                -170                -0.4                    3.700e-04               
+-- Number   Trigger_Parameter   Trigger value   Cv_Inj   Ac_Primary   Ac_Secondary
+1           SPRD                0.5             0.10     4.700e-04    8e-5 
+2           SWFR                150             0.10     4.700e-04    8e-5           
 /

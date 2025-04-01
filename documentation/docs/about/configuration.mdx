@@ -231,6 +231,7 @@ Otherwise, Completor will fail and exit. Below are the explanations on devices s
 4. `DENSITY`, the usage is followed by `WSEGDENSITY` keyword. This will generate a density driven device with certain limit on opening and closing of devices dependent on water or gas volume fraction.
 5. `DUALRCP`, the usage is followed by `WSEGDUALRCP` keyword. This keyword is intended to mimic performance curve with a step-rate based on certain gas or water volume fraction.
 6. `ICV`, the usage is followed by `WSEGICV` keyword. This keyword will generate either zonal or branch ICV dependent on length or interval given in the `COMPLETION` keyword.
+7. `INJV`, the usage is followed by `WSEGINJV` keyword. This will generate an injection valve with certain limit on opening and closing of devices on pressure drop or water rate.
 
 ### WSEGAICD
 
@@ -393,5 +394,30 @@ WSEGICV
 1                0.95      4.32e-4   7.50e-4
 2                1.10      1.56e-4   7.50e-4
 3                1.00      0.05      0.05
+/
+```
+
+### WSEGINJV
+
+Injection valve, requires trigger for either pressure drop or water rate.
+Required only if `INJV` is used in the `COMPLETION` keyword.
+End the record with /.
+The items are as follows:
+
+- Device number : from 1, 2, .., n etc.
+- Trigger_Parameter : Parameter chosen to trigger the valve, e.g., either SPRD or SWFR
+- Trigger value: Values of the trigger parameter used
+- Cv_Inj : item 3 in WSEGVALV keyword.
+- Ac_Primary: Cross-sectional flow area of the larger nozzle
+- Ac_Secondary: Cross-sectional flow area of the smaller nozzle
+End the record with /.
+
+```
+WSEGINJV
+-- Do not use the parameters below in planning/operations.
+-- Consult the inflow control team for valid parameters.
+-- DeviceNumber   Trigger_Parameter   Trigger value   Cv_Inj   Ac_Primary   Ac_Secondary
+1                 SPRD                0.5             0.10     4.700e-04    8e-5
+2                 SWFR                150             0.10     4.700e-04    8e-5
 /
 ```

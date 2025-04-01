@@ -539,12 +539,11 @@ class ReadCasefile:
             # Table headers
             header = [
                 Headers.DEVICE_NUMBER,
+                Headers.TRIGGER_PARAMETER,
+                Headers.TRIGGER_VALUE,
                 Headers.FLOW_COEFFICIENT,
                 Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA,
                 Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA,
-                Headers.WATER_RATE_CUTOFF,
-                Headers.PRESSURE_DROP_CUTOFF,
-                Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
             ]
             self.wseginjv_table = input_validation.set_format_wseginjv(
                 self._create_dataframe_with_columns(header, start_index, end_index)
