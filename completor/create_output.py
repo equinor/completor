@@ -198,11 +198,9 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         metadata = (
             f"{'-' * 100}\n"
             "-- This is how we model INJV technology using sets of ACTIONX keywords.\n"
-            "-- The DP paramaters changes according to the segment water rate-\n"
-            "-- and pressure drop at downhole condition.\n"
+            "-- The DP paramaters changes according to the trigger parameter.-\n"
             "-- The value of Cv is adjusted according to the segment length and the number of\n"
-            "-- devices per joint. The constriction area varies according to values of\n"
-            "-- volume fractions.\n"
+            "-- devices per joint. The constriction area will change if the parameter is triggered.\n"
             f"{'-' * 100}\n\n\n"
         )
         bonus.append(metadata + print_injection_valve + "\n\n\n\n")

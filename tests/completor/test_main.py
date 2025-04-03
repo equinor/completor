@@ -63,6 +63,14 @@ WSEGINJV
 /
 """
 
+WSEGINJV_EDGY = """
+WSEGINJV
+-- Number   Trigger_Parameter   Trigger value   Cv_Inj   Ac_Primary   Ac_Secondary
+1           SPRD                0.5             0.10     4.700e-04    4.65e-4
+2           SWFR                150             0.10     4.700e-04    4.65e-4
+/
+"""
+
 WSEGAICD = """
 WSEGAICD
 --Number    Alpha       x   y   a   b   c   d   e   f   rhocal  viscal   Z
@@ -378,6 +386,25 @@ COMPLETION
 {WSEGINJV}
     """
     true_file = Path(_TESTDIR / "wb_injection_valve.true")
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    utils_for_tests.assert_results(true_file, _TEST_FILE)
+
+
+def test_injection_valve_edgy(tmpdir):
+    """
+    Test completor case with Injection valve.
+    """
+    tmpdir.chdir()
+    case_file = f"""
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    INJV      1
+/
+{WSEGINJV_EDGY}
+    """
+    true_file = Path(_TESTDIR / "wb_injection_valve_edgy.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
