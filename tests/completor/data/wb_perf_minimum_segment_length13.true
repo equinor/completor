@@ -30,16 +30,16 @@ WELSEGS
 -- WELL     TRUE MEASURED WBVOLUME INFOTYPE
 --      VERTICAL    DEPTH
 --         DEPTH
-   'A1' 2000.000   2000.0       1*      ABS /
+   'A1' 2000.000 2000.000       1*      ABS /
 --------------- Well: A1, Lateral: 1, Tubing layer ---------------
 --   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
 -- SEGMENT SEGMENT               DEPTH VERTICAL
 --  NUMBER  NUMBER                        DEPTH
-         2       2      1   1   2012.0 2000.000  0.2    0.0001 /
-         3       3      1   2   2036.0 2000.000  0.2    0.0001 /
+         2       2      1   1 2012.000 2000.000  0.2    0.0001 /
+         3       3      1   2 2036.000 2000.000  0.2    0.0001 /
 --------------- Well: A1, Lateral: 1, Device layer ---------------
-         4       4      2   2   2012.1 2000.000  0.2    0.0001 / -- Open Perforation
-         5       5      3   3   2036.1 2000.000  0.2    0.0001 / -- Open Perforation
+         4       4      2   2 2012.100 2000.000  0.2    0.0001 / -- Open Perforation
+         5       5      3   3 2036.100 2000.000  0.2    0.0001 / -- Open Perforation
 /
 
 

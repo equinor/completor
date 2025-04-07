@@ -120,6 +120,7 @@ def dataframe_tostring(
             "END_MD": "{:.3f}".format,
             Headers.FLOW_COEFFICIENT: "{:.10g}".format,
             "CV": "{:.10g}".format,
+            Headers.CROSS: "{:.3e}".format,
             Headers.FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
             "FLOW_CROSS_SECTIONAL_AREA": "{:.3e}".format,
             Headers.OIL_FLOW_CROSS_SECTIONAL_AREA: "{:.3e}".format,
@@ -134,6 +135,13 @@ def dataframe_tostring(
             Headers.ALPHA_MAIN: "{:.10g}".format,
             Headers.ALPHA_PILOT: "{:.10g}".format,
         }
+
+        # Cast floats to str befor headers are messed up (pandas formatter does not work reliably with MultiIndex headers).
+        for column, formatter in formatters.items():
+            try:
+                df_temp[column] = df_temp[column].map(formatter)
+            except (KeyError, ValueError):
+                pass
 
         if header:
             # Modify headers to reduce width.
@@ -173,9 +181,7 @@ def dataframe_tostring(
                 df_temp.columns = pd.MultiIndex.from_frame(new_cols)
 
     try:
-        output_string = df_temp.to_string(
-            index=False, justify="justify", formatters=formatters, header=header, sparsify=False
-        )
+        output_string = df_temp.to_string(index=False, justify="justify", header=header, sparsify=False)
     except ValueError:
         if df_temp.isnull().values.any():
             raise CompletorError("Got NaN values in table, please report if encountered!")
@@ -184,18 +190,14 @@ def dataframe_tostring(
         df_temp = df_temp.replace("1*", np.nan, inplace=False)
         # Probably find columns where this is the case and cast to numeric after replacing with nan?
         df_temp[columns_with_1_star] = df_temp[columns_with_1_star].astype(np.float64, errors="ignore")
-        output_string = df_temp.to_string(
-            index=False, justify="justify", formatters=formatters, header=header, sparsify=False, na_rep="1*"
-        )
+        output_string = df_temp.to_string(index=False, justify="justify", header=header, sparsify=False, na_rep="1*")
 
     if output_string is None:
         return ""
 
     too_long_lines = check_width_lines(output_string, limit)
     if too_long_lines:
-        output_string = df_temp.to_string(
-            index=False, justify="left", formatters=formatters, header=header, sparsify=False
-        )
+        output_string = df_temp.to_string(index=False, justify="left", header=header, sparsify=False)
         if output_string is None:
             return ""
         too_long_lines2 = check_width_lines(output_string, limit)
