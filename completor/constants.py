@@ -78,7 +78,7 @@ class _Headers:
     DR = "DR"
     FLAG = "FLAG"  # This is actually a header, but OPEN, SHUT, and AUTO are its possible values, see manual on COMPLETION_DATA.
     SHUT = "SHUT"
-    # CROSS = "CROSS"
+    CROSS = "CROSS"
     PRESSURE_TABLE = "PRESSURETABLE"
     DENSITY_CALCULATION_TYPE = "DENSCAL"  # Type of density calculation for the wellbore hydrostatic head.
     REGION = "REGION"

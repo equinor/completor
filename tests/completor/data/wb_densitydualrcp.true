@@ -30,25 +30,25 @@ WELSEGS
 -- WELL     TRUE MEASURED WBVOLUME INFOTYPE
 --      VERTICAL    DEPTH
 --         DEPTH
-   'A1' 2000.000   2000.0       1*      ABS /
+   'A1' 2000.000 2000.000       1*      ABS /
 --------------- Well: A1, Lateral: 1, Tubing layer ---------------
 --   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
 -- SEGMENT SEGMENT               DEPTH VERTICAL
 --  NUMBER  NUMBER                        DEPTH
-         2       2      1   1   2006.0 2000.000  0.2    0.0001 /
-         3       3      1   2   2018.0 2000.000  0.2    0.0001 /
-         4       4      1   3   2030.0 2000.000  0.2    0.0001 /
-         5       5      1   4   2042.0 2000.000  0.2    0.0001 /
+         2       2      1   1 2006.000 2000.000  0.2    0.0001 /
+         3       3      1   2 2018.000 2000.000  0.2    0.0001 /
+         4       4      1   3 2030.000 2000.000  0.2    0.0001 /
+         5       5      1   4 2042.000 2000.000  0.2    0.0001 /
 --------------- Well: A1, Lateral: 1, Device layer ---------------
-         6       6      2   2   2006.1 2000.000  0.2    0.0001 / -- DENSITY types
-         7       7      3   3   2018.1 2000.000  0.2    0.0001 / -- DENSITY types
-         8       8      4   4   2030.1 2000.000  0.2    0.0001 / -- DUALRCP types
-         9       9      5   5   2042.1 2000.000  0.2    0.0001 / -- DUALRCP types
+         6       6      2   2 2006.100 2000.000  0.2    0.0001 / -- DENSITY types
+         7       7      3   3 2018.100 2000.000  0.2    0.0001 / -- DENSITY types
+         8       8      4   4 2030.100 2000.000  0.2    0.0001 / -- DUALRCP types
+         9       9      5   5 2042.100 2000.000  0.2    0.0001 / -- DUALRCP types
 -------------- Well: A1, Lateral: 1, Annulus layer --------------
-        10      10      6   6   2006.2 2000.000 0.15    0.0001 /
-        11      11      6  10   2018.1 2000.000 0.15    0.0001 /
-        12      12      7   8   2030.2 2000.000 0.15    0.0001 /
-        13      13      7  12   2042.1 2000.000 0.15    0.0001 /
+        10      10      6   6 2006.200 2000.000 0.15    0.0001 /
+        11      11      6  10 2018.100 2000.000 0.15    0.0001 /
+        12      12      7   8 2030.200 2000.000 0.15    0.0001 /
+        13      13      7  12 2042.100 2000.000 0.15    0.0001 /
 /
 
 
@@ -253,7 +253,7 @@ WSEGAICD
 -- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
 --      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
 --       NUMBER  NUMBER                     DENSITY   VISCOSITY
-   'A1'       8       8    0.001   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
+   'A1'       8       8    0.001     -1      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
 
@@ -266,7 +266,7 @@ WSEGAICD
 -- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
 --      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
 --       NUMBER  NUMBER                     DENSITY   VISCOSITY
-   'A1'       8       8    0.002   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
+   'A1'       8       8    0.002     -1      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
 
@@ -279,7 +279,7 @@ WSEGAICD
 -- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
 --      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
 --       NUMBER  NUMBER                     DENSITY   VISCOSITY
-   'A1'       9       9    0.001   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
+   'A1'       9       9    0.001     -1      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
 
@@ -292,7 +292,7 @@ WSEGAICD
 -- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F
 --      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
 --       NUMBER  NUMBER                     DENSITY   VISCOSITY
-   'A1'       9       9    0.002   -1.0      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
+   'A1'       9       9    0.002     -1      1000.0        0.45  5* 0.9 1.0 OPEN 1.0 1.0 1.0 1.1 1.2 1.3 /
 /
 ENDACTIO
 

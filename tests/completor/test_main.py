@@ -120,7 +120,7 @@ WSEGAICV = WSEGAICV_MAIN + WSEGAICV_PILOT
 WSEGVALV = """
 WSEGVALV
 -- DeviceNumber     Cv      Ac      ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP
-        1         0.85      0.01  5*
+        1         0.85      1.7E-6  5*              1.78E-6
 /
 """
 
