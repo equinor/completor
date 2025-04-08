@@ -15,7 +15,7 @@ A2 /
 
 COMPDAT
 ---------------- Well: A1, Lateral: 1 ----------------
--- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN  
+-- WELL  I  J  K  K2 FLAG SATNUM CF  DIAM KH  SKIN
    'A1'  1  1  1   1 OPEN      0 10  0.25  2   0.0 /
    'A1'  2  1  1   1 OPEN      0 10  0.25  2   0.0 /
    'A1'  3  1  1   1 OPEN      0 10  0.25  2   0.0 /
@@ -27,28 +27,28 @@ COMPDAT
 /
 
 WELSEGS
--- WELL     TRUE MEASURED WBVOLUME INFOTYPE  
---      VERTICAL    DEPTH                    
---         DEPTH                             
-   'A1' 2000.000   2000.0       1*      ABS /
+-- WELL     TRUE MEASURED WBVOLUME INFOTYPE
+--      VERTICAL    DEPTH
+--         DEPTH
+   'A1' 2000.000 2000.000       1*      ABS /
 --------------- Well: A1, Lateral: 1, Tubing layer ---------------
---   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS  
--- SEGMENT SEGMENT               DEPTH VERTICAL                 
---  NUMBER  NUMBER                        DEPTH                 
-         2       2      1   1   2006.0 2000.000  0.2    0.0001 /
-         3       3      1   2   2018.0 2000.000  0.2    0.0001 /
-         4       4      1   3   2030.0 2000.000  0.2    0.0001 /
-         5       5      1   4   2042.0 2000.000  0.2    0.0001 /
+--   START     END BRANCH OUT MEASURED     TRUE DIAM ROUGHNESS
+-- SEGMENT SEGMENT               DEPTH VERTICAL
+--  NUMBER  NUMBER                        DEPTH
+         2       2      1   1 2006.000 2000.000  0.2    0.0001 /
+         3       3      1   2 2018.000 2000.000  0.2    0.0001 /
+         4       4      1   3 2030.000 2000.000  0.2    0.0001 /
+         5       5      1   4 2042.000 2000.000  0.2    0.0001 /
 --------------- Well: A1, Lateral: 1, Device layer ---------------
-         6       6      2   2   2006.1 2000.000  0.2    0.0001 / -- AICD types
-         7       7      3   3   2018.1 2000.000  0.2    0.0001 / -- AICD types
-         8       8      4   4   2030.1 2000.000  0.2    0.0001 / -- AICD types
-         9       9      5   5   2042.1 2000.000  0.2    0.0001 / -- AICD types
+         6       6      2   2 2006.100 2000.000  0.2    0.0001 / -- AICD types
+         7       7      3   3 2018.100 2000.000  0.2    0.0001 / -- AICD types
+         8       8      4   4 2030.100 2000.000  0.2    0.0001 / -- AICD types
+         9       9      5   5 2042.100 2000.000  0.2    0.0001 / -- AICD types
 -------------- Well: A1, Lateral: 1, Annulus layer --------------
-        10      10      6   6   2006.2 2000.000 0.15    0.0001 /
-        11      11      6  10   2018.1 2000.000 0.15    0.0001 /
-        12      12      7   8   2030.2 2000.000 0.15    0.0001 /
-        13      13      7  12   2042.1 2000.000 0.15    0.0001 /
+        10      10      6   6 2006.200 2000.000 0.15    0.0001 /
+        11      11      6  10 2018.100 2000.000 0.15    0.0001 /
+        12      12      7   8 2030.200 2000.000 0.15    0.0001 /
+        13      13      7  12 2042.100 2000.000 0.15    0.0001 /
 /
 
 
@@ -56,9 +56,9 @@ WELSEGS
 COMPSEGS
 'A1' /
 ------------------ Well: A1, Lateral: 1 ------------------
--- I J K BRANCH    START      END  COMPSEGS DEF   START  
---              MEASURED MEASURED DIRECTION     SEGMENT  
---                 DEPTH    DEPTH                NUMBER  
+-- I J K BRANCH    START      END  COMPSEGS DEF   START
+--              MEASURED MEASURED DIRECTION     SEGMENT
+--                 DEPTH    DEPTH                NUMBER
    1 1 1      6 2000.000 2012.000        1*  3*      10 /
    2 1 1      6 2012.000 2024.000        1*  3*      11 /
    3 1 1      7 2024.000 2036.000        1*  3*      12 /
@@ -68,7 +68,7 @@ COMPSEGS
 
 WSEGLINK
 --- Well: A1, Lateral: 1 ---
--- WELL  ANNULUS  DEVICE  
+-- WELL  ANNULUS  DEVICE
    'A1'       11       7 /
    'A1'       13       9 /
 /
@@ -76,13 +76,13 @@ WSEGLINK
 
 WSEGAICD
 --------------------------------------------- Well: A1, Lateral: 1 ---------------------------------------------
--- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F   Z  
---      SEGMENT SEGMENT          FACTOR       FLUID       FLUID                                               
---       NUMBER  NUMBER                     DENSITY   VISCOSITY                                               
-   'A1'       6       6  0.00021   -1.0     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 1.5 /
-   'A1'       7       7  0.00021   -1.0     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 1.5 /
-   'A1'       8       8  0.00042   -1.0     1001.25        1.55  5* 0.1 1.1 OPEN 1.0 1.0 1.0 1.0 1.0 1.0 5.0 /
-   'A1'       9       9  0.00042   -1.0     1001.25        1.55  5* 0.1 1.1 OPEN 1.0 1.0 1.0 1.0 1.0 1.0 5.0 /
+-- WELL   START     END STRENGTH  SCALE CALIBRATION CALIBRATION DEF   X   Y FLAG   A   B   C   D   E   F   Z
+--      SEGMENT SEGMENT          FACTOR       FLUID       FLUID
+--       NUMBER  NUMBER                     DENSITY   VISCOSITY
+   'A1'       6       6  0.00021     -1     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 1.5 /
+   'A1'       7       7  0.00021     -1     1000.25        1.45  5* 0.0 1.0 OPEN 1.1 1.2 0.9 1.3 1.4 2.1 1.5 /
+   'A1'       8       8  0.00042     -1     1001.25        1.55  5* 0.1 1.1 OPEN 1.0 1.0 1.0 1.0 1.0 1.0 5.0 /
+   'A1'       9       9  0.00042     -1     1001.25        1.55  5* 0.1 1.1 OPEN 1.0 1.0 1.0 1.0 1.0 1.0 5.0 /
 /
 
 
