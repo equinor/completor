@@ -1,0 +1,21 @@
+SCHFILE
+drogon_input.sch
+/
+
+COMPLETION
+--Well  Branch  Start   End     Screen    Well/     Roughness   Annulus  Nvalve  Valve  Device
+--      Number  mD      mD      Tubing    Casing    Roughness   Content  /Joint  Type   Number
+--                              Diameter  Diameter
+OP5      1       0.0  99999.0  0.15      0.311     0.00065     OA       6       INJV    1
+OP5      2       0.0  99999.0  0.15      0.311     0.00065     OA       6       INJV    1
+/
+
+JOINTLENGTH
+12.0
+/
+
+WSEGINJV
+-- Number   Trigger_Parameter   Trigger value   Cv_Inj   Ac_Primary   Ac_Secondary
+1           SPRD                0.5             0.10     4.700e-04    8e-5 
+2           SWFR                150             0.10     4.700e-04    8e-5                     
+/

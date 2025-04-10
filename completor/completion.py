@@ -551,7 +551,7 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str)
     Args:
         df_well: Must contain device type, device number, and the scaling factor.
         df_device: Device table.
-        device_type: Device type. `AICD`, `ICD`, `DENSITY`, `VALVE`, `DUALRCP`, `ICV`.
+        device_type: Device type. `AICD`, `ICD`, `DENSITY`, `VALVE`, `DUALRCP`, `ICV`, `INJV`.
 
     Returns:
         Updated well information with device characteristics.
@@ -578,6 +578,10 @@ def get_device(df_well: pd.DataFrame, df_device: pd.DataFrame, device_type: str)
         # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
     elif device_type == Content.DENSITY:
+        # rescale the Cv
+        # because no scaling factor in WELL_SEGMENTS_VALVE
+        df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]
+    elif device_type == Content.INJECTION_VALVE:
         # rescale the Cv
         # because no scaling factor in WELL_SEGMENTS_VALVE
         df_well[Headers.FLOW_COEFFICIENT] = -df_well[Headers.FLOW_COEFFICIENT] / df_well[Headers.SCALE_FACTOR]

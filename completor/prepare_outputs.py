@@ -456,7 +456,11 @@ def prepare_device_layer(df_well: pd.DataFrame, df_tubing: pd.DataFrame, device_
                             df_well[Headers.DEVICE_TYPE] == Content.DUAL_RATE_CONTROLLED_PRODUCTION,
                             "/ -- DUALRCP types",
                             np.where(
-                                df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
+                                df_well[Headers.DEVICE_TYPE] == Content.INJECTION_VALVE,
+                                "/ -- INJV types",
+                                np.where(
+                                    df_well[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE, "/ -- ICV types", ""
+                                ),
                             ),
                         ),
                     ),
@@ -1307,6 +1311,48 @@ def prepare_density_driven(well_name: str, df_well: pd.DataFrame, df_device: pd.
     return wsegdensity
 
 
+def prepare_injection_valve(well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame) -> pd.DataFrame:
+    """Prepare data frame for INJECTION VALVE.
+
+    Args:
+        well_name: Well name.
+        df_well: Well data.
+        df_device: Device data for this well and lateral.
+
+    Returns:
+        DataFrame for INJECTION VALVE.
+    """
+    df_well = df_well[(df_well[Headers.DEVICE_TYPE] == Content.PERFORATED) | (df_well[Headers.NUMBER_OF_DEVICES] > 0)]
+    if df_well.shape[0] == 0:
+        return pd.DataFrame()
+    df_merge = pd.merge_asof(
+        left=df_device,
+        right=df_well,
+        left_on=[Headers.MEASURED_DEPTH],
+        right_on=[Headers.TUBING_MEASURED_DEPTH],
+        direction="nearest",
+    )
+    df_merge = df_merge[df_merge[Headers.DEVICE_TYPE] == Content.INJECTION_VALVE]
+    wseginjv = pd.DataFrame()
+    if df_merge.shape[0] > 0:
+        wseginjv[Headers.WELL] = [well_name] * df_merge.shape[0]
+        wseginjv[Headers.START_SEGMENT_NUMBER] = df_merge[Headers.START_SEGMENT_NUMBER].to_numpy()
+        # the Cv is already corrected by the scaling factor
+        wseginjv[Headers.FLOW_COEFFICIENT] = df_merge[Headers.FLOW_COEFFICIENT].to_numpy()
+        wseginjv[Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA] = df_merge[
+            Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA
+        ].to_numpy()
+        wseginjv[Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA] = df_merge[
+            Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA
+        ].to_numpy()
+        wseginjv[Headers.TRIGGER_PARAMETER] = df_merge[Headers.TRIGGER_PARAMETER].to_numpy()
+        wseginjv[Headers.TRIGGER_VALUE] = df_merge[Headers.TRIGGER_VALUE].to_numpy()
+        wseginjv[Headers.DEFAULTS] = "5*"
+        wseginjv[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA] = wseginjv[Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA].to_numpy()
+        wseginjv[Headers.EMPTY] = "/"
+    return wseginjv
+
+
 def prepare_dual_rate_controlled_production(
     well_name: str, df_well: pd.DataFrame, df_device: pd.DataFrame
 ) -> pd.DataFrame:
@@ -1514,6 +1560,168 @@ def print_wsegdensity(df_wsegdensity: pd.DataFrame, well_number: int) -> str:
         print_df += "\n/\n"
         print_df += f"UDQ\n  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n/\n"
         action += print_df + "\nENDACTIO\n\n"
+    return action
+
+
+def print_wseginjv(df_wseginjv: pd.DataFrame, well_number: int) -> str:
+    """Print INJECTION VALVE devices.
+
+    Args:
+        df_wseginjv: Output from function prepare_wseginjv.
+        well_number: Well number.
+
+    Returns:
+        Formatted actions to be included in the output file.
+
+    Raises:
+        CompletorError: If there are to many wells and/or segments with INJECTION VALVE.
+    """
+    header = [
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.SECONDARY_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
+        [
+            Headers.WELL,
+            Headers.START_SEGMENT_NUMBER,
+            Headers.FLOW_COEFFICIENT,
+            Headers.PRIMARY_FLOW_CROSS_SECTIONAL_AREA,
+            Headers.DEFAULTS,
+            Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
+        ],
+    ]
+
+    sign = ["<", ">="]
+    suvtrig = ["0", "1"]
+    action = "UDQ\n"
+    for idx in range(df_wseginjv.shape[0]):
+        segment_number = df_wseginjv[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        well_name = df_wseginjv[Headers.WELL].iloc[idx]
+        action += f"  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n"
+    action += "/\n\n"
+    iaction = 1
+    action += Keywords.WELL_SEGMENTS_VALVE + "\n"
+    header_string = "--"
+    for itm in header[iaction]:
+        header_string += "  " + itm
+    action += header_string.rstrip() + "\n"
+    for idx in range(df_wseginjv.shape[0]):
+        segment_number = df_wseginjv[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        print_df = df_wseginjv[df_wseginjv[Headers.START_SEGMENT_NUMBER] == segment_number]
+        print_df = print_df[header[iaction]]
+        print_df = dataframe_tostring(print_df, True, False, False) + "\n"
+        action += print_df
+    action += "/\n\n"
+    for idx in range(df_wseginjv.shape[0]):
+        segment_number = df_wseginjv[Headers.START_SEGMENT_NUMBER].iloc[idx]
+        well_name = df_wseginjv[Headers.WELL].iloc[idx]
+        # Trigger paramater is segment water rate
+        if df_wseginjv[Headers.TRIGGER_PARAMETER].iloc[idx] == "SWFR":
+            water_segment_rate_cutoff = -1 * df_wseginjv[Headers.TRIGGER_VALUE].iloc[idx]
+            iaction = 0
+            act_number = iaction + 1
+            act_name = f"INJVOP{well_number:03d}{segment_number:03d}{act_number:1d}"
+            if len(act_name) > 13:
+                raise CompletorError("Too many wells and/or too many segments with Injection Valve")
+            action += (
+                f"ACTIONX\n{act_name} 1000000 /\n"
+                f"SWFR '{well_name}' {segment_number} "
+                f"{sign[iaction]} {water_segment_rate_cutoff} AND /\n"
+                f"SUVTRIG '{well_name}' {segment_number} "
+                f"= {suvtrig[iaction]} /\n/\n\n"
+            )
+            print_df = df_wseginjv[df_wseginjv[Headers.START_SEGMENT_NUMBER] == segment_number]
+            print_df = print_df[header[iaction]]  # type: ignore
+            header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
+
+            for item in header[iaction]:
+                header_string += "  " + item
+            header_string = header_string.rstrip() + "\n"
+            print_df = header_string + dataframe_tostring(print_df, True, False, False)  # type: ignore
+            print_df += "\n/\n"
+            print_df += f"\nUDQ\n  ASSIGN SUVTRIG {well_name} {segment_number} 1 /\n/\n"
+            action += print_df + "\nENDACTIO\n\n"
+
+            iaction = 1
+            act_number = iaction + 1
+            act_name = f"INJVCL{well_number:03d}{segment_number:03d}{act_number:1d}"
+            if len(act_name) > 13:
+                raise CompletorError("Too many wells and/or too many segments with Injection Valve")
+            action += (
+                f"ACTIONX\n{act_name} 1000000 /\n"
+                f"SWFR '{well_name}' {segment_number} "
+                f"{sign[iaction]} {water_segment_rate_cutoff} AND /\n"
+                f"SUVTRIG '{well_name}' {segment_number} "
+                f"= {suvtrig[iaction]} /\n/\n\n"
+            )
+            print_df = df_wseginjv[df_wseginjv[Headers.START_SEGMENT_NUMBER] == segment_number]
+            print_df = print_df[header[iaction]]  # type: ignore
+            header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
+
+            for item in header[iaction]:
+                header_string += "  " + item
+            header_string = header_string.rstrip() + "\n"
+            print_df = header_string + dataframe_tostring(print_df, True, False, False)  # type: ignore
+            print_df += "\n/\n"
+            print_df += f"\nUDQ\n  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n/\n"
+            action += print_df + "\nENDACTIO\n\n"
+
+        # Trigger parameter is segment pressure drop
+        elif df_wseginjv[Headers.TRIGGER_PARAMETER].iloc[idx] == "SPRD":
+            pressure_drop_cutoff = -1 * df_wseginjv[Headers.TRIGGER_VALUE].iloc[idx]
+            iaction = 0
+            act_number = iaction + 1
+            act_name = f"INJVOP{well_number:03d}{segment_number:03d}{act_number:1d}"
+            if len(act_name) > 13:
+                raise CompletorError("Too many wells and/or too many segments with Injection Valve")
+            action += (
+                f"ACTIONX\n{act_name} 1000000 /\n"
+                f"SPRD '{well_name}' {segment_number} "
+                f"{sign[iaction]} {pressure_drop_cutoff} AND /\n"
+                f"SUVTRIG '{well_name}' {segment_number} "
+                f"= {suvtrig[iaction]} /\n/\n\n"
+            )
+            print_df = df_wseginjv[df_wseginjv[Headers.START_SEGMENT_NUMBER] == segment_number]
+            print_df = print_df[header[iaction]]  # type: ignore
+            header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
+
+            for item in header[iaction]:
+                header_string += "  " + item
+            header_string = header_string.rstrip() + "\n"
+            print_df = header_string + dataframe_tostring(print_df, True, False, False)  # type: ignore
+            print_df += "\n/\n"
+            print_df += f"\nUDQ\n  ASSIGN SUVTRIG {well_name} {segment_number} 1 /\n/\n"
+            action += print_df + "\nENDACTIO\n\n"
+
+            iaction = 1
+            act_number = iaction + 1
+            act_name = f"INJVCL{well_number:03d}{segment_number:03d}{act_number:1d}"
+            if len(act_name) > 13:
+                raise CompletorError("Too many wells and/or too many segments with Injection Valve")
+            action += (
+                f"ACTIONX\n{act_name} 1000000 /\n"
+                f"SPRD '{well_name}' {segment_number} "
+                f"{sign[iaction]} {pressure_drop_cutoff} AND /\n"
+                f"SUVTRIG '{well_name}' {segment_number} "
+                f"= {suvtrig[iaction]} /\n/\n\n"
+            )
+            print_df = df_wseginjv[df_wseginjv[Headers.START_SEGMENT_NUMBER] == segment_number]
+            print_df = print_df[header[iaction]]  # type: ignore
+            header_string = Keywords.WELL_SEGMENTS_VALVE + "\n--"
+
+            for item in header[iaction]:
+                header_string += "  " + item
+            header_string = header_string.rstrip() + "\n"
+            print_df = header_string + dataframe_tostring(print_df, True, False, False)  # type: ignore
+            print_df += "\n/\n"
+            print_df += f"\nUDQ\n  ASSIGN SUVTRIG {well_name} {segment_number} 0 /\n/\n"
+            action += print_df + "\nENDACTIO\n\n"
+        else:
+            raise CompletorError("Trigger paramater given is not supported")
     return action
 
 

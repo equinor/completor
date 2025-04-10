@@ -173,7 +173,7 @@ def _check_for_errors(df_comp: pd.DataFrame, well_name: str, idx: int) -> None:
     if df_comp[Headers.DEVICE_TYPE].iloc[idx] not in Content.DEVICE_TYPES:
         raise CompletorError(
             f"{df_comp[Headers.DEVICE_TYPE].iloc[idx]} is not a valid device type. "
-            "Valid types are PERF, AICD, ICD, VALVE, DENSITY, DUALRCP, and ICV."
+            "Valid types are PERF, AICD, ICD, VALVE, DENSITY, INJV, DUALRCP, and ICV."
         )
     if df_comp[Headers.ANNULUS].iloc[idx] not in Content.ANNULUS_TYPES:
         raise CompletorError(
@@ -287,6 +287,25 @@ def set_format_wsegdensity(df_temp: pd.DataFrame) -> pd.DataFrame:
     df_temp[columns] = df_temp[columns].astype(np.float64)
     # Create ID device column
     df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.DENSITY))
+    return df_temp
+
+
+def set_format_wseginjv(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """Format the well segments Injection Valve (INJV) data.
+
+    Args:
+        df_temp: Well segments INJV device data.
+
+    Returns:
+        Updated data.
+    """
+    df_temp[Headers.DEVICE_NUMBER] = df_temp[Headers.DEVICE_NUMBER].astype(np.int64)
+    # left out devicenumber and trigger parameter because devicenumber has been formatted as integer
+    # trigger parameter is a string
+    columns = df_temp.columns.to_numpy()[2:]
+    df_temp[columns] = df_temp[columns].astype(np.float64)
+    # Create ID device column
+    df_temp.insert(0, Headers.DEVICE_TYPE, np.full(df_temp.shape[0], Content.INJECTION_VALVE))
     return df_temp
 
 

@@ -59,6 +59,13 @@ WSEGDENSITY
 1   0.1 0.4 0.3 0.2 0.6 0.70    0.8 0.9
 /
 """
+WSEGINJV = """
+WSEGINJV
+-- Number   Trigger_Parameter   Trigger value   Cv_Inj   Ac_Primary   Ac_Secondary
+1           SPRD                0.5             0.10     4.700e-04    8e-5
+2           SWFR                150             0.10     4.700e-04    8e-5
+/
+"""
 WELSPECS = """
 WELSPECS
 --WELL GRP I J DREF PHASE DRAD INFEQ SIINS XFLOW PRTAB DENS
@@ -93,6 +100,7 @@ CASE_KEYWORDS = {
     "wsegvalv": WSEGVALV,
     "wsegdualrcp": WSEGDUALRCP,
     "wsegdensity": WSEGDENSITY,
+    "wseginjv": WSEGINJV,
 }
 SCHEDULE_KEYWORDS = {"welspecs": WELSPECS, "compdat": COMPDAT, "welsegs": WELSEGS, "compsegs": COMPSEGS}
 
@@ -253,6 +261,34 @@ def test_missing_wsegdensity(tmpdir):
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
     expected_error_message = "Missing keyword 'DEVICETYPE DENSITY' in input files."
     set_case(Content.DENSITY, ["completion"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    with pytest.raises(ValueError, match=expected_error_message):
+        utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
+
+
+def test_full_wseginjv(tmpdir, capsys):
+    """
+    Test output to screen from Completor with full INJV input.
+
+    Make a separate test for this keyword as it requires more input
+    that need to be correct.
+    """
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    set_case(Content.INJECTION_VALVE, ["completion", "wseginjv"], case_file)
+    set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
+    utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == ""
+
+
+def test_missing_wseginjv(tmpdir):
+    """Test output to screen from Completor with missing DENSITY_DRIVEN keyword."""
+    tmpdir.chdir()
+    _, _outfile, case_file, schedule_file = set_files(tmpdir)
+    expected_error_message = "Missing keyword 'DEVICETYPE INJV' in input files."
+    set_case(Content.INJECTION_VALVE, ["completion"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):
         utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
