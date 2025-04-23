@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/equinor/completor/compare/v1.1.3...v1.2.0) (2025-04-10)
+
+
+### ✨ Features
+
+* Injection valve ([#249](https://github.com/equinor/completor/issues/249)) ([b9cae2e](https://github.com/equinor/completor/commit/b9cae2e681573a3afc999b2cc2960c4f581ceca2))
+* New variable in WSEGAICD keyword ([#246](https://github.com/equinor/completor/issues/246)) ([8d3e05b](https://github.com/equinor/completor/commit/8d3e05b4311d930e99e0471a3b86273e78278a09))
+
+
+### 🐛 Bug Fixes
+
+* Fix scientific number formatting ([#252](https://github.com/equinor/completor/issues/252)) ([078e0b1](https://github.com/equinor/completor/commit/078e0b1e171fb165b9d04be80b0fd29f1ef0c3d6))
+
 ## [1.1.3](https://github.com/equinor/completor/compare/v1.1.2...v1.1.3) (2025-03-17)
 
 
