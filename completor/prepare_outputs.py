@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import MutableMapping
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -1624,9 +1625,6 @@ def print_wsegdualrcp(df_wsegdualrcp: pd.DataFrame, well_number: int) -> str:
 
 
 def print_wsegdensity_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
-    # Removes the last part of the path (the schedule filename), keeping the directory structure
-    path = re.sub(r"(?<=/)[^/]*$", "", path)
-
     rows_code = []
     for _, row in df_wsegdensity.iterrows():
         row_code = f"""
@@ -1650,9 +1648,7 @@ def print_wsegdensity_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
     data_block = ",\n".join(rows_code)
 
     final_code = f"""
-import datetime
 import opm_embedded
-import pandas as pd
 
 ecl_state = opm_embedded.current_ecl_state
 schedule = opm_embedded.current_schedule
@@ -1661,8 +1657,6 @@ summary_state = opm_embedded.current_summary_state
 
 if 'setup_done' not in locals():
     execution_counter = dict()
-    # executed = False
-    # setup_done = True
 
 data = [
     {data_block}
@@ -1699,10 +1693,7 @@ for row in data:
         f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{gas_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
     )
 
-    # --------------------- Conditions need to be checked ---------------------
-    key = (well_name, segment_number)
-    if key not in execution_counter:
-        execution_counter[key] = 0
+    # -------------------[key] = 0
 
     if execution_counter[key] == 0:
         schedule.insert_keywords(keyword_oil, report_step)
@@ -1732,8 +1723,10 @@ for row in data:
     """
 
     well_name = df_wsegdensity[Headers.WELL].iloc[0]
+    output_dir = Path(path).parent
+    output_file = output_dir / f"wsegdensity_{well_name}.py"
 
-    with open(f"{path}wsegdensity_{well_name}.py", "w") as file:
+    with open(output_file, "w") as file:
         file.writelines(final_code)
 
     action = f"""

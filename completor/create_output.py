@@ -32,6 +32,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         Properly formatted output data for completion data, well segments, completion segments, and bonus.
     """
 
+    df_density_driven_all = []
     completion_data_list = []
     print_well_segments = ""
     print_well_segments_link = ""
@@ -42,6 +43,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     print_inflow_control_device = ""
     print_density_driven = ""
     print_dual_rate_controlled_production = ""
+    print_density_driven_py = ""
     print_density_driven_py = ""
 
     start_segment = 2
@@ -146,13 +148,13 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         print_inflow_control_valve += _format_inflow_control_valve(
             well.well_name, lateral.lateral_number, df_inflow_control_valve, first
         )
-        print_density_driven += _format_density_driven(well.well_number, df_density_driven)
         print_dual_rate_controlled_production += _format_dual_rate_controlled_production(
             well.well_number, df_dual_rate_controlled_production
         )
-        print_density_driven_py += _format_density_driven_py(
-            df_density_driven, "/project/icv/arza/drogon_dar_test/eclipse/include/schedule/drogon_ict.sch"
-        )
+        if case.wsegdensity_py:
+            df_density_driven_all.append(df_density_driven)
+        else:
+            print_density_driven += _format_density_driven(well.well_number, df_density_driven)
 
         if figure_name is not None:
             logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
@@ -165,6 +167,12 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
                 )
             logger.info("Creating schematics: %s.pdf", figure_name)
         first = False
+
+    if case.wsegdensity_py:
+        df_density_driven_merged = pd.concat(df_density_driven_all, ignore_index=True)
+        if not df_density_driven_merged.empty:
+            print_density_driven_py += _format_density_driven_py(df_density_driven_merged, str(case.output_file))
+
     print_completion_data = "\n".join(completion_data_list)
     if print_well_segments:
         print_well_segments = f"{print_well_segments}\n/\n\n"
@@ -204,6 +212,18 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             f"{'-' * 100}\n\n\n"
         )
         bonus.append(metadata + print_dual_rate_controlled_production + "\n\n\n\n")
+    if print_density_driven_py:
+        metadata = (
+            f"{'-' * 100}\n"
+            "-- This is how we model DENSITY technology using set of PYACTION keyword.\n"
+            "-- The segment dP curves changes according to the segment water-\n"
+            "-- and gas volume fractions at downhole condition.\n"
+            "-- The value of Cv is adjusted according to the segment length and the number of\n"
+            "-- devices per joint. The constriction area varies according to values of\n"
+            "-- volume fractions.\n"
+            f"{'-' * 100}\n\n\n"
+        )
+        bonus.append(metadata + print_density_driven_py + "\n\n\n\n")
     if print_density_driven_py:
         metadata = (
             f"{'-' * 100}\n"
@@ -464,6 +484,21 @@ def _format_density_driven(well_number: int, df_wsegdensity: pd.DataFrame) -> st
     if df_wsegdensity.empty:
         return ""
     return prepare_outputs.print_wsegdensity(df_wsegdensity, well_number + 1)
+
+
+def _format_density_driven_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
+    """Formats well-segments for density driven valve.
+
+    Args:
+        df_wsegdensity: Data to print.
+        path: path to save python file (schedule file path)
+
+    Returns:
+        Formatted string.
+    """
+    if df_wsegdensity.empty:
+        return ""
+    return prepare_outputs.print_wsegdensity_py(df_wsegdensity, path)
 
 
 def _format_density_driven_py(df_wsegdensity: pd.DataFrame, path: str) -> str:

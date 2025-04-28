@@ -521,17 +521,16 @@ class ReadCasefile:
                 raise CompletorError(f"Not all device in COMPLETION is specified in {key}")
 
     def read_wsegdensity_py(self) -> None:
-        """Read and WSEGDENSITY_PY keyword in the case file.
-
-        If WSEGDENSITY_PY = True the program will use the Python version of the WSEGDENSITY keyword.
-        The default value is False.
-        """
+        """Read WSEGDENSITY_PY keyword. Accepts TRUE or just '/' as True."""
         start_index, end_index = parse.locate_keyword(self.content, Keywords.DENSITY_PY)
-        if end_index == start_index + 2:
-            wsegdensity_py = self.content[start_index + 1]
-            if wsegdensity_py.upper() == "TRUE":
+
+        if end_index == start_index + 1:
+            # Keyword followed directly by '/', no value = True
+            self.wsegdensity_py = True
+        elif end_index == start_index + 2:
+            val = self.content[start_index + 1]
+            if val.upper() == "TRUE":
                 self.wsegdensity_py = True
-        logger.info("wsegdensity_py is set to %s", self.wsegdensity_py)
 
     def read_wsegdualrcp(self) -> None:
         """Read the DUALRCP keyword in the case file.
