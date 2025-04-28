@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import MutableMapping
 from typing import Any
 
@@ -1619,4 +1620,133 @@ def print_wsegdualrcp(df_wsegdualrcp: pd.DataFrame, well_number: int) -> str:
             print_df.columns = new_column
             print_df = Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE + "\n" + dataframe_tostring(print_df, True)
             action += f"{print_df}\n/\nENDACTIO\n\n"
+    return action
+
+
+def print_wsegdensity_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
+    # Removes the last part of the path (the schedule filename), keeping the directory structure
+    path = re.sub(r"(?<=/)[^/]*$", "", path)
+
+    rows_code = []
+    for _, row in df_wsegdensity.iterrows():
+        row_code = f"""
+            {{
+                "well_name": "{row[Headers.WELL]}",
+                "segment_number": {row[Headers.START_SEGMENT_NUMBER]},
+                "flow_coefficient": {row[Headers.FLOW_COEFFICIENT]},
+                "oil_flow_area": {row[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA]},
+                "gas_flow_area": {row[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA]},
+                "water_flow_area": {row[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA]},
+                "water_low": {row[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF]},
+                "water_high": {row[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF]},
+                "gas_low": {row[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF]},
+                "gas_high": {row[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF]},
+                "defaults": "{row[Headers.DEFAULTS]}",
+                "max_flow_area": {row[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]}
+            }}
+        """
+        rows_code.append(row_code.strip())
+
+    data_block = ",\n".join(rows_code)
+
+    final_code = f"""
+import datetime
+import opm_embedded
+import pandas as pd
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if 'setup_done' not in locals():
+    execution_counter = dict()
+    # executed = False
+    # setup_done = True
+
+data = [
+    {data_block}
+]
+
+for row in data:
+    well_name = row["well_name"]
+    segment_number = row["segment_number"]
+    flow_coefficient = row["flow_coefficient"]
+    oil_flow_area = row["oil_flow_area"]
+    gas_flow_area = row["gas_flow_area"]
+    water_flow_area = row["water_flow_area"]
+    max_flow_area = row["max_flow_area"]
+    water_low = row["water_low"]
+    water_high = row["water_high"]
+    gas_low = row["gas_low"]
+    gas_high = row["gas_high"]
+    defaults = row["defaults"]
+
+    swhf = summary_state[f"SWHF:{{well_name}}:{{segment_number}}"]
+    sghf = summary_state[f"SGHF:{{well_name}}:{{segment_number}}"]
+    suvtrig = summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"]
+
+    keyword_oil = (
+        f"WSEGVALV\\n"
+        f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{oil_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
+    )
+    keyword_water = (
+        f"WSEGVALV\\n"
+        f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{water_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
+    )
+    keyword_gas = (
+        f"WSEGVALV\\n"
+        f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{gas_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
+    )
+
+    # --------------------- Conditions need to be checked ---------------------
+    key = (well_name, segment_number)
+    if key not in execution_counter:
+        execution_counter[key] = 0
+
+    if execution_counter[key] == 0:
+        schedule.insert_keywords(keyword_oil, report_step)
+        summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
+
+    if execution_counter[key] < 1000000:
+        if swhf is not None and sghf is not None:
+            if swhf <= water_high and sghf > gas_high and suvtrig == 0:
+                schedule.insert_keywords(keyword_gas, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 1
+                execution_counter[key] += 1
+
+            elif swhf > water_high and sghf <= gas_high and suvtrig == 0:
+                schedule.insert_keywords(keyword_water, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 2
+                execution_counter[key] += 1
+
+            elif sghf < gas_low and suvtrig == 1:
+                schedule.insert_keywords(keyword_oil, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
+                execution_counter[key] += 1
+
+            elif swhf < water_low and suvtrig == 2:
+                schedule.insert_keywords(keyword_oil, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
+                execution_counter[key] += 1
+    """
+
+    well_name = df_wsegdensity[Headers.WELL].iloc[0]
+
+    with open(f"{path}wsegdensity_{well_name}.py", "w") as file:
+        file.writelines(final_code)
+
+    action = f"""
+-------------------------------------
+-- START OF PYACTION SECTION
+
+PYACTION
+WSEGDENSITY_{well_name} UNLIMITED /
+
+'../include/schedule/wsegdensity_{well_name}.py' /
+
+-- END OF PYACTION SECTION
+-------------------------------------
+"""
+
     return action

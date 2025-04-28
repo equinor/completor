@@ -90,6 +90,7 @@ class ReadCasefile:
         self.minimum_segment_length: float = 0.0
         self.strict = True
         self.gp_perf_devicelayer = False
+        self.wsegdensity_py = False
         self.schedule_file = schedule_file
         self.output_file = output_file
         self.completion_table = pd.DataFrame()
@@ -117,6 +118,7 @@ class ReadCasefile:
         self.read_wsegvalv()
         self.read_wsegsicd()
         self.read_wsegdensity()
+        self.read_wsegdensity_py()
         self.read_wsegdualrcp()
         self.read_wsegicv()
         self.read_lat2device()
@@ -517,6 +519,19 @@ class ReadCasefile:
             ].to_numpy()
             if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {key}")
+
+    def read_wsegdensity_py(self) -> None:
+        """Read and WSEGDENSITY_PY keyword in the case file.
+
+        If WSEGDENSITY_PY = True the program will use the Python version of the WSEGDENSITY keyword.
+        The default value is False.
+        """
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.DENSITY_PY)
+        if end_index == start_index + 2:
+            wsegdensity_py = self.content[start_index + 1]
+            if wsegdensity_py.upper() == "TRUE":
+                self.wsegdensity_py = True
+        logger.info("wsegdensity_py is set to %s", self.wsegdensity_py)
 
     def read_wsegdualrcp(self) -> None:
         """Read the DUALRCP keyword in the case file.
