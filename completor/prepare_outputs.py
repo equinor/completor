@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import re
 from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any
@@ -1657,6 +1656,8 @@ summary_state = opm_embedded.current_summary_state
 
 if 'setup_done' not in locals():
     execution_counter = dict()
+    executed = False
+    setup_done = True
 
 data = [
     {data_block}
@@ -1693,7 +1694,8 @@ for row in data:
         f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{gas_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
     )
 
-    # -------------------[key] = 0
+    key = (well_name, segment_number)
+    execution_counter.setdefault(key, 0)
 
     if execution_counter[key] == 0:
         schedule.insert_keywords(keyword_oil, report_step)
@@ -1721,7 +1723,6 @@ for row in data:
                 summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
                 execution_counter[key] += 1
     """
-
     well_name = df_wsegdensity[Headers.WELL].iloc[0]
     output_dir = Path(path).parent
     output_file = output_dir / f"wsegdensity_{well_name}.py"

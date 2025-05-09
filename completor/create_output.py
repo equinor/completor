@@ -44,7 +44,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     print_density_driven = ""
     print_dual_rate_controlled_production = ""
     print_density_driven_py = ""
-    print_density_driven_py = ""
 
     start_segment = 2
     start_branch = 1
@@ -212,18 +211,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             f"{'-' * 100}\n\n\n"
         )
         bonus.append(metadata + print_dual_rate_controlled_production + "\n\n\n\n")
-    if print_density_driven_py:
-        metadata = (
-            f"{'-' * 100}\n"
-            "-- This is how we model DENSITY technology using set of PYACTION keyword.\n"
-            "-- The segment dP curves changes according to the segment water-\n"
-            "-- and gas volume fractions at downhole condition.\n"
-            "-- The value of Cv is adjusted according to the segment length and the number of\n"
-            "-- devices per joint. The constriction area varies according to values of\n"
-            "-- volume fractions.\n"
-            f"{'-' * 100}\n\n\n"
-        )
-        bonus.append(metadata + print_density_driven_py + "\n\n\n\n")
     if print_density_driven_py:
         metadata = (
             f"{'-' * 100}\n"
@@ -484,21 +471,6 @@ def _format_density_driven(well_number: int, df_wsegdensity: pd.DataFrame) -> st
     if df_wsegdensity.empty:
         return ""
     return prepare_outputs.print_wsegdensity(df_wsegdensity, well_number + 1)
-
-
-def _format_density_driven_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
-    """Formats well-segments for density driven valve.
-
-    Args:
-        df_wsegdensity: Data to print.
-        path: path to save python file (schedule file path)
-
-    Returns:
-        Formatted string.
-    """
-    if df_wsegdensity.empty:
-        return ""
-    return prepare_outputs.print_wsegdensity_py(df_wsegdensity, path)
 
 
 def _format_density_driven_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
