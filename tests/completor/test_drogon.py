@@ -41,6 +41,12 @@ _TEST_FILE = "test.sch"
         "icv_aicd.case",
         "icv1_oa.case",
         "icv6_gp_oa_pa.case",
+        "injection_valve1_gp.case",
+        "injection_valve6_oa.case",
+        "injection_valve6_pa3.case",
+        "injection_valve6_gp_oa_pa1.case",
+        "injection_valve6_gp_oa.case",
+        "injection_valve6_perf_aicd6_gp_oa.case",
         "perf6_oa.case",
         "perf_aicd6_oa_gp.case",
         "perf_aicd6_oa_gp_pa1.case",
@@ -78,6 +84,9 @@ def test_drogon_cases(drogon_case: str, tmpdir):
     schedule_path = Path(_TESTDIR_DROGON / schedule_name)
     true_file = Path(_TESTDIR_DROGON / drogon_case.replace(".case", ".true"))
     utils_for_tests.open_files_run_create(case_path, schedule_path, _TEST_FILE)
+    with open(_TEST_FILE, encoding="utf-8") as file:
+        result = file.read()
+    print(result)
     utils_for_tests.assert_results(true_file, _TEST_FILE)
 
 
