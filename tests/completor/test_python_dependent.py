@@ -61,7 +61,7 @@ def test_density_python(tmpdir):
 
     assert actual == expected, "Schedule mismatch"
 
-    # Check Python files
+    # Check python files
     for well in ["A2", "OP5"]:
         py_file = Path(f"wsegdensity_{well}.py")
         true_file = _TESTDIR / f"wsegdensity_{well}.true"
