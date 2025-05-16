@@ -91,6 +91,7 @@ class ReadCasefile:
         self.minimum_segment_length: float = 0.0
         self.strict = True
         self.gp_perf_devicelayer = False
+        self.wsegdensity_py = False
         self.schedule_file = schedule_file
         self.output_file = output_file
         self.completion_table = pd.DataFrame()
@@ -119,6 +120,7 @@ class ReadCasefile:
         self.read_wsegvalv()
         self.read_wsegsicd()
         self.read_wsegdensity()
+        self.read_wsegdensity_py()
         self.read_wseginjv()
         self.read_wsegdualrcp()
         self.read_wsegicv()
@@ -554,6 +556,18 @@ class ReadCasefile:
             ][Headers.DEVICE_NUMBER].to_numpy()
             if not check_contents(device_checks, self.wseginjv_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {Keywords.INJECTION_VALVE}")
+
+    def read_wsegdensity_py(self) -> None:
+        """Read WSEGDENSITY_PY keyword. Accepts TRUE or just '/' as True."""
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.DENSITY_PY)
+
+        if end_index == start_index + 1:
+            # Keyword followed directly by '/', no value = True
+            self.wsegdensity_py = True
+        elif end_index == start_index + 2:
+            val = self.content[start_index + 1]
+            if val.upper() == "TRUE":
+                self.wsegdensity_py = True
 
     def read_wsegdualrcp(self) -> None:
         """Read the DUALRCP keyword in the case file.
