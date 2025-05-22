@@ -33,7 +33,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: "poetry"
-              
+
     - name: Install ERT Ubuntu dependencies
       run: |
         sudo apt-get update
