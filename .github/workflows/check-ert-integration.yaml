@@ -33,6 +33,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: "poetry"
+              
+    - name: Install ERT Ubuntu dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libegl1
+      shell: bash
 
     - name: Install dependencies
       run: |
