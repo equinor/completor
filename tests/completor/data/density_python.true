@@ -168,7 +168,7 @@ COMPSEGS
 PYACTION
 WSEGDENSITY_A2 UNLIMITED /
 
-'../include/schedule/wsegdensity_A2.py' /
+'wsegdensity_A2.py' /
 
 -- END OF PYACTION SECTION
 -------------------------------------
@@ -247,7 +247,7 @@ COMPSEGS
 PYACTION
 WSEGDENSITY_OP5 UNLIMITED /
 
-'../include/schedule/wsegdensity_OP5.py' /
+'wsegdensity_OP5.py' /
 
 -- END OF PYACTION SECTION
 -------------------------------------
