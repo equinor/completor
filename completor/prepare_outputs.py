@@ -1932,11 +1932,17 @@ for row in data:
                 execution_counter[key] += 1
     """
     well_name = df_wsegdensity[Headers.WELL].iloc[0]
-    output_dir = Path(path).parent
-    output_file = output_dir / f"wsegdensity_{well_name}.py"
+    output_dir = Path(path).parent.resolve()
+    fmu_path = Path("eclipse/include/")
+    python_file = output_dir / f"wsegdensity_{well_name}.py"
 
-    with open(output_file, "w") as file:
+    with open(python_file, "w") as file:
         file.writelines(final_code)
+
+    if fmu_path.as_posix() in output_dir.as_posix():
+        output_file = f"../include/schedule/wsegdensity_{well_name}.py"
+    else:
+        output_file = f"wsegdensity_{well_name}.py"
 
     action = f"""
 -------------------------------------
@@ -1945,7 +1951,7 @@ for row in data:
 PYACTION
 WSEGDENSITY_{well_name} UNLIMITED /
 
-'../include/schedule/wsegdensity_{well_name}.py' /
+'{output_file}' /
 
 -- END OF PYACTION SECTION
 -------------------------------------
