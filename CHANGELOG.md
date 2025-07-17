@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/equinor/completor/compare/v1.2.0...v1.2.1) (2025-05-22)
+
+
+### 🧹 Chores
+
+* Python 3.12 ([#259](https://github.com/equinor/completor/issues/259)) ([8152175](https://github.com/equinor/completor/commit/8152175005356b96b22c71ee71e60e81789abd33))
+
 ## [1.2.0](https://github.com/equinor/completor/compare/v1.1.3...v1.2.0) (2025-04-10)
 
 
