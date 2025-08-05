@@ -157,7 +157,9 @@ def _replace_machine_specific_text(text: str) -> str:
     Returns:
         Text with machine and run specific text replaced.
     """
-    return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "REPLACED", text, 0, re.MULTILINE)
+    re.sub("", "", text)
+    return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "REPLACED", text, count=0, flags=re.MULTILINE)
+
 
 
 class ReadSchedule:
