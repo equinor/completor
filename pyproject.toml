@@ -14,15 +14,16 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/equinor/completor/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.11, <3.13"
+python = ">=3.11, <3.14"
 matplotlib = "^3.9"
-numpy = ">=1.26, <3.0"
+numpy = "^2.0"
 pandas = "^2.2"
 scipy = "^1.14"
 tqdm = "^4.66"

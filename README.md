@@ -12,7 +12,7 @@ Detailed documentation for usage of completor can be found at https://equinor.gi
 ## Getting started as a user
 
 ### Prerequisites
-* [Python](https://www.python.org/), version 3.11 or 3.12.
+* [Python](https://www.python.org/), version 3.11 or 3.13.
 * [ERT](https://github.com/equinor/ert) (optional, and only available on Linux.)
 
 ### Installation
@@ -53,7 +53,7 @@ and making a pull request.
 See [Contribution Document](documentation/docs/contribution_guide.mdx) on how to contribute.
 
 ### Install completor as dev
-In order to run Completor® you need to have versions of [Python 3.11 or Python 3.12](https://www.python.org/downloads/) installed.
+In order to run Completor® you need to have versions of [Python 3.11, 3.12 or 3.13](https://www.python.org/downloads/) installed.
 #### Source code
 Clone the [Completor® repository](https://github.com/equinor/completor) to get the source code.
 ```bash
