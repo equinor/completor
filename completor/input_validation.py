@@ -8,7 +8,7 @@ import pandas as pd
 from completor.constants import Content, Headers
 from completor.exceptions.clean_exceptions import CompletorError
 
-pd.set_option('future.no_silent_downcasting', True)
+pd.set_option("future.no_silent_downcasting", True)
 
 
 def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:

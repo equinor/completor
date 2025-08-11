@@ -161,7 +161,6 @@ def _replace_machine_specific_text(text: str) -> str:
     return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "REPLACED", text, count=0, flags=re.MULTILINE)
 
 
-
 class ReadSchedule:
     """Class for reading and processing of schedule/well files.
 
