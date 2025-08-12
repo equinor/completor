@@ -25,7 +25,6 @@ python = ">=3.11, <3.14"
 matplotlib = "^3.9"
 numpy = "^2.0"
 pandas = "^2.2"
-scipy = "^1.14"
 tqdm = "^4.66"
 
 rstcheck-core = {version="^1.2", optional=true}
