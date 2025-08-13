@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import sys
 import time
 
 from tqdm import tqdm
@@ -122,7 +123,7 @@ def create(
         for chunk in find_keyword_data(Keywords.COMPLETION_SEGMENTS, schedule):
             clean_data = clean_raw_data(chunk, Keywords.COMPLETION_SEGMENTS)
             meaningful_data = read_schedule.set_compsegs(meaningful_data, clean_data)
-        for i, well_name in tqdm(enumerate(active_wells.tolist()), total=len(active_wells)):
+        for i, well_name in tqdm(enumerate(active_wells.tolist()), total=len(active_wells), file=sys.stdout):
             try:
                 well = Well(well_name, i, case, meaningful_data[well_name])
             except KeyError:
