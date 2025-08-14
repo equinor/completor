@@ -13,13 +13,14 @@ classifiers = [
     "Operating System :: OS Independent",
     "Natural Language :: English",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/equinor/completor/issues"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11, <3.13"
 matplotlib = "^3.9"
 numpy = ">=1.26, <3.0"
 pandas = "^2.2"
@@ -27,7 +28,7 @@ scipy = "^1.14"
 tqdm = "^4.66"
 
 rstcheck-core = {version="^1.2", optional=true}
-ert = {version="^12", optional=true}
+ert = {version="^14", optional=true}
 pytest = {version="^8.3", optional=true}
 pytest-xdist = {version="^3.6", optional=true}
 pytest-env = {version="^1", optional=true}
