@@ -32,7 +32,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         Properly formatted output data for completion data, well segments, completion segments, and bonus.
     """
 
-    df_density_driven_all = []
     completion_data_list = []
     print_well_segments = ""
     print_well_segments_link = ""

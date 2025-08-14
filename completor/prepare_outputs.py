@@ -1911,8 +1911,8 @@ for i in range(len(data["WELL"])):
     return final_code
 
 
-def print_python_file(code: str, path: str, well_name: str) -> str:
-    base_dir = Path.cwd() if Path(path).parent == Path(".") else Path(path).parent
+def print_python_file(code: str, dir: str, well_name: str) -> str:
+    base_dir = Path.cwd() if Path(dir).parent == Path(".") else Path(dir).parent
     fmu_path = Path("eclipse/include/")
     if str(fmu_path) in str(base_dir):
         base_include_path = Path("../include/schedule")
