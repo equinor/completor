@@ -44,7 +44,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     print_density_driven = ""
     print_injection_valve = ""
     print_dual_rate_controlled_production = ""
-    print_density_driven_py = ""
+    print_density_driven_pyaction = ""
 
     start_segment = 2
     start_branch = 1
@@ -153,8 +153,17 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         print_dual_rate_controlled_production += _format_dual_rate_controlled_production(
             well.well_number, df_dual_rate_controlled_production
         )
-        if case.wsegdensity_py:
-            df_density_driven_all.append(df_density_driven)
+        # output using ACTIONX (if-else) logic is dual RCP, density driven, and injection valve
+        if case.python_dependent:
+            # print the python file out
+            # append all laterals for density driven, dual RCP, and injection valve
+            # TODO(#273): Add functionality for injection valve
+            # TODO(#274): Add functionality for dual RCP
+            print_density_driven_pyaction = _format_density_driven_pyaction(df_density_driven)
+            output_directory = prepare_outputs.print_python_file(
+                print_density_driven_pyaction, case.output_file, well.well_name
+            )
+            print_density_driven_include = prepare_outputs.print_wsegdensity_include(output_directory, well.well_name)
         else:
             print_density_driven += _format_density_driven(well.well_number, df_density_driven)
 
@@ -169,11 +178,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
                 )
             logger.info("Creating schematics: %s.pdf", figure_name)
         first = False
-
-    if case.wsegdensity_py:
-        df_density_driven_merged = pd.concat(df_density_driven_all, ignore_index=True)
-        if not df_density_driven_merged.empty:
-            print_density_driven_py += _format_density_driven_py(df_density_driven_merged, str(case.output_file))
 
     print_completion_data = "\n".join(completion_data_list)
     if print_well_segments:
@@ -196,7 +200,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     if print_density_driven:
         metadata = (
             f"{'-' * 100}\n"
-            "-- This is how we model DENSITY technology using sets of ACTIONX keywords.\n"
+            "-- This is how we model density driven technology using sets of ACTIONX keywords.\n"
             "-- The segment dP curves changes according to the segment water-\n"
             "-- and gas volume fractions at downhole condition.\n"
             "-- The value of Cv is adjusted according to the segment length and the number of\n"
@@ -208,7 +212,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     if print_injection_valve:
         metadata = (
             f"{'-' * 100}\n"
-            "-- This is how we model INJV technology using sets of ACTIONX keywords.\n"
+            "-- This is how we model autonomous injection valve technology using sets of ACTIONX keywords.\n"
             "-- The DP paramaters changes according to the trigger parameter.-\n"
             "-- The value of Cv is adjusted according to the segment length and the number of\n"
             "-- devices per joint. The constriction area will change if the parameter is triggered.\n"
@@ -218,16 +222,16 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
     if print_dual_rate_controlled_production:
         metadata = (
             f"{'-' * 100}\n"
-            "-- This is how we model DUALRCP technology using sets of ACTIONX keyword\n"
+            "-- This is how we model dual RCP curves using sets of ACTIONX keyword\n"
             "-- the DP parameters change according to the segment water cut (at downhole condition )\n"
             "-- and gas volume fraction (at downhole condition)\n"
             f"{'-' * 100}\n\n\n"
         )
         bonus.append(metadata + print_dual_rate_controlled_production + "\n\n\n\n")
-    if print_density_driven_py:
+    if print_density_driven_pyaction:
         metadata = (
             f"{'-' * 100}\n"
-            "-- This is how we model DENSITY technology using set of PYACTION keyword.\n"
+            "-- This is how we model density driven technology for python dependent keyword.\n"
             "-- The segment dP curves changes according to the segment water-\n"
             "-- and gas volume fractions at downhole condition.\n"
             "-- The value of Cv is adjusted according to the segment length and the number of\n"
@@ -235,7 +239,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             "-- volume fractions.\n"
             f"{'-' * 100}\n\n\n"
         )
-        bonus.append(metadata + print_density_driven_py + "\n\n\n\n")
+        bonus.append(metadata + print_density_driven_include + "\n\n\n\n")
 
     return print_completion_data, print_well_segments, print_completion_segments, "".join(bonus)
 
@@ -486,7 +490,7 @@ def _format_density_driven(well_number: int, df_wsegdensity: pd.DataFrame) -> st
     return prepare_outputs.print_wsegdensity(df_wsegdensity, well_number + 1)
 
 
-def _format_density_driven_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
+def _format_density_driven_pyaction(df_wsegdensity: pd.DataFrame) -> str:
     """Formats well-segments for density driven valve.
 
     Args:
@@ -498,7 +502,7 @@ def _format_density_driven_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
     """
     if df_wsegdensity.empty:
         return ""
-    return prepare_outputs.print_wsegdensity_py(df_wsegdensity, path)
+    return prepare_outputs.print_wsegdensity_pyaction(df_wsegdensity)
 
 
 def _format_injection_valve(well_number: int, df_wseginjv: pd.DataFrame) -> str:

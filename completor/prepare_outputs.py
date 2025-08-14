@@ -1831,29 +1831,8 @@ def print_wsegdualrcp(df_wsegdualrcp: pd.DataFrame, well_number: int) -> str:
     return action
 
 
-def print_wsegdensity_py(df_wsegdensity: pd.DataFrame, path: str) -> str:
-    rows_code = []
-    for _, row in df_wsegdensity.iterrows():
-        row_code = f"""
-            {{
-                "well_name": "{row[Headers.WELL]}",
-                "segment_number": {row[Headers.START_SEGMENT_NUMBER]},
-                "flow_coefficient": {row[Headers.FLOW_COEFFICIENT]},
-                "oil_flow_area": {row[Headers.OIL_FLOW_CROSS_SECTIONAL_AREA]},
-                "gas_flow_area": {row[Headers.GAS_FLOW_CROSS_SECTIONAL_AREA]},
-                "water_flow_area": {row[Headers.WATER_FLOW_CROSS_SECTIONAL_AREA]},
-                "water_low": {row[Headers.WATER_HOLDUP_FRACTION_LOW_CUTOFF]},
-                "water_high": {row[Headers.WATER_HOLDUP_FRACTION_HIGH_CUTOFF]},
-                "gas_low": {row[Headers.GAS_HOLDUP_FRACTION_LOW_CUTOFF]},
-                "gas_high": {row[Headers.GAS_HOLDUP_FRACTION_HIGH_CUTOFF]},
-                "defaults": "{row[Headers.DEFAULTS]}",
-                "max_flow_area": {row[Headers.MAX_FLOW_CROSS_SECTIONAL_AREA]}
-            }}
-        """
-        rows_code.append(row_code.strip())
-
-    data_block = ",\n".join(rows_code)
-
+def print_wsegdensity_pyaction(df_wsegdensity: pd.DataFrame) -> str:
+    data_dict = df_wsegdensity.to_dict(orient="list")
     final_code = f"""
 import opm_embedded
 
@@ -1867,23 +1846,21 @@ if 'setup_done' not in locals():
     executed = False
     setup_done = True
 
-data = [
-    {data_block}
-]
+data={data_dict}
 
-for row in data:
-    well_name = row["well_name"]
-    segment_number = row["segment_number"]
-    flow_coefficient = row["flow_coefficient"]
-    oil_flow_area = row["oil_flow_area"]
-    gas_flow_area = row["gas_flow_area"]
-    water_flow_area = row["water_flow_area"]
-    max_flow_area = row["max_flow_area"]
-    water_low = row["water_low"]
-    water_high = row["water_high"]
-    gas_low = row["gas_low"]
-    gas_high = row["gas_high"]
-    defaults = row["defaults"]
+for i in range(len(data["WELL"])):
+    well_name = data["WELL"][i]
+    segment_number = data["START_SEGMENT_NUMBER"][i]
+    flow_coefficient = data["FLOW_COEFFICIENT"][i]
+    oil_flow_area = data["OIL_FLOW_CROSS_SECTIONAL_AREA"][i]
+    gas_flow_area = data["GAS_FLOW_CROSS_SECTIONAL_AREA"][i]
+    water_flow_area = data["WATER_FLOW_CROSS_SECTIONAL_AREA"][i]
+    max_flow_area = data["MAX_FLOW_CROSS_SECTIONAL_AREA"][i]
+    water_low = data["WATER_HOLDUP_FRACTION_LOW_CUTOFF"][i]
+    water_high = data["WATER_HOLDUP_FRACTION_HIGH_CUTOFF"][i]
+    gas_low = data["GAS_HOLDUP_FRACTION_LOW_CUTOFF"][i]
+    gas_high = data["GAS_HOLDUP_FRACTION_HIGH_CUTOFF"][i]
+    defaults = data["DEFAULTS"][i]
 
     swhf = summary_state[f"SWHF:{{well_name}}:{{segment_number}}"]
     sghf = summary_state[f"SGHF:{{well_name}}:{{segment_number}}"]
@@ -1931,18 +1908,24 @@ for row in data:
                 summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
                 execution_counter[key] += 1
     """
-    well_name = df_wsegdensity[Headers.WELL].iloc[0]
-    output_dir = Path(path).parent.resolve()
+    return final_code
+
+
+def print_python_file(code: str, path: str, well_name: str) -> str:
+    base_dir = Path.cwd() if Path(path).parent == Path(".") else Path(path).parent
     fmu_path = Path("eclipse/include/")
-    python_file = output_dir / f"wsegdensity_{well_name}.py"
-
-    with open(python_file, "w") as file:
-        file.writelines(final_code)
-
-    if fmu_path.as_posix() in output_dir.as_posix():
-        output_file = f"../include/schedule/wsegdensity_{well_name}.py"
+    if str(fmu_path) in str(base_dir):
+        base_include_path = Path("../include/schedule")
     else:
-        output_file = f"wsegdensity_{well_name}.py"
+        base_include_path = Path("")
+    output_directory = f"{base_include_path}/wsegdensity_{well_name}.py"
+    python_file = base_dir / f"wsegdensity_{well_name}.py"
+    with open(python_file, "w") as file:
+        file.writelines(code)
+    return output_directory
+
+
+def print_wsegdensity_include(output_directory: str, well_name: str) -> str:
 
     action = f"""
 -------------------------------------
@@ -1951,7 +1934,7 @@ for row in data:
 PYACTION
 WSEGDENSITY_{well_name} UNLIMITED /
 
-'{output_file}' /
+'{output_directory}' /
 
 -- END OF PYACTION SECTION
 -------------------------------------
