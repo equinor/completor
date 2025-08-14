@@ -1,6 +1,5 @@
 """Test that Completor generates Python-based density device layers correctly."""
 
-import re
 from pathlib import Path
 
 import utils_for_tests
@@ -44,8 +43,8 @@ COMPLETION
     true_file = Path(_TESTDIR / "density_python.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
-    py_file = Path(f"wsegdensity_A1.py")
-    true_file = _TESTDIR / f"wsegdensity_A1.true"
+    py_file = Path("wsegdensity_A1.py")
+    true_file = _TESTDIR / "wsegdensity_A1.true"
     assert py_file.exists(), f"Missing {py_file.name}"
     assert true_file.exists(), f"Missing {true_file.name}"
     assert py_file.read_text().strip() == true_file.read_text().strip(), f"Mismatch in {py_file.name}"
