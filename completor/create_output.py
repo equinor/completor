@@ -160,7 +160,7 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
             # TODO(#274): Add functionality for dual RCP
             print_density_driven_pyaction = _format_density_driven_pyaction(df_density_driven)
             output_directory = prepare_outputs.print_python_file(
-                print_density_driven_pyaction, case.output_file, well.well_name
+                print_density_driven_pyaction, str(case.output_file), well.well_name
             )
             print_density_driven_include = prepare_outputs.print_wsegdensity_include(output_directory, well.well_name)
         else:
