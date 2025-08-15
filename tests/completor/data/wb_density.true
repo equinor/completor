@@ -62,7 +62,7 @@ COMPSEGS
 
 
 ----------------------------------------------------------------------------------------------------
--- This is how we model DENSITY technology using sets of ACTIONX keywords.
+-- This is how we model density driven technology using sets of ACTIONX keywords.
 -- The segment dP curves changes according to the segment water-
 -- and gas volume fractions at downhole condition.
 -- The value of Cv is adjusted according to the segment length and the number of

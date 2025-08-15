@@ -62,7 +62,7 @@ COMPSEGS
 
 
 ----------------------------------------------------------------------------------------------------
--- This is how we model DUALRCP technology using sets of ACTIONX keyword
+-- This is how we model dual RCP curves using sets of ACTIONX keyword
 -- the DP parameters change according to the segment water cut (at downhole condition )
 -- and gas volume fraction (at downhole condition)
 ----------------------------------------------------------------------------------------------------
