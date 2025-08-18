@@ -1832,6 +1832,14 @@ def print_wsegdualrcp(df_wsegdualrcp: pd.DataFrame, well_number: int) -> str:
 
 
 def print_wsegdensity_pyaction(df_wsegdensity: pd.DataFrame) -> str:
+    """Create PYACTION code.
+
+    Args:
+        df_wsegdensity: Output from function prepare_wsegdensity.
+
+    Returns:
+        Final code output formatted in PYACTION.
+    """
     data_dict = df_wsegdensity.to_dict(orient="list")
     final_code = f"""
 import opm_embedded
@@ -1911,28 +1919,48 @@ for i in range(len(data["WELL"])):
     return final_code
 
 
-def print_python_file(code: str, dir: str, well_name: str) -> str:
+def print_python_file(code: str, dir: str, well_name: str, lateral_number: int) -> str:
+    """Print Python PYACTION file.
+
+    Args:
+        code: Final code output formatted in PYACTION.
+        dir: Output path.
+        well_name: Well name.
+        lateral_number: Lateral number.
+
+    Returns:
+        Python file with PYACTION format, output directory with FMU format.
+    """
     base_dir = Path.cwd() if Path(dir).parent == Path(".") else Path(dir).parent
     fmu_path = Path("eclipse/include/")
     if str(fmu_path) in str(base_dir):
         base_include_path = Path("../include/schedule")
     else:
         base_include_path = Path("")
-    output_directory = f"{base_include_path}/wsegdensity_{well_name}.py"
-    python_file = base_dir / f"wsegdensity_{well_name}.py"
+    output_directory = f"{base_include_path}/wsegdensity_{well_name}_{lateral_number}.py"
+    python_file = base_dir / f"wsegdensity_{well_name}_{lateral_number}.py"
     with open(python_file, "w") as file:
         file.writelines(code)
     return output_directory
 
 
-def print_wsegdensity_include(output_directory: str, well_name: str) -> str:
+def print_wsegdensity_include(output_directory: str, well_name: str, lateral_number: int) -> str:
+    """Formatted PYACTION include in the output file.
 
+    Args:
+        output_directory: Include file path in FMU relative format.
+        well_name: Well name.
+        lateral_number: Lateral number.
+
+    Returns:
+        Include file output for the output file.
+    """
     action = f"""
 -------------------------------------
 -- START OF PYACTION SECTION
 
 PYACTION
-WSEGDENSITY_{well_name} UNLIMITED /
+WSEGDENSITY_{well_name}_{lateral_number} UNLIMITED /
 
 '{output_directory}' /
 

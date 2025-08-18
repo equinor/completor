@@ -8,8 +8,18 @@ import utils_for_tests
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
 
-with open(Path(_TESTDIR / "welldefinition.testfile"), encoding="utf-8") as file:
+with open(Path(_TESTDIR / "welldefinition_2branch.testfile"), encoding="utf-8") as file:
     WELL_DEFINITION = file.read()
+
+COMPLETION = """
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    DENSITY      1
+   A1    2     0   3000    0.2    0.25    1.00E-4     GP      2    DENSITY      1
+/
+"""
 
 WSEGDENSITY = """
 WSEGDENSITY
@@ -25,26 +35,37 @@ TRUE
 """
 
 
-def test_density_pyaction(tmpdir):
+def test_density_main_schedule_pyaction(tmpdir):
     """
     Test completor case with DENSITY.
     """
     tmpdir.chdir()
     case_file = f"""
-COMPLETION
---Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
---     Number  MEASURED_DEPTH   MEASURED_DEPTH  Tubing   Casing            Content Joint   Type  Number
---                      Diameter Diameter
-   A1    1     0   3000    0.2    0.25    1.00E-4     GP      1    DENSITY      1
-/
+{COMPLETION}
 {WSEGDENSITY}
 {PYTHON}
     """
     true_file = Path(_TESTDIR / "density_python.true")
     utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
     utils_for_tests.assert_results(true_file, _TEST_FILE, assert_text=True)
-    py_file = Path("wsegdensity_A1.py")
-    true_file = _TESTDIR / "wsegdensity_A1.true"
-    assert py_file.exists(), f"Missing {py_file.name}"
-    assert true_file.exists(), f"Missing {true_file.name}"
-    assert py_file.read_text().strip() == true_file.read_text().strip(), f"Mismatch in {py_file.name}"
+
+
+def test_density_pyaction_includes(tmpdir):
+    """
+    Test completor case with DENSITY for includes outputs.
+    """
+    tmpdir.chdir()
+    case_file = f"""
+{COMPLETION}
+{WSEGDENSITY}
+{PYTHON}
+    """
+    utils_for_tests.open_files_run_create(case_file, WELL_DEFINITION, _TEST_FILE)
+    py_file_a1_1 = Path("wsegdensity_A1_1.py")
+    py_file_a1_2 = Path("wsegdensity_A1_2.py")
+    true_file_a1_1 = _TESTDIR / "wsegdensity_A1_1.true"
+    true_file_a1_2 = _TESTDIR / "wsegdensity_A1_2.true"
+    assert py_file_a1_1.exists(), f"Missing {py_file_a1_1.name}"
+    assert py_file_a1_2.exists(), f"Missing {py_file_a1_2.name}"
+    assert py_file_a1_1.read_text().strip() == true_file_a1_1.read_text().strip(), f"Mismatch in {py_file_a1_1.name}"
+    assert py_file_a1_2.read_text().strip() == true_file_a1_2.read_text().strip(), f"Mismatch in {py_file_a1_2.name}"
