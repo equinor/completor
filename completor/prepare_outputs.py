@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import MutableMapping
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -1827,4 +1828,144 @@ def print_wsegdualrcp(df_wsegdualrcp: pd.DataFrame, well_number: int) -> str:
             print_df.columns = new_column
             print_df = Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE + "\n" + dataframe_tostring(print_df, True)
             action += f"{print_df}\n/\nENDACTIO\n\n"
+    return action
+
+
+def print_wsegdensity_pyaction(df_wsegdensity: pd.DataFrame) -> str:
+    """Create PYACTION code.
+
+    Args:
+        df_wsegdensity: Output from function prepare_wsegdensity.
+
+    Returns:
+        Final code output formatted in PYACTION.
+    """
+    data_dict = df_wsegdensity.to_dict(orient="list")
+    final_code = f"""
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if 'setup_done' not in locals():
+    execution_counter = dict()
+    executed = False
+    setup_done = True
+
+data={data_dict}
+
+for i in range(len(data["WELL"])):
+    well_name = data["WELL"][i]
+    segment_number = data["START_SEGMENT_NUMBER"][i]
+    flow_coefficient = data["FLOW_COEFFICIENT"][i]
+    oil_flow_area = data["OIL_FLOW_CROSS_SECTIONAL_AREA"][i]
+    gas_flow_area = data["GAS_FLOW_CROSS_SECTIONAL_AREA"][i]
+    water_flow_area = data["WATER_FLOW_CROSS_SECTIONAL_AREA"][i]
+    max_flow_area = data["MAX_FLOW_CROSS_SECTIONAL_AREA"][i]
+    water_low = data["WATER_HOLDUP_FRACTION_LOW_CUTOFF"][i]
+    water_high = data["WATER_HOLDUP_FRACTION_HIGH_CUTOFF"][i]
+    gas_low = data["GAS_HOLDUP_FRACTION_LOW_CUTOFF"][i]
+    gas_high = data["GAS_HOLDUP_FRACTION_HIGH_CUTOFF"][i]
+    defaults = data["DEFAULTS"][i]
+
+    swhf = summary_state[f"SWHF:{{well_name}}:{{segment_number}}"]
+    sghf = summary_state[f"SGHF:{{well_name}}:{{segment_number}}"]
+    suvtrig = summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"]
+
+    keyword_oil = (
+        f"WSEGVALV\\n"
+        f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{oil_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
+    )
+    keyword_water = (
+        f"WSEGVALV\\n"
+        f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{water_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
+    )
+    keyword_gas = (
+        f"WSEGVALV\\n"
+        f"  '{{well_name}}' {{segment_number}} {{flow_coefficient}} {{gas_flow_area}} {{defaults}} {{max_flow_area}} /\\n/"
+    )
+
+    key = (well_name, segment_number)
+    execution_counter.setdefault(key, 0)
+
+    if execution_counter[key] == 0:
+        schedule.insert_keywords(keyword_oil, report_step)
+        summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
+
+    if execution_counter[key] < 1000000:
+        if swhf is not None and sghf is not None:
+            if swhf <= water_high and sghf > gas_high and suvtrig == 0:
+                schedule.insert_keywords(keyword_gas, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 1
+                execution_counter[key] += 1
+
+            elif swhf > water_high and sghf <= gas_high and suvtrig == 0:
+                schedule.insert_keywords(keyword_water, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 2
+                execution_counter[key] += 1
+
+            elif sghf < gas_low and suvtrig == 1:
+                schedule.insert_keywords(keyword_oil, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
+                execution_counter[key] += 1
+
+            elif swhf < water_low and suvtrig == 2:
+                schedule.insert_keywords(keyword_oil, report_step)
+                summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
+                execution_counter[key] += 1
+    """
+    return final_code
+
+
+def print_python_file(code: str, dir: str, well_name: str, lateral_number: int) -> str:
+    """Print Python PYACTION file.
+
+    Args:
+        code: Final code output formatted in PYACTION.
+        dir: Output path.
+        well_name: Well name.
+        lateral_number: Lateral number.
+
+    Returns:
+        Python file with PYACTION format, output directory with FMU format.
+    """
+    base_dir = Path.cwd() if Path(dir).parent == Path(".") else Path(dir).parent
+    fmu_path = Path("eclipse/include/")
+    if str(fmu_path) in str(base_dir):
+        base_include_path = Path("../include/schedule")
+    else:
+        base_include_path = Path("")
+    output_directory = f"{base_include_path}/wsegdensity_{well_name}_{lateral_number}.py"
+    python_file = base_dir / f"wsegdensity_{well_name}_{lateral_number}.py"
+    with open(python_file, "w") as file:
+        file.writelines(code)
+    return output_directory
+
+
+def print_wsegdensity_include(output_directory: str, well_name: str, lateral_number: int) -> str:
+    """Formatted PYACTION include in the output file.
+
+    Args:
+        output_directory: Include file path in FMU relative format.
+        well_name: Well name.
+        lateral_number: Lateral number.
+
+    Returns:
+        Include file output for the output file.
+    """
+    action = f"""
+-------------------------------------
+-- START OF PYACTION SECTION
+
+PYACTION
+WSEGDENSITY_{well_name}_{lateral_number} UNLIMITED /
+
+'{output_directory}' /
+
+-- END OF PYACTION SECTION
+-------------------------------------
+"""
+
     return action
