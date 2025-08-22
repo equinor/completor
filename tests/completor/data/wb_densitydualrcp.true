@@ -75,7 +75,7 @@ WSEGLINK
 
 
 ----------------------------------------------------------------------------------------------------
--- This is how we model DENSITY technology using sets of ACTIONX keywords.
+-- This is how we model density driven technology using sets of ACTIONX keywords.
 -- The segment dP curves changes according to the segment water-
 -- and gas volume fractions at downhole condition.
 -- The value of Cv is adjusted according to the segment length and the number of
@@ -238,7 +238,7 @@ ENDACTIO
 
 
 ----------------------------------------------------------------------------------------------------
--- This is how we model DUALRCP technology using sets of ACTIONX keyword
+-- This is how we model dual RCP curves using sets of ACTIONX keyword
 -- the DP parameters change according to the segment water cut (at downhole condition )
 -- and gas volume fraction (at downhole condition)
 ----------------------------------------------------------------------------------------------------

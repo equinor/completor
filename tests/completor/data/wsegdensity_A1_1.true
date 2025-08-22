@@ -1,0 +1,74 @@
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if 'setup_done' not in locals():
+    execution_counter = dict()
+    executed = False
+    setup_done = True
+
+data={'WELL': ['A1', 'A1', 'A1', 'A1'], 'START_SEGMENT_NUMBER': [6, 7, 8, 9], 'FLOW_COEFFICIENT': [0.1, 0.1, 0.1, 0.1], 'OIL_FLOW_CROSS_SECTIONAL_AREA': [0.4, 0.4, 0.4, 0.4], 'GAS_FLOW_CROSS_SECTIONAL_AREA': [0.3, 0.3, 0.3, 0.3], 'WATER_FLOW_CROSS_SECTIONAL_AREA': [0.2, 0.2, 0.2, 0.2], 'WATER_HOLDUP_FRACTION_LOW_CUTOFF': [0.6, 0.6, 0.6, 0.6], 'WATER_HOLDUP_FRACTION_HIGH_CUTOFF': [0.7, 0.7, 0.7, 0.7], 'GAS_HOLDUP_FRACTION_LOW_CUTOFF': [0.8, 0.8, 0.8, 0.8], 'GAS_HOLDUP_FRACTION_HIGH_CUTOFF': [0.9, 0.9, 0.9, 0.9], 'DEFAULTS': ['5*', '5*', '5*', '5*'], 'MAX_FLOW_CROSS_SECTIONAL_AREA': [0.4, 0.4, 0.4, 0.4], '': ['/', '/', '/', '/']}
+
+for i in range(len(data["WELL"])):
+    well_name = data["WELL"][i]
+    segment_number = data["START_SEGMENT_NUMBER"][i]
+    flow_coefficient = data["FLOW_COEFFICIENT"][i]
+    oil_flow_area = data["OIL_FLOW_CROSS_SECTIONAL_AREA"][i]
+    gas_flow_area = data["GAS_FLOW_CROSS_SECTIONAL_AREA"][i]
+    water_flow_area = data["WATER_FLOW_CROSS_SECTIONAL_AREA"][i]
+    max_flow_area = data["MAX_FLOW_CROSS_SECTIONAL_AREA"][i]
+    water_low = data["WATER_HOLDUP_FRACTION_LOW_CUTOFF"][i]
+    water_high = data["WATER_HOLDUP_FRACTION_HIGH_CUTOFF"][i]
+    gas_low = data["GAS_HOLDUP_FRACTION_LOW_CUTOFF"][i]
+    gas_high = data["GAS_HOLDUP_FRACTION_HIGH_CUTOFF"][i]
+    defaults = data["DEFAULTS"][i]
+
+    swhf = summary_state[f"SWHF:{well_name}:{segment_number}"]
+    sghf = summary_state[f"SGHF:{well_name}:{segment_number}"]
+    suvtrig = summary_state[f"SUVTRIG:{well_name}:{segment_number}"]
+
+    keyword_oil = (
+        f"WSEGVALV\n"
+        f"  '{well_name}' {segment_number} {flow_coefficient} {oil_flow_area} {defaults} {max_flow_area} /\n/"
+    )
+    keyword_water = (
+        f"WSEGVALV\n"
+        f"  '{well_name}' {segment_number} {flow_coefficient} {water_flow_area} {defaults} {max_flow_area} /\n/"
+    )
+    keyword_gas = (
+        f"WSEGVALV\n"
+        f"  '{well_name}' {segment_number} {flow_coefficient} {gas_flow_area} {defaults} {max_flow_area} /\n/"
+    )
+
+    key = (well_name, segment_number)
+    execution_counter.setdefault(key, 0)
+
+    if execution_counter[key] == 0:
+        schedule.insert_keywords(keyword_oil, report_step)
+        summary_state[f"SUVTRIG:{well_name}:{segment_number}"] = 0
+
+    if execution_counter[key] < 1000000:
+        if swhf is not None and sghf is not None:
+            if swhf <= water_high and sghf > gas_high and suvtrig == 0:
+                schedule.insert_keywords(keyword_gas, report_step)
+                summary_state[f"SUVTRIG:{well_name}:{segment_number}"] = 1
+                execution_counter[key] += 1
+
+            elif swhf > water_high and sghf <= gas_high and suvtrig == 0:
+                schedule.insert_keywords(keyword_water, report_step)
+                summary_state[f"SUVTRIG:{well_name}:{segment_number}"] = 2
+                execution_counter[key] += 1
+
+            elif sghf < gas_low and suvtrig == 1:
+                schedule.insert_keywords(keyword_oil, report_step)
+                summary_state[f"SUVTRIG:{well_name}:{segment_number}"] = 0
+                execution_counter[key] += 1
+
+            elif swhf < water_low and suvtrig == 2:
+                schedule.insert_keywords(keyword_oil, report_step)
+                summary_state[f"SUVTRIG:{well_name}:{segment_number}"] = 0
+                execution_counter[key] += 1
+
