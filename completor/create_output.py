@@ -157,7 +157,6 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         if case.python_dependent:
             # print the python file out
             # append all laterals for density driven, dual RCP, and injection valve
-            # TODO(#273): Add functionality for injection valve
             # TODO(#274): Add functionality for dual RCP
             print_density_driven_pyaction = _format_density_driven_pyaction(df_density_driven)
             output_directory = prepare_outputs.print_python_file(
