@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import black
 import math
 from collections.abc import MutableMapping
 from pathlib import Path
@@ -1916,7 +1917,7 @@ for i in range(len(data["WELL"])):
                 summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
                 execution_counter[key] += 1
     """
-    return final_code
+    return black.format_str(final_code, mode=black.Mode(line_length=120))
 
 
 def print_python_file(code: str, dir: str, well_name: str, lateral_number: int) -> str:
