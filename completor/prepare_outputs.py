@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import black
 import math
 from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any
 
+import black
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
