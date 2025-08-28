@@ -21,7 +21,6 @@ classifiers = [
 "Bug Tracker" = "https://github.com/equinor/completor/issues"
 
 [tool.poetry.dependencies]
-black = "^24.4"
 python = ">=3.11, <3.14"
 matplotlib = "^3.9"
 numpy = "^2.0"
@@ -35,7 +34,6 @@ pytest-xdist = {version="^3.6", optional=true}
 pytest-env = {version="^1", optional=true}
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.4"
 flake8 = "^7.0"
 pre-commit = "^4.0"
 pytest = "^8.3"
