@@ -177,14 +177,6 @@ def format_output(well: Well, case: ReadCasefile, pdf: PdfPages | None = None) -
             pdf.savefig(fig, orientation="landscape")
             plt.close(fig)
             logger.info("Creating schematics: %s", pdf)
-            # with PdfPages(figure_name) as figure:
-            #    figure.savefig(
-            #        visualize_well(
-            #            well.well_name, well.df_well_all_laterals, well.df_reservoir_all_laterals, case.segment_length
-            #        ),
-            #        orientation="landscape",
-            #    )
-            # logger.info("Creating schematics: %s", figure_name)
         first = False
 
     print_completion_data = "\n".join(completion_data_list)
