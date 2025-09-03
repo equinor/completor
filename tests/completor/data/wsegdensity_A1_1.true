@@ -10,21 +10,7 @@ if "setup_done" not in locals():
     executed = False
     setup_done = True
 
-data = {
-    "WELL": ["A1", "A1", "A1", "A1"],
-    "START_SEGMENT_NUMBER": [6, 7, 8, 9],
-    "FLOW_COEFFICIENT": [0.1, 0.1, 0.1, 0.1],
-    "OIL_FLOW_CROSS_SECTIONAL_AREA": [0.4, 0.4, 0.4, 0.4],
-    "GAS_FLOW_CROSS_SECTIONAL_AREA": [0.3, 0.3, 0.3, 0.3],
-    "WATER_FLOW_CROSS_SECTIONAL_AREA": [0.2, 0.2, 0.2, 0.2],
-    "WATER_HOLDUP_FRACTION_LOW_CUTOFF": [0.6, 0.6, 0.6, 0.6],
-    "WATER_HOLDUP_FRACTION_HIGH_CUTOFF": [0.7, 0.7, 0.7, 0.7],
-    "GAS_HOLDUP_FRACTION_LOW_CUTOFF": [0.8, 0.8, 0.8, 0.8],
-    "GAS_HOLDUP_FRACTION_HIGH_CUTOFF": [0.9, 0.9, 0.9, 0.9],
-    "DEFAULTS": ["5*", "5*", "5*", "5*"],
-    "MAX_FLOW_CROSS_SECTIONAL_AREA": [0.4, 0.4, 0.4, 0.4],
-    "": ["/", "/", "/", "/"],
-}
+data={'WELL': ['A1', 'A1', 'A1', 'A1'], 'START_SEGMENT_NUMBER': [6, 7, 8, 9], 'FLOW_COEFFICIENT': [0.1, 0.1, 0.1, 0.1], 'OIL_FLOW_CROSS_SECTIONAL_AREA': [0.4, 0.4, 0.4, 0.4], 'GAS_FLOW_CROSS_SECTIONAL_AREA': [0.3, 0.3, 0.3, 0.3], 'WATER_FLOW_CROSS_SECTIONAL_AREA': [0.2, 0.2, 0.2, 0.2], 'WATER_HOLDUP_FRACTION_LOW_CUTOFF': [0.6, 0.6, 0.6, 0.6], 'WATER_HOLDUP_FRACTION_HIGH_CUTOFF': [0.7, 0.7, 0.7, 0.7], 'GAS_HOLDUP_FRACTION_LOW_CUTOFF': [0.8, 0.8, 0.8, 0.8], 'GAS_HOLDUP_FRACTION_HIGH_CUTOFF': [0.9, 0.9, 0.9, 0.9], 'DEFAULTS': ['5*', '5*', '5*', '5*'], 'MAX_FLOW_CROSS_SECTIONAL_AREA': [0.4, 0.4, 0.4, 0.4], '': ['/', '/', '/', '/']}
 
 for i in range(len(data["WELL"])):
     well_name = data["WELL"][i]
