@@ -27,7 +27,7 @@ def format_output(well: Well, case: ReadCasefile, pdf: PdfPages | None = None) -
     Args:
         well: Well data.
         case: Case data.
-        figure_name: The name of the figure, if None, no figure is printed. Defaults to None.
+        pdf: The name of the figure, if None, no figure is printed. Defaults to None.
 
     Returns:
         Properly formatted output data for completion data, well segments, completion segments, and bonus.

@@ -5,6 +5,7 @@ from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any
 
+import black
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -1849,7 +1850,7 @@ schedule = opm_embedded.current_schedule
 report_step = opm_embedded.current_report_step
 summary_state = opm_embedded.current_summary_state
 
-if "setup_done" not in locals():
+if 'setup_done' not in locals():
     execution_counter = dict()
     executed = False
     setup_done = True
@@ -1916,7 +1917,7 @@ for i in range(len(data["WELL"])):
                 summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
                 execution_counter[key] += 1
     """
-    return final_code
+    return black.format_str(final_code, mode=black.Mode(line_length=120))
 
 
 def print_python_file(code: str, dir: str, well_name: str, lateral_number: int) -> str:

@@ -91,7 +91,6 @@ def create(
     """
     case = ReadCasefile(case_file=case_file, schedule_file=schedule, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    pdf = None
     figure_name = None
     if show_fig:
         figure_no = 1
