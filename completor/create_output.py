@@ -5,6 +5,7 @@ from __future__ import annotations
 import getpass
 from datetime import datetime
 
+import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -20,13 +21,13 @@ from completor.visualize_well import visualize_well
 from completor.wells import Lateral, Well
 
 
-def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None) -> tuple[str, str, str, str]:
+def format_output(well: Well, case: ReadCasefile, pdf: PdfPages | None = None) -> tuple[str, str, str, str]:
     """Formats the finished output string to be written to a file.
 
     Args:
         well: Well data.
         case: Case data.
-        figure_name: The name of the figure, if None, no figure is printed. Defaults to None.
+        pdf: The name of the figure, if None, no figure is printed. Defaults to None.
 
     Returns:
         Properly formatted output data for completion data, well segments, completion segments, and bonus.
@@ -168,16 +169,14 @@ def format_output(well: Well, case: ReadCasefile, figure_name: str | None = None
         else:
             print_density_driven += _format_density_driven(well.well_number, df_density_driven)
 
-        if figure_name is not None:
-            logger.info(f"Creating figure for lateral {lateral.lateral_number}.")
-            with PdfPages(figure_name) as figure:
-                figure.savefig(
-                    visualize_well(
-                        well.well_name, well.df_well_all_laterals, well.df_reservoir_all_laterals, case.segment_length
-                    ),
-                    orientation="landscape",
-                )
-            logger.info("Creating schematics: %s.pdf", figure_name)
+        if pdf is not None:
+            logger.info(f"Creating figure for well {well.well_name}, lateral {lateral.lateral_number}.")
+            fig = visualize_well(
+                well.well_name, well.df_well_all_laterals, well.df_reservoir_all_laterals, case.segment_length
+            )
+            pdf.savefig(fig, orientation="landscape")
+            plt.close(fig)
+            logger.info("Creating schematics: %s", pdf)
         first = False
 
     print_completion_data = "\n".join(completion_data_list)
