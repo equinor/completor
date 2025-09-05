@@ -5,7 +5,6 @@ from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any
 
-import black
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -1917,7 +1916,7 @@ for i in range(len(data["WELL"])):
                 summary_state[f"SUVTRIG:{{well_name}}:{{segment_number}}"] = 0
                 execution_counter[key] += 1
     """
-    return black.format_str(final_code, mode=black.Mode(line_length=120))
+    return final_code
 
 
 def print_python_file(code: str, dir: str, well_name: str, lateral_number: int) -> str:
