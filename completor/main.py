@@ -8,6 +8,7 @@ import re
 import sys
 import time
 
+from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 from tqdm import tqdm
 
 from completor import create_output, parse, read_schedule, utils
@@ -90,6 +91,7 @@ def create(
     """
     case = ReadCasefile(case_file=case_file, schedule_file=schedule, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
+    pdf = None
     figure_name = None
     if show_fig:
         figure_no = 1
@@ -97,6 +99,7 @@ def create(
         while os.path.isfile(figure_name):
             figure_no += 1
             figure_name = f"Well_schematic_{figure_no:03d}.pdf"
+        pdf = PdfPages(figure_name)
 
     err: Exception | None = None
     well = None
@@ -129,7 +132,7 @@ def create(
             except KeyError:
                 logger.warning(f"Well '{well_name}' is written in case file but does not exist in schedule file.")
                 continue
-            compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, figure_name)
+            compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, pdf)
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
                 old_data = find_well_keyword_data(well_name, keyword, schedule)
                 if not old_data:
@@ -157,6 +160,8 @@ def create(
         schedule = replace_preprocessing_names(schedule, case.mapper)
         with open(new_file, "w", encoding="utf-8") as file:
             file.write(schedule)
+        if pdf is not None:
+            pdf.close()
 
     if err is not None:
         raise err
