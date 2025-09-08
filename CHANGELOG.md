@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.3.0](https://github.com/equinor/completor/compare/v1.2.0...v1.3.0) (2025-09-05)
+
+
+### ✨ Features
+
+* wsegdensity pyaction- support on flow ([917ac30](https://github.com/equinor/completor/commit/917ac30643649ea49bde207f83f152561579ee31))
+
+
+### 🐛 Bug Fixes
+
+* Fix visualization on the pdf ([#284](https://github.com/equinor/completor/issues/284)) ([e4589a9](https://github.com/equinor/completor/commit/e4589a9c4e8bf7704538ecf1a2728bf02a1e5ae3))
+
+
+### 🧹 Chores
+
+* Bump h11 from 0.14.0 to 0.16.0 in the pip group across 1 directory ([#255](https://github.com/equinor/completor/issues/255)) ([a5c8233](https://github.com/equinor/completor/commit/a5c8233ed142c117bf5f1acc77929e6a53e1faa6))
+* Bump h11 in the pip group across 1 directory ([a5c8233](https://github.com/equinor/completor/commit/a5c8233ed142c117bf5f1acc77929e6a53e1faa6))
+* Bump the npm_and_yarn group across 1 directory with 4 updates ([#266](https://github.com/equinor/completor/issues/266)) ([b0a8596](https://github.com/equinor/completor/commit/b0a859689a1c2b7e944fa9c4c6a6158b49153d42))
+* Bump the pip group across 1 directory with 2 updates ([#265](https://github.com/equinor/completor/issues/265)) ([b5e9056](https://github.com/equinor/completor/commit/b5e9056d7f3b1576e745fff1ca368dfdef1f8ff0))
+* Python 3.12 ([#259](https://github.com/equinor/completor/issues/259)) ([8152175](https://github.com/equinor/completor/commit/8152175005356b96b22c71ee71e60e81789abd33))
+* Update doc dependencies ([#278](https://github.com/equinor/completor/issues/278)) ([6333e8e](https://github.com/equinor/completor/commit/6333e8e1bb69627b40b58da867208715954fd764))
+
+
+### ♻️ Code Refactoring
+
+* Format to black before writing ([#280](https://github.com/equinor/completor/issues/280)) ([5eab2c1](https://github.com/equinor/completor/commit/5eab2c1d9ef52bc4c2575608e81fd7d944574d28))
+* Redirect tqdm output to stdout ([#272](https://github.com/equinor/completor/issues/272)) ([e940668](https://github.com/equinor/completor/commit/e940668c915d2888ee3500db11a3d93665f44299))
+
 ## [1.2.0](https://github.com/equinor/completor/compare/v1.1.3...v1.2.0) (2025-04-10)
 
 
