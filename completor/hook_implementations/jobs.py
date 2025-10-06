@@ -4,7 +4,8 @@ from pathlib import Path
 from completor.logger import logger
 
 try:
-    from ert import plugin as ert_plugin  # type: ignore
+    #from ert import plugin as ert_plugin  # type: ignore
+    from ert.plugins.plugin_manager import ErtPluginManager # type: ignore
 except ModuleNotFoundError:
 
     def ert_plugin(name: str = ""):
