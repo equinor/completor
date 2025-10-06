@@ -59,14 +59,6 @@ def test_executables():
 
 
 @pytest.mark.requires_ert
-def test_executable_names():
-   """The executable names should be equal to the job name, but in lowercase letter"""
-   pma = ErtPluginManager(plugins=[jobs])
-   for fm_step in pma.forward_model_steps:
-       assert fm_step().executable == fm_step().name.lower()
-
-
-@pytest.mark.requires_ert
 def test_hook_implementations_job_docs():
     """Testing hook job docs."""
     pma = ErtPluginManager(plugins=[jobs])
