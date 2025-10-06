@@ -8,7 +8,7 @@ from completor.logger import logger
 PLUGIN_NAME = "completor"
 
 try:
-    from ert.plugins.plugin_manager import ErtPluginManager  # type: ignore
+    from ert.plugins.plugin_manager import ErtPluginManager  # type: ignore # noqa: F401
 except ModuleNotFoundError:
 
     def ert_plugin(name: str = ""):

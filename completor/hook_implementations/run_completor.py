@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ert import ForwardModelStepDocumentation, ForwardModelStepJSON, ForwardModelStepPlugin
+from ert import ForwardModelStepDocumentation, ForwardModelStepJSON, ForwardModelStepPlugin  # type: ignore
 
 desc = """Completor is a script for modelling
 wells with advanced completion.
