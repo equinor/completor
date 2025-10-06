@@ -31,7 +31,7 @@ class RunCompletor(ForwardModelStepPlugin):
         super().__init__(
             name="run_completor",
             command=[
-                "completor",
+                "run_completor",
                 "-i",
                 "<CASE>",
                 "-s",
