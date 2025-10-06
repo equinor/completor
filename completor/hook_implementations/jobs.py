@@ -1,16 +1,14 @@
-
 from __future__ import annotations
-from completor.logger import logger
 
-import ert
+import ert  # type: ignore
 
 from completor.hook_implementations import RunCompletor
+from completor.logger import logger
 
 PLUGIN_NAME = "completor"
 
 try:
-    #from ert import plugin as ert_plugin  # type: ignore
-    from ert.plugins.plugin_manager import ErtPluginManager # type: ignore
+    from ert.plugins.plugin_manager import ErtPluginManager  # type: ignore
 except ModuleNotFoundError:
 
     def ert_plugin(name: str = ""):
@@ -22,6 +20,7 @@ except ModuleNotFoundError:
         return decorator
 
     logger.warning("Cannot import ERT, did you install Completor with ert option enabled?")
+
 
 @ert.plugin(name=PLUGIN_NAME)
 def installable_workflow_jobs() -> dict[str, str]:

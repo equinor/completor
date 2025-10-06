@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-from ert import (
-    ForwardModelStepDocumentation,
-    ForwardModelStepJSON,
-    ForwardModelStepPlugin,
-)
+from ert import ForwardModelStepDocumentation, ForwardModelStepJSON, ForwardModelStepPlugin
 
 desc = """Completor is a script for modelling
 wells with advanced completion.
@@ -45,9 +41,7 @@ class RunCompletor(ForwardModelStepPlugin):
             ],
         )
 
-    def validate_pre_realization_run(
-        self, fm_step_json: ForwardModelStepJSON
-    ) -> ForwardModelStepJSON:
+    def validate_pre_realization_run(self, fm_step_json: ForwardModelStepJSON) -> ForwardModelStepJSON:
         return fm_step_json
 
     def validate_pre_experiment(self, fm_step_json: ForwardModelStepJSON) -> None:

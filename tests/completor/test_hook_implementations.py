@@ -1,12 +1,13 @@
 import shutil
-from os import path
-from pathlib import Path
 
 import pytest
 
+from completor.hook_implementations import RunCompletor
+
 SKIP_TESTS = False
 try:
-    from ert.plugins.plugin_manager import ErtPluginManager # type: ignore
+    from ert.plugins.plugin_manager import ErtPluginManager  # type: ignore
+
     import completor.hook_implementations.jobs as jobs
 except ModuleNotFoundError:
     import platform
@@ -21,7 +22,6 @@ except ModuleNotFoundError:
 
 EXPECTED_JOBS = {"run_completor"}
 
-from completor.hook_implementations import RunCompletor
 
 @pytest.mark.requires_ert
 def test_that_installable_fm_steps_work_as_plugins():
@@ -58,8 +58,8 @@ def test_executables():
         assert shutil.which(fm_step().executable)
 
 
-#@pytest.mark.requires_ert
-#def test_executable_names():
+# @pytest.mark.requires_ert
+# def test_executable_names():
 #    """The executable names should be equal to the job name, but in lowercase letter"""
 #    pma = ErtPluginManager(plugins=[jobs])
 #    for fm_step in pma.forward_model_steps:
