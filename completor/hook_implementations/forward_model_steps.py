@@ -22,6 +22,9 @@ except ModuleNotFoundError:
     logger.warning("Cannot import ERT, did you install Completor with ert option enabled?")
 
 
+@ert.plugin(name=PLUGIN_NAME)
+def installable_workflow_jobs() -> dict[str, str]:
+    return {}
 
 
 @ert.plugin(name=PLUGIN_NAME)
