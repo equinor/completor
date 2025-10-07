@@ -8,7 +8,7 @@ SKIP_TESTS = False
 try:
     from ert.plugins.plugin_manager import ErtPluginManager  # type: ignore
 
-    import completor.hook_implementations.jobs as jobs
+    import completor.hook_implementations.forward_model_steps as forward_model_steps
 except ModuleNotFoundError:
     import platform
 
@@ -26,7 +26,7 @@ EXPECTED_JOBS = {"run_completor"}
 @pytest.mark.requires_ert
 def test_that_installable_fm_steps_work_as_plugins():
     """Test that the forward models are included as ERT plugin."""
-    fms = ErtPluginManager(plugins=[jobs]).forward_model_steps
+    fms = ErtPluginManager(plugins=[forward_model_steps]).forward_model_steps
 
     assert RunCompletor in fms
     assert len(fms) == len(EXPECTED_JOBS)
@@ -35,7 +35,7 @@ def test_that_installable_fm_steps_work_as_plugins():
 @pytest.mark.requires_ert
 def test_hook_implementations():
     """Test hook implementation."""
-    pma = ErtPluginManager(plugins=[jobs])
+    pma = ErtPluginManager(plugins=[forward_model_steps])
     installable_fm_step_jobs = [fms().name for fms in pma.forward_model_steps]
     assert set(installable_fm_step_jobs) == set(EXPECTED_JOBS)
 
@@ -52,7 +52,7 @@ def test_hook_implementations():
 @pytest.mark.integration
 def test_executables():
     """Test executables listed in job configurations exist in $PATH"""
-    pma = ErtPluginManager(plugins=[jobs])
+    pma = ErtPluginManager(plugins=[forward_model_steps])
     for fm_step in pma.forward_model_steps:
         # the executable should be equal to the job name, but in lowercase letter
         assert shutil.which(fm_step().executable)
@@ -61,7 +61,7 @@ def test_executables():
 @pytest.mark.requires_ert
 def test_hook_implementations_job_docs():
     """Testing hook job docs."""
-    pma = ErtPluginManager(plugins=[jobs])
+    pma = ErtPluginManager(plugins=[forward_model_steps])
 
     for fm_step in pma.forward_model_steps:
         fm_step_doc = fm_step.documentation()
