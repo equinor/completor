@@ -54,7 +54,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.plugins."ert"]
-run_completor = "completor.hook_implementations.jobs"
+run_completor = "completor.hook_implementations.forward_model_steps"
 
 [tool.black]
 line-length = 120
