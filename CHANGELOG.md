@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/equinor/completor/compare/v1.3.0...v1.4.0) (2025-10-15)
+
+
+### ✨ Features
+
+* New ERT plugin ([#294](https://github.com/equinor/completor/issues/294)) ([9a66759](https://github.com/equinor/completor/commit/9a6675913d135af04a9fad5c4b8a90623c13b322))
+
+
+### 🧹 Chores
+
+* Update dependencies to latest versions ([#297](https://github.com/equinor/completor/issues/297)) ([fc4450c](https://github.com/equinor/completor/commit/fc4450c696eda135af1864bad4e79802d064f988))
+
 ## [1.3.0](https://github.com/equinor/completor/compare/v1.2.0...v1.3.0) (2025-09-05)
 
 
