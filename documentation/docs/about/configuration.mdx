@@ -219,18 +219,6 @@ GP_PERF_DEVICELAYER
 /
 ```
 
-### PYTHON (optional)
-
-This is a new development in Completor® to cover python dependent logic. It supports
-Python dependency on OPM Flow using PYACTION keyword. ([Read about PYACTION](https://opm.github.io/opm-python-documentation/master/index.html))
-The default value is this to be set as False, therefore it will print standard ACTIONX keyword.
-
-```
-PYTHON
-TRUE
-/
-```
-
 ## Valve Keywords
 Below are the keywords related into the column number 10 in the `COMPLETION` keyword specified above.
 
@@ -272,8 +260,8 @@ WSEGAICD
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DN  Alpha   x   y  a  b  c  d  e  f  den_cal  mu_cal z
-    1 1.0e-4 0.1 1.2  1  1  1  1  1  5     1000       1 1
-    2 5.0e-5 0.4 3.1  1  1  1  2  1  1     1000       1 1
+    1 1.0e-4 0.1 1.2  1  1  1  1  1  5     1000       1 2
+    2 5.0e-5 0.4 3.1  1  1  1  2  1  1     1000       1 5
 /
 ```
 
@@ -321,7 +309,7 @@ WSEGVALV
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DN    CV      AC  Defaults   Ac_Max
-    1    1  1.0E-4  5*         1.0E-4
+    1  0.01  1.0E-4  5*         1.0E-4
 /
 ```
 
@@ -429,7 +417,7 @@ WSEGINJV
 -- Do not use the parameters below in planning/operations.
 -- Consult the inflow control team for valid parameters.
 -- DeviceNumber   Trigger_Parameter   Trigger value   Cv_Inj   Ac_Primary   Ac_Secondary
-1                 SPRD                0.5             1.00     4.700e-04    8e-5
-2                 SWFR                150             1.00     4.700e-04    8e-5
+1                 SPRD                0.5             0.10     4.700e-04    8e-5
+2                 SWFR                150             0.10     4.700e-04    8e-5
 /
 ```

@@ -1,0 +1,16 @@
+SCHFILE
+  'dummy_schedule_file_with_include.sch'
+/
+
+ICVCONTROL
+-- WELL	  ICV SEGMENT AC-TABLE STEPS ICVDATE   FREQ  MIN MAX OPENING
+TSTWL01     A     105 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL01     B     106 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL02     C     181 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL02     D     182 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL03     H      39 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL03     I      40 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL04     E     142 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL04     G     144 0.1337    60 1.JAN.2021    30    0   1       0
+TSTWL04     F     143 0.1337    60 1.JAN.2021    30    0   1       0
+/

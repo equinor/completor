@@ -6,7 +6,8 @@ from pathlib import Path
 from zipfile import ZipFile
 
 import pytest
-from utils_for_tests import completor_runner
+
+from tests.utils_for_tests import completor_runner
 
 _testdir = Path(__file__).absolute().parent / "data"
 _test_file = "ml_well.sch"

@@ -1,0 +1,57 @@
+SCHFILE
+  'dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL                 Branch  Start           End             Screen          Well/          Roughness       Annulus         Nvalve  Valve   Device
+--                     Number     mD            mD             Tubing         Casing          Roughness       Content         /Joint   Type   Number
+--                                                           Diameter       Diameter
+WELL1                      1      0         99999               0.10         0.2159            0.00300            GP              1   AICD        1
+WELL2                       1      0         99999               0.10         0.2159            0.00300            GP              1   AICD        1
+/
+
+ICVCONTROL
+-- WELL	ICV SEGMENT AC-TABLE STEPS 	  ICVDATE  FREQ	 MIN MAX OPENING
+WELL1    A     105    0.1337    60  1.JAN.2033    80   0   1       0
+WELL1    B     106    0.1337    60  1.JAN.2033    30   0   1       0
+WELL-N1  C     181    0.1337    60  1.JAN.2030   150   0   1       0
+WELL-N1  D     182    0.1337    60  1.JAN.2030    20   0   1       0
+WELL-F2  H      39    0.1337    60  1.JAN.2030    80   0   1       0
+WELL-F2  I      40    0.1337    60  1.JAN.2030    20   0   1       0
+WELL2    E     142    0.1337    60  1.JAN.2030    50   0   1       0
+WELL2    F     143    0.1337    60  1.JAN.2030    50   0   1       0
+WELL2    G     144    0.1337    60  1.JAN.2030    50   0   1       0
+/
+
+
+ICVTABLE
+-- Valve name
+A B C D E F G H /
+-- Position  Cv       Area
+1           1.0  0.0000474
+2           1.0  0.0000790
+3           1.0  0.0001317
+4	    1.0  0.0002195
+5           1.0  0.0003659
+6	    1.0  0.0006098
+7	    1.0  0.0010160
+8	    1.0  0.0016938
+9           1.0  0.0028230
+10          1.0  0.13370
+/
+
+ICVTABLE
+-- Valve name
+I /
+-- Position  Cv     Area
+1           1.0  0.0001337
+2           1.0  0.0001340
+3           1.0  0.0001341
+4           1.0  0.0001341
+5           1.0  0.0001373
+6           1.0  0.0001400
+7           1.0  0.0011377
+8           1.0  0.0011402
+9           1.0  0.0021412
+10          1.0  0.0041422
+/

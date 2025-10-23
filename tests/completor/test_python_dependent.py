@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import utils_for_tests
+from tests import utils_for_tests
 
 # Paths and constants
 _TESTDIR = Path(__file__).absolute().parent / "data"

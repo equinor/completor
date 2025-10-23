@@ -59,7 +59,7 @@ def handle_error_messages(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
         except (Exception, SystemExit) as ex:
             # SystemExit does not inherit from Exception
             if isinstance(ex, SystemExit):
