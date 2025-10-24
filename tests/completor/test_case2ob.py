@@ -3,7 +3,7 @@ This module tests that the roughness and ID for segments in the overburden
 are described by the case file and not the input schedule file.
 """
 
-import utils_for_tests
+from tests import utils_for_tests
 
 _TEST_FILE = "test.sch"
 

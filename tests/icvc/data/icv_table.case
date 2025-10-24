@@ -1,0 +1,79 @@
+SCHFILE
+  'bdn_real35.sch'
+/
+
+
+ICVCONTROL
+-- WELL	ICV SEGMENT AC-TABLE STEPS 	  ICVDATE  FREQ	 MIN MAX OPENING
+WELL1    A     105    0.1337    60  1.JAN.2033    80   0   1       0
+WELL1    B     106    0.1337    60  1.JAN.2033    30   0   1       0
+WELL-N1  C     181    0.1337    60  1.JAN.2030   150   0   1       0
+WELL-N1  D     182    0.1337    60  1.JAN.2030    20   0   1       0
+WELL-F2  H      39    0.1337    60  1.JAN.2030    80   0   1       0
+WELL-F2  I      40    0.1337    60  1.JAN.2030    20   0   1       0
+WELL2    E     142    0.1337    60  1.JAN.2030    50   0   1       0
+WELL2    F     143    0.1337    60  1.JAN.2030    50   0   1       0
+WELL2    G     144    0.1337    60  1.JAN.2030    50   0   1       0
+NG2P1    J     100    0.1337    60  1.JAN.2030    50   0   1       0
+/
+
+CONTROL_CRITERIA
+--  FUNCTION: [CHOKE, OPEN, W, H, RC, SC, RO, SO, UD, IN]
+--  CRITERIUM: [1, 2, 3]
+--  x1: Name of current ICV
+--  x2: Name of neighbour ICV
+
+-- Kommentar
+  FUNCTION: [O, H, RO]  -- 29.06.22 (tklov): Kommentar
+  CRITERIUM: 1
+  ICV: [E, F]
+  WWIR WELL(x1) > WUMXVDJ2 WELL(x1) AND /
+  FURATE_x1 < FURATE_x2 AND /
+  FURATE_G > FURMAX_G AND /
+  YoYo /
+  SFOPN WELL(x1) SEG(x1) < 0.99 /
+
+  FUNCTION: [O, H, RO]
+  CRITERIUM: 2
+  ICV: [E, F]
+  WWIR WELL(x) > WUMXVDJ2 WELL(x) AND /
+  FURAT_G < FURMAX_G AND /
+  FURAT_x < FURMIN_x AND /
+  1337 /
+  SFOPN WELL(x) SEG(x) < 0.99 /
+
+  FUNCTION: [O, H]
+  CRITERIUM: 1
+  ICV: [A, B, C, D, H, I]
+    WWIR WELL(x) > WUMXNG3W WELL(x) AND /
+    FURAT_y > FURMAX_y AND /
+    ROFL /
+    SFOPN WELL(x) SEG(x) < 0.99 /
+
+  FUNCTION: [UDQ]
+  ICV: [A, B, C, D, H, I]
+    ASSIGN FURMAX_x
+    ASSIGN FURAT_x
+    DEFINE FURMAX_x WWIR 'WELL(x)' * FU_x /
+    DEFINE FURAT_x (-1.0) * SWFR 'WELL(x)' SEG(x) /
+    ASSIGN FUAREA_x
+
+  FUNCTION: [UDQ]
+  ICV: [E, F, G]
+    ASSIGN FURMAX_x
+    ASSIGN FURAT_x
+    DEFINE FURMIN_x WWIR 'WELL(x)' * FULO_x /
+    DEFINE FURMAX_x WWIR 'WELL(x)' * FUHI_x /
+    DEFINE FURAT_x (-1.0) * SWFR 'WELL(x)' SEG(x) /
+    ASSIGN FUAREA_x
+
+  FUNCTION: [IN]
+  ICV: [A, B, C, D, H, I]
+    ASSIGN FU_x FUVAL(x)
+
+  FUNCTION: [IN]
+  ICV: [E, F, G]
+    ASSIGN FULO_x FUVAL(x)
+    ASSIGN FUHI_x FUVAL(x)
+
+  -- remember the summary file

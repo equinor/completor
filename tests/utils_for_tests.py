@@ -11,7 +11,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from completor import main, parse  # type: ignore
+from completor import parse  # type: ignore
+from completor import main
 from completor.constants import Headers, Keywords
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
@@ -23,7 +24,7 @@ def open_files_run_create(
 ) -> None:
     """Open files supplied as a path and convert the data to a string.
 
-    Then run main.py's create function with the data.
+    Then run completor_main.py's create function with the data.
     """
     os.environ["TQDM_DISABLE"] = "1"
     if isinstance(case, Path):
@@ -139,7 +140,6 @@ def _assert_file_text(test_file: str | Path, expected_file: str | Path, remove_c
 
     expected = "\n".join([line.strip() for line in expected.splitlines()])
     result = "\n".join([line.strip() for line in result.splitlines()])
-
     try:
         assert result == expected
     except AssertionError:
@@ -157,7 +157,7 @@ def _replace_machine_specific_text(text: str) -> str:
     Returns:
         Text with machine and run specific text replaced.
     """
-    return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "REPLACED", text, 0, re.MULTILINE)
+    return re.sub(r"-{10,}\n-- Output [\w\W]*?-{10,}\n", "", text, 0, re.MULTILINE)
 
 
 class ReadSchedule:
@@ -377,3 +377,51 @@ def completor_runner(**kwargs) -> None:
         main.main()
     except CompletorError as e:
         raise abort(str(e))
+
+
+def assert_files_exist_and_nonempty(filenames, temp_dir=None):
+    if temp_dir is not None:
+        for filename in filenames:
+            new_filename = os.path.join(temp_dir, filename)
+            assert os.path.exists(new_filename)
+            assert os.path.getsize(new_filename) > 0
+    else:
+        for filename in filenames:
+            assert os.path.exists(filename)
+            assert os.path.getsize(filename) > 0
+
+
+def clean_lines_output(text: str) -> str:
+    """
+    Removes comment lines starting with '--'
+    Strips leading/trailing whitespace
+    Ignores empty lines
+    """
+    lines = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("--"):  # skip empty and comment lines
+            continue
+        # Replace multiple spaces/tabs with a single space
+        line = re.sub(r"\s+", " ", line)
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def _assert_file_output(test_file: str | Path, expected_file: str | Path, remove_completor_meta: bool = True) -> None:
+    with open(test_file, encoding="utf-8") as f:
+        result = f.read()
+    with open(expected_file, encoding="utf-8") as f:
+        expected = f.read()
+
+    if remove_completor_meta:
+        expected = _replace_machine_specific_text(expected)
+        result = _replace_machine_specific_text(result)
+
+    expected = clean_lines_output(expected)
+    result = clean_lines_output(result)
+    try:
+        assert result == expected
+    except AssertionError:
+        unified_diff = list(difflib.unified_diff(result.splitlines(keepends=True), expected.splitlines(keepends=True)))
+        raise AssertionError(f'Unexpected output between {test_file} and {expected_file}:\n{"".join(unified_diff)}')

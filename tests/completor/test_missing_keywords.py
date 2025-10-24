@@ -3,10 +3,10 @@
 from pathlib import Path
 
 import pytest
-import utils_for_tests
 
 from completor.constants import Content
 from completor.exceptions.clean_exceptions import CompletorError
+from tests import utils_for_tests
 
 COMPLETION = """
 COMPLETION
@@ -198,7 +198,7 @@ def test_missing_completion(tmpdir):
     """Test output to screen from Completor missing COMPLETION."""
     tmpdir.chdir()
     _, _outfile, case_file, schedule_file = set_files(tmpdir)
-    expected_error_message = "No completion is defined in the case file."
+    expected_error_message = "No COMPLETION keyword or ICVCONTROL is defined in the case file."
     set_case(Content.PERFORATED, ["wsegaicd"], case_file)
     set_schedule(["welspecs", "compdat", "welsegs", "compsegs"], schedule_file)
     with pytest.raises(ValueError, match=expected_error_message):

@@ -4,7 +4,7 @@ also work both for cells-, fixed-, user- and welsegs type of segmentation method
 
 from pathlib import Path
 
-import utils_for_tests
+from tests import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"

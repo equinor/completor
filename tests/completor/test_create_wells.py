@@ -5,11 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-import utils_for_tests
 
 from completor.constants import Method  # type: ignore
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.read_casefile import ReadCasefile  # type: ignore
+from tests import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"

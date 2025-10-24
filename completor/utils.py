@@ -5,13 +5,14 @@ from __future__ import annotations
 import re
 import sys
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from completor.constants import Content, Headers, Keywords
+from completor.constants import Content, Headers, ICVMethod, Keywords
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.logger import logger
 
@@ -386,3 +387,134 @@ def replace_preprocessing_names(text: str, mapper: Mapping[str, str] | None) -> 
                 my_value = start + str(value) + end
                 text = text.replace(my_key, my_value)
     return text
+
+
+def sort_string_with_assign_first(input_string: str) -> str:
+    """Sort string such that lines starting with "ASSIGN" come before other lines preserving remaining lines.
+
+    Args:
+        input_string: The input string to be sorted.
+
+    Returns:
+        String starting with "ASSIGN" appearing before other lines.
+    """
+
+    assign_lines = []
+    other_lines = []
+    for line in input_string.splitlines():
+        if line.lstrip().startswith("ASSIGN"):
+            assign_lines.append(line)
+        elif line.strip() != "":
+            other_lines.append(line)
+
+    sorted_lines = assign_lines + other_lines
+    return "\n".join(sorted_lines) + "\n"
+
+
+def reduce_newlines(data: str) -> str:
+    """Reduces consecutive occurrences of three or more newline characters to just two newline characters.
+
+    Args:
+        data: String to process.
+
+    Returns:
+        The processed string with reduced newline characters.
+    """
+
+    return re.sub(r"\n{3}", r"\n\n", data)
+
+
+def remove_duplicates(data: list[str]) -> list[str]:
+    """Remove duplicates from a list while preserving the original order.
+
+    Exclude empty strings from the resulting list.
+
+    Args:
+        data: The input list.
+
+    Returns:
+        The data with duplicates removed inline.
+    """
+
+    seen = set()
+    return [x for x in data if x and not (x in seen or seen.add(x))]
+
+
+def insert_comment_custom_content() -> str:
+    """Writes a comment to schedule when loglevel is <= 10.
+
+    Returns:
+        A string to be inserted before the output in format:
+        "METHOD_NAME with step 'STEP' and criteria 'CRITERIA'."
+    """
+
+    if logger.level > 10:
+        return ""
+    return "\n  -- This is custom content from CONTROL_CRITERIA keyword:\n"
+
+
+def insert_comment(method: str | ICVMethod, step: str | int | None = None, criteria: str | int | None = None) -> str:
+    """Writes a comment to schedule when loglevel is <= 10.
+
+    Args:
+        method: The method that is producing the current output.
+        step: The current step (if applicable).
+        criteria: The current criteria (if applicable).
+
+    Returns:
+        A string to be inserted before the output in format:
+        "METHOD_NAME with step 'STEP' and criteria 'CRITERIA'."
+    """
+
+    if logger.level > 10:
+        return ""
+    msg = f"-- {ICVMethod(method).name}"
+    if step is not None:
+        msg += f" with step '{step}'"
+    if criteria is not None:
+        if step is None:
+            msg += " with"
+        else:
+            msg += " and"
+        msg += f" criteria '{criteria}'"
+    return msg + ".\n"
+
+
+def icvc_keyword_in_file(path: Path | str) -> bool:
+    """If file contains ICV keyword.
+
+    Args:
+        path: Path to file to check.
+
+    Returns:
+        True if file contains ICV keyword.
+    """
+
+    path = Path(path)
+    with open(path, encoding="utf-8") as file:
+        case_file_content = file.read()
+
+    if Keywords.ICVC_KEYWORD in case_file_content:
+        return True
+    else:
+        return False
+
+
+def completion_keyword_in_file(path: Path | str) -> bool:
+    """If file contains COMPLETION keyword.
+
+    Args:
+        path: Path to file to check.
+
+    Returns:
+        True if file contains COMPLETION keyword.
+    """
+
+    path = Path(path)
+    with open(path, encoding="utf-8") as file:
+        case_file_content = file.read()
+
+    if Keywords.COMPLETION in case_file_content:
+        return True
+    else:
+        return False

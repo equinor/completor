@@ -266,6 +266,7 @@ class _Keywords:
     MAP_FILE = "MAPFILE"
     SCHEDULE_FILE = "SCHFILE"
     OUT_FILE = "OUTFILE"
+    ICVC_KEYWORD = "ICVCONTROL"
 
     # Note: Alphabetically sorted, which matters for check vs. missing keys in input data.
     main_keywords = [COMPLETION_DATA, COMPLETION_SEGMENTS, WELL_SEGMENTS, WELL_SPECIFICATION]
@@ -347,3 +348,21 @@ class Method(Enum):
         elif isinstance(other, str):
             return self.name == other
         return False
+
+
+class ICVMethod(Enum):
+    """Enum class representing the possible states for an ICV valve."""
+
+    OPEN = "OPEN"
+    OPEN_WAIT = "OPEN_WAIT"
+    OPEN_READY = "OPEN_READY"
+    OPEN_STOP = "OPEN_STOP"
+    OPEN_WAIT_STOP = "OPEN_WAIT_STOP"
+
+    CHOKE = "CHOKE"
+    CHOKE_READY = "CHOKE_READY"
+    CHOKE_WAIT = "CHOKE_WAIT"
+    CHOKE_STOP = "CHOKE_STOP"
+    CHOKE_WAIT_STOP = "CHOKE_WAIT_STOP"
+
+    UDQ = "UDQ"

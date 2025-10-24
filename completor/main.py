@@ -7,23 +7,28 @@ import os
 import re
 import sys
 import time
+from pathlib import Path
 
+import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 from tqdm import tqdm
 
-from completor import create_output, parse, read_schedule, utils
+from completor import create_output, parse, prepare_outputs, read_schedule, utils
 from completor.constants import Keywords, ScheduleData
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.get_version import get_version
+from completor.icv_file_handling import IcvFileHandling
+from completor.initialization import Initialization
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
-from completor.read_casefile import ReadCasefile
+from completor.read_casefile import ICVReadCasefile, ReadCasefile
 from completor.utils import (
-    abort,
     clean_file_lines,
     clean_raw_data,
+    completion_keyword_in_file,
     find_keyword_data,
     find_well_keyword_data,
+    icvc_keyword_in_file,
     replace_preprocessing_names,
 )
 from completor.wells import Well
@@ -87,10 +92,13 @@ def create(
         paths: Optional additional paths.
 
     Returns:
-        The case and schedule file, the well and output object.
+        - ReadCasefile object.
+        - Well object or None if no well was found.
+        - Well segment list or None if no update of segment list.
     """
     case = ReadCasefile(case_file=case_file, schedule_file=schedule, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
+    well_segment_list = []
     pdf = None
     figure_name = None
     if show_fig:
@@ -108,6 +116,15 @@ def create(
     # Strip trailing whitespace.
     schedule = re.sub(r"[^\S\r\n]+$", "", schedule, flags=re.MULTILINE)
     meaningful_data: ScheduleData = {}
+    df_with_icv = pd.concat(
+        [
+            case.completion_table[
+                (case.completion_table["DEVICETYPE"] == "ICV") & (case.completion_table["VALVES_PER_JOINT"] > 0)
+            ],
+            case.completion_icv_tubing,
+        ],
+        ignore_index=True,
+    )
 
     try:
         # Find the old data for each of the four main keywords.
@@ -129,6 +146,9 @@ def create(
         for i, well_name in tqdm(enumerate(active_wells.tolist()), total=len(active_wells), file=sys.stdout):
             try:
                 well = Well(well_name, i, case, meaningful_data[well_name])
+                if df_with_icv[df_with_icv["WELL"] == well.well_name].shape[0] > 0:
+                    well_segment_list = get_icv_segment(case, well_segment_list, well)
+
             except KeyError:
                 logger.warning(f"Well '{well_name}' is written in case file but does not exist in schedule file.")
                 continue
@@ -166,7 +186,26 @@ def create(
     if err is not None:
         raise err
 
-    return case, well
+    return case, well, well_segment_list
+
+
+def get_icv_segment(case, well_segment_list, well):
+    # TODO(#): Put tests
+    for lateral in well.active_laterals:
+        lateral.df_tubing, top = prepare_outputs.prepare_tubing_layer(well, lateral, 2, 1, case.completion_table)
+        lateral.df_device = prepare_outputs.prepare_device_layer(lateral.df_well, lateral.df_tubing)
+        icv_dataframe = prepare_outputs.prepare_inflow_control_valve(
+            well.well_name,
+            lateral.lateral_number,
+            well.df_well_all_laterals,
+            lateral.df_device,
+            lateral.df_tubing,
+            case.completion_icv_tubing,
+            case.wsegicv_table,
+        )
+        n = icv_dataframe["START_SEGMENT_NUMBER"][0]
+        well_segment_list.append((well.well_name, n))
+        return well_segment_list
 
 
 def main() -> None:
@@ -197,18 +236,17 @@ def main() -> None:
     schedule_file_content, inputs.schedulefile = get_content_and_path(
         case_file_content, inputs.schedulefile, Keywords.SCHEDULE_FILE
     )
-
-    if isinstance(schedule_file_content, str):
-        parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
+    # If ICVC exists, it should not be mandatory to have whole schedule files
+    # Check on both schedule and case files first
+    if completion_keyword_in_file(inputs.inputfile) and not icvc_keyword_in_file(inputs.inputfile):
+        if isinstance(schedule_file_content, str):
+            parse.read_schedule_keywords(clean_file_lines(schedule_file_content.splitlines()), Keywords.main_keywords)
 
     _, inputs.outputfile = get_content_and_path(case_file_content, inputs.outputfile, Keywords.OUT_FILE)
 
     if inputs.outputfile is None:
         if inputs.schedulefile is None:
-            raise ValueError(
-                "Could not find a path to schedule file. "
-                f"It must be provided as a input argument or within the case files keyword '{Keywords.SCHEDULE_FILE}'."
-            )
+            raise ValueError("Could not find a path to schedule file. It must be provided as a input argument.")
         inputs.outputfile = inputs.schedulefile.split(".")[0] + "_advanced.wells"
 
     paths_input_schedule = (inputs.inputfile, inputs.schedulefile)
@@ -217,16 +255,71 @@ def main() -> None:
     logger.debug("-" * 60)
     start_a = time.time()
 
-    handle_error_messages(create)(
+    case, well, well_start_segments = handle_error_messages(create)(
         case_file_content, schedule_file_content, inputs.outputfile, inputs.figure, paths=paths_input_schedule
     )
+    if icvc_keyword_in_file(inputs.inputfile):
+        # start running ICV Control
+        # the input schedule file to second run of ICV Control is the output file from Completor
+        # therefore
+
+        inputs.schedulefile = inputs.outputfile
+        inputs.schedulefile = os.path.abspath(inputs.schedulefile)
+
+        if inputs.outputfile is not None:
+
+            schedule_content, inputs.schedulefile = get_content_and_path(
+                case_file_content, inputs.schedulefile, Keywords.SCHEDULE_FILE
+            )
+            inputs.outputfile, inputs.outputdirectory = get_output_filename_and_directory(inputs)
+
+            if inputs.inputfile is not None:
+                create_icvc(case_file_content, schedule_content, inputs, well_start_segments)
 
     logger.debug("Total runtime: %d", (time.time() - start_a))
     logger.debug("-" * 60)
 
 
-if __name__ == "__main__":
-    try:
-        main()
-    except CompletorError as e:
-        raise abort(str(e)) from e
+def get_output_filename_and_directory(inputs) -> tuple[str, str]:
+    """Get the output filename and directory from the user input.
+
+    Args:
+        arguments: Arguments from the command line.
+
+    Returns:
+        output_filename: The output filename.
+        output_directory: The output directory.
+    """
+    if inputs.outputfile:
+        output_path = Path(inputs.outputfile)
+        output_filename = f"{output_path.name}"
+    else:
+        output_path = Path(inputs.schedulefile)
+        output_filename = f"{output_path.stem}.sch"
+
+    # use cwd as output directory if the output_path is just a filename. e.g. output.sch
+    output_directory = Path.cwd() if output_path.parent == Path(".") else output_path.parent
+    return output_filename, output_directory
+
+
+def create_icvc(case_content: str, schedule_content: str, inputs, new_segments: str):
+    """
+    Create ICV-control schedule- and include files from input case- and schedule files.
+
+    Args:
+        input_case_content: Input case file.
+        schedule_content: Input schedule file.
+        arguments: Arguments from the command line.
+    """
+
+    case = ICVReadCasefile(case_content, schedule_content, new_segments)
+    initials = Initialization(case, schedule_content)
+    # TODO(#): Should this be true?
+    # initials.case.update_case = True
+    file_data = {
+        "output_file_name": inputs.outputfile,
+        "output_directory": inputs.outputdirectory,
+        "schedule_file_path": inputs.schedulefile,
+        "input_case_file": inputs.inputfile,
+    }
+    IcvFileHandling(file_data, initials)
