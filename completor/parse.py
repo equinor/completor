@@ -338,8 +338,8 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
             try:
                 header_table: npt.NDArray[np.unicode_] | pd.DataFrame
                 record_table: npt.NDArray[np.unicode_] | pd.DataFrame
-                header_table = np.row_stack((header_table, header_collection))
-                record_table = np.row_stack((record_table, record_collection))
+                header_table = np.vstack((header_table, header_collection))
+                record_table = np.vstack((record_table, record_collection))
             except NameError:
                 # First iteration
                 header_table = np.asarray(header_collection)
@@ -394,7 +394,7 @@ def get_welspecs_table(collections: list[ContentCollection]) -> pd.DataFrame:
             if welspecs_table is None:
                 welspecs_table = np.copy(the_collection)
             else:
-                welspecs_table = np.row_stack((welspecs_table, the_collection))
+                welspecs_table = np.vstack((welspecs_table, the_collection))
 
     if welspecs_table is None:
         raise ValueError(f"Collection does not contain the '{Keywords.WELL_SPECIFICATION}' keyword")
@@ -424,7 +424,7 @@ def get_compdat_table(collections: list[ContentCollection]) -> pd.DataFrame:
             if compdat_table is None:
                 compdat_table = np.copy(the_collection)
             else:
-                compdat_table = np.row_stack((compdat_table, the_collection))
+                compdat_table = np.vstack((compdat_table, the_collection))
     if compdat_table is None:
         raise ValueError(f"Collection does not contain the '{Keywords.COMPLETION_DATA}' keyword")
     compdat_table = pd.DataFrame(
@@ -472,7 +472,7 @@ def get_compsegs_table(collections: list[ContentCollection]) -> pd.DataFrame:
             if compsegs_table is None:
                 compsegs_table = np.copy(the_collection)
             else:
-                compsegs_table = np.row_stack((compsegs_table, the_collection))
+                compsegs_table = np.vstack((compsegs_table, the_collection))
 
     if compsegs_table is None:
         raise ValueError(f"Collection does not contain the '{Keywords.COMPLETION_SEGMENTS}' keyword")
