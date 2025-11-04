@@ -833,7 +833,7 @@ class ICVReadCasefile(ReadCasefile):
         self.icv_table: dict[str, pd.DataFrame] = {}
         self.icv_date = None
         self.icv_control_table = pd.DataFrame()
-        self.custom_conditions: dict[str, dict[str, Any]] = {}
+        self.custom_conditions: dict[ICVMethod, dict[str, Any]] = {}
         self.icv_segments = new_segments
 
         self.read_icv_control()
@@ -948,7 +948,7 @@ class ICVReadCasefile(ReadCasefile):
 
             self.icv_table.update({name: df_temp for name in table_name})
 
-    def read_custom_conditions(self) -> dict[str, dict[str, Any]]:
+    def read_custom_conditions(self) -> dict[ICVMethod, dict[str, Any]]:
         """This procedure reads the CONTROL_CRITERIA keyword in the case file.
 
         The CONTROL_CRITERIA keyword information is stored in a dictionary:
@@ -980,7 +980,7 @@ class ICVReadCasefile(ReadCasefile):
 
         return self.custom_conditions
 
-    def parse_custom_conditions(self, raw_content: list[str]) -> dict[str, dict[str, str | list[int]]]:
+    def parse_custom_conditions(self, raw_content: list[str]) -> dict[ICVMethod, dict[str, str | list[int]]]:
         """Parse the raw text input into a dictionary structure.
 
         Args:
@@ -1002,12 +1002,12 @@ class ICVReadCasefile(ReadCasefile):
 
         """
         criteria = []
-        methods = []
-        icv_map = []
+        methods: list[ICVMethod] = []
+        icv_map: list[list[str]] = []
         for i, line in enumerate(raw_content):
             keyword, *value = line.rsplit(":", 1)
             if not value:
-                value = ""
+                value = [""]
             keyword = keyword.strip().lower()
             value = "".join(value).strip()
             # Looking at start of word to accommodate some typos / variations
@@ -1044,9 +1044,9 @@ class ICVReadCasefile(ReadCasefile):
                     )
 
             elif keyword.startswith("icv"):
-                icv_map = (" ".join([icv.strip() for icv in re.sub(r"\[|\]\]", "", value).split(",")])).split("]")
+                icv_list = (" ".join([icv.strip() for icv in re.sub(r"\[|\]\]", "", value).split(",")])).split("]")
                 # Removal of whitespace and maps to sublists
-                icv_map = [sublist.strip().split() for sublist in icv_map if sublist]
+                icv_map = [sublist.strip().split() for sublist in icv_list if sublist]
 
             else:
                 content = ("\n".join(raw_content[i:])).upper()
@@ -1089,7 +1089,7 @@ class ICVReadCasefile(ReadCasefile):
                 if icv_combo != "":
                     icv = icv_combo[0]
 
-                    if self.custom_conditions.get(method).get(icv) is None:
+                    if self.custom_conditions.get(method, {}).get(icv) is None:
                         self.custom_conditions[method][icv] = {}
                     icv_combo_mapped = {}
                     if "map" not in self.custom_conditions[method][icv]:
