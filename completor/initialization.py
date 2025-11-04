@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import datetime
 import re
+from datetime import datetime
 
 import pandas as pd
 
@@ -145,7 +145,7 @@ class Initialization:
             # Get the ICVDATE for the current icv name
             tmp_date = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["ICVDATE"]
             # Convert the date string to a datetime object
-            tmp = datetime.datetime.strptime(tmp_date.iloc[0], "%d.%b.%Y").date()
+            tmp = datetime.strptime(tmp_date.iloc[0], "%d.%b.%Y").date()
             # Format the datetime object as a string in the desired format: 01.JAN.1970
             tmp = tmp.strftime("%d %b %Y").upper()
             # Replace the first occurrence of the original date with the formatted date
@@ -166,7 +166,7 @@ class Initialization:
         `well_names` dictionary and checks if different ICV dates have been
         assigned to ICVs placed on the same well.
         """
-        well_dates = {}
+        well_dates: dict[str, dict[str, str]] = {}
         for well in set(self.well_names.values()):
             well_dates[well] = {}
             for icv_name in self.well_names:
@@ -178,7 +178,7 @@ class Initialization:
                     f"well. Well {well} got several dates. See {well_dates[well]}."
                 )
 
-    def number_of_icvs(self, icv_name: str) -> tuple[int, str | None]:
+    def number_of_icvs(self, icv_name: str) -> int:
         """Finds the number of icvs in the well from an input icv_name.
 
         Args:
@@ -464,14 +464,14 @@ class Initialization:
                     content = re.sub(rf"SEG\({x_value}\)", str(self.segments[icv]), content)
                     content = re.sub(rf"\_{x_value}\b", f"_{icv}", content)
             # Replace inconsistent end records and space with consistent version
-            content = [f"  {line.strip()}\n" for line in content.splitlines()]
-            for index, line in enumerate(content):
+            content_lines = [f"  {line.strip()}\n" for line in content.splitlines()]
+            for index, line in enumerate(content_lines):
                 if not line.isspace():
                     # Remove trailing non-word characters unless they are ) or ' at word boundary
-                    content[index] = re.sub(r"(?:\B'|[^\w\)'])*$", "", line) + " /\n"
+                    content_lines[index] = re.sub(r"(?:\B'|[^\w\)'])*$", "", line) + " /\n"
                 else:
-                    content[index] = ""
-            content = "".join(content)
+                    content_lines[index] = ""
+            content = "".join(content_lines)
         content_variables = re.findall(r"[x]\d", content)
         if content_variables != []:
             logger.info(
@@ -485,7 +485,7 @@ class Initialization:
 
     def get_custom_content(
         self, icv_name: str, icv_function: ICVMethod, criteria: int | str, is_end_of_records: bool = True
-    ) -> tuple[str | None, list[int]]:
+    ) -> str | None:
         """Helper method to get correct custom content.
 
         Args:
@@ -493,7 +493,7 @@ class Initialization:
             icv_function: The ICVMethod type calling this function.
 
         Returns:
-            The custom content and criteria (if any), for the current ICV.
+            The custom content for the current ICV.
 
         """
         custom_content = None
