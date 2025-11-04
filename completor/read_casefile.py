@@ -833,7 +833,7 @@ class ICVReadCasefile(ReadCasefile):
         self.icv_table: dict[str, pd.DataFrame] = {}
         self.icv_date = None
         self.icv_control_table = pd.DataFrame()
-        self.custom_conditions = {}
+        self.custom_conditions: dict[str, dict[str, Any]] = {}
         self.icv_segments = new_segments
 
         self.read_icv_control()
@@ -948,7 +948,7 @@ class ICVReadCasefile(ReadCasefile):
 
             self.icv_table.update({name: df_temp for name in table_name})
 
-    def read_custom_conditions(self):
+    def read_custom_conditions(self) -> dict[str, dict[str, Any]]:
         """This procedure reads the CONTROL_CRITERIA keyword in the case file.
 
         The CONTROL_CRITERIA keyword information is stored in a dictionary:
@@ -956,6 +956,9 @@ class ICVReadCasefile(ReadCasefile):
             "criteria": 1,
             "icvs": ["ICV","ICV"],
             "conditions": 'extra string of conditions'
+
+        Returns:
+            A dictionary containing the custom conditions.
         """
         start_arr = []
         end_arr = []
@@ -969,19 +972,19 @@ class ICVReadCasefile(ReadCasefile):
             i += end
 
         if not start_arr:
-            self.custom_conditions = None
-            return None
+            self.custom_conditions = {}
+            return self.custom_conditions
 
         for start, end in zip(start_arr, end_arr):
             self.parse_custom_conditions(self.content[start + 1 : end])
 
         return self.custom_conditions
 
-    def parse_custom_conditions(self, raw_content: str) -> dict[str, dict[str, str | list[int]]]:
+    def parse_custom_conditions(self, raw_content: list[str]) -> dict[str, dict[str, str | list[int]]]:
         """Parse the raw text input into a dictionary structure.
 
         Args:
-            raw_content: Raw input string.
+            raw_content: Raw input string, as list of lines.
 
         Raises:
             ValueError: ValueError if the input data has erroneous format.
