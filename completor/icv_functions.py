@@ -544,7 +544,7 @@ class IcvFunctions:
         trigger_number_times: int,
         trigger_minimum_interval: int,
         actionx_repeater: int = 99,
-        criteria: int = 1,
+        criteria: int | None = None,
     ) -> str:
         """Creates the wait choke icv-control function.
 
@@ -559,6 +559,9 @@ class IcvFunctions:
             The icv-control wait choke function.
 
         """
+        if criteria is None:
+            criteria = 1
+
         icv_function = ICVMethod.CHOKE_WAIT
         step = 1
         actionx = ""
@@ -579,7 +582,7 @@ class IcvFunctions:
         actionx += actionx_repeater * "ENDACTIO\n"
         return actionx
 
-    def create_open_wait(self, icv_name: str, actionx_repeater: int = 99, criteria: int = 1) -> str:
+    def create_open_wait(self, icv_name: str, actionx_repeater: int = 99, criteria: int | None = None) -> str:
         """Creates the icv-control wait open function.
 
         Args:
@@ -590,6 +593,9 @@ class IcvFunctions:
             The icv-control wait open function.
 
         """
+        if criteria is None:
+            criteria = 1
+
         icv_function = ICVMethod.OPEN_WAIT
         step = 1
         actionx = ""
@@ -651,7 +657,11 @@ class IcvFunctions:
         return actionx + "ENDACTIO\n\n"
 
     def create_choke_ready(
-        self, icv_name: str, criteria: int = 1, trigger_number_times: int = 10, trigger_minimum_interval: str = ""
+        self,
+        icv_name: str,
+        criteria: int | None = None,
+        trigger_number_times: int = 10,
+        trigger_minimum_interval: str = "",
     ) -> str:
         """Creates the ready choke function for icv-control.
 
@@ -665,6 +675,9 @@ class IcvFunctions:
             The icv-control ready choke function.
 
         """
+        if criteria is None:
+            criteria = 1
+
         icv_function = ICVMethod.CHOKE_READY
         action_name = self.create_action_name(icv_name, icv_function, None, criteria)
         record1 = self.create_record1(action_name, trigger_number_times, trigger_minimum_interval)
@@ -792,7 +805,7 @@ class IcvFunctions:
         icv_name: str,
         criteria: int,
         trigger_number_times: int,
-        trigger_minimum_interval: int,
+        trigger_minimum_interval: int | str,
         actionx_repeater: int = 9,
     ) -> str:
         """The icv-control open choke function.

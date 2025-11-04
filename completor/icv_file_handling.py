@@ -24,7 +24,6 @@ class IcvFileHandling:
         self.output_directory = Path(file_data["output_directory"])
         self.input_case_file = Path(file_data["input_case_file"])
         self.create_ordered_filenames()
-        self.ordered_contents = []
         self.create_include_files()
         self.create_main_schedule_file(Path(file_data["schedule_file_path"]))
         self.include_file_path = None
@@ -52,9 +51,11 @@ class IcvFileHandling:
         Returns:
             Content of the file_type include file.
 
+        Raises:
+            ValueError: If criteria is None for CHOKE or OPEN file type.
+
         """
         trigger_number_times = 10000
-        trigger_minimum_interval = ""
         file_content = ""
         actionx_repeater = self.initials.case.step_table[icv_name][0]
         if actionx_repeater > 9999 or len(str(actionx_repeater)) > 4:
@@ -67,37 +68,42 @@ class IcvFileHandling:
             return file_content
 
         if file_type == ICVMethod.OPEN_WAIT:
-            trigger_number_times = 10000
             file_content += self.icv_functions.create_open_wait(icv_name, actionx_repeater, criteria)
             return file_content
 
         if file_type == ICVMethod.CHOKE:
-            trigger_number_times = 10000
+            if criteria is None:
+                raise ValueError("Criteria must be provided for CHOKE file type.")
+
+            trigger_minimum_interval_str = ""
             file_content = self.icv_functions.create_choke_ready(
-                icv_name, criteria, trigger_number_times, trigger_minimum_interval
+                icv_name, criteria, trigger_number_times, trigger_minimum_interval_str
             )
             file_content += self.icv_functions.create_choke_wait_stop(icv_name, criteria)
             file_content += self.icv_functions.create_choke_stop(
-                icv_name, criteria, trigger_number_times, trigger_minimum_interval
+                icv_name, criteria, trigger_number_times, trigger_minimum_interval_str
             )
             trigger_number_times = 1
             file_content += self.icv_functions.create_choke(
-                icv_name, criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
+                icv_name, criteria, trigger_number_times, trigger_minimum_interval_str, actionx_repeater
             )
             return file_content
 
         if file_type == ICVMethod.OPEN:
-            trigger_number_times = 10000
+            if criteria is None:
+                raise ValueError("Criteria must be provided for OPEN file type.")
+
+            trigger_minimum_interval_str = ""
             file_content += self.icv_functions.create_open_ready(
-                icv_name, criteria, trigger_number_times, trigger_minimum_interval
+                icv_name, criteria, trigger_number_times, trigger_minimum_interval_str
             )
             file_content += self.icv_functions.create_open_wait_stop(icv_name, criteria)
             file_content += self.icv_functions.create_open_stop(
-                icv_name, criteria, trigger_number_times, trigger_minimum_interval
+                icv_name, criteria, trigger_number_times, trigger_minimum_interval_str
             )
             trigger_number_times = 1
             file_content += self.icv_functions.create_open(
-                icv_name, criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
+                icv_name, criteria, trigger_number_times, trigger_minimum_interval_str, actionx_repeater
             )
             return file_content
 
@@ -137,24 +143,6 @@ class IcvFileHandling:
 
         with open(file_path, "a", encoding="utf-8") as file:
             file.write(content)
-
-    def get_and_update_case_content(self, update_case: bool) -> str:
-        """Get the content of the case file and update it if specified.
-
-        Args:
-            update_case: Update the case file content.
-
-        Returns:
-            Content of the case file.
-        """
-
-        with open(self.input_case_file.resolve(), encoding="utf-8") as case_file:
-            case_content = case_file.read()
-
-        if update_case:
-            case_content = self._update_well_segments(case_content)
-
-        return case_content
 
     def add_section_header(self, content: str, header: str) -> str:
         """Add a section header to the content.
@@ -208,7 +196,6 @@ class IcvFileHandling:
         self.append_content_to_file(summary_file_path, content)
         logger.info(f"Created summary file: '{summary_file_path}'.")
 
-        # content = self.get_and_update_case_content(update_case)
         content = self.add_section_header(content, f"Completor version: {get_version()}")
         # self.append_content_to_file(case_file_path, content)
 
@@ -271,7 +258,7 @@ class IcvFileHandling:
                 sorted_dates.append(date.strftime("%d %b %Y %H:%M:%S").upper())
 
         lines_path_to_include = list(sch_data_before_date)
-        lines_path = format_sch_file(self, sorted_dates, sch_data_after_first_date, date_comment)
+        lines_path = self.format_sch_file(sorted_dates, sch_data_after_first_date, date_comment)
         lines_path_to_include += lines_path
         main_schedule_lines = [line.replace("//", "/") for line in lines_path_to_include]
 
@@ -279,8 +266,46 @@ class IcvFileHandling:
             file.write("".join(main_schedule_lines))
         logger.info(f"Created main schedule file: '{main_schedule_file}'.")
 
+    def format_sch_file(
+        self, sorted_dates: list[str], sch_data_after_first_date: dict[str, str], date_comment: dict[str, str]
+    ) -> list[str]:
+        """
+        Formats the SCH file by including relevant paths and
+        content based on sorted dates and SCH data.
 
-def format_date(date_contents: list) -> dict:
+        Args:
+            sorted_dates: A list of sorted dates.
+            sch_data_after_first_date: Containing SCH data after the first date.
+
+        Returns:
+            lines_path_to_include: Formatted paths to include in the SCH file.
+
+        """
+        lines_path_to_include = []
+        base_include = "INCLUDE\n"
+
+        for icvdate in sorted_dates:
+            try:
+                lines_path_to_include.append(f"DATES\n {icvdate} /{date_comment[icvdate]}\n/\n")
+            except KeyError:
+                lines_path_to_include.append(f"DATES\n {icvdate} /\n/\n")
+            try:
+                # Append content from SCH file after the first date.
+                lines_path_to_include.append(sch_data_after_first_date[icvdate].strip() + "\n\n")
+            except KeyError:
+                # Skip if SCH data for the icvdate is not found.
+                pass
+            try:
+                self.ordered_filenames[icvdate].keys()
+            except KeyError:
+                continue
+            # The includes of 'init.udq' and 'input.udq' should be placed close to the
+            # include 'well' statement.
+            lines_path_to_include.append(f"{base_include} '{self.schedule_include_file_path}' /\n\n".replace("//", "/"))
+        return lines_path_to_include
+
+
+def format_date(date_contents: list) -> tuple[dict, dict]:
     """
     This function takes a list of dates in the format "day/month/year time" or
     "day/month/year" and returns a dictionary of the formatted dates as keys and
@@ -340,45 +365,3 @@ def format_date(date_contents: list) -> dict:
         formatted_data[date] = content
         date_comment[date] = comment
     return formatted_data, date_comment
-
-
-def format_sch_file(
-    self, sorted_dates: list[str], sch_data_after_first_date: dict[str, str], date_comment: dict[str, str]
-) -> tuple[list[str], dict[str, list[str]]]:
-    """
-    Formats the SCH file by including relevant paths and
-    content based on sorted dates and SCH data.
-
-    Args:
-        sorted_dates: A list of sorted dates.
-        sch_data_after_first_date: Containing SCH data after the first date.
-
-    Returns:
-        lines_path_to_include: Formatted paths to include in the SCH file.
-
-    """
-    lines_path_to_include = []
-    icv_include_content = {}
-    for icv_name in self.initials.icv_names:
-        well_name = self.initials.well_names[icv_name]
-        icv_include_content[well_name] = []
-    base_include = "INCLUDE\n"
-    for icvdate in sorted_dates:
-        try:
-            lines_path_to_include.append(f"DATES\n {icvdate} /{date_comment[icvdate]}\n/\n")
-        except KeyError:
-            lines_path_to_include.append(f"DATES\n {icvdate} /\n/\n")
-        try:
-            # Append content from SCH file after the first date.
-            lines_path_to_include.append(sch_data_after_first_date[icvdate].strip() + "\n\n")
-        except KeyError:
-            # Skip if SCH data for the icvdate is not found.
-            pass
-        try:
-            self.ordered_filenames[icvdate].keys()
-        except KeyError:
-            continue
-        # The includes of 'init.udq' and 'input.udq' should be placed close to the
-        # include 'well' statement.
-        lines_path_to_include.append(f"{base_include} '{self.schedule_include_file_path}' /\n\n".replace("//", "/"))
-    return lines_path_to_include
