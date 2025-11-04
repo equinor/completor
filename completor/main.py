@@ -190,7 +190,6 @@ def create(
 
 
 def get_icv_segment(case, well_segment_list, well):
-    # TODO(#): Put tests
     for lateral in well.active_laterals:
         lateral.df_tubing, top = prepare_outputs.prepare_tubing_layer(well, lateral, 2, 1, case.completion_table)
         lateral.df_device = prepare_outputs.prepare_device_layer(lateral.df_well, lateral.df_tubing)
@@ -314,7 +313,7 @@ def create_icvc(case_content: str, schedule_content: str, inputs, new_segments: 
 
     case = ICVReadCasefile(case_content, schedule_content, new_segments)
     initials = Initialization(case, schedule_content)
-    # TODO(#): Should this be true?
+    # TODO(#305): Should this be true?
     # initials.case.update_case = True
     file_data = {
         "output_file_name": inputs.outputfile,

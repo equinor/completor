@@ -47,6 +47,7 @@ class ReadCasefile:
         gp_perf_devicelayer (bool): GRAVEL_PACKED_PERFORATED_DEVICELAYER. If TRUE all wells with
             gravel pack and perforation completion are given a device layer.
             If FALSE (default) all wells with this type of completions are untouched by Completor.
+        python_dependent (bool): PYTHON_DEPENDENT. If TRUE prints pyaction to output.
     """
 
     def __init__(self, case_file: str, schedule_file: str | None = None, output_file: str | None = None):
@@ -67,7 +68,7 @@ class ReadCasefile:
         self.minimum_segment_length: float = 0.0
         self.strict = True
         self.gp_perf_devicelayer = False
-        self.python_dependent = False  # # TODO(# ): Missing docsting.
+        self.python_dependent = False
         self.schedule_file = schedule_file
         self.output_file = output_file
         self.completion_table = pd.DataFrame()
