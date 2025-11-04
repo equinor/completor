@@ -81,7 +81,7 @@ def get_content_and_path(case_content: str, file_path: str | None, keyword: str)
 
 def create(
     case_file: str, schedule: str, new_file: str, show_fig: bool = False, paths: tuple[str, str] | None = None
-) -> tuple[ReadCasefile, Well | None]:
+) -> tuple[ReadCasefile, Well | None, list[tuple[str, int]]]:
     """Create and write the advanced schedule file from input case- and schedule files.
 
     Args:
@@ -98,7 +98,7 @@ def create(
     """
     case = ReadCasefile(case_file=case_file, schedule_file=schedule, output_file=new_file)
     active_wells = utils.get_active_wells(case.completion_table, case.gp_perf_devicelayer)
-    well_segment_list = []
+    well_segment_list: list[tuple[str, int]] = []
     pdf = None
     figure_name = None
     if show_fig:
@@ -202,8 +202,8 @@ def get_icv_segment(case, well_segment_list, well):
             case.completion_icv_tubing,
             case.wsegicv_table,
         )
-        n = icv_dataframe["START_SEGMENT_NUMBER"][0]
-        well_segment_list.append((well.well_name, n))
+        segment_number = icv_dataframe["START_SEGMENT_NUMBER"][0]
+        well_segment_list.append((well.well_name, segment_number))
         return well_segment_list
 
 
@@ -297,11 +297,11 @@ def get_output_filename_and_directory(inputs) -> tuple[str, str]:
         output_filename = f"{output_path.stem}.sch"
 
     # use cwd as output directory if the output_path is just a filename. e.g. output.sch
-    output_directory = Path.cwd() if output_path.parent == Path(".") else output_path.parent
+    output_directory = str(Path.cwd() if output_path.parent == Path(".") else output_path.parent)
     return output_filename, output_directory
 
 
-def create_icvc(case_content: str, schedule_content: str, inputs, new_segments: str):
+def create_icvc(case_content: str, schedule_content: str | None, inputs, new_segments: str):
     """
     Create ICV-control schedule- and include files from input case- and schedule files.
 

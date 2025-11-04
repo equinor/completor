@@ -21,8 +21,12 @@ FUP_INIT = 2
 class Initialization:
     """Initializes dicts for easy access. Creates the INPUT and UDQDEFINE files."""
 
-    def __init__(self, case_object: ICVReadCasefile, schedule_content: str = ""):
+    def __init__(self, case_object: ICVReadCasefile, schedule_content: str | None = None):
         self.case = case_object
+
+        if schedule_content is None:
+            schedule_content = ""
+
         self.schedule_content = schedule_content
         self.icv_control_table = case_object.icv_control_table
 

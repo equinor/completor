@@ -17,12 +17,12 @@ schedule = Path(_TESTDIR_COMPLETOR / "icv_sch.sch")
 with open(case, encoding="utf-8") as file:
     case_file_content = file.read()
 
-schedule_file_content, schedule = get_content_and_path(case_file_content, schedule, Keywords.SCHEDULE_FILE)
+schedule_file_content, schedule = get_content_and_path(case_file_content, str(schedule), Keywords.SCHEDULE_FILE)
 
 
 def test_make_segment_list(tmpdir):
     _TEST_FILE = Path(tmpdir / "test.sch")
-    case, well, well_segment = create(case_file_content, schedule_file_content, _TEST_FILE)
+    _, _, well_segment = create(case_file_content, schedule_file_content, _TEST_FILE)
     df_new_segment = pd.DataFrame(well_segment, columns=["WELL", "NEW_SEGMENT"])
     df_true = pd.DataFrame(
         [
