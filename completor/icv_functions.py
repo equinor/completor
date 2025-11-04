@@ -57,54 +57,55 @@ class IcvFunctions:
 
         """
         crit = "_" if criteria is None else f"{criteria}"
+        step_str: str
         if step is None:
-            step = "_"
+            step_str = "_"
         elif step > 999:
-            step = str(step)
+            step_str = str(step)
         elif len(crit) == 2 or len(icv_name) == 2:
-            step = f"000{step}"[-3:]
+            step_str = f"000{step}"[-3:]
         else:
-            step = "_" + f"000{step}"[-3:]
+            step_str = "_" + f"000{step}"[-3:]
 
         if (
             (len(crit) == 2 and len(icv_name) == 2)
-            or (len(crit) == 2 and len(step) == 4)
-            or (len(icv_name) == 2 and len(step) == 4)
+            or (len(crit) == 2 and len(step_str) == 4)
+            or (len(icv_name) == 2 and len(step_str) == 4)
         ):
             action_name_templates = {
-                ICVMethod.OPEN: f"O{crit}{icv_name}{step}",
-                ICVMethod.OPEN_WAIT: f"H{crit}{icv_name}{step}",
+                ICVMethod.OPEN: f"O{crit}{icv_name}{step_str}",
+                ICVMethod.OPEN_WAIT: f"H{crit}{icv_name}{step_str}",
                 ICVMethod.OPEN_READY: f"RDYO{crit}{icv_name}",
                 ICVMethod.OPEN_STOP: f"STPO{crit}{icv_name}",
                 ICVMethod.OPEN_WAIT_STOP: f"SPOW{crit}{icv_name}",
-                ICVMethod.CHOKE: f"C{crit}{icv_name}{step}",
-                ICVMethod.CHOKE_WAIT: f"W{crit}{icv_name}{step}",
+                ICVMethod.CHOKE: f"C{crit}{icv_name}{step_str}",
+                ICVMethod.CHOKE_WAIT: f"W{crit}{icv_name}{step_str}",
                 ICVMethod.CHOKE_READY: f"RDYC{crit}{icv_name}",
                 ICVMethod.CHOKE_STOP: f"STPC{crit}{icv_name}",
                 ICVMethod.CHOKE_WAIT_STOP: f"SPCW{crit}{icv_name}",
             }
-        elif (len(crit) == 2 or len(icv_name) == 2) and len(step) < 4:
+        elif (len(crit) == 2 or len(icv_name) == 2) and len(step_str) < 4:
             action_name_templates = {
-                ICVMethod.OPEN: f"OP{crit}{icv_name}{step}",
-                ICVMethod.OPEN_WAIT: f"WO{crit}{icv_name}{step}",
+                ICVMethod.OPEN: f"OP{crit}{icv_name}{step_str}",
+                ICVMethod.OPEN_WAIT: f"WO{crit}{icv_name}{step_str}",
                 ICVMethod.OPEN_READY: f"REDYO{crit}{icv_name}",
                 ICVMethod.OPEN_STOP: f"STPO{crit}{icv_name}",
                 ICVMethod.OPEN_WAIT_STOP: f"STPOW{crit}{icv_name}",
-                ICVMethod.CHOKE: f"C{crit}{icv_name}{step}",
-                ICVMethod.CHOKE_WAIT: f"WC{crit}{icv_name}{step}",
+                ICVMethod.CHOKE: f"C{crit}{icv_name}{step_str}",
+                ICVMethod.CHOKE_WAIT: f"WC{crit}{icv_name}{step_str}",
                 ICVMethod.CHOKE_READY: f"REDYC{crit}{icv_name}",
                 ICVMethod.CHOKE_STOP: f"STPC{crit}{icv_name}",
                 ICVMethod.CHOKE_WAIT_STOP: f"STPCW{crit}{icv_name}",
             }
         else:
             action_name_templates = {
-                ICVMethod.OPEN: f"OP{crit}{icv_name}{step}",
-                ICVMethod.OPEN_WAIT: f"WO{crit}{icv_name}{step}",
+                ICVMethod.OPEN: f"OP{crit}{icv_name}{step_str}",
+                ICVMethod.OPEN_WAIT: f"WO{crit}{icv_name}{step_str}",
                 ICVMethod.OPEN_READY: f"READYO{crit}{icv_name}",
                 ICVMethod.OPEN_STOP: f"STOPO{crit}{icv_name}",
                 ICVMethod.OPEN_WAIT_STOP: f"STOPOW{crit}{icv_name}",
-                ICVMethod.CHOKE: f"CH{crit}{icv_name}{step}",
-                ICVMethod.CHOKE_WAIT: f"WC{crit}{icv_name}{step}",
+                ICVMethod.CHOKE: f"CH{crit}{icv_name}{step_str}",
+                ICVMethod.CHOKE_WAIT: f"WC{crit}{icv_name}{step_str}",
                 ICVMethod.CHOKE_READY: f"READYC{crit}{icv_name}",
                 ICVMethod.CHOKE_STOP: f"STOPC{crit}{icv_name}",
                 ICVMethod.CHOKE_WAIT_STOP: f"STOPCW{crit}{icv_name}",
@@ -164,17 +165,20 @@ class IcvFunctions:
             return f"{insert_parameter_block} AND /\n{custom_content}"
         return insert_parameter_block + end_rec
 
-    def create_record2_choke_wait_stop(self, icv_name: str, criteria: int = 1) -> str:
+    def create_record2_choke_wait_stop(self, icv_name: str, criteria: int | None = None) -> str:
         """Creates the ACTIONX record 2 for the choke wait stop function.
 
         Args:
             icv_name: One or two symbols naming the icv.
-            criteria: Integer value denoting the criteria.
+            criteria: Integer value denoting the criteria. Defaults to 1 if None or not provided.
 
         Returns:
             ACTIONX record 2 for the wait open function.
 
         """
+        if criteria is None:
+            criteria = 1
+
         icv_function = ICVMethod.CHOKE_WAIT_STOP
         end_rec = " /\n/\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
@@ -216,17 +220,19 @@ class IcvFunctions:
         else:
             return insert_parameter_block + end_rec
 
-    def create_record2_open_wait_stop(self, icv_name: str, criteria: int = 1) -> str:
+    def create_record2_open_wait_stop(self, icv_name: str, criteria: int | None = None) -> str:
         """Creates the ACTIONX record 2 for the open wait stop function.
 
         Args:
             icv_name: One or two symbols naming the ICV.
-            criteria: Integer value denoting the criteria.
+            criteria: Integer value denoting the criteria. Defaults to 1 if None or not provided.
 
         Returns:
             ACTIONX record 2 for the wait open function.
 
         """
+        if criteria is None:
+            criteria = 1
         icv_function = ICVMethod.OPEN_WAIT_STOP
         end_rec = " /\n/\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
@@ -423,6 +429,7 @@ class IcvFunctions:
 
         Raises:
             ValueError: if the icv_function keyword is not recognized.
+            ValueError: if step is None when required for OPEN or CHOKE functions.
 
         """
         well_name = self.initials.well_names[icv_name]
@@ -437,6 +444,8 @@ class IcvFunctions:
             table = False
 
         if icv_function == ICVMethod.OPEN:
+            if step is None:
+                raise ValueError(f"step is required for {icv_function} function")
             if (step % 2) == 0:
                 action = (
                     f"WSEGVALV\n"
@@ -483,6 +492,8 @@ class IcvFunctions:
             return f"UDQ\n  ASSIGN FUTC_{icv_name} 0 /\n/"
 
         if icv_function == ICVMethod.CHOKE:
+            if step is None:
+                raise ValueError(f"step is required for {icv_function} function")
             if (step % 2) == 0:
                 action = (
                     f"WSEGVALV\n"
