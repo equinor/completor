@@ -436,8 +436,7 @@ def remove_duplicates(data: list[str]) -> list[str]:
         The data with duplicates removed inline.
     """
 
-    seen = set()
-    return [x for x in data if x and not (x in seen or seen.add(x))]
+    return [x for x in dict.fromkeys(data) if x]
 
 
 def insert_comment_custom_content() -> str:
