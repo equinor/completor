@@ -20,19 +20,86 @@ with open(case, encoding="utf-8") as file:
 schedule_file_content, schedule = get_content_and_path(case_file_content, str(schedule), Keywords.SCHEDULE_FILE)
 
 
-def test_make_segment_list(tmpdir):
+def make_segment_list(tmpdir):
+    _TEST_FILE = Path(tmpdir / "test.sch")
+    _, _, well_segment = create(case_file_content, schedule_file_content, _TEST_FILE)
+    df_new_segment = pd.DataFrame(well_segment, columns=["WELL", "LATERAL", "NEW_SEGMENT"])
+    df_true = pd.DataFrame(
+        [
+            [
+                "A1",
+                1,
+                8,
+            ],
+            [
+                "A2",
+                1,
+                4,
+            ],
+        ],
+        columns=[
+            "WELL",
+            "LATERAL",
+            "NEW_SEGMENT",
+        ],
+    )
+    pd.testing.assert_frame_equal(df_true, df_new_segment)
+
+
+def make_segment_multilateral(tmpdir):
+    case = Path(_TESTDIR / "case_test.case")
+    schedule = Path(_TESTDIR / "schedule.sch")
+    with open(case, encoding="utf-8") as file:
+        case_file_content = file.read()
+    schedule_file_content, schedule = get_content_and_path(case_file_content, str(schedule), Keywords.SCHEDULE_FILE)
     _TEST_FILE = Path(tmpdir / "test.sch")
     _, _, well_segment = create(case_file_content, schedule_file_content, _TEST_FILE)
     df_new_segment = pd.DataFrame(well_segment, columns=["WELL", "NEW_SEGMENT"])
     df_true = pd.DataFrame(
         [
             [
-                "A1",
+                "A2",
+                6,
+            ],
+            [
+                "A3",
+                16,
+            ],
+            [
+                "A4",
+                2,
+            ],
+            [
+                "A5",
                 8,
             ],
             [
-                "A2",
-                4,
+                "A5",
+                9,
+            ],
+            [
+                "A6",
+                9,
+            ],
+            [
+                "A6",
+                10,
+            ],
+            [
+                "OP5",
+                16,
+            ],
+            [
+                "OP5",
+                5,
+            ],
+            [
+                "OP5",
+                37,
+            ],
+            [
+                "OP5",
+                28,
             ],
         ],
         columns=[
@@ -41,3 +108,4 @@ def test_make_segment_list(tmpdir):
         ],
     )
     pd.testing.assert_frame_equal(df_true, df_new_segment)
+

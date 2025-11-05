@@ -9,11 +9,10 @@ import sys
 import time
 from pathlib import Path
 
-import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages  # type: ignore
 from tqdm import tqdm
 
-from completor import create_output, parse, prepare_outputs, read_schedule, utils
+from completor import create_output, parse, read_schedule, utils
 from completor.constants import Keywords, ScheduleData
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.get_version import get_version
@@ -116,16 +115,8 @@ def create(
     # Strip trailing whitespace.
     schedule = re.sub(r"[^\S\r\n]+$", "", schedule, flags=re.MULTILINE)
     meaningful_data: ScheduleData = {}
-    df_with_icv = pd.concat(
-        [
-            case.completion_table[
-                (case.completion_table["DEVICETYPE"] == "ICV") & (case.completion_table["VALVES_PER_JOINT"] > 0)
-            ],
-            case.completion_icv_tubing,
-        ],
-        ignore_index=True,
-    )
 
+    well_segment_list = []
     try:
         # Find the old data for each of the four main keywords.
         for chunk in find_keyword_data(Keywords.WELL_SPECIFICATION, schedule):
@@ -146,13 +137,12 @@ def create(
         for i, well_name in tqdm(enumerate(active_wells.tolist()), total=len(active_wells), file=sys.stdout):
             try:
                 well = Well(well_name, i, case, meaningful_data[well_name])
-                if df_with_icv[df_with_icv["WELL"] == well.well_name].shape[0] > 0:
-                    well_segment_list = get_icv_segment(case, well_segment_list, well)
-
             except KeyError:
                 logger.warning(f"Well '{well_name}' is written in case file but does not exist in schedule file.")
                 continue
-            compdat, welsegs, compsegs, bonus = create_output.format_output(well, case, pdf)
+            compdat, welsegs, compsegs, bonus, df_icv = create_output.format_output(well, case, pdf)
+            if len(df_icv) > 0:
+                get_icv_segment(well_segment_list, df_icv)
             for keyword in [Keywords.COMPLETION_SEGMENTS, Keywords.WELL_SEGMENTS, Keywords.COMPLETION_DATA]:
                 old_data = find_well_keyword_data(well_name, keyword, schedule)
                 if not old_data:
@@ -189,22 +179,11 @@ def create(
     return case, well, well_segment_list
 
 
-def get_icv_segment(case, well_segment_list, well):
-    for lateral in well.active_laterals:
-        lateral.df_tubing, top = prepare_outputs.prepare_tubing_layer(well, lateral, 2, 1, case.completion_table)
-        lateral.df_device = prepare_outputs.prepare_device_layer(lateral.df_well, lateral.df_tubing)
-        icv_dataframe = prepare_outputs.prepare_inflow_control_valve(
-            well.well_name,
-            lateral.lateral_number,
-            well.df_well_all_laterals,
-            lateral.df_device,
-            lateral.df_tubing,
-            case.completion_icv_tubing,
-            case.wsegicv_table,
-        )
-        segment_number = icv_dataframe["START_SEGMENT_NUMBER"][0]
-        well_segment_list.append((well.well_name, segment_number))
-        return well_segment_list
+def get_icv_segment(well_segment_list, icv_dataframe):
+    for row in range(len(icv_dataframe)):
+        well_name = icv_dataframe.iloc[row]["WELL"]
+        segment_number = int(icv_dataframe.iloc[row]["START_SEGMENT_NUMBER"])
+        well_segment_list.append((well_name, segment_number))
 
 
 def main() -> None:

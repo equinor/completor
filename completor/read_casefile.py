@@ -883,7 +883,7 @@ class ICVReadCasefile(ReadCasefile):
         Default: False
 
         """
-        df_new_segment = pd.DataFrame(self.icv_segments, columns=["WELL", "NEW_SEGMENT"])
+        df_new_segment = pd.DataFrame(self.icv_segments, columns=["WELL", "LATERAL", "NEW_SEGMENT"])
         df_working = self.icv_control_table.copy()
         if len(df_working) != len(df_new_segment):
             raise CompletorError("ICVCONTROL table length does not fit the expected number of ICVs.")
