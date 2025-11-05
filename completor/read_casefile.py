@@ -907,7 +907,7 @@ class ICVReadCasefile(ReadCasefile):
             else:
                 raise CompletorError(
                     f"""Number of ICVs defined in ICVCONTROL for well {well} are not
-                    the same as ICVs found in schedule file."""
+                    the same as ICVs found in schedule file which are {len(value_working[value_working["WELL"] == well])}."""
                 )
         self.icv_control_table = df_working
 

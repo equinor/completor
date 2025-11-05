@@ -292,8 +292,6 @@ def create_icvc(case_content: str, schedule_content: str | None, inputs, new_seg
 
     case = ICVReadCasefile(case_content, schedule_content, new_segments)
     initials = Initialization(case, schedule_content)
-    # TODO(#305): Should this be true?
-    # initials.case.update_case = True
     file_data = {
         "output_file_name": inputs.outputfile,
         "output_directory": inputs.outputdirectory,
