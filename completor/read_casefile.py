@@ -829,6 +829,14 @@ class ICVReadCasefile(ReadCasefile):
     """Inherited ReadCaseFile from completor with additions for ICV-Control."""
 
     def __init__(self, case_file: str, user_schedule_file: str | None = None, new_segments: str | None = None):
+        """Initialize ICVReadCasefile.
+
+        Args:
+            case_file: Case/input file name.
+            schedule_file: Schedule file as output from Completor schedule output
+            new_segments: Well segment lists from Completor output.
+
+        """
         super().__init__(case_file, user_schedule_file)
         self.icv_table: dict[str, pd.DataFrame] = {}
         self.icv_date = None
@@ -884,17 +892,24 @@ class ICVReadCasefile(ReadCasefile):
 
         """
         df_new_segment = pd.DataFrame(self.icv_segments, columns=["WELL", "NEW_SEGMENT"])
-        df_working = self.icv_control_table.copy()
-        if len(df_working) != len(df_new_segment):
-            raise CompletorError("ICVCONTROL table length does not fit the expected number of ICVs.")
-        value_working = df_new_segment.copy()
-        for idx, row in df_working.iterrows():
-            well = row["WELL"]
-
-            match = value_working[value_working["WELL"] == well]
-            if not match.empty:
-                self.icv_control_table.at[idx, "SEGMENT"] = match.iloc[0]["NEW_SEGMENT"]
-                value_working.drop(index=match.index[0], inplace=True)
+        value_working = df_new_segment.copy(deep=True)
+        df_working = self.icv_control_table.copy(deep=True)
+        if len(df_working) != len(value_working):
+            raise CompletorError(
+                f"""ICVs defined in ICVCONTROL table are {len(df_working)} while
+                the ICVs found in schedule file are {len(value_working)}"""
+            )
+        value_working = df_new_segment.copy(deep=True)
+        for well in value_working["WELL"].unique():
+            if len(value_working[value_working["WELL"] == well]) == df_working[df_working["WELL"] == well].shape[0]:
+                for idx, row in df_working.iterrows():
+                    df_working.loc[idx, "SEGMENT"] = value_working.loc[idx, "NEW_SEGMENT"]
+            else:
+                raise CompletorError(
+                    f"""Number of ICVs defined in ICVCONTROL for well {well} are not
+                    the same as ICVs found in schedule file."""
+                )
+        self.icv_control_table = df_working
 
     def read_icv_table(self):
         """This procedure reads the ICVTABLE keyword in the case file.

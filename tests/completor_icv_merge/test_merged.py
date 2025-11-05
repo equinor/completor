@@ -15,6 +15,7 @@ schedule = Path(_TESTDIR_COMPLETOR / "welldefinition.testfile")
 
 
 def test_assert_files_merge_run_output(tmpdir):
+    "Test Completor ICV Control run to produce output"
     tmpdir.chdir()
     completor_runner(inputfile=case, schedulefile=schedule, outputfile="test.out")
     assert_files_exist_and_nonempty(
@@ -27,6 +28,7 @@ def test_assert_files_merge_run_output(tmpdir):
 
 
 def test_contents_schedule_output_merged(tmpdir):
+    "Test output content in merged Completor ICV Control run"
     tmpdir.chdir()
     completor_runner(inputfile=case, schedulefile=schedule, outputfile="test.out")
     true_file = Path(_TESTDIR / "test_out.true")
@@ -35,6 +37,7 @@ def test_contents_schedule_output_merged(tmpdir):
 
 
 def test_output_fmu_directory(tmpdir):
+    "Test FMU directory output"
     input_dir = tmpdir / "lvl1" / "lvl2" / "lvl3"
     case = Path(input_dir / "field")
     case.mkdir(parents=True)
@@ -60,6 +63,7 @@ def test_output_fmu_directory(tmpdir):
 
 
 def test_output_fmu_default_name(tmpdir):
+    "Test FMU directory with default names"
     input_dir = tmpdir / "lvl1" / "lvl2" / "lvl3"
     case = Path(input_dir / "field")
     case.mkdir(parents=True)
