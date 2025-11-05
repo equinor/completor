@@ -488,7 +488,7 @@ class Initialization:
         return f"{insert_comment_custom_content()}{content}"
 
     def get_custom_content(
-        self, icv_name: str, icv_function: ICVMethod, criteria: int | str, is_end_of_records: bool = True
+        self, icv_name: str, icv_function: ICVMethod, criteria: int | str | None, is_end_of_records: bool = True
     ) -> str | None:
         """Helper method to get correct custom content.
 

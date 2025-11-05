@@ -72,9 +72,6 @@ class IcvFileHandling:
             return file_content
 
         if file_type == ICVMethod.CHOKE:
-            if criteria is None:
-                raise ValueError("Criteria must be provided for CHOKE file type.")
-
             trigger_minimum_interval_str = ""
             file_content = self.icv_functions.create_choke_ready(
                 icv_name, criteria, trigger_number_times, trigger_minimum_interval_str
@@ -90,9 +87,6 @@ class IcvFileHandling:
             return file_content
 
         if file_type == ICVMethod.OPEN:
-            if criteria is None:
-                raise ValueError("Criteria must be provided for OPEN file type.")
-
             trigger_minimum_interval_str = ""
             file_content += self.icv_functions.create_open_ready(
                 icv_name, criteria, trigger_number_times, trigger_minimum_interval_str

@@ -242,7 +242,7 @@ class IcvFunctions:
         else:
             return insert_parameter_block + end_rec
 
-    def create_record2_choke_ready(self, icv_name: str, criteria: int) -> str:
+    def create_record2_choke_ready(self, icv_name: str, criteria: int | None) -> str:
         """Creates the ACTIONX record 2 inequalities for the ready choke function.
 
         Args:
@@ -263,7 +263,7 @@ class IcvFunctions:
         else:
             return insert_parameter_block + end_rec
 
-    def create_record2_open_ready(self, icv_name: str, criteria: int) -> str:
+    def create_record2_open_ready(self, icv_name: str, criteria: int | None) -> str:
         """Creates the ACTIONX record 2 inequalities for the ready open function.
 
         Args:
@@ -284,7 +284,7 @@ class IcvFunctions:
         else:
             return insert_parameter_block + end_rec
 
-    def create_record2_choke_stop(self, icv_name: str, criteria: int) -> str:
+    def create_record2_choke_stop(self, icv_name: str, criteria: int | None) -> str:
         """Creates the ACTIONX record 2 inequalities for the stop choke function.
 
         Args:
@@ -306,7 +306,7 @@ class IcvFunctions:
         else:
             return insert_parameter_block + end_rec
 
-    def create_record2_open_stop(self, icv_name: str, criteria: int) -> str:
+    def create_record2_open_stop(self, icv_name: str, criteria: int | None) -> str:
         """Creates the ACTIONX record 2 inequalities for the stop open function.
 
         Args:
@@ -326,7 +326,7 @@ class IcvFunctions:
         else:
             return insert_parameter_block + end_rec
 
-    def create_record2_choke(self, icv_name: str, step: int, criteria: int) -> str:
+    def create_record2_choke(self, icv_name: str, step: int, criteria: int | None) -> str:
         """Creates the ACTIONX record 2 inequalities for the choke function.
 
         Args:
@@ -372,7 +372,7 @@ class IcvFunctions:
         else:
             return f"{insert_futstp}" f"  FUTC_{icv_name} > FUD_{icv_name} AND /\n" f"  FUP_{icv_name} = 4" f"{end_rec}"
 
-    def create_record2_open(self, icv_name: str, step: int, criteria: int) -> str:
+    def create_record2_open(self, icv_name: str, step: int, criteria: int | None) -> str:
         """Creates the ACTIONX record 2 inequalities for the open function.
 
         Args:
@@ -690,7 +690,11 @@ class IcvFunctions:
         )
 
     def create_open_ready(
-        self, icv_name: str, criteria: int = 1, trigger_number_times: int = 10, trigger_minimum_interval: str = ""
+        self,
+        icv_name: str,
+        criteria: int | None = 1,
+        trigger_number_times: int = 10,
+        trigger_minimum_interval: str = "",
     ) -> str:
         """Creates the ready open function for icv-control.
 
@@ -716,7 +720,7 @@ class IcvFunctions:
         )
 
     def create_choke_stop(
-        self, icv_name: str, criteria: int, trigger_number_times: int, trigger_minimum_interval: str
+        self, icv_name: str, criteria: int | None, trigger_number_times: int, trigger_minimum_interval: str
     ) -> str:
         """The icv-control stop choke function.
 
@@ -738,7 +742,7 @@ class IcvFunctions:
         return insert_comment(icv_function) + self.create_actionx(record1, record2, action) + "ENDACTIO\n\n"
 
     def create_open_stop(
-        self, icv_name: str, criteria: int, trigger_number_times: int, trigger_minimum_interval: str
+        self, icv_name: str, criteria: int | None, trigger_number_times: int, trigger_minimum_interval: str
     ) -> str:
         """The icv-control stop open function.
 
@@ -762,7 +766,7 @@ class IcvFunctions:
     def create_choke(
         self,
         icv_name: str,
-        criteria: int,
+        criteria: int | None,
         trigger_number_times: int,
         trigger_minimum_interval: int | str = "",
         actionx_repeater: int = 9,
@@ -803,7 +807,7 @@ class IcvFunctions:
     def create_open(
         self,
         icv_name: str,
-        criteria: int,
+        criteria: int | None,
         trigger_number_times: int,
         trigger_minimum_interval: int | str,
         actionx_repeater: int = 9,
