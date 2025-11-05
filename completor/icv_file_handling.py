@@ -206,6 +206,7 @@ class IcvFileHandling:
             for file_type in [ICVMethod.CHOKE_WAIT, ICVMethod.CHOKE, ICVMethod.OPEN_WAIT, ICVMethod.OPEN]:
                 if (
                     self.icv_functions.custom_conditions is not None
+                    and file_type in self.icv_functions.custom_conditions
                     and icv_name in self.icv_functions.custom_conditions[file_type]
                 ):
                     custom_criteria = self.icv_functions.custom_conditions[file_type][icv_name].keys()
