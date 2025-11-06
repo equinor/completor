@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from completor.exceptions.clean_exceptions import CompletorError
 from tests.utils_for_tests import assert_files_exist_and_nonempty, completor_runner
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -50,14 +51,13 @@ def test_missing_input_case_in_main(tmpdir):
     tmpdir.chdir()
     with pytest.raises(FileNotFoundError) as e:
         completor_runner(inputfile="non_existing.case")
-        assert "ERROR" in str(e) and "Case file does not exist" in str(e)
+    assert "No such file or directory" in str(e.value) and "non_existing.case" in str(e.value)
 
 
 def test_run_icvc_without_schedule(tmpdir):
     """Test icv-control without input schedule file."""
     shutil.copy(_TESTDIR / "initialization_nosch.case", tmpdir)
     tmpdir.chdir()
-    with pytest.raises(SystemExit) as e:
+    with pytest.raises(CompletorError) as e:
         completor_runner(inputfile="initialization_nosch.case")
-
-        assert "ERROR" in str(e) and "Need input schedule" in str(e)
+    assert "SCHFILE" in str(e.value) and "not defined correctly in the casefile" in str(e.value)

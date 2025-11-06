@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from completor.constants import Keywords
+from completor.exceptions.clean_exceptions import CompletorError
 from completor.main import get_content_and_path
 from tests import utils_for_tests
 
@@ -778,13 +779,11 @@ def test_error_missing_keywords(tmpdir, caplog):
     with open(modified_schedule_path, "w", encoding="utf-8") as new_sch:
         new_sch.write(modified_content)
 
-    with pytest.raises(SystemExit) as e:
+    expected_error_message = "Keyword WELSPECS is not found"
+    with pytest.raises(CompletorError, match=expected_error_message):
         utils_for_tests.completor_runner(
             inputfile=case_file, schedulefile=modified_schedule_path, outputfile="output.sch"
         )
-
-    assert e.value.code == 1
-    assert "Keyword WELSPECS is not found" in caplog.messages
 
 
 def test_wsegicv_bottom(tmpdir):

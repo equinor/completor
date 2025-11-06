@@ -896,8 +896,8 @@ class ICVReadCasefile(ReadCasefile):
         df_working = self.icv_control_table.copy(deep=True)
         if len(df_working) != len(value_working):
             raise CompletorError(
-                f"""ICVs defined in ICVCONTROL table are {len(df_working)} while
-                the ICVs found in schedule file are {len(value_working)}"""
+                f"ICVs defined in ICVCONTROL table are {len(df_working)} while the ICVs found in schedule file "
+                f"are {len(value_working)}"
             )
         value_working = df_new_segment.copy(deep=True)
         for well in value_working["WELL"].unique():
@@ -905,9 +905,10 @@ class ICVReadCasefile(ReadCasefile):
                 for idx, row in df_working.iterrows():
                     df_working.loc[idx, "SEGMENT"] = value_working.loc[idx, "NEW_SEGMENT"]
             else:
+                num_icvs_schedule = len(value_working[value_working["WELL"] == well])
                 raise CompletorError(
-                    f"""Number of ICVs defined in ICVCONTROL for well {well} are not
-                    the same as ICVs found in schedule file which are {len(value_working[value_working["WELL"] == well])}."""
+                    f"Number of ICVs defined in ICVCONTROL for well {well} are not the same as ICVs found "
+                    f"in schedule file which are {num_icvs_schedule}."
                 )
         self.icv_control_table = df_working
 

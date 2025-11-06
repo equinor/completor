@@ -14,9 +14,8 @@ import pandas as pd
 from completor import parse  # type: ignore
 from completor import main
 from completor.constants import Headers, Keywords
-from completor.exceptions.clean_exceptions import CompletorError
 from completor.read_schedule import fix_compsegs, fix_welsegs  # type: ignore
-from completor.utils import abort, check_width_lines, clean_file_lines  # type: ignore
+from completor.utils import check_width_lines, clean_file_lines  # type: ignore
 
 
 def open_files_run_create(
@@ -373,10 +372,7 @@ def completor_runner(**kwargs) -> None:
         kwargs: Keyword arguments to run completor with.
     """
     _mock_parse_args(**kwargs)
-    try:
-        main.main()
-    except CompletorError as e:
-        raise abort(str(e))
+    main.main()
 
 
 def assert_files_exist_and_nonempty(filenames, temp_dir=None):
