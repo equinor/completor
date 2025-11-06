@@ -80,5 +80,8 @@ max_line_length="132"
 ignore="E203, W503, E704"
 
 [tool.pytest.ini_options]
-markers = ["integration: mark a test as an integration test."]
+markers = [
+    "integration: mark a test as an integration test.",
+    "requires_ert: Mark tests that require ERT (Ensemble Reservoir Tool)."
+]
 env = ["TQDM_DISABLE=1"]
