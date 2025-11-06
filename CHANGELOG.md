@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/equinor/completor/compare/v1.4.0...v1.4.1) (2025-11-06)
+
+
+### 🐛 Bug Fixes
+
+* Update numpy and pandas warning ([#303](https://github.com/equinor/completor/issues/303)) ([6b2dfc7](https://github.com/equinor/completor/commit/6b2dfc74d0566c0ea7df34a28eec747777543d06))
+
 ## [1.4.0](https://github.com/equinor/completor/compare/v1.3.0...v1.4.0) (2025-10-15)
 
 
