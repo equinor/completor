@@ -73,4 +73,3 @@ for i in range(len(data["WELL"])):
                 execution_counter[key] += 1
 
 
-                

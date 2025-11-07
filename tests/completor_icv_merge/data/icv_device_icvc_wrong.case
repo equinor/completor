@@ -1,0 +1,97 @@
+COMPLETION
+--Well Branch Start End Screen   Well/   Roughness Annulus Nvalve/ Valve Device
+--     Number  MD   MD  Tubing   Casing            Content Joint   Type  Number
+--                      Diameter Diameter
+   A1    1     0   2010    0.2    0.25    1.00E-4     GP      0    ICD       1
+   A1    1  2010   2010    0.2    0.25    1.00E-4     GP      1    ICV       1
+   A1    1  2010   2015    0.2    0.25    1.00E-4     GP      1    ICD       1
+   A1    1  2015   2040    0.2    0.25    1.00E-4     GP      1    ICV       1
+   A1    1  2040   3000    0.2    0.25    1.00E-4     GP      1    ICD       1
+------------------------------------- LATERAL 2 --------------------------------------
+   A1    2     0   2010    0.2    0.25    1.00E-4     GP      0    ICD       1
+   A1    2  2010   3000    0.2    0.25    1.00E-4     GP      1    ICD       1
+   A1    2  3000   4000    0.2    0.25    1.00E-4     GP      0    ICD       1
+   A2    1     0   3000    0.2    0.25    1.00E-4     GP      1    ICV       2
+/
+
+WSEGSICD
+-- Device no  Strength  Dens. cal.  Visc. cal.  Water fract.
+1              0.00123     1234.00        1.23           0.1
+/
+
+WSEGICV
+-- DEVICE   CV      AC    AC_MAX
+1           0.95    3      4
+2           2       4      4
+/
+
+ICVCONTROL
+--  WELL     ICV   SEGM      ICVTABL   STEPS      ICVDATE      FREQ_OPS    MIN_POS   MAX_POS          INITIAL_OPENING
+A1            A       1         A      100        2.JAN.2020    30          1         10              T10
+A2            F       1         A      100        2.JAN.2020    30          1         10              T10
+A2            G       1         A      100        2.JAN.2020    30          1         10              T10
+/
+
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [A][B][C][D][E][F]
+  DEFINE FUWCT_x0 WWCT WELL(x0) / FWCT  /  --watercut control other producers
+/
+
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ASSIGN FUTOL 0.05 /
+  ASSIGN FUWCTWEL 1.5 /
+  DEFINE FUWELMIN FUWCTWEL - FUTOL /
+  DEFINE FUWELMAX FUWCTWEL + FUTOL /
+/
+
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [A][B][C][D][E][F]
+  FUWCT_x0 < FUWCTWEL AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A][B][C][D][E][F]
+  FUWCT_x0 > FUWELMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [A][B][C][D][E][F]
+  FUWCT_x0 > FUWCTWEL AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A]
+  FUWCT_x0 < FUWELMAX
+/
+
+----------------------------------------------------------------
+ICVTABLE
+A /
+-- POS CD AREA
+1	     1	    1.02374E-05
+2	     1	    2.84372E-05
+3	     1	    4.73954E-05
+4	     1	    7.89923E-05
+5	     1	    0.0001316
+6	     1	    0.0003657
+7	     1	    0.0006095
+8	     1	    0.001693
+9	     1	    0.002821
+10	     1	    0.004703
+
+/

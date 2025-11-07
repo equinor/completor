@@ -3,9 +3,9 @@
 from pathlib import Path
 
 import pytest
-import utils_for_tests
 
 from completor.exceptions.clean_exceptions import CompletorError
+from tests import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "ml_well.sch"

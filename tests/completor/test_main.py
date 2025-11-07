@@ -3,10 +3,11 @@
 from pathlib import Path
 
 import pytest
-import utils_for_tests
 
-from completor import main
 from completor.constants import Keywords
+from completor.exceptions.clean_exceptions import CompletorError
+from completor.main import get_content_and_path
+from tests import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
@@ -666,7 +667,7 @@ def test_read_schedule_from_casefile(schfilestring, tmpdir):
 
     # Create case_content with the non-clean path to the schedule file
     case_content = f"{Keywords.SCHEDULE_FILE}\n'{schfilestring}'\n/"
-    schedule_content, path_from_case = main.get_content_and_path(case_content, None, Keywords.SCHEDULE_FILE)
+    schedule_content, path_from_case = get_content_and_path(case_content, None, Keywords.SCHEDULE_FILE)
     assert path_from_case == "testdir/testfile"
     assert "Some schedule data" in schedule_content
 
@@ -690,7 +691,7 @@ def test_read_outputfile_from_casefile(outfilestring, tmpdir):
 
     # Create case_content with the non-clean path to the schedule file
     case_content = f"{Keywords.OUT_FILE}\n'{outfilestring}'\n/"
-    _, path_from_case = main.get_content_and_path(case_content, None, Keywords.OUT_FILE)
+    _, path_from_case = get_content_and_path(case_content, None, Keywords.OUT_FILE)
     assert path_from_case == "testdir/testfile"
 
 
@@ -778,13 +779,11 @@ def test_error_missing_keywords(tmpdir, caplog):
     with open(modified_schedule_path, "w", encoding="utf-8") as new_sch:
         new_sch.write(modified_content)
 
-    with pytest.raises(SystemExit) as e:
+    expected_error_message = "Keyword WELSPECS is not found"
+    with pytest.raises(CompletorError, match=expected_error_message):
         utils_for_tests.completor_runner(
             inputfile=case_file, schedulefile=modified_schedule_path, outputfile="output.sch"
         )
-
-    assert e.value.code == 1
-    assert "Keyword WELSPECS is not found" in caplog.messages
 
 
 def test_wsegicv_bottom(tmpdir):

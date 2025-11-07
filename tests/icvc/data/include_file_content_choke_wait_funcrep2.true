@@ -1,0 +1,1981 @@
+DELAYACT
+  DAC2_A O1SA 30 100 /
+
+ACTIONX
+  C2WA01 100 10 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA02 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA03 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA04 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA05 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA06 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA07 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA08 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA09 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA10 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA11 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA12 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA13 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA14 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA15 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA16 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA17 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA18 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA19 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA20 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA21 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA22 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA23 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA24 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA25 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA26 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA27 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA28 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA29 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA30 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA31 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA32 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA33 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA34 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA35 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA36 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA37 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA38 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA39 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA40 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA41 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA42 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA43 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA44 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA45 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA46 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA47 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA48 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA49 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA50 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA51 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA52 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA53 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA54 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA55 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA56 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA57 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA58 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA59 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA60 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA61 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA62 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA63 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA64 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA65 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA66 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA67 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA68 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA69 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA70 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA71 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA72 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA73 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA74 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA75 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA76 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA77 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA78 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA79 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA80 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA81 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA82 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA83 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA84 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA85 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA86 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA87 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA88 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA89 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA90 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA91 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA92 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA93 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA94 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA95 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA96 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA97 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA98 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+
+ACTIONX
+  C2WA99 1 /
+  FUTC_A <= FUD_A AND /
+  ( FUP_A = 1.5 AND /
+  FUO_A = 0 ) OR /
+  ( FUP_A = 2.5 AND /
+  FUO_A = 1 ) AND /
+  SURAT_A A-1 97 > WUA-1_A A-1 AND /
+  WWIR A-1 > WUMXA-1 A-1 AND /
+  SFOPN A-1 98 > 0.99 AND /
+  FUTSTP > FUL_A /
+/
+
+UDQ
+  DEFINE FUTC_A FUTC_A + TIMESTEP /
+/
+NEXTSTEP
+  1.0 /
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO
+ENDACTIO

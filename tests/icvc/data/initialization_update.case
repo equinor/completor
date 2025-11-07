@@ -1,0 +1,21 @@
+SCHFILE
+  'dummy_schedule_file.sch'
+/
+
+
+ICVCONTROL
+-- WELL	ICV SEGMENT AC-TABLE STEPS	  ICVDATE   FREQ  MIN MAX OPENING
+WELL1    A      97 0.1337     60   1.JAN.2021     30    0   1       0
+WELL1    B      98 0.1337     60   1.JAN.2021     30    0   1       0
+WELL-N1    C     183 0.1337     60   1.JAN.2021     30    0   1       0
+WELL-N1    D     184 0.1337     60   1.JAN.2021     30    0   1       0
+WELL-F2    H      56 0.1337     60   1.JAN.2021     30    0   1       0
+WELL-F2    I      57 0.1337     60   1.JAN.2021     30    0   1       0
+WELL2    E     184 0.1337     60   1.JAN.2021     30    0   1       0
+WELL2    F     185 0.1337     60   1.JAN.2021     30    0   1       0
+WELL2    G     186 0.1337     60   1.JAN.2021     30    0   1       0
+/
+
+UPDATE_SEGMENT_NUMBER
+True
+/

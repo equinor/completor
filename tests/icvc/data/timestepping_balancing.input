@@ -1,0 +1,53 @@
+-- User input, specific for this input file
+
+UDQ
+
+-- -----------------------------------------
+-- Time-stepping:
+
+  ASSIGN FUD_A 5 /
+  ASSIGN FUH_A 2 /
+  ASSIGN FUL_A 0.1 /
+
+  ASSIGN FUD_B 5 /
+  ASSIGN FUH_B 2 /
+  ASSIGN FUL_B 0.1 /
+
+  ASSIGN FUD_C 5 /
+  ASSIGN FUH_C 2 /
+  ASSIGN FUL_C 0.1 /
+
+  ASSIGN FUD_D 5 /
+  ASSIGN FUH_D 2 /
+  ASSIGN FUL_D 0.1 /
+
+  ASSIGN FUD_E 5 /
+  ASSIGN FUH_E 2 /
+  ASSIGN FUL_E 0.1 /
+
+  ASSIGN FUD_F 5 /
+  ASSIGN FUH_F 2 /
+  ASSIGN FUL_F 0.1 /
+
+  ASSIGN FUD_H 5 /
+  ASSIGN FUH_H 2 /
+  ASSIGN FUL_H 0.1 /
+
+  ASSIGN FUD_I 5 /
+  ASSIGN FUH_I 2 /
+  ASSIGN FUL_I 0.1 /
+
+-- -----------------------------------------
+-- Balance criteria:
+
+  ASSIGN FU_A 0.4 /
+  ASSIGN FU_B 0.8 /
+  ASSIGN FU_C 0.35 /
+  ASSIGN FU_D 0.75 /
+  ASSIGN FU_E 0.39 /
+  ASSIGN FU_F 0.39 /
+  ASSIGN FU_G 0.39 /
+  ASSIGN FU_H 0.55 /
+  ASSIGN FU_I 0.55 /
+
+/

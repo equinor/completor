@@ -3,9 +3,9 @@
 from pathlib import Path
 
 import pytest
-import utils_for_tests
 
 from completor.constants import Keywords
+from tests import utils_for_tests
 
 _TESTDIR_DROGON = Path(__file__).absolute().parent / "data" / "drogon"
 _TEST_FILE = "test.sch"

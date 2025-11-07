@@ -4,11 +4,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from utils_for_tests import ReadSchedule
 
 from completor import parse, utils
 from completor.constants import Headers
 from completor.read_schedule import fix_compsegs, fix_welsegs
+from tests.utils_for_tests import ReadSchedule
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 with open(Path(_TESTDIR / "schedule.testfile"), encoding="utf-8") as file:

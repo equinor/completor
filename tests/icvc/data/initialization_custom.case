@@ -1,0 +1,23 @@
+SCHFILE
+  'dummy_schedule_file.sch'
+/
+
+ICVCONTROL
+-- WELL	ICV SEGMENT AC-TABLE STEPS      ICVDATE  FREQ MIN MAX OPENING
+WELL1     A     105 0.1337      60   1.JAN.2033    60   0   1       0
+WELL1     B     106 0.1337      60   1.JAN.2033    60   0   1       0
+WELL-N1   C     181 0.1337      60   1.JAN.2033    60   0   1       0
+WELL-N1   D     182 0.1337      60   1.JAN.2033    60   0   1       0
+WELL-F2   H      39 0.1337      60   1.JAN.2033    60   0   1       0
+WELL-F2   I      40 0.1337      60   1.JAN.2033    60   0   1       0
+WELL2     E     142 0.1337      60   1.JAN.2033    60   0   1       0
+WELL2     F     143 0.1337      60   1.JAN.2033    60   0   1       0
+WELL2     G     144 0.1337      60   1.JAN.2033    60   0   1       0
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE]
+  CRITERIUM: 1337
+  ICV: [Z, A]
+  FILENAME CHECK CRIT 1337
+/

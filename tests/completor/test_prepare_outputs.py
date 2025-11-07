@@ -6,10 +6,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-import utils_for_tests
 
 from completor import prepare_outputs
 from completor.constants import Content, Headers, Keywords
+from tests import utils_for_tests
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 _TEST_FILE = "test.sch"
