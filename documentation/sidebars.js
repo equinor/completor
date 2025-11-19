@@ -34,6 +34,13 @@ const sidebars = {
       link: {type: 'doc', id: 'fmu/fmu'},
       items: ['fmu/fmu', 'fmu/general_preparations', 'fmu/run_completor'],
     },
+    {
+      type: 'category',
+      label: 'ICV Control',
+      collapsible: false,
+      link: {type: 'doc', id: 'icvc/icvc'},
+      items: ['icvc/icvc', 'icvc/configuration', 'icvc/keywords', 'icvc/examples'],
+    },
   ],
 };
 

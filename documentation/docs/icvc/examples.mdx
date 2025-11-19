@@ -1,0 +1,477 @@
+---
+title: ICV Control Template
+sidebar_position: 4
+description: Case File Template
+---
+
+# Case File Template and Usage
+
+Here are several examples and templates on start using ICV Control. The use
+of ICV Control usually requires heavy load of trial and error to test out several
+options.
+![Static Target](../../static/img/icv_default.png)
+ICV Control is set to be a continuously evaluating the parameter until it fulfills
+the target. Here are two examples of a "static" target. The parameter surpasses
+the target at certain period, triggering the ICV Control to search on an ICV
+position that fulfills the target, eventually closing it. While setting the
+target slightly higher, will result in closing the ICV in later period of time.
+This requires changes of target for every time period, which is not robust.
+<div style={{ textAlign: 'center' }}>
+  <img src="../../static/img/icv_dynamic.png" alt="Dynamic target" style={{ width: '50%' }} />
+</div>
+
+An example is made using a dynamic target, where we set the parameter to be
+normalized with certain constant. Creating a continuous function that evolves
+over time, to be set as a target. The result shows that ICV Control can follow
+the evolution of the parameter, which requires more choking towards the end.
+This dynamic target is what we suggested for the users to use, therefore in previous
+example of `Keywords`, there are many parameters that is divided into different
+parameters to trigger the normalization.
+
+## Zonal control on single well and branch control for multi-lateral for water-cut
+This is an example of mixes of zonal control and branch control in one ICV Control case.
+The zonal control is installed for single well completion, while the multi-lateral
+will have the branch control.
+
+```shell
+
+COMPLETION
+--WELL        Branch  Start           End             Screen          Well/          Roughness       Annulus         Nvalve  Valve   Device
+--            Number     mD            mD             Tubing         Casing          Roughness       Content         /Joint   Type   Number
+--                                                  Diameter       Diameter
+A1         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A2         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A3         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A4         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A5         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+A6         1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+OP5        1          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+OP5        2          0       9999        0.1504      0.216        0.00015      GP         1               ICV       1
+/
+
+ICVCONTROL
+--  WELL     ICV   SEGM      ICVTABL   STEPS   ICVDATE      FREQ    MIN   MAX          OPENING
+    A1      	A1  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10
+    A2      	A2  	1           A	      100    2.JAN.2020	    30	  	1	    10	        T10
+    A3      	A3  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10
+    A4      	A4  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10
+    OP5     	O1  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10
+    OP5     	O2  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [O1][O2]
+  DEFINE FUWCT_x0 SWCT WELL(x0) SEG(x0) / WWCT WELL(x0)  /  --watercut control OP5
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [A1][A2][A3][A4]
+  DEFINE FUWCT_x0 WWCT WELL(x0) / FWCT  /  --watercut control other producers
+/
+
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ASSIGN FUTOL 0.05 /
+  ASSIGN FUWCTBRN 1 /
+  ASSIGN FUWCTWEL 1.5 /
+  DEFINE FUWELMIN FUWCTWEL - FUTOL /
+  DEFINE FUWELMAX FUWCTWEL + FUTOL /
+  DEFINE FUBRNMIN FUWCTBRN - FUTOL /
+  DEFINE FUBRNMAX FUWCTBRN + FUTOL /
+/
+
+-------------------WATERCUT BRANCH CONTROL------------------------
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 < FUWCTBRN AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 > FUBRNMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 > FUWCTBRN AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 < FUBRNMAX
+/
+
+-------------------WATERCUT WELL CONTROL------------------------
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 < FUWCTWEL AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 > FUWELMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 > FUWCTWEL AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 < FUWELMAX
+/
+
+----------------------------------------------------------------
+ICVTABLE
+A /
+-- POS CD AREA
+1	    1	    1.02374E-05
+2	    1	    2.84372E-05
+3	    1	    4.73954E-05
+4	    1	    7.89923E-05
+5	    1	    0.0001316
+6	    1	    0.0003657
+7	    1	    0.0006095
+8	    1	    0.001693
+9	    1	    0.002821
+10	    1	    0.004703
+/
+
+UPDATE_SEGMENT_NUMBER
+True
+/
+```
+
+## Branch control on single well (well control) for GOR
+This is an example of branch control that is manipulated for a well control system.
+This example skips the `COMPLETION` keyword for simplicity.
+
+```shell
+
+ICVCONTROL
+--  WELL  ICV SEGM      ICVTABL   STEPS   ICVDATE      FREQ    MIN   MAX          OPENING
+    YO     A    	2	   A1	      100    2.JAN.2020	    30	  	1	    10	        T10
+    /
+
+-- -------------------------------------
+-- UDQDEFINE
+-- -------------------------------------
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: []
+  ASSIGN FUGORMAX 1.05 /
+  ASSIGN FUGORMIN 0.95 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [A]
+  DEFINE FUGOR_x0 ( WGOR WELL(x0) / FGOR ) /
+  DEFINE FUOR_x0 WOPR WELL(x0) /
+/
+
+-- -------------------------------------
+-- Well control
+-- -------------------------------------
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [A]
+  FUGOR_x0 < FUGORMIN AND /
+  FUARE_x0 < FUOP_x0 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A]
+  FUGOR_x0 > FUGORMIN AND /
+  FUGOR_x0 < FUGORMAX /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [A]
+  FUGOR_x0 > FUGORMAX AND /
+  FUARE_x0 > FUCH_x0 AND /
+  FUOR_x0 > 1000 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A]
+  FUGOR_x0 < FUGORMAX AND /
+  FUOR < 1000 AND /
+  FUGOR_x0 > FUGORMIN /
+/
+
+ICVTABLE
+-- Valve name
+A1 /
+-- Pos	   Cd	        m2
+1	    0.614	    0.0000E+00
+2	    0.614	    0.0000E+00
+3	    0.818	    6.2581E-05
+4	    0.830	    1.6516E-04
+5	    0.830	    2.7742E-04
+6	    0.830	    4.5161E-04
+7	    0.830	    1.0006E-03
+8	    0.830	    2.7858E-03
+9	    0.830	    6.8697E-03
+10	    0.830	    9.2916E-03
+/
+
+```
+
+## Zonal control to equalize reservoir pressure
+This example hard code the region pressure definition (RPR) into a fixed parameter
+toward certain ICV A.
+
+```shell
+ICVCONTROL
+--  WELL     ICV   SEGM      ICVTABL   STEPS   ICVDATE      FREQ    MIN   MAX          OPENING
+WELL01       A        30	    A	      100    2.JAN.2020	    30	  	1	    10	        T10/
+
+---------------INJECTION CONTROL ---------------------
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [A]
+  FURAT_x0 < 1 AND /
+--FULFR_x0 > 100 AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A]
+  FURAT_x0 > FURATMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [A]
+  FURAT_x0 > 1 AND /
+--FULFR_x0 > 100 AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A]
+  FURAT_x0 < FURATMAX
+/
+
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  DEFINE FURPR_1 RPR___A 1 /
+  DEFINE FURPR_2 RPR___B 2 /
+
+  DEFINE FURAT_A FURPR_1 / FURPR_2 /
+
+  ASSIGN FUDEV 0.05 /
+  ASSIGN FURATTAR 1 /
+  DEFINE FURATMIN FURATTAR - FUDEV /
+  DEFINE FURATMAX FURATTAR + FUDEV /
+/
+
+
+----------------------------------------------------------------
+ICVTABLE
+A /
+-- POS CD AREA
+1	    1	    1.02374E-05
+2	    1	    2.84372E-05
+3	    1	    4.73954E-05
+4	    1	    7.89923E-05
+5	    1	    0.0001316
+6	    1	    0.0003657
+7	    1	    0.0006095
+8	    1	    0.001693
+9	    1	    0.002821
+10	    1	    0.004703
+
+/
+```
+
+## Zonal control on multi-ICV zones
+This is an example of multi-zone zonal control with 5 or more ICVs, control is
+targetting water-cut.
+
+```shell
+ICVCONTROL
+--  WELL     ICV   SEGM      ICVTABL  STEPS DATE        FREQ   MIN  MAX   INIT_OPEN
+    Z01	      Z1	 16	        A	      30    1.JAN.2030    30    1   10    T10
+    Z01	      Z2	 17	        A	      30    1.JAN.2030    30    1   10    T10
+    Z01	      Z3	 18	        A	      30    1.JAN.2030    30    1   10    T10
+    Z01	      Z4	 19	        A	      30    1.JAN.2030    30    1   10    T10
+    Z01	      Z5	 20	        A	      30    1.JAN.2030    30    1   10    T10
+    Z01	      Z6	 21	        A	      30    1.JAN.2030    30    1   10    T10
+    Z01	      Z7	 22	        A	      30    1.JAN.2030    30    1   10    T10
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [Z1][Z2][Z3][Z4][Z5][Z6][Z7]
+  DEFINE FUWCT_x0 SWCT WELL(x0) SEG(x0) / WWCT WELL(x0)  /  --watercut control
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ASSIGN FUTOL 0.05 /
+  ASSIGN FUWCTLIM 1.1 /
+  DEFINE FUWCTMIN FUWCTLIM - FUTOL /
+  DEFINE FUWCTMAX FUWCTLIM + FUTOL /
+/
+
+-------------------WATERCUT ZONE CONTROL------------------------
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [Z1][Z2][Z3][Z4][Z5][Z6][Z7]
+  FUWCT_x0 < FUWCTLIM AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [Z1][Z2][Z3][Z4][Z5][Z6][Z7]
+  FUWCT_x0 > FUWCTMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [Z1][Z2][Z3][Z4][Z5][Z6][Z7]
+  FUWCT_x0 > FUWCTLIM AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [Z1][Z2][Z3][Z4][Z5][Z6][Z7]
+  FUWCT_x0 < FUWCTMAX
+/
+
+----------------------------------------------------------------
+ICVTABLE
+A /
+-- POS CD AREA
+1	    0.95   1.02374E-05
+2	    0.95   2.84372E-05
+3	    0.95   4.73954E-05
+4	    0.95   7.89923E-05
+5	    0.95   0.0001316
+6	    0.95   0.0003657
+7	    0.95   0.0006095
+8	    0.95   0.001693
+9	    0.95   0.002821
+10	  0.95	    0.004703
+
+/
+```
+
+## Zonal control to prevent cross-flow
+This is an example of mix of hard-coded parameters in ACTIONX and UDQ.
+
+```shell
+ICVCONTROL
+-- WELL	    ICV SEGMENT AC-TABLE STEPS 	  ICVDATE       FREQ    MIN MAX OPENING
+A1     A     1      A           60      1.JAN.2028    30   0   1       T10
+A1     B     2      A           60      1.JAN.2028    30   0   1       T10
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [A][B]
+  DEFINE FURAT_x0 SGFR WELL(x0) SEG(x0) /  --rate control
+  DEFINE FUPRS_x0 SPR WELL(x0) SEG(x0) /
+/
+
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [B]
+  FURAT_B < 100000000 AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [B]
+  FUPOS_x0 = 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [B]
+  FURAT_A < 0 AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [B]
+  FUPRS_A >  FUPRS_B /
+/
+
+ICVTABLE
+A /
+-- POS CD AREA
+1	    1	    1.02374E-05
+2	    1	    2.84372E-05
+3	    1	    4.73954E-05
+4	    1	    7.89923E-05
+5	    1	    0.0001316
+6	    1	    0.0003657
+7	    1	    0.0006095
+8	    1	    0.001693
+9	    1	    0.002821
+10	    1	    0.004703
+/
+
+UPDATE_SEGMENT_NUMBER
+True
+/
+
+```

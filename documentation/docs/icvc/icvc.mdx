@@ -1,0 +1,59 @@
+---
+title: ICV Control
+sidebar_position: 1
+description: ICV Control Introduction
+---
+
+# Introduction
+
+The Interval Control Valves (ICVs), also known as flow control valves,
+have been widely used to regulate flow of fluids in producers and injectors,
+effectively managing reservoir drainage and improving recovery throughout the
+field's lifespan. Recent advancements in hardware have made ICVs more practical
+and intelligent, increasing number of operations and changing their
+configuration more frequently.
+
+ICV Control is a script implemented inside reservoir simulation that
+automates the operation of ICVs (Interval Control Valves and sliding sleeves)
+during a reservoir simulation based on predefined control criteria.
+The script provides functionality to decide on how to operate the ICVs.
+It creates new schedule files containing control criteria logic which is pre-defined
+by the user that will trigger opening/closing of the ICVs.
+
+The motivaton comes from there is no available method to automate ICV
+operation in reservoir simulation and to evaluate the business case of ICVs
+installation and operation. Many studies repeated efforts of trial and error
+which resulted in an exhaustive and repetitive work. Moreover, there was
+no workflow for running consistent ICV operation over an ensemble of
+reservoir models. This script has been developed to automatically
+incorporate ICV operations in dynamic reservoir simulations to follow certain
+control-criteria defined by the user or engineers.
+
+The script is dependent on the criteria specified such as target parameters
+for control, with their defined values. The method relies on rule-based
+control, meaning that if the target operating criteria is fulfilled but yet
+ not met the target, the ICV opening will change stepwise until acceptance.
+Currently, ICV Control acts within the ACTIONX functionality of Eclipse.
+This keyword in Eclipse reservoir simulation provides an if-else logic,
+implementing the reactive control in the ICV Control.
+
+## Applications
+
+ICV Control enables reservoir and production engineers, as domain experts,
+to establish predefined control criteria tailored to the characteristics of a
+particular field. The script operates on a field/well specific basis,
+using the control criteria to embed a set of logic statements into the
+simulation schedule files to operate the ICVs according to the control
+criteria.
+
+The current implementations covers such case of:
+- Controlling multi-zone WAG and water injection across an ensemble.
+- Controlling GOR in multi-lateral wells.
+- Controlling producer-injector interference by balancing water injection
+across zones and limiting the water cut in the producers and keeping injection
+stable.
+- Branch control on top of AICD installation on multi-laterals.
+- Zonal control for long basement ICV operations to reduce water-cut.
+- Commingle production to prevent cross flow and screen erosion due to high
+velocity.
+- Smart well injectors.
