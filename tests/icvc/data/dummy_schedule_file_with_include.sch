@@ -1,0 +1,21 @@
+First data
+
+DATES
+01 JAN 2021 / --comment
+/
+INCLUDE
+ 'include_to_dummy_schedule_file.sch' /
+Second data
+
+DATES
+01 JAN 2022 / -- # comment 2
+/
+Third data
+DATES
+01 JAN 2023 /
+/
+Forth
+DATES
+01 JAN 2033 /
+/
+Fifth

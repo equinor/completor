@@ -21,7 +21,9 @@ from completor.visualize_well import visualize_well
 from completor.wells import Lateral, Well
 
 
-def format_output(well: Well, case: ReadCasefile, pdf: PdfPages | None = None) -> tuple[str, str, str, str]:
+def format_output(
+    well: Well, case: ReadCasefile, pdf: PdfPages | None = None
+) -> tuple[str, str, str, str, pd.DataFrame]:
     """Formats the finished output string to be written to a file.
 
     Args:
@@ -49,7 +51,7 @@ def format_output(well: Well, case: ReadCasefile, pdf: PdfPages | None = None) -
 
     start_segment = 2
     start_branch = 1
-
+    df_inflow_control_output = pd.DataFrame()
     header_written = False
     first = True
     for lateral in well.active_laterals:
@@ -128,6 +130,7 @@ def format_output(well: Well, case: ReadCasefile, pdf: PdfPages | None = None) -
             case.completion_icv_tubing,
             case.wsegicv_table,
         )
+        df_inflow_control_output = pd.concat([df_inflow_control_output, df_inflow_control_valve], ignore_index=True)
         completion_data_list.append(
             _format_completion_data(well.well_name, lateral.lateral_number, df_completion_data, first)
         )
@@ -241,7 +244,13 @@ def format_output(well: Well, case: ReadCasefile, pdf: PdfPages | None = None) -
         )
         bonus.append(metadata + print_density_driven_include + "\n\n\n\n")
 
-    return print_completion_data, print_well_segments, print_completion_segments, "".join(bonus)
+    return (
+        print_completion_data,
+        print_well_segments,
+        print_completion_segments,
+        "".join(bonus),
+        df_inflow_control_output,
+    )
 
 
 def _check_well_segments_header(welsegs_header: pd.DataFrame, start_measured_depths: pd.Series) -> pd.DataFrame:

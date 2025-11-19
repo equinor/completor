@@ -10,7 +10,7 @@ import pytest
 from completor.constants import Content, Headers, Keywords
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
-from completor.main import get_content_and_path  # type: ignore
+from completor.main import get_content_and_path
 from completor.read_casefile import ReadCasefile  # type: ignore
 
 _TESTDIR = Path(__file__).absolute().parent / "data"

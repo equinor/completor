@@ -10,36 +10,12 @@ import numpy.typing as npt
 import pandas as pd
 
 from completor import input_validation, parse
-from completor.constants import Content, Headers, Keywords, Method, WellData
+from completor.constants import Content, Headers, ICVMethod, Keywords, Method, WellData
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
 from completor.logger import logger
-from completor.utils import clean_file_lines
-
-
-def _mapper(map_file: str) -> dict[str, str]:
-    """Read two-column file and store data as values and keys in a dictionary.
-
-    Used to map between pre-processing tools and reservoir simulator file names.
-
-    Args:
-        map_file: Two-column text file.
-
-    Returns:
-        Dictionary of key and values taken from the mapfile.
-    """
-    mapper = {}
-    with open(map_file, encoding="utf-8") as lines:
-        for line in lines:
-            if not line.startswith("--"):
-                keyword_pair = line.strip().split()
-                if len(keyword_pair) == 2:
-                    key = keyword_pair[0]
-                    value = keyword_pair[1]
-                    mapper[key] = value
-                else:
-                    logger.warning("Illegal line '%s' in mapfile", keyword_pair)
-    return mapper
+from completor.parse import locate_keyword
+from completor.utils import clean_file_lines, sort_string_with_assign_first
 
 
 class ReadCasefile:
@@ -71,6 +47,7 @@ class ReadCasefile:
         gp_perf_devicelayer (bool): GRAVEL_PACKED_PERFORATED_DEVICELAYER. If TRUE all wells with
             gravel pack and perforation completion are given a device layer.
             If FALSE (default) all wells with this type of completions are untouched by Completor.
+        python_dependent (bool): PYTHON_DEPENDENT. If TRUE prints pyaction to output.
     """
 
     def __init__(self, case_file: str, schedule_file: str | None = None, output_file: str | None = None):
@@ -133,10 +110,6 @@ class ReadCasefile:
         Raises:
             ValueError: If COMPLETION keyword is not defined in the case.
         """
-        start_index, end_index = parse.locate_keyword(self.content, Keywords.COMPLETION)
-        if start_index == end_index:
-            raise ValueError("No completion is defined in the case file.")
-
         # Table headers
         header = [
             Headers.WELL,
@@ -151,6 +124,18 @@ class ReadCasefile:
             Headers.DEVICE_TYPE,
             Headers.DEVICE_NUMBER,
         ]
+        # Initialize empty table for ICV Control
+        self.completion_table = pd.DataFrame(columns=header)
+        start_index, end_index = parse.locate_keyword(self.content, Keywords.COMPLETION)
+        if start_index == end_index:
+            # Check if there is ICV Control keyword
+            # It is allowed to have no COMPLETION if there is ICVCONTROL
+            start_index_icv_control, end_index_icv_control = locate_keyword(self.content, "ICVCONTROL")
+            if start_index_icv_control == end_index_icv_control:
+                raise ValueError("No COMPLETION keyword or ICVCONTROL is defined in the case file.")
+            else:
+                return
+
         df_temp = self._create_dataframe_with_columns(header, start_index, end_index)
         # Set default value for packer segment
         df_temp = input_validation.set_default_packer_section(df_temp)
@@ -354,7 +339,7 @@ class ReadCasefile:
         if end_index == start_index + 2:
             # the content is in between the keyword and the /
             self.mapfile = parse.remove_string_characters(self.content[start_index + 1])
-            self.mapper = _mapper(self.mapfile)
+            self.mapper = self._mapper(self.mapfile)
 
     def read_wsegvalv(self) -> None:
         """Read the WELL_SEGMENTS_VALVE keyword in the case file.
@@ -385,7 +370,7 @@ class ReadCasefile:
             device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == Content.VALVE][
                 Headers.DEVICE_NUMBER
             ].to_numpy()
-            if not check_contents(device_checks, self.wsegvalv_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not self._check_contents(device_checks, self.wsegvalv_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(
                     f"Not all device in {Keywords.COMPLETION} is specified in {Keywords.WELL_SEGMENTS_VALVE}"
                 )
@@ -420,7 +405,7 @@ class ReadCasefile:
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_DEVICE
             ][Headers.DEVICE_NUMBER].to_numpy()
-            if not check_contents(device_checks, self.wsegsicd_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not self._check_contents(device_checks, self.wsegsicd_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {Keywords.INFLOW_CONTROL_DEVICE}")
 
     def read_wsegaicd(self) -> None:
@@ -465,7 +450,7 @@ class ReadCasefile:
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.AUTONOMOUS_INFLOW_CONTROL_DEVICE
             ][Headers.DEVICE_NUMBER].to_numpy()
-            if not check_contents(device_checks, self.wsegaicd_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not self._check_contents(device_checks, self.wsegaicd_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(
                     f"Not all device in COMPLETION is specified in {Keywords.AUTONOMOUS_INFLOW_CONTROL_DEVICE}"
                 )
@@ -520,7 +505,7 @@ class ReadCasefile:
             device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == content][
                 Headers.DEVICE_NUMBER
             ].to_numpy()
-            if not check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not self._check_contents(device_checks, self.wsegdensity_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {key}")
 
     def read_wseginjv(self) -> None:
@@ -554,7 +539,7 @@ class ReadCasefile:
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.INJECTION_VALVE
             ][Headers.DEVICE_NUMBER].to_numpy()
-            if not check_contents(device_checks, self.wseginjv_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not self._check_contents(device_checks, self.wseginjv_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all device in COMPLETION is specified in {Keywords.INJECTION_VALVE}")
 
     def read_python_dependent(self) -> None:
@@ -636,7 +621,7 @@ class ReadCasefile:
             device_checks = self.completion_table[self.completion_table[Headers.DEVICE_TYPE] == content][
                 Headers.DEVICE_NUMBER
             ].to_numpy()
-            if not check_contents(device_checks, self.wsegdualrcp_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not self._check_contents(device_checks, self.wsegdualrcp_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError(f"Not all devices in COMPLETION are specified in {key}")
 
     def read_wsegicv(self) -> None:
@@ -666,7 +651,7 @@ class ReadCasefile:
             device_checks = self.completion_table[
                 self.completion_table[Headers.DEVICE_TYPE] == Content.INFLOW_CONTROL_VALVE
             ][Headers.DEVICE_NUMBER].to_numpy()
-            if not check_contents(device_checks, self.wsegicv_table[Headers.DEVICE_NUMBER].to_numpy()):
+            if not self._check_contents(device_checks, self.wsegicv_table[Headers.DEVICE_NUMBER].to_numpy()):
                 raise CompletorError("Not all device in COMPLETION is specified in INFLOW_CONTROL_VALVE")
 
     def get_completion(self, well_name: str | None, branch: int) -> pd.DataFrame:
@@ -801,15 +786,411 @@ class ReadCasefile:
         df_temp = pd.read_csv(StringIO(table), sep=" ", dtype="object", index_col=False)
         return parse.remove_string_characters(df_temp)
 
+    @staticmethod
+    def _mapper(map_file: str) -> dict[str, str]:
+        """Read two-column file and store data as values and keys in a dictionary.
 
-def check_contents(values: npt.NDArray[Any], reference: npt.NDArray[Any]) -> bool:
-    """Check if all members of a list is in another list.
+        Used to map between pre-processing tools and reservoir simulator file names.
 
-    Args:
-        values: Array to be evaluated.
-        reference: Reference array.
+        Args:
+            map_file: Two-column text file.
 
-    Returns:
-        True if members of values are present in reference, false otherwise.
-    """
-    return all(comp in reference for comp in values)
+        Returns:
+            Dictionary of key and values taken from the mapfile.
+        """
+        mapper = {}
+        with open(map_file, encoding="utf-8") as lines:
+            for line in lines:
+                if not line.startswith("--"):
+                    keyword_pair = line.strip().split()
+                    if len(keyword_pair) == 2:
+                        key = keyword_pair[0]
+                        value = keyword_pair[1]
+                        mapper[key] = value
+                    else:
+                        logger.warning("Illegal line '%s' in mapfile", keyword_pair)
+        return mapper
+
+    @staticmethod
+    def _check_contents(values: npt.NDArray[Any], reference: npt.NDArray[Any]) -> bool:
+        """Check if all members of a list is in another list.
+
+        Args:
+            values: Array to be evaluated.
+            reference: Reference array.
+
+        Returns:
+            True if members of values are present in reference, false otherwise.
+        """
+        return all(comp in reference for comp in values)
+
+
+class ICVReadCasefile(ReadCasefile):
+    """Inherited ReadCaseFile from completor with additions for ICV-Control."""
+
+    def __init__(self, case_file: str, user_schedule_file: str | None = None, new_segments: str | None = None):
+        """Initialize ICVReadCasefile.
+
+        Args:
+            case_file: Case/input file name.
+            schedule_file: Schedule file as output from Completor schedule output
+            new_segments: Well segment lists from Completor output.
+
+        """
+        super().__init__(case_file, user_schedule_file)
+        self.icv_table: dict[str, pd.DataFrame] = {}
+        self.icv_date = None
+        self.icv_control_table = pd.DataFrame()
+        self.custom_conditions: dict[ICVMethod, dict[str, Any]] = {}
+        self.icv_segments = new_segments
+
+        self.read_icv_control()
+        if self.icv_segments:
+            self.update_icv_case()
+        self.read_icv_table()
+        self.read_custom_conditions()
+        self.step_table = self.create_step_table()
+
+        self.init_table = self.create_table_from_casefile("INIT")
+        self.min_table = self.create_table_from_casefile("MIN")
+        self.max_table = self.create_table_from_casefile("MAX")
+        self.init_opening_table = self.create_table_from_casefile("OPENING")
+
+    def read_icv_control(self) -> None:
+        """This procedure reads the ICVCONTROL keyword in the case file.
+
+        The ICVCONTROL keyword information is stored in a class property
+        DataFrame ``self.icv_control_table`` with the following format:
+        """
+        start_index, end_index = locate_keyword(self.content, "ICVCONTROL")
+        if start_index == end_index:
+            logger.warning("No ICVCONTROL table is found in the case file.")
+
+        headers = ["WELL", "ICV", "SEGMENT", "AC-TABLE", "STEPS", "ICVDATE", "FREQ", "MIN", "MAX", "OPENING"]
+        extended_headers = ["FUD", "FUH", "FUL", "OPERSTEP", "WAITSTEP", "INIT"]
+        try:
+            df_temp = self._create_dataframe_with_columns(headers, start_index, end_index)
+            # Default values for extra headers if not supplied:
+            if df_temp.shape[1] == 10:
+                df_temp["FUD"] = 1
+                df_temp["FUH"] = 10
+                df_temp["FUL"] = 0.1
+                df_temp["OPERSTEP"] = 2
+                df_temp["WAITSTEP"] = 1
+                df_temp["INIT"] = 0.01
+        except CaseReaderFormatError:
+            headers += extended_headers
+            df_temp = self._create_dataframe_with_columns(headers, start_index, end_index)
+        df_temp = input_validation.set_format_icvcontrol(df_temp)
+        self.icv_control_table = df_temp.copy(deep=True)
+
+    def update_icv_case(self) -> None:
+        """Read and update the segmentation number in case file based on
+        input schedule file.
+
+        Default: False
+
+        """
+        df_new_segment = pd.DataFrame(self.icv_segments, columns=["WELL", "NEW_SEGMENT"])
+        value_working = df_new_segment.copy(deep=True)
+        df_working = self.icv_control_table.copy(deep=True)
+        if len(df_working) != len(value_working):
+            raise CompletorError(
+                f"ICVs defined in ICVCONTROL table are {len(df_working)} while the ICVs found in schedule file "
+                f"are {len(value_working)}"
+            )
+        value_working = df_new_segment.copy(deep=True)
+        for well in value_working["WELL"].unique():
+            if len(value_working[value_working["WELL"] == well]) == df_working[df_working["WELL"] == well].shape[0]:
+                for idx, row in df_working.iterrows():
+                    df_working.loc[idx, "SEGMENT"] = value_working.loc[idx, "NEW_SEGMENT"]
+            else:
+                num_icvs_schedule = len(value_working[value_working["WELL"] == well])
+                raise CompletorError(
+                    f"Number of ICVs defined in ICVCONTROL for well {well} are not the same as ICVs found "
+                    f"in schedule file which are {num_icvs_schedule}."
+                )
+        self.icv_control_table = df_working
+
+    def read_icv_table(self):
+        """This procedure reads the ICVTABLE keyword in the case file.
+
+        The ICVTABLE keyword information is stored in a class property
+        DataFrame ``self.icv_control_table`` with the following format:
+
+        The class property DataFrame icv_control_table has the following format:
+
+            .. icv_control_table:
+            .. list-table:: icv_control_table
+                :widths: 10 10
+                :header-rows: 1
+
+               * - Positions
+                 - int
+               * - Cv
+                 - float
+               * - Area
+                 - float
+               * - Opening
+                 - str
+
+        """
+        start_arr = []
+        end_arr = []
+        i = 0
+        while i < len(self.content):
+            start, end = locate_keyword(self.content[i:], "ICVTABLE")
+            if start == np.array([-1]):
+                break
+            start_arr.append(start + i)
+            end_arr.append(end + i)
+            i += end
+
+        if not start_arr:
+            logger.info("No ICVTABLE is found in the case file. Using default steps to adjust openings.")
+            return None
+        # Table headers
+        header = ["POSITION", "CV", "AREA"]
+        for start_index, end_index in zip(start_arr, end_arr):
+            table_name = self.content[start_index + 1 : start_index + 2]
+            table_name = table_name[0].strip("/").split()
+            df_temp = self._create_dataframe_with_columns(header, start_index + 1, end_index)
+            if df_temp.shape[1] != 3:
+                raise CompletorError("Keyword ICVCONTROL is missing data.")
+            elif df_temp.isnull().values.any():
+                raise CompletorError("Keyword ICVCONTROL is missing data.")
+
+            df_temp = input_validation.set_format_icv_table(df_temp)
+
+            self.icv_table.update({name: df_temp for name in table_name})
+
+    def read_custom_conditions(self) -> dict[ICVMethod, dict[str, Any]]:
+        """This procedure reads the CONTROL_CRITERIA keyword in the case file.
+
+        The CONTROL_CRITERIA keyword information is stored in a dictionary:
+            "functions": [Method.TYPE],
+            "criteria": 1,
+            "icvs": ["ICV","ICV"],
+            "conditions": 'extra string of conditions'
+
+        Returns:
+            A dictionary containing the custom conditions.
+        """
+        start_arr = []
+        end_arr = []
+        i = 0
+        while i < len(self.content):
+            start, end = locate_keyword(self.content[i:], "CONTROL_CRITERIA")
+            if start == np.array([-1]):
+                break
+            start_arr.append(start + i)
+            end_arr.append(end + i)
+            i += end
+
+        if not start_arr:
+            self.custom_conditions = {}
+            return self.custom_conditions
+
+        for start, end in zip(start_arr, end_arr):
+            self.parse_custom_conditions(self.content[start + 1 : end])
+
+        return self.custom_conditions
+
+    def parse_custom_conditions(self, raw_content: list[str]) -> dict[ICVMethod, dict[str, str | list[int]]]:
+        """Parse the raw text input into a dictionary structure.
+
+        Args:
+            raw_content: Raw input string, as list of lines.
+
+        Raises:
+            ValueError: ValueError if the input data has erroneous format.
+
+        Returns:
+            The processed nested dictionary, e.g.
+            {
+                Method.TYPE: {
+                    ICV_NAME: {
+                        criteria: [1]
+                        content: The text to be inserted to icv_functions.
+                    }
+                }
+            }
+
+        """
+        criteria = []
+        methods: list[ICVMethod] = []
+        icv_map: list[list[str]] = []
+        for i, line in enumerate(raw_content):
+            keyword, *value = line.rsplit(":", 1)
+            if not value:
+                value = [""]
+            keyword = keyword.strip().lower()
+            value = "".join(value).strip()
+            # Looking at start of word to accommodate some typos / variations
+            if keyword.startswith("func"):
+                # Find longes patterns matching UPPERCASE, seperated by underscores
+                # (possibly no underscores)
+                pattern = r"[A-Z]+\_?[A-Z]+\_?[A-Z]*\b|[A-Z]+\_?[A-Z]*\b"
+                tmp = re.findall(pattern, value)
+                methods = []
+                for possible_method in tmp:
+                    try:
+                        possible_method = ICVMethod(possible_method)
+                        if possible_method not in methods:
+                            methods.append(possible_method)
+                    except ValueError:
+                        logger.warning(f"Unknown function '{possible_method}' in FUNCTION field.")
+
+            elif keyword.startswith("crit"):
+                # Make pseudo-floats into integers, e.g. 2.00 -> 2
+                malformed_input = re.findall(r"\d+\.\d+", value)
+                if malformed_input:
+                    logger.warning(f"Found possible floats '{malformed_input}'. Attepting to cast to int!")
+                    value = re.sub(r"\.0+", "", value)
+                try:
+                    if "." in value:
+                        raise ValueError
+                    tmp = [int(c) for c in re.findall(r"\d+", value)]
+                    if not tmp:
+                        raise ValueError
+                    criteria = tmp
+                except ValueError:
+                    raise ValueError(
+                        "Expected the value in criteria to be an integer, " f"or a list of integers, got '{value}'."
+                    )
+
+            elif keyword.startswith("icv"):
+                icv_list = (" ".join([icv.strip() for icv in re.sub(r"\[|\]\]", "", value).split(",")])).split("]")
+                # Removal of whitespace and maps to sublists
+                icv_map = [sublist.strip().split() for sublist in icv_list if sublist]
+
+            else:
+                content = ("\n".join(raw_content[i:])).upper()
+                break
+
+        if not methods:
+            raise ValueError(
+                "The contents of CONTROL_CRITERIA was malformed. Missing information in the 'FUNCTION' field!"
+            )
+        if not any(icv_map):
+            for method in methods:
+                if method == ICVMethod.UDQ:
+                    if method not in self.custom_conditions:
+                        self.custom_conditions[method] = {}
+                    if "UDQ" not in self.custom_conditions[method]:
+                        self.custom_conditions[method]["UDQ"] = {}
+                    try:
+                        self.custom_conditions[method]["UDQ"]["1"] += "\n" + content
+                    except KeyError:
+                        self.custom_conditions[method]["UDQ"].update({"1": content})
+                    self.custom_conditions[method]["UDQ"]["1"] = "\n".join(
+                        self.custom_conditions[method]["UDQ"]["1"].splitlines()
+                    )
+                    # Ensure that assign get written before defines
+                    self.custom_conditions[method]["UDQ"]["1"] = sort_string_with_assign_first(
+                        self.custom_conditions[method]["UDQ"]["1"]
+                    )
+                    self.custom_conditions[method]["UDQ"]["map"] = {"1": {"UDQ": "UDQ"}}
+                    return self.custom_conditions
+            raise ValueError("The contents of CONTROL_CRITERIA was malformed. Missing information in the 'ICVS' field!")
+        if not criteria and ICVMethod.UDQ not in methods:
+            logger.warning("Did not find any 'CRITERIA', defaulting to [1]!")
+            criteria = [1]
+
+        # Form the dictionary from the gathered data
+        for method in methods:
+            if self.custom_conditions.get(method) is None:
+                self.custom_conditions[method] = {}
+            for icv_combo in icv_map:
+                if icv_combo != "":
+                    icv = icv_combo[0]
+
+                    if self.custom_conditions.get(method, {}).get(icv) is None:
+                        self.custom_conditions[method][icv] = {}
+                    icv_combo_mapped = {}
+                    if "map" not in self.custom_conditions[method][icv]:
+                        self.custom_conditions[method][icv]["map"] = {}
+                    icv_combo_mapped = {f"X{i}": name for i, name in enumerate(icv_combo)}
+                    if method == ICVMethod.UDQ:
+                        if len(methods) > 1:
+                            raise ValueError("UDQ field needs a seperate CONTROL_CRITERIA keyword.")
+                        try:
+                            self.custom_conditions[method][icv]["1"] += "\n" + content
+                        except KeyError:
+                            self.custom_conditions[method][icv].update({"1": content})
+                        # Make assign be written before define.
+                        self.custom_conditions[method][icv]["1"] = "\n".join(
+                            self.custom_conditions[method][icv]["1"].splitlines()
+                        )
+                        self.custom_conditions[method][icv]["1"] = sort_string_with_assign_first(
+                            self.custom_conditions[method][icv]["1"]
+                        )
+                        self.custom_conditions[method][icv]["map"].update({"1": icv_combo_mapped})
+                    else:
+                        try:
+                            self.custom_conditions[method][icv][str(criteria[0])]
+                            # if len(self.custom_conditions[method][icv].keys()) > 1:
+                            logger.warning(
+                                f"The CONTROL_CRITERIA for ICV '{icv}' "
+                                f"method '{method}' criteria '{criteria}' "
+                                "seems to be defined more than once."
+                            )
+                        except KeyError:
+                            pass
+                        formatted_content = ""
+                        for i, line in enumerate(content.splitlines()):
+                            # Remove any trailing non-alphanumeric characters
+                            # (excluding ')') and extra whitespace
+                            line = " ".join(re.sub(r"[^\w\)]*$", "", line).split())
+                            # The last line should not end with "AND", remove if present
+                            if i == len(content.splitlines()) - 1:
+                                last_line = re.sub(r"[^\w\)]*$", "", line).split()
+                                if last_line[-1] == "AND":
+                                    line = " ".join(last_line[:-1])
+                                formatted_content += line + " /"
+                            elif re.findall(r"\w+", line)[-1] == "AND":
+                                # If the line ends with "AND", add a "/" after it
+                                formatted_content += line + " /\n"
+                            elif line != "":
+                                # Otherwise, add "AND /" after the line
+                                formatted_content += line + " AND /\n"
+
+                        self.custom_conditions[method][icv].update({str(crit): formatted_content for crit in criteria})
+                        self.custom_conditions[method][icv]["map"].update(
+                            {str(crit): icv_combo_mapped for crit in criteria}
+                        )
+                        for key in icv_combo_mapped.keys():
+                            if str(key) not in content:
+                                logger.warning(
+                                    f"Custom condition warning:\n Function '{method}', "
+                                    f"criteria '{criteria}' has "
+                                    f"{len(icv_combo_mapped.keys())} ICVs where "
+                                    f"{icv_combo_mapped} is not part of the custom "
+                                    "content."
+                                )
+        return self.custom_conditions
+
+    def create_step_table(self) -> pd.DataFrame:
+        """Extract the icv name and step values from ICVCONTROL."""
+        step_table = pd.DataFrame([self.icv_control_table["STEPS"].to_numpy()], columns=self.icv_control_table["ICV"])
+        for i, steps in enumerate(step_table.iloc[0]):
+            if steps % 2 != 0:
+                logger.warning(
+                    f"In the casefile table the number of step was '{steps}' for"
+                    f" ICV'{step_table.columns[i]}'. The number of step has to be even,"
+                    f" and set to {steps + 1}."
+                )
+                step_table.iloc[0, i] = steps + 1
+        return step_table
+
+    def create_table_from_casefile(self, header_name: str) -> pd.DataFrame:
+        """Extract the information from the casefile table.
+
+        Args:
+           header_name: Column name / header.
+
+        Returns:
+           A DataFrame mapping ICVs to its specific table value.
+        """
+
+        return pd.DataFrame([self.icv_control_table[header_name].to_numpy()], columns=self.icv_control_table["ICV"])

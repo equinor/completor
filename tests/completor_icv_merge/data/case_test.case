@@ -1,0 +1,162 @@
+
+
+COMPLETION
+--WELL        Branch  Start           End             Screen          Well/          Roughness       Annulus         Nvalve  Valve   Device
+--            Number     mD            mD             Tubing         Casing          Roughness       Content         /Joint   Type   Number
+--                                                  Diameter       Diameter
+A1         1          0       9999        0.1504      0.216        0.00015        GP         1               VALVE            1
+A2         1          0       9999        0.1504      0.216        0.00015        GP         1               ICV            1
+A3         1          0       9999        0.1504      0.216        0.00015        GP         1               ICV            1
+A4         1          0       2244        0.1504      0.216        0.00015        GP         0               ICV            1
+A4         1       2244       2244        0.1504      0.216        0.00015        GP         1               ICV            1
+A4         1       2244       9999        0.1504      0.216        0.00015        GP         1               AICD           1
+A5         1          0       1750        0.1504      0.216        0.00015        GP         1               ICV            1
+A5         1       1750       9999        0.1504      0.216        0.00015        GP         1               ICV            1
+A6         1          0       1760        0.1504      0.216        0.00015        GP         1               ICV            1
+A6         1       1760       9999        0.1504      0.216        0.00015        GP         1               ICV            1
+OP5        1          0       3800        0.1504      0.216        0.00015        GP         0               ICV            1
+OP5        1       3800       3800        0.1504      0.216        0.00015        GP         1               ICV            1
+OP5        1       3800       4400        0.1504      0.216        0.00015        GP         1               ICV            1
+OP5        1       4400       9999        0.1504      0.216        0.00015        GP         1               VALVE          1
+OP5        2          0       3800        0.1504      0.216        0.00015        GP         0               ICV            1
+OP5        2       3800       3800        0.1504      0.216        0.00015        GP         1               ICV            1
+OP5        2       3800       4500        0.1504      0.216        0.00015        GP         1               ICV            1
+OP5        2       4500       9999        0.1504      0.216        0.00015        GP         1               AICD           1
+/
+
+
+WSEGICV
+-- icv
+-- DEVICE   CV      AC  AC_MAX
+1           1    0.004703    0.004703
+/
+
+WSEGVALV
+-- DEVICE   CV      AC  AC_MAX --nozzle ICD
+1           1    0.004703   5* 0.004703
+/
+
+WSEGAICD
+--aicd
+1	0.11	1.1	0.9	0.8	1.1	1.2	1.3	1.4	1.0	1000	1.0
+/
+
+ICVCONTROL
+--  WELL     ICV   SEGM      ICVTABL   STEPS      ICVDATE      FREQ_OPS    MIN_POS   MAX_POS          INITIAL_OPENING
+A2           A2       1         A      100        2.JAN.2020    30          1         10              T10
+A3           A3       1         A      100        2.JAN.2020    30          3         10              T10
+A4           A4       1         A      100        2.JAN.2020    30          1         7               T5
+A5           A5       1         A      100        2.JAN.2020    30          1         7               T5
+A5           A5       1         A      100        2.JAN.2020    30          1         7               T5
+A6           A6       1         A      100        2.JAN.2020    30          1         7               T5
+A6           A6       1         A      100        2.JAN.2020    30          1         7               T5
+OP5          O3       1         A      100        2.JAN.2020    30          1         10              T10
+OP5          O1       1         A      100        2.JAN.2020    30          1         10              T10 --lateral 1 ICV
+OP5          O4       1         A      100        2.JAN.2020    30          1         10              T10
+OP5          O2       1         A      100        2.JAN.2020    30          1         10              T10 --lateral 2 ICV
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [O1][O2]
+  DEFINE FUWCT_x0 SWCT WELL(x0) SEG(x0) / WWCT WELL(x0)  /  --watercut control OP5
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [A1][A2][A3][A4]
+  DEFINE FUWCT_x0 WWCT WELL(x0) / FWCT  /  --watercut control other producers
+/
+
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ASSIGN FUTOL 0.05 /
+  ASSIGN FUWCTBRN 1 /
+  ASSIGN FUWCTWEL 1.5 /
+  DEFINE FUWELMIN FUWCTWEL - FUTOL /
+  DEFINE FUWELMAX FUWCTWEL + FUTOL /
+  DEFINE FUBRNMIN FUWCTBRN - FUTOL /
+  DEFINE FUBRNMAX FUWCTBRN + FUTOL /
+/
+
+-------------------WATERCUT BRANCH CONTROL------------------------
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 < FUWCTBRN AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 > FUBRNMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 > FUWCTBRN AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [O1][O2]
+  FUWCT_x0 < FUBRNMAX
+/
+
+-------------------WATERCUT WELL CONTROL------------------------
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 < FUWCTWEL AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 > FUWELMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 > FUWCTWEL AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [A1][A2][A3][A4]
+  FUWCT_x0 < FUWELMAX
+/
+
+----------------------------------------------------------------
+ICVTABLE
+A /
+-- POS CD AREA
+1	     1	    1.02374E-05
+2	     1	    2.84372E-05
+3	     1	    4.73954E-05
+4	     1	    7.89923E-05
+5	     1	    0.0001316
+6	     1	    0.0003657
+7	     1	    0.0006095
+8	     1	    0.001693
+9	     1	    0.002821
+10	   1	    0.004703
+
+/

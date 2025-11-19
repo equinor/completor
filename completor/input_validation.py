@@ -7,6 +7,7 @@ import pandas as pd
 
 from completor.constants import Content, Headers
 from completor.exceptions.clean_exceptions import CompletorError
+from completor.exceptions.exceptions import CaseReaderFormatError
 
 pd.set_option("future.no_silent_downcasting", True)
 
@@ -401,3 +402,63 @@ def validate_minimum_segment_length(minimum_segment_length: str | float) -> floa
     if minimum_segment_length < 0.0:
         raise CompletorError(f"The MINIMUM_SEGMENT_LENGTH {minimum_segment_length} cannot be less than 0.0.")
     return minimum_segment_length
+
+
+def set_format_icvcontrol(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """Format the ICVCONTROL table.
+
+    Args:
+        df_temp: ICVCONTROL table.
+
+    Returns:
+        Updated ICVCONTROL formats.
+
+    The format of the ICVCONTROL table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_icv_control``.
+    """
+
+    config = {
+        "WELL": str,
+        "ICV": str,
+        "SEGMENT": int,
+        "AC-TABLE": str,
+        "STEPS": int,
+        "ICVDATE": str,
+        "FREQ": int,
+        "MAX": float,
+        "MIN": float,
+        "OPENING": str,
+    }
+    extended_config = {"FUD": float, "FUH": float, "FUL": float, "OPERSTEP": float, "WAITSTEP": float, "INIT": float}
+
+    try:
+        df_temp = df_temp.astype(extended_config)
+    except KeyError:
+        # Not using advanced mode, this is fine.
+        pass
+
+    try:
+        return df_temp.astype(config)
+    except Exception:
+        raise CaseReaderFormatError(
+            "ICVCONTROL table is formatted incorrectly. Note, the ordering of columns have changed."
+        )
+
+
+def set_format_icv_table(df_temp: pd.DataFrame) -> pd.DataFrame:
+    """Format the ICVTABLE table.
+
+    Args:
+        df_temp: ICVTABLE table.
+
+    Returns:
+        Updated ICVTABLE formats.
+
+    The format of the ICVTABLE table DataFrame is shown in
+    ``read_casefile.ReadCasefile.read_icv_table``.
+
+    """
+    try:
+        return df_temp.astype({"POSITION": int, "CV": float, "AREA": float})
+    except Exception:
+        raise CompletorError("Keyword ICVTABLE has data with erroneous format.")

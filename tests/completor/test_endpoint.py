@@ -5,7 +5,9 @@ import shutil
 from pathlib import Path
 
 import pytest
-from utils_for_tests import completor_runner
+
+from completor.exceptions.clean_exceptions import CompletorError
+from tests.utils_for_tests import completor_runner
 
 _TESTDIR_DROGON = Path(__file__).absolute().parent / "data" / "drogon"
 
@@ -34,9 +36,9 @@ def test_run_completor_without_schedule(tmpdir):
     """Test Completor without an input schedule file."""
     shutil.copy(_TESTDIR_DROGON / "perf_gp_nosched.case", tmpdir)
     tmpdir.chdir()
-    with pytest.raises(SystemExit) as e:
+    expected_error_message = "The keyword SCHFILE is not defined correctly in the casefile"
+    with pytest.raises(CompletorError, match=expected_error_message):
         completor_runner(inputfile="perf_gp_nosched.case", outputfile="perf_gp_nosched.out")
-    assert e.value.code == 1
     assert not Path("perf_gp_nosched.out").is_file()
 
 
