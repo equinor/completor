@@ -235,7 +235,7 @@ def check_width_lines(result: str, limit: int) -> list[tuple[int, str]]:
         cleaned_line = cleaned_line.rsplit("--")[0]
 
         if len(cleaned_line) > limit:
-            too_long_lines.append((line_index, lines[line_index]))
+            too_long_lines.append((int(line_index), lines[line_index]))
     return too_long_lines
 
 

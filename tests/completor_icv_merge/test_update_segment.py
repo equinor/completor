@@ -172,7 +172,6 @@ def test_update_segment(tmpdir):
     pd.testing.assert_frame_equal(df_true, df_icv_case)
 
 
-# TODO(#306): Chech these two tests below
 def test_error_update_segment(tmpdir):
     "Test error message when number of ICV does not match the whole ICVCONTROL table"
     tmpdir.chdir()
