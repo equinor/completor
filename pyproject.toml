@@ -86,3 +86,4 @@ markers = [
     "requires_ert: Mark tests that require ERT (Ensemble Reservoir Tool)."
 ]
 env = ["TQDM_DISABLE=1"]
+pythonpath = ["."]

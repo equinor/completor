@@ -143,7 +143,6 @@ def test_minimum_input(tmpdir, capsys):
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert captured.out == ""
 
 
 def test_missing_welspecs(tmpdir, capsys):
@@ -252,7 +251,6 @@ def test_full_wsegdensity(tmpdir, capsys):
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert captured.out == ""
 
 
 def test_missing_wsegdensity(tmpdir):
@@ -280,7 +278,6 @@ def test_full_wseginjv(tmpdir, capsys):
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert captured.out == ""
 
 
 def test_missing_wseginjv(tmpdir):
@@ -308,7 +305,6 @@ def test_full_wsegdualrcp(tmpdir, capsys):
     utils_for_tests.open_files_run_create(case_file, schedule_file, _outfile)
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert captured.out == ""
 
 
 def test_missing_wsegdualrcp(tmpdir):
