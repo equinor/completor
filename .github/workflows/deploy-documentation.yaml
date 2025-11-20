@@ -4,6 +4,8 @@ on:
   release: # Trigger when a new release is made.
     types: [published]
   push:
+    branches:
+      - main
     tags: [ "v*" ]
 
   workflow_dispatch: # Enable manual triggers.
