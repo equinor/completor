@@ -1,0 +1,66 @@
+---
+title: ICV Control Configuration
+sidebar_position: 2
+description: ICV Control Configuration
+---
+
+# Running ICV Control
+
+To request ICV Control output, it is executed through the same command line as Completor.
+Completor will recognize ICV Control keyword and modify the output accordingly with additional ICV Control output.
+The output is explained in the next section.
+
+## ICV Control Output
+Slightly different from Completor, the output will consist of main schedule file,
+and followed by additional `include_file` that contains all pre-defined criteria,
+target, and logic keywords. In addition, an extra `summary.sch` is printed out for
+making the results analysis easy.
+
+The output files are constructed as follow:
+```shell
+.
+├── <<output_schedule_name>> --> main schedule file attached to eclipse .DATA
+├── include_icvc.sch --> output for all UDQs and ACTIONXes from ICV Control
+└── summary_icvc.sch --> output for additional summary files from ICV Control
+```
+
+It can be added to your `.DATA` template as following example:
+
+```shell
+
+SUMMARY
+
+INCLUDE
+ '../include/summary/drogon.summary' / -- original summary
+INCLUDE
+  ../include/schedule/summary.icvc' / --Additional ICV Control Summary File
+
+
+
+SCHEDULE
+
+--INCLUDE --COMMENTED OUT
+-- '../include/schedule/<<input_schedule>>.sch' / -- this is your commented out original schedule
+INCLUDE
+ '../include/schedule/<<input_schedule>>_icvc.sch' / --ICVC new schedule file
+```
+
+## Recommendation
+
+It is recommended to follow the [FMU](https://github.com/Equinor/fmu) standardization
+for the folder structure, where every simulation is set up to:
+
+```shell
+eclipse/
+├── include
+│   ├── edit
+│   ├── ...
+│   ├── schedule
+        ├── <<input_schedule>>_icvc.sch
+        ├── include_icvc.sch
+        ├── summary.icvc
+        ├── ...
+        └── ...
+└── model
+    └── .DATA
+```

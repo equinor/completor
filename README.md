@@ -44,6 +44,14 @@ This should run for some time and display a help message.
 ### Create and run your first model
 Some examples of Completor case file are available in [Examples](documentation/docs/about/examples.mdx) and detailed explanation is available in [Configuration](documentation/docs/about/configuration.mdx).
 
+### References
+Some technical paper related to Completor and ICV Control applications are available to read and cite:
+- Handita Sutoyo, Filippo Panini, Cuthbert Shang Wui Ng, Martin Halvorsen, Geir Elseth, Ingvild Berg Martiniussen, Corentin Cochard, Erik Johan Helland, Sean Robert Smith, and Lene Amundsen.
+"Maximize Value from Inflow Control Technology Implementations Through Novel Standardized Workflow and Open-Source Modelling Tool."
+Paper presented at the OTC Brasil, Rio de Janeiro, Brazil, October 2025. doi: [10.4043/36167-MS](https://doi.org/10.4043/36167-MS)
+- Handita Sutoyo, Mathias Bellout, Margrete Hånes, and Rodolfo Oliveira. "Ensemble-Based Proactive Optimization using a Reactive Strategy
+for ICV Control." Paper presented at the SPE Norway Subsurface Conference, Bergen, Norway, April 2024. doi: [10.2118/218472-MS](https://doi.org/10.2118/218472-MS)
+
 ## Getting started as a contributor
 ### Contribution guide
 We welcome all kinds of contributions, including code, bug reports, issues, feature requests, and documentation.
