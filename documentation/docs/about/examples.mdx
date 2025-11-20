@@ -297,3 +297,108 @@ WSEGICV
 3                1.00      0.05      0.05
 /
 ```
+
+## Completion with ICVs and actively controlling it with certain parameter
+
+It is possible to set up ICVs in Completor and actively control it using ICV Control functionality. Following attaching `WSEGICV` for the ICV placement,
+the user needs to define the `ICVCONTROL` keyword associated with the ICVs to be controlled.
+
+```
+COMPLETION
+--Well  Branch   StartMD   EndMD    Screen     Well/     Roughness       Annulus     Nvalve/Joint     ValveType     DeviceNumber
+--      Number                      Tubing     Casing    Roughness       Content
+--                                  Diameter   Diameter
+OP1     1        0        3000      0.15364    0.1905    1.524E-005      GP          1                ICV            1    -- ICV connected into reservoir flow
+OP1     1        3000     3000      0.15364    0.1905    1.524E-005      GP          1                ICV            3    -- ICV controlling flow inside tubing below ICV
+OP1     1        3000     10000     0.15364    0.1905    1.524E-005      GP          1                ICV            1    -- ICV connected into reservoir flow
+OP1     2        0        4000      0.15364    0.1905    1.524E-005      GP          1                ICV            2    -- ICV connected into reservoir flow
+OP1     2        4000     4000      0.15364    0.1905    1.524E-005      GP          1                ICV            3    -- ICV controlling flow inside tubing below ICV
+OP1     2        4000     10000     0.15364    0.1905    1.524E-005      GP          1                ICV            2    -- ICV connected into reservoir flow
+/
+
+WSEGICV
+-- NB: Dummy parameters.
+-- DeviceNumber  Cv        Ac        Ac_max
+1                0.95      4.32e-4   7.50e-4
+2                1.10      1.56e-4   7.50e-4
+3                1.00      0.05      0.05
+/
+
+-- Below is an example of simple ICV Control setup for water cut control in each segment
+-- The number of ICVs defined in ICVCONTROL keyword must match with the ICVs output from Completor
+-- Example above from Completor will produce 4 ICVs (2 for each lateral)
+-- If the number of ICVs produced by Completor does not match number of ICVs initiated in ICVCONTROL, Completor® will exit and show error message.
+-- Running this setup will automatically update the ICVCONTROL column number 3 of segment number associated with Completor output segment.
+-- Completor will fill the zonal ICV controlling the reservoir flow first for each lateral, and followed by the ICV controlling the flow of each lateral.
+
+ICVCONTROL
+--  WELL     ICV   SEGM      ICVTABL   STEPS   ICVDATE      FREQ    MIN   MAX          OPENING
+    OP1      	Z1  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10   -- zone control lateral 1
+    OP1      	O1  	1           A	      100    2.JAN.2020	    30	  	1	    10	        T10   -- branch/tubing control lateral 1
+    OP1      	Z2  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10   -- zone control lateral 2
+    OP1      	O2  	1 	        A	      100    2.JAN.2020	    30	  	1	    10	        T10   -- branch/tubing control lateral 2
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [Z1][O1][Z2][O2]
+  DEFINE FUWCT_x0 SWCT WELL(x0) SEG(x0) / WWCT WELL(x0)  /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ASSIGN FUTOL 0.05 /
+  ASSIGN FUWCTBRN 1 /
+  DEFINE FUBRNMIN FUWCTBRN - FUTOL /
+  DEFINE FUBRNMAX FUWCTBRN + FUTOL /
+/
+
+-------------------WATERCUT BRANCH CONTROL------------------------
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN, OPEN_WAIT, OPEN_READY]
+  CRITERIUM: 1
+  ICV: [Z1][O1][Z2][O2]
+  FUWCT_x0 < FUWCTBRN AND /
+  FUPOS_x0 < 10 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [OPEN_STOP, OPEN_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [Z1][O1][Z2][O2]
+  FUWCT_x0 > FUBRNMIN
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE, CHOKE_WAIT, CHOKE_READY]
+  CRITERIUM: 1
+  ICV: [Z1][O1][Z2][O2]
+  FUWCT_x0 > FUWCTBRN AND /
+  FUPOS_x0 > 1 /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [CHOKE_STOP, CHOKE_WAIT_STOP]
+  CRITERIUM: 1
+  ICV: [Z1][O1][Z2][O2]
+  FUWCT_x0 < FUBRNMAX
+/
+
+----------------------------------------------------------------
+ICVTABLE
+A /
+-- POS CD AREA
+1	    1	    1.02374E-05
+2	    1	    2.84372E-05
+3	    1	    4.73954E-05
+4	    1	    7.89923E-05
+5	    1	    0.0001316
+6	    1	    0.0003657
+7	    1	    0.0006095
+8	    1	    0.001693
+9	    1	    0.002821
+10	    1	    0.004703
+/
+
+```
