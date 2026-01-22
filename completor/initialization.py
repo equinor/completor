@@ -208,6 +208,27 @@ class Initialization:
 
         """
         init_icvcontrol = "-- User input, specific for this input file\n\nUDQ\n\n" f"{60 * '-'}\n-- Time-stepping:\n\n"
+        init_icvcontrol_pyaction = """
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+"""
         for icv_name in self.icv_names:
             table = {
                 "FUD": self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["FUD"].iloc[0],
@@ -216,9 +237,12 @@ class Initialization:
             }
             for tstepping in ["FUD", "FUH", "FUL"]:
                 init_icvcontrol += f"  ASSIGN {tstepping}_{icv_name} {table[tstepping]} /\n"
+                init_icvcontrol_pyaction += f"summary_state['{tstepping}_{icv_name}'] = {table[tstepping]}\n"
 
             init_icvcontrol += "\n"
+            init_icvcontrol_pyaction += "\n"
         init_icvcontrol += f"\n{60 * '-'}\n-- Balance criteria\n\n"
+        init_icvcontrol_pyaction += "# Balance criteria\n\n"
         sub_table = {}
         for icv_name, icv_date in self.icv_dates.items():
             if "na" in icv_name.lower():
@@ -234,14 +258,22 @@ class Initialization:
                     f"  ASSIGN FUTO_{icv_name} {FUTO_INIT} /\n"
                     f"  ASSIGN FUP_{icv_name} {FUP_INIT} /\n"
                 )
+                init_icvcontrol_pyaction += (
+                    f"summary_state['FUTC_{icv_name}'] = {FUTC_INIT}\n"
+                    f"summary_state['FUTO_{icv_name}'] = {FUTO_INIT}\n"
+                    f"summary_state['FUP_{icv_name}'] = {FUP_INIT}\n"
+                )
         init_icvcontrol += "/\n"
+        init_icvcontrol_pyaction += "\n\n"
 
         if self.case.icv_table:
             init_icvcontrol += self.input_icv_opening_table(self.case.icv_table)
+            init_icvcontrol_pyaction += self.input_icv_opening_table_pyaction(self.case.icv_table)
         else:
             logger.info("No ICVTABLES found, skipping writing table to init_icvcontrol.udq!")
-
         self.init_icvcontrol = init_icvcontrol
+        if self.case.python_dependent:
+            self.init_icvcontrol = init_icvcontrol_pyaction
 
     def input_icv_opening_table(self, icv_tables: dict[str, pd.DataFrame]) -> str:
         """Create the opening position tables content for init_icvcontrol.udq for
@@ -276,6 +308,38 @@ class Initialization:
             icv_table_text += f"  {' '.join(formatted_area)} /\n  /\n/\n\n"
         return icv_table_text
 
+    def input_icv_opening_table_pyaction(self, icv_tables: dict[str, pd.DataFrame]) -> str:
+        """Create the opening position tables content for init_icvcontrol.udq for
+        icv-control.
+
+        Args:
+            Icv opening tables.
+
+        Returns:
+            Updated contents of init_icvcontrol with table for pyaction.
+
+        """
+        icv_table_text_pyaction = "# ICV opening position tables as dataframe\n"
+        for key, value in icv_tables.items():
+            icv_table_text_pyaction += f"# Table {key} for ICV"
+            for icv, table in self.areas.items():
+                if key == table:
+                    icv_table_text_pyaction += f"  {icv}"
+            icv_table_text_pyaction += "\n"
+            position = value["POSITION"]
+            area = value["CV"] * value["AREA"]
+            # Create flow_trim list with formatted area values
+            flow_trim = []
+            for pos, ar in zip(position, area):
+                flow_trim.append([pos, 1, f"{float(ar):.3e}"])
+
+            # Format flow_trim as text output
+            flow_trim_text = ""
+            for row in flow_trim:
+                flow_trim_text += f"    [{row[0]}, {row[1]}, {row[2]}],\n"
+            icv_table_text_pyaction += f"flow_trim_{key} = [\n{flow_trim_text}]\n"
+        return icv_table_text_pyaction
+
     def create_input_icvcontrol(self):
         """Create the content of the input_icvcontrol.udq file for icv-control.
 
@@ -293,6 +357,12 @@ class Initialization:
         custom_content = None
         icv_function = ICVMethod.UDQ
         futstp_line = f"  ASSIGN FUTSTP {futstp_init} /\n"
+
+        udq_define_pyaction = "# Input for ICV Control in summary state\n\n"
+        input_lines_pyaction = "\n"
+        fufrq_lines_pyaction = ""
+        fut_lines_pyaction = "\n"
+        custom_content_pyaction = None
         for icv_name in self.icv_names:
             try:
                 fully_choked = self.case.min_table[icv_name][0]
@@ -304,15 +374,27 @@ class Initialization:
             input_lines += f"  ASSIGN FUOP_{icv_name} {fully_opened} /\n\n"
             fufrq_lines += f"  ASSIGN FUFRQ_{icv_name} {self.frequency[icv_name]} /\n"
             fut_lines += f"  ASSIGN FUT_{icv_name} {self.frequency[icv_name]} /\n"
+
+            input_lines_pyaction += f"summary_state['FUCH_{icv_name}'] = {fully_choked}\n"
+            input_lines_pyaction += f"summary_state['FUOP_{icv_name}'] = {fully_opened}\n\n"
+            fufrq_lines_pyaction += f"summary_state['FUFRQ_{icv_name}'] = {self.frequency[icv_name]}\n"
+            fut_lines_pyaction += f"summary_state['FUT_{icv_name}'] = {self.frequency[icv_name]}\n"
+
             custom_assignments = self._find_and_assign(icv_name, icv_function)
+            custom_content_pyaction = ""
+
             if custom_assignments:
                 custom_fu_lines += custom_assignments + "\n"
 
+            define_lines_pyaction = "# Continuously updated summary state \n\n"
             define_lines = "-- Definition of parameters,\n-- continuously updated:\n\n  DEFINE FUTSTP TIMESTEP /\n"
             for icv_name in self.icv_names:
                 define_lines += f"  DEFINE FUT_{icv_name} FUT_{icv_name} + TIMESTEP /\n"
+                define_lines_pyaction += f"summary_state['FUT_{icv_name}'] += summary_state['TIMESTEP']\n\n"
             define_lines += "\n"
             for icv_name in self.icv_names:
+                if self.case.python_dependent:
+                    custom_content_pyaction = self.get_custom_content(icv_name, icv_function, 1, False)
                 custom_content = self.get_custom_content(icv_name, icv_function, 1, False)
 
                 if custom_content is None:
@@ -320,23 +402,43 @@ class Initialization:
                     logger.debug(f"No ICVALGORITHM given for icv {icv_name}.")
                 else:
                     define_lines += custom_content
+                    define_lines_pyaction += custom_content_pyaction
         if custom_content is not None:
             if self.custom_conditions.get(icv_function).get("UDQ") is not None:
                 content = self.custom_conditions.get(icv_function).get("UDQ").get("1")
                 content = [f"  {line.strip()}\n" for line in content.splitlines()]
+                content_summary_state = []
                 for index, line in enumerate(content):
                     content[index] = re.sub(r"[^\w\)]*$", "", line) + " /\n"
+                    if self.case.python_dependent:
+                        if "DEFINE" in line:
+                            content_summary_state.append(self._define_to_pyaction(line))
+                        elif "ASSIGN" in line:
+                            content_summary_state.append(self._assign_to_pyaction(line))
                 content = "".join(content)
+                content_summary_state = "".join(content_summary_state)
                 define_lines += content
+                define_lines_pyaction += content_summary_state
                 if "ASSIGN" not in content:
                     logger.warning(
                         "When you define a custom UDQ without an ICV remember "
                         f"to assign every values. See ICVALGORITHM UDQ {content}"
                     )
         area_lines = "\n"
+        area_lines_pyaction = """
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+"""
+
         if self.case.icv_table:
             fu_pos, fu_area = self.assign_fupos_from_opening_table()
             area_lines = fu_pos + fu_area
+            if self.case.python_dependent:
+                fu_pos, fu_area = self.assign_fupos_from_opening_table()
+                area_lines_pyaction += fu_pos + fu_area
 
         for icv_name in self.icv_names:
             number = re.sub(r"[^A-Za-z_-]", "", self.areas[icv_name])
@@ -354,6 +456,29 @@ class Initialization:
                 else:
                     area = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["AREA"].iloc[0]
                 area_lines += f"  ASSIGN FUARE_{icv_name} {area} /\n"
+
+        create_fixed_pyaction_keyword = (
+            create_fixed_pyaction_keyword
+        ) = """
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+
+        if self.case.python_dependent:
+            udq_define_pyaction += (
+                fufrq_lines_pyaction
+                + fut_lines_pyaction
+                + input_lines_pyaction
+                + custom_fu_lines
+                + define_lines_pyaction
+                + area_lines_pyaction
+                + create_fixed_pyaction_keyword
+            )
+            udq_define_pyaction = reduce_newlines(udq_define_pyaction)
+            self.input_icvcontrol = udq_define_pyaction
+            return
+
         udq_define += (
             fufrq_lines + fut_lines + input_lines + futstp_line + custom_fu_lines + define_lines + area_lines + "/"
         )
@@ -372,6 +497,8 @@ class Initialization:
         """
         fu_pos = "\n"
         fu_area = "\n"
+        fu_pos_pyaction = "\n"
+        fu_area_pyaction = "\n"
         for icv, value in self.areas.items():
             table_name = re.sub(r"[^A-Za-z_-]", "", value)
             init_opening_value = self.init_opening[icv]
@@ -390,6 +517,13 @@ class Initialization:
                 continue
             fu_pos += f"  DEFINE FUPOS_{icv} {position} /\n"
             fu_area += f"  DEFINE FUARE_{icv} TU_{value}[FUPOS_{icv}] /\n"
+
+            fu_pos_pyaction += f"summary_state['FUPOS_{icv}'] = {position}\n"
+            fu_area_pyaction += f"""
+            summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], flow_trim_{table_name})
+            """
+        if self.case.python_dependent:
+            return fu_pos_pyaction, fu_area_pyaction
         return fu_pos, fu_area
 
     def create_summary_content(self):
@@ -428,6 +562,162 @@ class Initialization:
         well_segment += "/\n\n"
         sfopn_lines += well_segment
         self.summary = summary + sfopn_lines
+
+    def _assign_to_pyaction(self, assign_text: str) -> str:
+        """Convert ASSIGN lines into pyaction summary_state assignments.
+
+        Example:
+          "ASSIGN FUXXX 0.1 /\nASSIGN FUBAR 2.5 /\n"
+        -> "summary_state['FUXXX'] = 0.1\nsummary_state['FUBAR'] = 2.5\n"
+
+        Args:
+            assign_text: Text containing ASSIGN statements.
+
+        Returns:
+            Pyaction format assignments.
+
+        """
+        if not assign_text:
+            return ""
+        out_lines = []
+        for raw in assign_text.splitlines():
+            line = raw.strip()
+            if not line or not line.upper().startswith("ASSIGN"):
+                continue
+            # Remove leading ASSIGN and trailing /
+            body = re.sub(r"^\s*ASSIGN\s+", "", line, flags=re.IGNORECASE).strip()
+            body = re.sub(r"\s*/\s*$", "", body).strip()
+
+            # Split into variable and value
+            parts = body.split()
+            if len(parts) >= 2:
+                var_name = parts[0]
+                var_value = parts[1]
+                # Try to convert to float for numeric values
+                try:
+                    var_value_num = float(var_value)
+                    var_value = repr(var_value_num)
+                except ValueError:
+                    # Keep original if not numeric (e.g., strings or expressions)
+                    pass
+                out_lines.append(f"summary_state['{var_name}'] = {var_value}")
+
+        return ("\n".join(out_lines) + "\n") if out_lines else ""
+
+    def _define_to_pyaction(self, define_text: str) -> str:
+        """
+        Convert DEFINE lines into pyaction summary_state assignments.
+
+        Example:
+          "DEFINE SWCT_X0 SWCT WELL(X0) SEG(X0) * FWCT /\n"
+        -> "summary_state['SWCT_X0'] = summary_state['SWCT:WELL(X0):SEG(X0)'] * summary_state['FWCT']\n"
+
+        """
+        if not define_text:
+            return ""
+        out_lines = []
+        for raw in define_text.splitlines():
+            line = raw.strip()
+            if not line or not line.upper().startswith("DEFINE"):
+                continue
+            # Remove leading DEFINE and trailing /
+            body = re.sub(r"^\s*DEFINE\s+", "", line, flags=re.IGNORECASE).strip()
+            body = re.sub(r"\s*/\s*$", "", body).strip()
+
+            # Split into tokens
+            tokens = body.split()
+            if not tokens:
+                continue
+
+            lhs = tokens[0]  # e.g., "SWCT_X0"
+            rhs_tokens = tokens[1:]  # e.g., ["SWCT", "WELL(X0)", "SEG(X0)", "*", "FWCT"]
+
+            # Build RHS: group consecutive non-operator tokens with ":", replace operators
+            rhs_expr = ""
+            i = 0
+            while i < len(rhs_tokens):
+                token = rhs_tokens[i]
+                # Check if token is an operator
+                if token in ["+", "-", "*", "/", ">", "<", ">=", "<=", "==", "!="]:
+                    rhs_expr += f" {token} "
+                    i += 1
+                else:
+                    # Collect consecutive non-operator tokens and join with ":"
+                    group = [token]
+                    i += 1
+                    while i < len(rhs_tokens) and rhs_tokens[i] not in [
+                        "+",
+                        "-",
+                        "*",
+                        "/",
+                        ">",
+                        "<",
+                        ">=",
+                        "<=",
+                        "==",
+                        "!=",
+                    ]:
+                        group.append(rhs_tokens[i])
+                        i += 1
+                    key = ":".join(group)
+                    rhs_expr += f"summary_state['{key}']"
+
+            out_lines.append(f"summary_state['{lhs}'] = {rhs_expr}")
+
+        return ("\n".join(out_lines) + "\n") if out_lines else ""
+
+    def _expression_to_pyaction(self, expression_text: str) -> str:
+        """Convert general UDQ expressions into pyaction summary_state format.
+
+        Example:
+          "FUWCT_X0 > FUWCTBRN AND /\nFUPOS_X0 > 1 /\n"
+        -> "summary_state['FUWCT_X0'] > summary_state['FUWCTBRN'] and\nsummary_state['FUPOS_X0'] > 1\n"
+
+        Args:
+            expression_text: Text containing UDQ expressions.
+
+        Returns:
+            Pyaction format expressions.
+
+        """
+        if not expression_text:
+            return ""
+        out_lines = []
+        for raw in expression_text.splitlines():
+            line = raw.strip()
+            if not line:
+                continue
+            # Remove trailing /
+            line = re.sub(r"\s*/\s*$", "", line).strip()
+            if not line:
+                continue
+
+            # Split into tokens and process each
+            tokens = line.split()
+            processed_tokens = []
+            for token in tokens:
+                # Check if token is a variable (contains letters, underscores, and possibly numbers, but not operators)
+                if re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", token):
+                    # Assume it's a variable if it doesn't match common operators
+                    if token.upper() not in ["AND", "OR", "NOT", "TRUE", "FALSE"]:
+                        processed_tokens.append(f"summary_state['{token}']")
+                    else:
+                        # Convert logical operators to Python equivalents
+                        if token.upper() == "AND":
+                            processed_tokens.append("and")
+                        elif token.upper() == "OR":
+                            processed_tokens.append("or")
+                        elif token.upper() == "NOT":
+                            processed_tokens.append("not")
+                        else:
+                            processed_tokens.append(token.lower())
+                else:
+                    # Keep operators and numbers as is
+                    processed_tokens.append(token)
+
+            out_lines.append(" ".join(processed_tokens))
+
+        return ("\n".join(out_lines) + "\n") if out_lines else ""
 
     def parse_custom_content(self, current_icv: str, custom_data: dict, content: str, is_end_of_records=True) -> str:
         """Replace variables in custom content with their respective values.
@@ -487,6 +777,70 @@ class Initialization:
             return f"{insert_comment_custom_content()}{content}/\n"
         return f"{insert_comment_custom_content()}{content}"
 
+    def parse_custom_content_pyaction(
+        self, current_icv: str, custom_data: dict, content: str, is_end_of_records=True
+    ) -> str:
+        """Replace variables in custom content with their respective values.
+
+        E.g.
+            WELL(x)             ->  WellName
+            FURATE_x > FURATE_y ->  FURATE_A > FURATE_B
+            FU_x1, FU_x2, FU_z  ->  FU_E, FU_F, FU_G
+
+        Args:
+            current_icv: Letter denoting the current icv name.
+            content: The content where unknowns
+                should be replaced with correct info.
+            is_end_of_records: If true add extra slash newline to
+                end the records.
+
+        Returns:
+            The content with replaced icvs/wells/segments.
+
+        """
+        if content is None:
+            return ""
+        for criteria in custom_data[current_icv]["map"]:
+            if "DEFINE" in content:
+                content_pyaction = self._define_to_pyaction(content)
+            elif "ASSIGN" in content:
+                content_pyaction = self._assign_to_pyaction(content)
+            else:
+                content_pyaction = self._expression_to_pyaction(content)
+            if criteria == "map":
+                pass
+            if isinstance(content, dict):
+                content = custom_data[current_icv][criteria]
+            if re.search(r"\d|\w", content) is None:
+                raise ValueError("Missing content in CONTROL_CRITERIA keyword!")
+            if current_icv != "UDQ":
+                for x_value, icv in custom_data[current_icv]["map"][criteria].items():
+                    content_pyaction = re.sub(rf"WELL\({x_value}\)", f"{self.well_names[icv]}", content_pyaction)
+                    content_pyaction = re.sub(rf"SEG\({x_value}\)", str(self.segments[icv]), content_pyaction)
+                    content_pyaction = re.sub(rf"\_{x_value}\b", f"_{icv}", content_pyaction)
+            if current_icv != "UDQ":
+                for x_value, icv in custom_data[current_icv]["map"][criteria].items():
+                    content_pyaction = re.sub(rf"WELL\({x_value}\)", f"{self.well_names[icv]}", content_pyaction)
+                    content_pyaction = re.sub(rf"SEG\({x_value}\)", str(self.segments[icv]), content_pyaction)
+                    content_pyaction = re.sub(rf"\_{x_value}\b", f"_{icv}", content_pyaction)
+            # Replace inconsistent end records and space with consistent version
+            # content_lines = [f"  {line.strip()}\n" for line in content_pyaction.splitlines()]
+            # for index, line in enumerate(content_lines):
+            #    if not line.isspace():
+            #        # Remove trailing non-word characters unless they are ) or ' at word boundary
+            #        content_lines[index] = re.sub(r"(?:\B'|[^\w\)'])*$", "", line) + " /\n"
+            #    else:
+            #        content_lines[index] = ""
+            # content_pyaction = "".join(content_lines)
+        content_variables = re.findall(r"[x]\d", content_pyaction)
+        if content_variables != []:
+            logger.info(
+                f"ICVALGORITHM ICV {current_icv} criteria {criteria} "
+                f"contains an x value '{content_variables}' that did not "
+                f"get translated into an ICV-name.\nCustom criteria is: {content_pyaction}."
+            )
+        return f"{content_pyaction}"
+
     def get_custom_content(
         self, icv_name: str, icv_function: ICVMethod, criteria: int | str | None, is_end_of_records: bool = True
     ) -> str | None:
@@ -504,18 +858,21 @@ class Initialization:
         if self.custom_conditions is not None:
             custom_data = self.custom_conditions.get(icv_function)
             if custom_data is not None:
+                parse_method = (
+                    self.parse_custom_content_pyaction if self.case.python_dependent else self.parse_custom_content
+                )
                 if icv_function != ICVMethod.UDQ:
                     custom_content = ""
                     for icv in custom_data:
                         data = custom_data[icv].get(str(criteria))
                         if icv_name == icv.split()[0]:
-                            custom_content += self.parse_custom_content(icv, custom_data, data, is_end_of_records)
+                            custom_content += parse_method(icv, custom_data, data, is_end_of_records)
                 if icv_name in custom_data:
                     data = custom_data[icv_name].get(str(criteria))
                     if data is None:
                         return None
                     else:
-                        custom_content = self.parse_custom_content(icv_name, custom_data, data, is_end_of_records)
+                        custom_content = parse_method(icv_name, custom_data, data, is_end_of_records)
                 if icv_function == ICVMethod.UDQ:
                     custom_content = ""
                     for icv in custom_data:
@@ -524,7 +881,7 @@ class Initialization:
                         else:
                             data = custom_data[icv].get(str(criteria))
                         if icv_name == icv.split()[0]:
-                            custom_content += self.parse_custom_content(icv, custom_data, data, is_end_of_records)
+                            custom_content += parse_method(icv, custom_data, data, is_end_of_records)
         return custom_content
 
     def _find_and_assign(self, icv_name: str, icv_function: ICVMethod = ICVMethod.UDQ) -> str | None:
@@ -548,6 +905,7 @@ class Initialization:
         init_value = {}
         icvs_in_define = [line.split("_")[1] for line in defines]
         assigns = ""
+        assigns_pyaction = ""
         for current_icv in icvs_in_define:
             try:
                 init_value[current_icv] = self.case.init_table[current_icv][0]
@@ -559,5 +917,8 @@ class Initialization:
             if match[-1] in icvs_in_define:
                 icv = match[-1]
             assigns += f"  {re.sub(r'(DEFINE)', 'ASSIGN', match)} {init_value[icv]} /\n"
+            assigns_pyaction += f" summary_state['{re.sub(r'(DEFINE )', '', match)}'] = {init_value[icv]}\n"
 
+        if self.case.python_dependent:
+            return assigns_pyaction
         return assigns

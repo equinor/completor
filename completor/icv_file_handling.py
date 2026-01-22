@@ -149,6 +149,8 @@ class IcvFileHandling:
             Content with the header added.
 
         """
+        if self.initials.case.python_dependent:
+            return "" + content
         return f"--- {header} ---\n{content}"
 
     def create_include_files(self):
