@@ -18,7 +18,7 @@ FUTC_INIT = 0
 FUP_INIT = 2
 
 
-class Initialization:
+class InitializationPyaction:
     """Initializes dicts for easy access. Creates the INPUT and UDQDEFINE files."""
 
     def __init__(self, case_object: ICVReadCasefile, schedule_content: str | None = None):
@@ -204,10 +204,9 @@ class Initialization:
         """Create content of the init_icvcontrol.udq file.
 
         Returns:
-            Content of the init_icvcontrol.udq icv-control file.
+            Content of the init.py icv-control file.
 
         """
-        init_icvcontrol = "-- User input, specific for this input file\n\nUDQ\n\n" f"{60 * '-'}\n-- Time-stepping:\n\n"
         init_icvcontrol_pyaction = """
 #
 # OPM Flow PYACTION Module Script
@@ -236,12 +235,9 @@ if (not 'setup_done' in locals()):
                 "FUL": self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["FUL"].iloc[0],
             }
             for tstepping in ["FUD", "FUH", "FUL"]:
-                init_icvcontrol += f"  ASSIGN {tstepping}_{icv_name} {table[tstepping]} /\n"
                 init_icvcontrol_pyaction += f"summary_state['{tstepping}_{icv_name}'] = {table[tstepping]}\n"
 
-            init_icvcontrol += "\n"
             init_icvcontrol_pyaction += "\n"
-        init_icvcontrol += f"\n{60 * '-'}\n-- Balance criteria\n\n"
         init_icvcontrol_pyaction += "# Balance criteria\n\n"
         sub_table = {}
         for icv_name, icv_date in self.icv_dates.items():
@@ -253,27 +249,30 @@ if (not 'setup_done' in locals()):
                 sub_table[icv_date][icv_name] = []
         for _ in sub_table:
             for icv_name in self.icv_names:
-                init_icvcontrol += (
-                    f"\n  ASSIGN FUTC_{icv_name} {FUTC_INIT} /\n"
-                    f"  ASSIGN FUTO_{icv_name} {FUTO_INIT} /\n"
-                    f"  ASSIGN FUP_{icv_name} {FUP_INIT} /\n"
-                )
                 init_icvcontrol_pyaction += (
                     f"summary_state['FUTC_{icv_name}'] = {FUTC_INIT}\n"
                     f"summary_state['FUTO_{icv_name}'] = {FUTO_INIT}\n"
                     f"summary_state['FUP_{icv_name}'] = {FUP_INIT}\n"
                 )
-        init_icvcontrol += "/\n"
         init_icvcontrol_pyaction += "\n\n"
+        for icv_name in self.icv_names:
+            try:
+                fully_choked = self.case.min_table[icv_name][0]
+                fully_opened = self.case.max_table[icv_name][0]
+            except KeyError:
+                fully_choked = self.case.min_table[icv_name].iloc[0][0]
+                fully_opened = self.case.max_table[icv_name].iloc[0][0]
 
+            init_icvcontrol_pyaction += f"summary_state['FUCH_{icv_name}'] = {fully_choked}\n"
+            init_icvcontrol_pyaction += f"summary_state['FUOP_{icv_name}'] = {fully_opened}\n\n"
+            init_icvcontrol_pyaction += f"summary_state['FUFRQ_{icv_name}'] = {self.frequency[icv_name]}\n"
+            init_icvcontrol_pyaction += f"summary_state['FUT_{icv_name}'] = {self.frequency[icv_name]}\n"
         if self.case.icv_table:
-            init_icvcontrol += self.input_icv_opening_table(self.case.icv_table)
-            init_icvcontrol_pyaction += self.input_icv_opening_table_pyaction(self.case.icv_table)
+            fu_pos, fu_area = self.assign_fupos_from_opening_table()
+            init_icvcontrol_pyaction += fu_pos + "\n"
         else:
             logger.info("No ICVTABLES found, skipping writing table to init_icvcontrol.udq!")
-        self.init_icvcontrol = init_icvcontrol
-        if self.case.python_dependent:
-            self.init_icvcontrol = init_icvcontrol_pyaction
+        self.init_icvcontrol = init_icvcontrol_pyaction
 
     def input_icv_opening_table(self, icv_tables: dict[str, pd.DataFrame]) -> str:
         """Create the opening position tables content for init_icvcontrol.udq for
@@ -348,38 +347,34 @@ if (not 'setup_done' in locals()):
 
         """
 
-        futstp_init = 0
-        udq_define = "UDQ\n\n-- Initialization\n\n"
         custom_fu_lines = "\n"
-        input_lines = "\n"
-        fufrq_lines = ""
-        fut_lines = "\n"
         custom_content = None
         icv_function = ICVMethod.UDQ
-        futstp_line = f"  ASSIGN FUTSTP {futstp_init} /\n"
-
         udq_define_pyaction = "# Input for ICV Control in summary state\n\n"
-        input_lines_pyaction = "\n"
-        fufrq_lines_pyaction = ""
-        fut_lines_pyaction = "\n"
+        udq_define_pyaction += """
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+"""
         custom_content_pyaction = None
         for icv_name in self.icv_names:
-            try:
-                fully_choked = self.case.min_table[icv_name][0]
-                fully_opened = self.case.max_table[icv_name][0]
-            except KeyError:
-                fully_choked = self.case.min_table[icv_name].iloc[0][0]
-                fully_opened = self.case.max_table[icv_name].iloc[0][0]
-            input_lines += f"  ASSIGN FUCH_{icv_name} {fully_choked} /\n"
-            input_lines += f"  ASSIGN FUOP_{icv_name} {fully_opened} /\n\n"
-            fufrq_lines += f"  ASSIGN FUFRQ_{icv_name} {self.frequency[icv_name]} /\n"
-            fut_lines += f"  ASSIGN FUT_{icv_name} {self.frequency[icv_name]} /\n"
-
-            input_lines_pyaction += f"summary_state['FUCH_{icv_name}'] = {fully_choked}\n"
-            input_lines_pyaction += f"summary_state['FUOP_{icv_name}'] = {fully_opened}\n\n"
-            fufrq_lines_pyaction += f"summary_state['FUFRQ_{icv_name}'] = {self.frequency[icv_name]}\n"
-            fut_lines_pyaction += f"summary_state['FUT_{icv_name}'] = {self.frequency[icv_name]}\n"
-
             custom_assignments = self._find_and_assign(icv_name, icv_function)
             custom_content_pyaction = ""
 
@@ -387,21 +382,16 @@ if (not 'setup_done' in locals()):
                 custom_fu_lines += custom_assignments + "\n"
 
             define_lines_pyaction = "# Continuously updated summary state \n\n"
-            define_lines = "-- Definition of parameters,\n-- continuously updated:\n\n  DEFINE FUTSTP TIMESTEP /\n"
             for icv_name in self.icv_names:
-                define_lines += f"  DEFINE FUT_{icv_name} FUT_{icv_name} + TIMESTEP /\n"
                 define_lines_pyaction += f"summary_state['FUT_{icv_name}'] += summary_state['TIMESTEP']\n\n"
-            define_lines += "\n"
             for icv_name in self.icv_names:
                 if self.case.python_dependent:
                     custom_content_pyaction = self.get_custom_content(icv_name, icv_function, 1, False)
                 custom_content = self.get_custom_content(icv_name, icv_function, 1, False)
 
                 if custom_content is None:
-                    define_lines += ""
                     logger.debug(f"No ICVALGORITHM given for icv {icv_name}.")
                 else:
-                    define_lines += custom_content
                     define_lines_pyaction += custom_content_pyaction
         if custom_content is not None:
             if self.custom_conditions.get(icv_function).get("UDQ") is not None:
@@ -410,21 +400,17 @@ if (not 'setup_done' in locals()):
                 content_summary_state = []
                 for index, line in enumerate(content):
                     content[index] = re.sub(r"[^\w\)]*$", "", line) + " /\n"
-                    if self.case.python_dependent:
-                        if "DEFINE" in line:
-                            content_summary_state.append(self._define_to_pyaction(line))
-                        elif "ASSIGN" in line:
-                            content_summary_state.append(self._assign_to_pyaction(line))
-                content = "".join(content)
+                    if "DEFINE" in line:
+                        content_summary_state.append(self._define_to_pyaction(line))
+                    elif "ASSIGN" in line:
+                        content_summary_state.append(self._assign_to_pyaction(line))
                 content_summary_state = "".join(content_summary_state)
-                define_lines += content
                 define_lines_pyaction += content_summary_state
                 if "ASSIGN" not in content:
                     logger.warning(
                         "When you define a custom UDQ without an ICV remember "
                         f"to assign every values. See ICVALGORITHM UDQ {content}"
                     )
-        area_lines = "\n"
         area_lines_pyaction = """
 def get_area_by_index(index, table):
     for row in table:
@@ -435,27 +421,8 @@ def get_area_by_index(index, table):
 
         if self.case.icv_table:
             fu_pos, fu_area = self.assign_fupos_from_opening_table()
-            area_lines = fu_pos + fu_area
-            if self.case.python_dependent:
-                fu_pos, fu_area = self.assign_fupos_from_opening_table()
-                area_lines_pyaction += fu_pos + fu_area
-
-        for icv_name in self.icv_names:
-            number = re.sub(r"[^A-Za-z_-]", "", self.areas[icv_name])
-            if number in ["", "E", "E-", "E+"]:
-                try:
-                    init_opening_value = self.case.init_opening_table[icv_name][0]
-                    if init_opening_value[0] == "T":
-                        raise ValueError(
-                            f"Table was reference in the case file for ICV {icv_name}, but no table was found."
-                        )
-                except KeyError:
-                    pass
-                if self.areas[icv_name] != "0":
-                    area = self.areas[icv_name]
-                else:
-                    area = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["AREA"].iloc[0]
-                area_lines += f"  ASSIGN FUARE_{icv_name} {area} /\n"
+            area_lines_pyaction += self.input_icv_opening_table_pyaction(self.case.icv_table)
+            area_lines_pyaction += fu_area
 
         create_fixed_pyaction_keyword = create_fixed_pyaction_keyword = """
 keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
@@ -463,26 +430,14 @@ keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
 keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
 """
 
-        if self.case.python_dependent:
-            udq_define_pyaction += (
-                fufrq_lines_pyaction
-                + fut_lines_pyaction
-                + input_lines_pyaction
-                + custom_fu_lines
-                + define_lines_pyaction
-                + area_lines_pyaction
-                + create_fixed_pyaction_keyword
-            )
-            udq_define_pyaction = reduce_newlines(udq_define_pyaction)
-            self.input_icvcontrol = udq_define_pyaction
-            return
-
-        udq_define += (
-            fufrq_lines + fut_lines + input_lines + futstp_line + custom_fu_lines + define_lines + area_lines + "/"
+        udq_define_pyaction += (
+            custom_fu_lines
+            + define_lines_pyaction
+            + area_lines_pyaction
+            + create_fixed_pyaction_keyword
         )
-        udq_define = reduce_newlines(udq_define)
-
-        self.input_icvcontrol = udq_define
+        udq_define_pyaction = reduce_newlines(udq_define_pyaction)
+        self.input_icvcontrol = udq_define_pyaction
 
     def assign_fupos_from_opening_table(self) -> tuple[str, str]:
         """Assign FUPOS_ICV to the max position of that ICV.
@@ -493,8 +448,6 @@ keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
             FUPOS_ICV,
             DEFINE _FUARE_ICV
         """
-        fu_pos = "\n"
-        fu_area = "\n"
         fu_pos_pyaction = "\n"
         fu_area_pyaction = "\n"
         for icv, value in self.areas.items():
@@ -513,16 +466,12 @@ keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
 
             else:
                 continue
-            fu_pos += f"  DEFINE FUPOS_{icv} {position} /\n"
-            fu_area += f"  DEFINE FUARE_{icv} TU_{value}[FUPOS_{icv}] /\n"
-
             fu_pos_pyaction += f"summary_state['FUPOS_{icv}'] = {position}\n"
             fu_area_pyaction += f"""
-            summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], flow_trim_{table_name})
+summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], flow_trim_{table_name})
             """
-        if self.case.python_dependent:
-            return fu_pos_pyaction, fu_area_pyaction
-        return fu_pos, fu_area
+        return fu_pos_pyaction, fu_area_pyaction
+
 
     def create_summary_content(self):
         """Create the content of the summary file for icv-control.

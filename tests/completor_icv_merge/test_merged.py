@@ -95,6 +95,6 @@ def test_main(tmpdir):
     completor_runner(
         inputfile=case,
         schedulefile=sch,
-        outputfile="/project/icv/icvc_modelling/pyaction_opm_test/hsut/pyaction_example/drogon/eclipse/include/schedule_2/test.sch",
+        outputfile="/project/icv/icvc_modelling/pyaction_opm_test/hsut/pyaction_example/drogon/eclipse/include/schedule_3/test.sch",
     )
     print(0)

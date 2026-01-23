@@ -547,6 +547,7 @@ class IcvFunctions:
         well_name = self.initials.well_names[icv_name]
         segment = self.initials.segments[icv_name]
         area = self.initials.areas[icv_name]
+        table_name = self.initials.areas[icv_name]
         table = True
         if re.sub(r"[^a-zA-Z]", "", area) != "":
             cv_area = self.initials.case.icv_table[area].iloc[-1]
@@ -579,11 +580,11 @@ class IcvFunctions:
                 if opening_table and table:
                     action = (
                         f"\tsummary_state['FUPOS_{icv_name}'] += 1\n"
-                        f"\tschedule.insert_keywords(keyword_0.1day, report_step+1)\n"
+                        f"\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
                         f"\tif summary_state['FUP_{icv_name}'] == 4:\n"
-                        f"\t\tarea = get_area_by_index(summary_state['FUPOS_{icv_name}', flow_trim_{area}])\n"
+                        f"\t\tarea = get_area_by_index(summary_state['FUPOS_{icv_name}'], flow_trim_{table_name})\n"
                         f"\t\tsummary_state['FUARE_{icv_name}'] = area\n"
-                        f"\t\tkeyword_wsegvalv = f'WSEGVALV\\n {well_name} {segment} 1.0 FUARE_{icv_name} 5* {area} /\\n/\\n/'\n"
+                        f"\t\tkeyword_wsegvalv = f'WSEGVALV\\n {well_name} {segment} 1.0 FUARE_{icv_name} 5* {area} /\\n/'\n"
                         f"\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
                         f"\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
                     )
@@ -659,11 +660,11 @@ class IcvFunctions:
                 if opening_table and table:
                     action = (
                         f"\tsummary_state['FUPOS_{icv_name}'] -= 1\n"
-                        f"\tschedule.insert_keywords(keyword_0.1day, report_step+1)\n"
+                        f"\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
                         f"\tif summary_state['FUP_{icv_name}'] == 4:\n"
-                        f"\t\tarea = get_area_by_index(summary_state['FUPOS_{icv_name}', flow_trim_{area}])\n"
+                        f"\t\tarea = get_area_by_index(summary_state['FUPOS_{icv_name}'], flow_trim_{table_name})\n"
                         f"\t\tsummary_state['FUARE_{icv_name}'] = area\n"
-                        f"\t\tkeyword_wsegvalv = f'WSEGVALV\\n {well_name} {segment} 1.0 FUARE_{icv_name} 5* {area} /\\n/\\n/'\n"
+                        f"\t\tkeyword_wsegvalv = f'WSEGVALV\\n {well_name} {segment} 1.0 FUARE_{icv_name} 5* {area} /\\n/'\n"
                         f"\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
                         f"\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
                     )
