@@ -282,7 +282,7 @@ if (not 'setup_done' in locals()):
             Icv opening tables.
 
         Returns:
-            Updated contents of init_icvcontrol.udq.
+            Updated contents of include.py.
 
         """
         icv_table_text = "\n\n" + 60 * "-" + "\n-- ICV opening position tables\n"
@@ -343,7 +343,7 @@ if (not 'setup_done' in locals()):
         """Create the content of the input_icvcontrol.udq file for icv-control.
 
         Returns:
-            Content of the input_icvcontrol.udq icv-control file.
+            Content of the include.py icv-control file.
 
         """
 
@@ -491,9 +491,9 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
             fuarea_lines += f"FUARE_{icv_name}\n\n"
             fut_lines += f"FUT_{icv_name}\n\n"
         # Positive look-behind to check word is preceded by ASSIGN/DEFINE
-        assigns = re.findall(r"(?<=ASSIGN\s)\w+", self.input_icvcontrol)
-        defines = re.findall(r"(?<=DEFINE\s)\w+", self.input_icvcontrol)
-        summary_values = assigns + defines + fu_lines.splitlines()
+        summary_state = re.findall(r"summary_state\['(\w+)'\]", self.init_icvcontrol)
+        summary_state += re.findall(r"summary_state\['(\w+)'\]", self.input_icvcontrol)
+        summary_values = summary_state + fu_lines.splitlines()
         summary_values = remove_duplicates(summary_values)
         summary = ""
         for value in summary_values:
@@ -502,13 +502,8 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
                     f"The UDQ parameter '{value}' is longer than 8 characters. This will cause errors in Eclipse."
                 )
             summary += value + "\n\n"
-        sfopn_lines = "SFOPN\n"
-        well_segment = ""
-        for icv, well in self.well_names.items():
-            well_segment += f"'{well}' {self.segments[icv]} /\n"
-        well_segment += "/\n\n"
-        sfopn_lines += well_segment
-        self.summary = summary + sfopn_lines
+        
+        self.summary = summary
 
     def _assign_to_pyaction(self, assign_text: str) -> str:
         """Convert ASSIGN lines into pyaction summary_state assignments.

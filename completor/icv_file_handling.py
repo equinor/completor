@@ -214,6 +214,9 @@ class IcvFileHandling:
                             self.include_file, well_name, icv_name, file_type, icv_date, None
                         )
             logger.info(f"Created include file: '{self.init_file}', '{self.include_file}'.")
+            content = self.add_section_header(self.initials_pyaction.summary, "SUMMARY")
+            self.append_content_to_file(summary_file_path, content)
+            logger.info(f"Created summary file: '{summary_file_path}'.")
         else:
             self.include_file_path = Path(base_folder / "include_icvc.sch")
             self.schedule_include_file_path = Path(base_include_path / "include_icvc.sch")
@@ -253,10 +256,9 @@ class IcvFileHandling:
                             self.include_file_path, well_name, icv_name, file_type, icv_date, None
                         )
             logger.info(f"Created include file: '{self.include_file_path}'.")
-
-        content = self.add_section_header(self.initials.summary, "SUMMARY")
-        self.append_content_to_file(summary_file_path, content)
-        logger.info(f"Created summary file: '{summary_file_path}'.")
+            content = self.add_section_header(self.initials.summary, "SUMMARY")
+            self.append_content_to_file(summary_file_path, content)
+            logger.info(f"Created summary file: '{summary_file_path}'.")
 
     def create_main_schedule_file(self, input_schedule: Path):
         """Creates the main output schedule file from the input schedule file.
