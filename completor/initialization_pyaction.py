@@ -10,7 +10,7 @@ import pandas as pd
 from completor.constants import ICVMethod
 from completor.logger import logger
 from completor.read_casefile import ICVReadCasefile
-from completor.utils import insert_comment_custom_content, reduce_newlines, remove_duplicates
+from completor.utils import reduce_newlines, remove_duplicates
 
 FUTSTP_INIT = 0
 FUTO_INIT = 0
@@ -19,7 +19,7 @@ FUP_INIT = 2
 
 
 class InitializationPyaction:
-    """Initializes dicts for easy access. Creates the INPUT and UDQDEFINE files."""
+    """Initializes dicts for easy access. Creates initials summary state."""
 
     def __init__(self, case_object: ICVReadCasefile, schedule_content: str | None = None):
         self.case = case_object
@@ -273,39 +273,6 @@ if (not 'setup_done' in locals()):
         else:
             logger.info("No ICVTABLES found, skipping writing table to init_icvcontrol.udq!")
         self.init_icvcontrol = init_icvcontrol_pyaction
-
-    def input_icv_opening_table(self, icv_tables: dict[str, pd.DataFrame]) -> str:
-        """Create the opening position tables content for init_icvcontrol.udq for
-        icv-control.
-
-        Args:
-            Icv opening tables.
-
-        Returns:
-            Updated contents of include.py.
-
-        """
-        icv_table_text = "\n\n" + 60 * "-" + "\n-- ICV opening position tables\n"
-        for key, value in icv_tables.items():
-            icv_table_text += "UDT\n-- ICV"
-            for icv, table in self.areas.items():
-                if key == table:
-                    icv_table_text += f"  {icv}"
-            icv_table_text += f"\n  'TU_{key}' 1 /\n"
-            if len(key) > 5:
-                logger.warning(
-                    f"The table name '{key}' is longer than 5 characters. "
-                    "This will create a UDT name longer than 8 characters which causes error in Eclipse."
-                )
-
-            position = " ".join(str(x) for x in value["POSITION"])
-            icv_table_text += f"  'NV' {position} /\n"
-            area = value["CV"] * value["AREA"]
-            formatted_area = [
-                f"{float(array_value):.3e}" for array_value in area
-            ]  # put everything as scientific with 3 decimals
-            icv_table_text += f"  {' '.join(formatted_area)} /\n  /\n/\n\n"
-        return icv_table_text
 
     def input_icv_opening_table_pyaction(self, icv_tables: dict[str, pd.DataFrame]) -> str:
         """Create the opening position tables content for init_icvcontrol.udq for
@@ -659,64 +626,6 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
 
         return ("\n".join(out_lines) + "\n") if out_lines else ""
 
-    def parse_custom_content(self, current_icv: str, custom_data: dict, content: str, is_end_of_records=True) -> str:
-        """Replace variables in custom content with their respective values.
-
-        E.g.
-            WELL(x)             ->  WellName
-            FURATE_x > FURATE_y ->  FURATE_A > FURATE_B
-            FU_x1, FU_x2, FU_z  ->  FU_E, FU_F, FU_G
-
-        Args:
-            current_icv: Letter denoting the current icv name.
-            content: The content where unknowns
-                should be replaced with correct info.
-            is_end_of_records: If true add extra slash newline to
-                end the records.
-
-        Returns:
-            The content with replaced icvs/wells/segments.
-
-        """
-        if content is None:
-            return ""
-        for criteria in custom_data[current_icv]["map"]:
-            if criteria == "map":
-                pass
-            if isinstance(content, dict):
-                content = custom_data[current_icv][criteria]
-            if re.search(r"\d|\w", content) is None:
-                raise ValueError("Missing content in CONTROL_CRITERIA keyword!")
-            if current_icv != "UDQ":
-                for x_value, icv in custom_data[current_icv]["map"][criteria].items():
-                    content = re.sub(rf"WELL\({x_value}\)", f"'{self.well_names[icv]}'", content)
-                    content = re.sub(rf"SEG\({x_value}\)", str(self.segments[icv]), content)
-                    content = re.sub(rf"\_{x_value}\b", f"_{icv}", content)
-            if current_icv != "UDQ":
-                for x_value, icv in custom_data[current_icv]["map"][criteria].items():
-                    content = re.sub(rf"WELL\({x_value}\)", f"'{self.well_names[icv]}'", content)
-                    content = re.sub(rf"SEG\({x_value}\)", str(self.segments[icv]), content)
-                    content = re.sub(rf"\_{x_value}\b", f"_{icv}", content)
-            # Replace inconsistent end records and space with consistent version
-            content_lines = [f"  {line.strip()}\n" for line in content.splitlines()]
-            for index, line in enumerate(content_lines):
-                if not line.isspace():
-                    # Remove trailing non-word characters unless they are ) or ' at word boundary
-                    content_lines[index] = re.sub(r"(?:\B'|[^\w\)'])*$", "", line) + " /\n"
-                else:
-                    content_lines[index] = ""
-            content = "".join(content_lines)
-        content_variables = re.findall(r"[x]\d", content)
-        if content_variables != []:
-            logger.info(
-                f"ICVALGORITHM ICV {current_icv} criteria {criteria} "
-                f"contains an x value '{content_variables}' that did not "
-                f"get translated into an ICV-name.\nCustom criteria is: {content}."
-            )
-        if is_end_of_records:
-            return f"{insert_comment_custom_content()}{content}/\n"
-        return f"{insert_comment_custom_content()}{content}"
-
     def parse_custom_content_pyaction(
         self, current_icv: str, custom_data: dict, content: str, is_end_of_records=True
     ) -> str:
@@ -763,15 +672,6 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
                     content_pyaction = re.sub(rf"WELL\({x_value}\)", f"{self.well_names[icv]}", content_pyaction)
                     content_pyaction = re.sub(rf"SEG\({x_value}\)", str(self.segments[icv]), content_pyaction)
                     content_pyaction = re.sub(rf"\_{x_value}\b", f"_{icv}", content_pyaction)
-            # Replace inconsistent end records and space with consistent version
-            # content_lines = [f"  {line.strip()}\n" for line in content_pyaction.splitlines()]
-            # for index, line in enumerate(content_lines):
-            #    if not line.isspace():
-            #        # Remove trailing non-word characters unless they are ) or ' at word boundary
-            #        content_lines[index] = re.sub(r"(?:\B'|[^\w\)'])*$", "", line) + " /\n"
-            #    else:
-            #        content_lines[index] = ""
-            # content_pyaction = "".join(content_lines)
         content_variables = re.findall(r"[x]\d", content_pyaction)
         if content_variables != []:
             logger.info(
@@ -847,7 +747,6 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
         # Replace DEFINE with ASSIGN, and prepare format for writing to UDQDEFINE file.
         init_value = {}
         icvs_in_define = [line.split("_")[1] for line in defines]
-        assigns = ""
         assigns_pyaction = ""
         for current_icv in icvs_in_define:
             try:
@@ -859,9 +758,6 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
             icv = icv_name
             if match[-1] in icvs_in_define:
                 icv = match[-1]
-            assigns += f"  {re.sub(r'(DEFINE)', 'ASSIGN', match)} {init_value[icv]} /\n"
             assigns_pyaction += f" summary_state['{re.sub(r'(DEFINE )', '', match)}'] = {init_value[icv]}\n"
 
-        if self.case.python_dependent:
-            return assigns_pyaction
-        return assigns
+        return assigns_pyaction
