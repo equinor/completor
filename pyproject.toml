@@ -28,8 +28,7 @@ pandas = "^2.2"
 scipy = "^1.14"
 tqdm = "^4.66"
 
-rstcheck-core = {version="^1.2", optional=true}
-ert = {version="^14", optional=true}
+ert = {version=">14", optional=true}
 pytest = {version="^8.3", optional=true}
 pytest-xdist = {version="^3.6", optional=true}
 pytest-env = {version="^1", optional=true}
@@ -45,7 +44,7 @@ rstcheck-core = "^1.2"
 
 [tool.poetry.extras]
 ert = ["ert"]
-test = ["pytest", "pytest-xdist", "pytest-env", "rstcheck-core"]
+test = ["pytest", "pytest-xdist", "pytest-env"]
 
 [tool.poetry.scripts]
 completor = "completor.main:main"
