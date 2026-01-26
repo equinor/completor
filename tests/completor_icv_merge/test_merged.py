@@ -82,19 +82,3 @@ def test_output_fmu_default_name(tmpdir):
             "include/schedule/welldefinition_advanced.wells",
         ]
     )
-
-
-def test_main(tmpdir):
-    case = Path(
-        "/project/icv/icvc_modelling/pyaction_opm_test/hsut/pyaction_example/drogon/eclipse/include/schedule/completor.case"
-    )
-    sch = Path(
-        "/project/icv/icvc_modelling/pyaction_opm_test/hsut/pyaction_example/drogon/eclipse/include/schedule/drogon_ict.sch"
-    )
-
-    completor_runner(
-        inputfile=case,
-        schedulefile=sch,
-        outputfile="/project/icv/icvc_modelling/pyaction_opm_test/hsut/pyaction_example/drogon/eclipse/include/schedule_3/test.sch",
-    )
-    print(0)

@@ -1594,9 +1594,11 @@ ENDACTIO
 
         self.icv_function.initials.custom_conditions = {
             ICVMethod.OPEN_WAIT: {
-                "A": {"1": """HEI WELL(x0) > HADE WELL(x1) AND /
+                "A": {
+                    "1": """HEI WELL(x0) > HADE WELL(x1) AND /
 FURAT_x0 very larger than FURAT_z AND /
-SFOPN WELL(x0) SEG(z) > 0.42 /"""},
+SFOPN WELL(x0) SEG(z) > 0.42 /"""
+                },
                 "E": {
                     "1": """HEI WELL(x0) > HADE WELL(x1) AND /
 FURAT_x0 very larger than FURAT_x2 AND /
@@ -1654,9 +1656,11 @@ ENDACTIO
 
         self.icv_function.initials.custom_conditions = {
             ICVMethod.OPEN: {
-                "A": {"1": """WWIR WELL(x0) > WUMXVDJ2 WELL(x1) AND /
+                "A": {
+                    "1": """WWIR WELL(x0) > WUMXVDJ2 WELL(x1) AND /
 FURMAX_x0 < FURAT_x1 AND /
-SFOPN WELL(x1) SEG(x0) < 0.99 /"""},
+SFOPN WELL(x1) SEG(x0) < 0.99 /"""
+                },
                 "B": {
                     "1": """WWIR WELL(x0) > WUMXVDJ2 WELL(x1) AND /
 FURMAX_x0 < FURAT_x1 AND /
@@ -1829,10 +1833,14 @@ ENDACTIO
         step = 2
         criteria = 1
         self.icv_function.initials.custom_conditions = {
-            ICVMethod.OPEN: {"E": {"1": """WWIR WELL(x0) > WUMXVDJ2 WELL(x0) AND /
+            ICVMethod.OPEN: {
+                "E": {
+                    "1": """WWIR WELL(x0) > WUMXVDJ2 WELL(x0) AND /
 FURAT_x1 < FURAT_x2 AND /
 FURAT_x3 > FURMAX_x3 AND /
-SFOPN WELL(x0) SEG(x0) < 0.99 /"""}}
+SFOPN WELL(x0) SEG(x0) < 0.99 /"""
+                }
+            }
         }
 
         open = TEST_ICV_FUNCTIONS.create_record2_open("E", step, criteria)

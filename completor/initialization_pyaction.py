@@ -424,17 +424,16 @@ def get_area_by_index(index, table):
             area_lines_pyaction += self.input_icv_opening_table_pyaction(self.case.icv_table)
             area_lines_pyaction += fu_area
 
-        create_fixed_pyaction_keyword = create_fixed_pyaction_keyword = """
+        create_fixed_pyaction_keyword = (
+            create_fixed_pyaction_keyword
+        ) = """
 keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
 keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
 keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
 """
 
         udq_define_pyaction += (
-            custom_fu_lines
-            + define_lines_pyaction
-            + area_lines_pyaction
-            + create_fixed_pyaction_keyword
+            custom_fu_lines + define_lines_pyaction + area_lines_pyaction + create_fixed_pyaction_keyword
         )
         udq_define_pyaction = reduce_newlines(udq_define_pyaction)
         self.input_icvcontrol = udq_define_pyaction
@@ -472,7 +471,6 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
             """
         return fu_pos_pyaction, fu_area_pyaction
 
-
     def create_summary_content(self):
         """Create the content of the summary file for icv-control.
 
@@ -502,7 +500,7 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
                     f"The UDQ parameter '{value}' is longer than 8 characters. This will cause errors in Eclipse."
                 )
             summary += value + "\n\n"
-        
+
         self.summary = summary
 
     def _assign_to_pyaction(self, assign_text: str) -> str:
@@ -805,13 +803,17 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
                     for icv in custom_data:
                         data = custom_data[icv].get(str(criteria))
                         if icv_name == icv.split()[0]:
-                            custom_content += self.parse_custom_content_pyaction(icv, custom_data, data, is_end_of_records)
+                            custom_content += self.parse_custom_content_pyaction(
+                                icv, custom_data, data, is_end_of_records
+                            )
                 if icv_name in custom_data:
                     data = custom_data[icv_name].get(str(criteria))
                     if data is None:
                         return None
                     else:
-                        custom_content = self.parse_custom_content_pyaction(icv_name, custom_data, data, is_end_of_records)
+                        custom_content = self.parse_custom_content_pyaction(
+                            icv_name, custom_data, data, is_end_of_records
+                        )
                 if icv_function == ICVMethod.UDQ:
                     custom_content = ""
                     for icv in custom_data:
@@ -820,7 +822,9 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
                         else:
                             data = custom_data[icv].get(str(criteria))
                         if icv_name == icv.split()[0]:
-                            custom_content += self.parse_custom_content_pyaction(icv, custom_data, data, is_end_of_records)
+                            custom_content += self.parse_custom_content_pyaction(
+                                icv, custom_data, data, is_end_of_records
+                            )
         return custom_content
 
     def _find_and_assign(self, icv_name: str, icv_function: ICVMethod = ICVMethod.UDQ) -> str | None:
