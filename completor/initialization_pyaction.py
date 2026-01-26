@@ -800,21 +800,18 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
         if self.custom_conditions is not None:
             custom_data = self.custom_conditions.get(icv_function)
             if custom_data is not None:
-                parse_method = (
-                    self.parse_custom_content_pyaction if self.case.python_dependent else self.parse_custom_content
-                )
                 if icv_function != ICVMethod.UDQ:
                     custom_content = ""
                     for icv in custom_data:
                         data = custom_data[icv].get(str(criteria))
                         if icv_name == icv.split()[0]:
-                            custom_content += parse_method(icv, custom_data, data, is_end_of_records)
+                            custom_content += self.parse_custom_content_pyaction(icv, custom_data, data, is_end_of_records)
                 if icv_name in custom_data:
                     data = custom_data[icv_name].get(str(criteria))
                     if data is None:
                         return None
                     else:
-                        custom_content = parse_method(icv_name, custom_data, data, is_end_of_records)
+                        custom_content = self.parse_custom_content_pyaction(icv_name, custom_data, data, is_end_of_records)
                 if icv_function == ICVMethod.UDQ:
                     custom_content = ""
                     for icv in custom_data:
@@ -823,7 +820,7 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
                         else:
                             data = custom_data[icv].get(str(criteria))
                         if icv_name == icv.split()[0]:
-                            custom_content += parse_method(icv, custom_data, data, is_end_of_records)
+                            custom_content += self.parse_custom_content_pyaction(icv, custom_data, data, is_end_of_records)
         return custom_content
 
     def _find_and_assign(self, icv_name: str, icv_function: ICVMethod = ICVMethod.UDQ) -> str | None:

@@ -8,6 +8,7 @@ import pandas as pd
 
 from completor.constants import ICVMethod
 from completor.initialization import Initialization
+from completor.initialization_pyaction import InitializationPyaction
 from completor.logger import logger
 from completor.utils import insert_comment
 
@@ -18,11 +19,14 @@ class IcvFunctions:
 
     """
 
-    def __init__(self, initials: Initialization):
+    def __init__(self, initials: Initialization, initials_pyaction: InitializationPyaction | None = None) -> None:
         self.initials = initials
+        self.initials_pyaction = initials_pyaction
         self.opening_icv_lim = [0.01, 0.99]
         self.custom_conditions = initials.case.custom_conditions
         self.python_dependent = initials.case.python_dependent
+        if self.python_dependent:
+            self.initials = initials_pyaction
 
     def create_actionx(self, record1: str, record2: str, action: str) -> str:
         """
@@ -298,10 +302,10 @@ class IcvFunctions:
 
         insert_parameter_block = f"  FUTC_{icv_name} > FUD_{icv_name} AND /\n  FUP_{icv_name} = 2"
         if self.python_dependent:
-            insert_parameter_block = f"""
-            summary_state['FUTC_{icv_name}'] > summary_state['FUD_{icv_name}'] and
-            summary_state['FUP_{icv_name}'] == 2
-            """
+            insert_parameter_block = (
+                f"summary_state['FUTC_{icv_name}'] > summary_state['FUD_{icv_name}'] and\n"
+                f"summary_state['FUP_{icv_name}'] == 2\n"
+            )
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:
@@ -328,9 +332,10 @@ class IcvFunctions:
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
         insert_parameter_block = f"  FUTO_{icv_name} > FUD_{icv_name} AND /\n  FUP_{icv_name} = 2"
         if self.python_dependent:
-            insert_parameter_block = f"""
-            summary_state['FUTO_{icv_name}'] > summary_state['FUD_{icv_name}'] and
-            summary_state['FUP_{icv_name}'] == 2"""
+            insert_parameter_block = (
+            f"summary_state['FUTO_{icv_name}'] > summary_state['FUD_{icv_name}'] and\n"
+            f"summary_state['FUP_{icv_name}'] == 2"
+            )
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:

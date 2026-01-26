@@ -17,10 +17,10 @@ from completor.logger import logger
 class IcvFileHandling:
     """Create paths, directories, and output files."""
 
-    def __init__(self, file_data: dict, initials: Initialization, initials_pyaction: InitializationPyaction):
+    def __init__(self, file_data: dict, initials: Initialization, initials_pyaction: InitializationPyaction | None = None) -> None:
         self.initials = initials
         self.initials_pyaction = initials_pyaction
-        self.icv_functions = icv_functions.IcvFunctions(initials)
+        self.icv_functions = icv_functions.IcvFunctions(initials, initials_pyaction)
         self.current_working_directory = Path.cwd()
         self.output_file_name = Path(file_data["output_file_name"])
         self.output_directory = Path(file_data["output_directory"])
