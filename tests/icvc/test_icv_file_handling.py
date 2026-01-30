@@ -115,7 +115,7 @@ def test_casefile_sparse_dir_structure(tmp_path):
     case = Path(input_dir / "field")
     case.mkdir(parents=True)
     sch = Path(input_dir / "include" / "schedule")
-    sch.mkdir(parents=True),
+    sch.mkdir(parents=True)
     shutil.copy(_TESTDIR / "initialization.case", case)
     shutil.copy(_TESTDIR / "dummy_schedule_file.sch", sch)
     os.chdir(input_dir)
