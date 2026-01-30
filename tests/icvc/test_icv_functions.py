@@ -129,6 +129,37 @@ ICVCONTROL
 /
 """
 
+CASE_TEXT_OPENING_TABLE_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL1     1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+-- D: FUD
+-- H: FUH
+-- FAC: Maximum rate factor for icv-control
+-- FR: ICV function repetitions
+-- OSTP: OPERSTEP (NEXTSTEP in operation icv-functions)
+-- WSTP: WAITSTEP (NEXTSTEP in waiting icv-functions)
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS     ICVDATE  FREQ  MIN MAX OPENING FUD FUH  FUL  OPERSTEP WAITSTEP  INIT
+  WELL1   A     105        A   100  1.JAN.2022    30    0   1     T10   5   2  0.1       0.2      1.0  0.01
+  WELL1   B     106        A   100  1.JAN.2022    30    0   1      T5   5   2  0.1       0.2      1.0  0.02
+/
+
+PYTHON
+TRUE
+/
+"""
+
 CASE_TEXT_PY = """
 SCHFILE
   'data/dummy_schedule_file.sch'
@@ -785,6 +816,29 @@ ENDACTIO
     assert choke_wait == expected_choke_wait
 
 
+def test_create_choke_wait_nicv2_pyaction(log_warning):
+    """Test creating the wait choke function"""
+    trigger_number_times = 100
+    trigger_minimum_interval = 10
+    actionx_repeater = 2
+    criteria = 1
+    choke_wait = TEST_ICV_FUNCTIONS_PYACTION.create_choke_wait(
+        "A", trigger_number_times, trigger_minimum_interval, actionx_repeater, criteria
+    )
+    expected_choke_wait = (
+        "# Pyaction ICVMethod.CHOKE_WAIT for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTC_A'] <= summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 2 and \n"
+        "summary_state['FUT_A'] > summary_state['FUFRQ_A'] \n"
+        "):\n"
+        "\tsummary_state['FUTC_A'] += summary_state['TIMESTEP'] \n"
+        "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(choke_wait, expected_choke_wait)
+
+
 def test_create_open_wait(log_warning):
     """Test to create the wait open icv function"""
     actionx_repeater = 2
@@ -825,6 +879,27 @@ ENDACTIO
     assert open_wait == expected_open_wait
 
 
+def test_create_open_wait_pyaction(log_warning):
+    """Test to create the wait open icv function"""
+    actionx_repeater = 2
+    criteria = 1
+    icv_name = "A"
+    open_wait = TEST_ICV_FUNCTIONS_PYACTION.create_open_wait(icv_name, actionx_repeater, criteria)
+
+    expected_open_wait = (
+        "# Pyaction ICVMethod.OPEN_WAIT for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTO_A'] <= summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 2 and \n"
+        "summary_state['FUT_A'] > summary_state['FUFRQ_A'] \n"
+        "):\n"
+        "\tsummary_state['FUTO_A'] += summary_state['TIMESTEP'] \n"
+        "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open_wait, expected_open_wait)
+
+
 def test_create_choke_ready(log_warning):
     """Test to create the ready choke icv function"""
     trigger_number_times = 10000
@@ -847,6 +922,27 @@ ENDACTIO
 """
 
     assert choke_ready == expected_choke_ready
+
+
+def test_create_choke_ready_pyaction(log_warning):
+    """Test to create the ready choke icv function"""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    criteria = 1
+
+    choke_ready = TEST_ICV_FUNCTIONS_PYACTION.create_choke_ready(
+        "A", criteria, trigger_number_times, trigger_minimum_interval
+    )
+
+    expected_choke_ready = (
+        "# Pyaction ICVMethod.CHOKE_READY for A criteria number 1\n"
+        "if (summary_state['FUTC_A'] > summary_state['FUD_A'] and\n"
+        "summary_state['FUP_A'] == 2 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 4\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(choke_ready, expected_choke_ready)
 
 
 def test_create_open_ready(log_warning):
@@ -874,6 +970,27 @@ ENDACTIO
     assert open_ready == expected_open_ready
 
 
+def test_create_open_ready_pyaction(log_warning):
+    """Test to create the ready open icv function."""
+    criteria = 1
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+
+    open_ready = TEST_ICV_FUNCTIONS_PYACTION.create_open_ready(
+        ICV_NAME, criteria, trigger_number_times, trigger_minimum_interval
+    )
+
+    expected_open_ready = (
+        "# Pyaction ICVMethod.OPEN_READY for A criteria number 1\n"
+        "if (summary_state['FUTO_A'] > summary_state['FUD_A'] and\n"
+        "summary_state['FUP_A'] == 2 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 3\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open_ready, expected_open_ready)
+
+
 def test_create_choke_stop(log_warning):
     """Test to create the stop choke icv function."""
     trigger_number_times = 10000
@@ -896,6 +1013,27 @@ ENDACTIO
 """
 
     assert choke_stop == expected_choke_stop
+
+
+def test_create_choke_stop_pyaction(log_warning):
+    """Test to create the stop choke icv function."""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    choke_stop = TEST_ICV_FUNCTIONS_PYACTION.create_choke_stop(
+        ICV_NAME, 1, trigger_number_times, trigger_minimum_interval
+    )
+    expected_choke_stop = (
+        "# Pyaction ICVMethod.CHOKE_STOP for A criteria number 1\n"
+        "if (summary_state['FUP_A'] == 4 and \n"
+        "summary_state['FUTC_A'] != 0 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 2\n"
+        "\tsummary_state['FUTC_A'] = 0\n"
+        "\tsummary_state['FUT_A'] = 0\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke_stop, expected_choke_stop)
 
 
 def test_create_open_stop_nicv2(log_warning):
@@ -921,6 +1059,27 @@ ENDACTIO\n
     assert open_stop == expected_open_stop
 
 
+def test_create_open_stop_nicv2_pyaction(log_warning):
+    """Test to create the stop open icv function."""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    open_stop = TEST_ICV_FUNCTIONS_PYACTION.create_open_stop(
+        ICV_NAME, 1, trigger_number_times, trigger_minimum_interval
+    )
+    expected_open_stop = (
+        "# Pyaction ICVMethod.OPEN_STOP for A criteria number 1\n"
+        "if (summary_state['FUP_A'] == 3 and \n"
+        "summary_state['FUTO_A'] != 0 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 2\n"
+        "\tsummary_state['FUTO_A'] = 0\n"
+        "\tsummary_state['FUT_A'] = 0\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(open_stop, expected_open_stop)
+
+
 def test_create_open_wait_stop_nicv3(log_warning):
     """Test to create the stop open icv function."""
     trigger_number_times = 10000
@@ -943,6 +1102,24 @@ ENDACTIO
 """
 
     assert open_stop == expected
+
+
+def test_create_open_wait_stop_nicv3_pyaction(log_warning):
+    """Test to create the stop open icv function."""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    open_stop = TEST_ICV_FUNCTIONS_PYACTION.create_open_stop("E", 1, trigger_number_times, trigger_minimum_interval)
+    expected = (
+        "# Pyaction ICVMethod.OPEN_STOP for E criteria number 1\n"
+        "if (summary_state['FUP_E'] == 3 and \n"
+        "summary_state['FUTO_E'] != 0 \n"
+        "):\n"
+        "\tsummary_state['FUP_E'] = 2\n"
+        "\tsummary_state['FUTO_E'] = 0\n"
+        "\tsummary_state['FUT_E'] = 0\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open_stop, expected)
 
 
 def test_create_choke_nicv2(log_warning):
@@ -987,6 +1164,38 @@ ENDACTIO
 """
 
     assert choke == expected_choke
+
+
+def test_create_choke_nicv2_pyaction(log_warning):
+    """Test to create the choke icv function."""
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 2
+
+    choke = TEST_ICV_FUNCTIONS_PYACTION.create_choke(
+        "A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
+    )
+
+    expected_choke = (
+        "# Pyaction ICVMethod.CHOKE for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTC_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 4 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] -= 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke, expected_choke)
 
 
 def test_create_choke_opening_table(log_warning):
@@ -1108,6 +1317,56 @@ ENDACTIO
     assert choke == expected
 
 
+def test_create_choke_opening_table_pyaction(log_warning):
+    """Test to create the choke icv function when an opening table exists."""
+    icv_table_a_b = """
+ICVTABLE
+-- Valve name
+A /
+-- Position  Cv       Area
+1           1.0  0.0000474
+2           1.0  0.0000790
+3           1.0  0.0001317
+4           1.0  0.0002195
+5           1.0  0.0003659
+6           1.0  0.0006098
+7           1.0  0.0010160
+8           1.0  0.0016938
+9           1.0  0.0028230
+10          1.0  0.13370
+/"""
+
+    case = ICVReadCasefile(CASE_TEXT_PY + icv_table_a_b)
+    initials = InitializationPyaction(case)
+    tests = IcvFunctions(initials)
+
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 6
+
+    choke = tests.create_choke("A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater)
+
+    expected = (
+        "# Pyaction ICVMethod.CHOKE for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTC_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 4 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] -= 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 1.337e-01 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(choke, expected)
+
+
 def test_create_choke_icv_nicv3_criteria2(log_warning):
     """Test to create the close icv function."""
     trigger_number_times = 1
@@ -1194,6 +1453,37 @@ ENDACTIO
 """
 
     assert open == expected_open
+
+
+def test_create_open_nicv2_pyaction(log_warning):
+    """Test to create the open icv function."""
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 2
+
+    open = TEST_ICV_FUNCTIONS_PYACTION.create_open(
+        ICV_NAME, criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
+    )
+
+    expected_open = (
+        "# Pyaction ICVMethod.OPEN for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTO_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 3 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] += 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open, expected_open)
 
 
 def test_create_open_opening_table(log_warning):
@@ -1288,6 +1578,58 @@ ENDACTIO
     assert choke == expected_open
 
 
+def test_create_open_opening_table_pyaction(log_warning):
+    """Test to create the open icv function when a opening table exists."""
+
+    icv_table_a_b = """
+ICVTABLE
+-- Valve name
+A /
+-- Position  Cv       Area
+1           1.0  0.0000474
+2           1.0  0.0000790
+3           1.0  0.0001317
+4           1.0  0.0002195
+5           1.0  0.0003659
+6           1.0  0.0006098
+7           1.0  0.0010160
+8           1.0  0.0016938
+9           1.0  0.0028230
+10          1.0  0.13370
+/"""
+
+    case = ICVReadCasefile(CASE_TEXT_OPENING_TABLE_PY + icv_table_a_b)
+    initials = InitializationPyaction(case)
+    tests = IcvFunctions(initials)
+
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 4
+
+    choke = tests.create_open("A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater)
+
+    expected = (
+        "# Pyaction ICVMethod.OPEN for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTO_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 3 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] += 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 1.337e-01 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke, expected)
+
+
 def test_create_open_opening_table_custom_cv(log_warning):
     """Test to create the open icv function when a opening table exists."""
     icv_table_a_b = """
@@ -1379,6 +1721,57 @@ ENDACTIO
     assert choke == expected_open
 
 
+def test_create_open_opening_table_custom_cv_pyaction(log_warning):
+    """Test to create the open icv function when a opening table exists."""
+    icv_table_a_b = """
+ICVTABLE
+-- Valve name
+A /
+-- Position  Cv       Area
+1           10  0.0000474
+2           10  0.0000790
+3           10  0.0001317
+4           10  0.0002195
+5           10  0.0003659
+6           10  0.0006098
+7           10  0.0010160
+8           10  0.0016938
+9           10  0.0028230
+10          10  0.13370
+/"""
+
+    case = ICVReadCasefile(CASE_TEXT_OPENING_TABLE_PY + icv_table_a_b)
+    initials = InitializationPyaction(case)
+    tests = IcvFunctions(initials)
+
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 4
+
+    choke = tests.create_open("A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater)
+
+    expected = (
+        "# Pyaction ICVMethod.OPEN for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and\n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and\n"
+        "summary_state['FUTO_A'] > summary_state['FUD_A'] and\n"
+        "summary_state['FUP_A'] == 3\n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] += 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 1.337e+00 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke, expected)
+
+
 def test_create_open_nicv3_criteria1(log_warning):
     """Test to create the open icv function."""
     trigger_number_times = 1
@@ -1442,6 +1835,14 @@ ENDACTIO
     assert open_wait_stop == expected_open_wait_stop
 
 
+def test_open_wait_stop_pyaction(log_warning):
+    """Test creating the choke-wait-stop function."""
+    icv_function = IcvFunctions(InitializationPyaction(ICVReadCasefile(CASE_TEXT_PY)))
+    open_wait_stop = icv_function.create_open_wait_stop("A", None)
+    expected_open_wait_stop = ""
+    assert_match_trailing_whitespace(open_wait_stop, expected_open_wait_stop)
+
+
 def test_open_wait_stop_crit1(log_warning):
     """Test creating the choke-wait-stop function."""
     icv_function = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT)))
@@ -1461,6 +1862,14 @@ ENDACTIO
     assert open_wait_stop == expected_open_wait_stop
 
 
+def test_open_wait_stop_crit1_pyaction(log_warning):
+    """Test creating the choke-wait-stop function."""
+    icv_function = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT_PY)))
+    open_wait_stop = icv_function.create_open_wait_stop("A", 1)
+    expected_open_wait_stop = ""
+    assert open_wait_stop == expected_open_wait_stop
+
+
 def test_choke_wait_stop(log_warning):
     """Test creating the choke-wait-stop function."""
     icv_function = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT)))
@@ -1477,6 +1886,14 @@ UDQ
 ENDACTIO
 
 """
+    assert choke_wait_stop == expected_choke_wait_stop
+
+
+def test_choke_wait_stop_pyaction(log_warning):
+    """Test creating the choke-wait-stop function."""
+    icv_function = IcvFunctions(InitializationPyaction(ICVReadCasefile(CASE_TEXT_PY)))
+    choke_wait_stop = icv_function.create_choke_wait_stop("A", 1)
+    expected_choke_wait_stop = ""
     assert choke_wait_stop == expected_choke_wait_stop
 
 
