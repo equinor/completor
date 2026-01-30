@@ -8,7 +8,16 @@ from pandas.testing import assert_frame_equal
 
 from completor import input_validation
 from completor.initialization import Initialization
+from completor.initialization_pyaction import InitializationPyaction
 from completor.read_casefile import ICVReadCasefile
+
+
+def assert_match_trailing_whitespace(actual: str, expected: str) -> None:
+    """Remove trailing whitespace from each line."""
+    actual_striped = "\n".join(line.rstrip() for line in actual.splitlines()) + "\n"
+    expected_striped = "\n".join(line.rstrip() for line in expected.splitlines()) + "\n"
+    assert expected_striped == actual_striped
+
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
 SCHEDULE_FILE_UPDATE_TEST = "icvc_update.sch"
@@ -343,6 +352,108 @@ UPDATE_SEGMENT_NUMBER
 True
 /"""
 
+INPUT_CONTROL_CRITERIA_1 = """
+     \t CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [A, B,                                    C]
+    DEFINE TEST_x0 bor_x1 WELL(X0) SEG(X1) /
+    DEFINE TEST_x2 WELL(x2) SEG(X2) /
+/
+
+CONTROL_CRITERIA -- Should not affect the UDQDEFINE file
+  FUNCTION: [CHOKE]
+  ICV: [A, B, C]
+  CRITERIA: [1,2]
+ POS1 A, J ICV /
+ POS2 A, J ICV /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [B, C, A]
+DEFINE PRINT_B
+
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [B]
+ASSIGN WRITE_B
+/
+
+\t CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [B, C, A]
+ DEFINE POS1_x1 test_X2 SEG(x1) WELL(X1) ICV /
+DEFINE POS2_x1 test_x2 SEG(X2) WELL(x2) ICV -- malformed end of rec
+
+/ \t
+
+    """
+
+INPUT_CONTROL_CRITERIA_2 = """
+     \t CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [A, B,                                    C]
+    DEFINE TEST_x0 TO neigbor_x1 WELL(X0) SEG(X1) INSERT IN POS 1 UDQ REPLACEMENT
+    DEFINE TEST_x2 COND TO INSERT IN POS 2 WELL(x2) SEG(X2) /
+/
+
+CONTROL_CRITERIA -- Should not affect the UDQDEFINE file
+  FUNCTION: [CHOKE]
+  ICV: [A, B, C]
+  CRITERIA: [1,2]
+ POS1 A, J ICV /
+ POS2 A, J ICV /
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [B, C, A]
+DEFINE PRINT_B
+
+/
+
+CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [B]
+ASSIGN WRITE_B
+/
+
+\t CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [B, C, A]
+DEFINE POS1_x1 test_X2 SEG(x1) WELL(X1) ICV /
+DEFINE POS2_x1 test_x2 SEG(X2) WELL(x2) ICV -- malformed end of rec
+
+/ \t
+
+    """
+INPUT_CONTROL_CRITERIA_3 = """
+     \t CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [A,B,C]
+    DEFINE SPAM_x0 and some other stuff /
+    DEFINE EGGS_x1 -- missing eor
+/
+
+CONTROL_CRITERIA -- Should not affect the UDQDEFINE file
+  FUNCTION: [CHOKE]
+  ICV: [A, B]
+  CRITERIA: [1,2]
+ POS1 A, J ICV /
+ POS2 A, J ICV /
+/"""
+
+INPUT_CONTROL_CRITERIA_4 = """
+     \t CONTROL_CRITERIA
+  FUNCTION: [UDQ] -- A Dummy comment
+  ICV: [A,B,C], [B,A], [C,B]
+    DEFINE SPAM_x0 and some other stuff /
+    DEFINE EGGS_x1 -- missing eor
+/
+"""
+
 
 def test_read_icvcontrol_from_casetext():
     """
@@ -417,10 +528,137 @@ UDQ
     assert initialization.init_icvcontrol == expected_input_file_text
 
 
+def test_input_file_text_two_icvs_pyaction():
+    """Test output for init pyaction file with two icvs"""
+
+    expected_init_file_text = """
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+summary_state['FUD_A'] = 1.0
+summary_state['FUH_A'] = 10.0
+summary_state['FUL_A'] = 0.1
+
+summary_state['FUD_B'] = 1.0
+summary_state['FUH_B'] = 10.0
+summary_state['FUL_B'] = 0.1
+
+# Balance criteria
+
+summary_state['FUTC_A'] = 0
+summary_state['FUTO_A'] = 0
+summary_state['FUP_A'] = 2
+summary_state['FUTC_B'] = 0
+summary_state['FUTO_B'] = 0
+summary_state['FUP_B'] = 2
+
+
+summary_state['FUCH_A'] = 0.0
+summary_state['FUOP_A'] = 1.0
+
+summary_state['FUFRQ_A'] = 30
+summary_state['FUT_A'] = 30
+summary_state['FUCH_B'] = 0.0
+summary_state['FUOP_B'] = 1.0
+
+summary_state['FUFRQ_B'] = 42
+summary_state['FUT_B'] = 42
+"""
+
+    init = InitializationPyaction(ICVReadCasefile(CASE_TEXT_TWO_ICVS))
+    assert init.init_icvcontrol == expected_init_file_text
+
+
+def test_input_file_text_three_icvs_pyaction():
+    """Test output of the INPUT-file text for well with three icvs."""
+
+    init = InitializationPyaction(ICVReadCasefile(CASE_TEXT_THREE_ICVS))
+
+    expected_input_file_text = """
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+summary_state['FUD_A'] = 5.0
+summary_state['FUH_A'] = 2.0
+summary_state['FUL_A'] = 0.1
+
+summary_state['FUD_B'] = 5.0
+summary_state['FUH_B'] = 2.0
+summary_state['FUL_B'] = 0.1
+
+summary_state['FUD_C'] = 4.0
+summary_state['FUH_C'] = 1.0
+summary_state['FUL_C'] = 0.2
+
+# Balance criteria
+
+summary_state['FUTC_A'] = 0
+summary_state['FUTO_A'] = 0
+summary_state['FUP_A'] = 2
+summary_state['FUTC_B'] = 0
+summary_state['FUTO_B'] = 0
+summary_state['FUP_B'] = 2
+summary_state['FUTC_C'] = 0
+summary_state['FUTO_C'] = 0
+summary_state['FUP_C'] = 2
+
+
+summary_state['FUCH_A'] = 0.0
+summary_state['FUOP_A'] = 1.0
+
+summary_state['FUFRQ_A'] = 30
+summary_state['FUT_A'] = 30
+summary_state['FUCH_B'] = 0.0
+summary_state['FUOP_B'] = 1.0
+
+summary_state['FUFRQ_B'] = 30
+summary_state['FUT_B'] = 30
+summary_state['FUCH_C'] = 0.0
+summary_state['FUOP_C'] = 0.5
+
+summary_state['FUFRQ_C'] = 30
+summary_state['FUT_C'] = 30
+"""
+
+    assert_match_trailing_whitespace(init.init_icvcontrol, expected_input_file_text)
+
+
 def test_input_file_text_three_icvs():
     """Test output of the INPUT-file text for well with three icvs."""
 
-    myinit_three_icvs = Initialization(ICVReadCasefile(CASE_TEXT_THREE_ICVS))
+    init = Initialization(ICVReadCasefile(CASE_TEXT_THREE_ICVS))
 
     expected_input_file_text = """-- User input, specific for this input file
 
@@ -460,14 +698,12 @@ UDQ
 /
 """
 
-    assert myinit_three_icvs.init_icvcontrol == expected_input_file_text
+    assert init.init_icvcontrol == expected_input_file_text
 
 
 def test_output_input_icvcontrol_file_two_icvs_opening_value(log_warning):
-    """UDQdefine with two icvs with opening value.
-    --WELL	ICV SEGMENT AC-TABLE FUD FUH FUL STEPS	  ICVDATE OSP WSP  FREQ	 INIT MIN MAX OPENING
-    A-1      A       97     TABEL1   5   2 0.1    60 1.JAN.2033 0.2 1.0    90  0.01   0   1 T1
-    A-1      B       98     TABEL1   5   2 0.1    60 1.JAN.2033 0.2 1.0    90  0.02   0   1 T2
+    """
+    UDQdefine with two icvs with opening value.
     """
     case = CASE_TEXT_TWO_ICVS_OPENING_VALUE + ICV_TABLE_TABEL1
     expected_input_icvcontrol_output = """UDQ
@@ -504,6 +740,72 @@ def test_output_input_icvcontrol_file_two_icvs_opening_value(log_warning):
 
     initialization = Initialization(ICVReadCasefile(case))
     assert initialization.input_icvcontrol == expected_input_icvcontrol_output
+
+
+def test_output_input_icvcontrol_file_two_icvs_opening_value_pyaction(log_warning):
+    """
+    UDQdefine with two icvs with opening value.
+    """
+    case = CASE_TEXT_TWO_ICVS_OPENING_VALUE + ICV_TABLE_TABEL1
+    expected_input_icvcontrol_output = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+# ICV opening position tables as dataframe
+# Table TABEL1 for ICV  A  B
+flow_trim_TABEL1 = [
+    [1, 1, 4.740e-05],
+    [2, 1, 7.900e-05],
+    [3, 1, 1.317e-04],
+    [4, 1, 2.195e-04],
+    [5, 1, 3.659e-04],
+    [6, 1, 6.098e-04],
+    [7, 1, 1.016e-03],
+    [8, 1, 1.694e-03],
+    [9, 1, 2.823e-03],
+    [10, 1, 1.337e-01],
+]
+
+summary_state['FUARE_A'] = get_area_by_index(summary_state['FUPOS_A'], flow_trim_TABEL1)
+
+summary_state['FUARE_B'] = get_area_by_index(summary_state['FUPOS_B'], flow_trim_TABEL1)
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+
+    initialization = InitializationPyaction(ICVReadCasefile(case))
+    assert_match_trailing_whitespace(initialization.input_icvcontrol, expected_input_icvcontrol_output)
 
 
 def test_output_input_icvcontrol_file_two_icvs(log_warning):
@@ -596,7 +898,7 @@ def test_output_input_icvcontrol_file_two_icvs_init_opening_no_table(log_warning
 
 
 def test_output_input_icvcontrol_file_three_icvs(log_warning):
-    myinit_three_icvs = Initialization(ICVReadCasefile(CASE_TEXT_THREE_ICVS_NO_TABLE))
+    init = Initialization(ICVReadCasefile(CASE_TEXT_THREE_ICVS_NO_TABLE))
 
     expected_input_icvcontrol_output = """UDQ
 
@@ -631,13 +933,81 @@ def test_output_input_icvcontrol_file_three_icvs(log_warning):
 
 /"""
 
-    assert myinit_three_icvs.input_icvcontrol == expected_input_icvcontrol_output
+    assert init.input_icvcontrol == expected_input_icvcontrol_output
+
+
+def test_output_input_icvcontrol_file_three_icvs_pyaction(log_warning):
+    init = InitializationPyaction(ICVReadCasefile(CASE_TEXT_THREE_ICVS_NO_TABLE))
+
+    expected_input_icvcontrol_output = """
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+summary_state['FUD_A'] = 5.0
+summary_state['FUH_A'] = 2.0
+summary_state['FUL_A'] = 0.1
+
+summary_state['FUD_B'] = 5.0
+summary_state['FUH_B'] = 2.0
+summary_state['FUL_B'] = 0.1
+
+summary_state['FUD_C'] = 5.0
+summary_state['FUH_C'] = 2.0
+summary_state['FUL_C'] = 0.1
+
+# Balance criteria
+
+summary_state['FUTC_A'] = 0
+summary_state['FUTO_A'] = 0
+summary_state['FUP_A'] = 2
+summary_state['FUTC_B'] = 0
+summary_state['FUTO_B'] = 0
+summary_state['FUP_B'] = 2
+summary_state['FUTC_C'] = 0
+summary_state['FUTO_C'] = 0
+summary_state['FUP_C'] = 2
+
+
+summary_state['FUCH_A'] = 0.0
+summary_state['FUOP_A'] = 1.0
+
+summary_state['FUFRQ_A'] = 30
+summary_state['FUT_A'] = 30
+summary_state['FUCH_B'] = 0.0
+summary_state['FUOP_B'] = 1.0
+
+summary_state['FUFRQ_B'] = 30
+summary_state['FUT_B'] = 30
+summary_state['FUCH_C'] = 0.0
+summary_state['FUOP_C'] = 0.5
+
+summary_state['FUFRQ_C'] = 30
+summary_state['FUT_C'] = 30
+"""
+
+    assert_match_trailing_whitespace(init.init_icvcontrol, expected_input_icvcontrol_output)
 
 
 def test_input_file_text_time_dependent(log_warning):
     """Test output of the input file text with time dependency."""
 
-    result = Initialization(ICVReadCasefile(CASE_TEXT_TIME_DEPENDENCY))
+    init = Initialization(ICVReadCasefile(CASE_TEXT_TIME_DEPENDENCY))
 
     expected_input_file_text = """-- User input, specific for this input file
 
@@ -669,7 +1039,64 @@ UDQ
 /
 """
 
-    assert result.init_icvcontrol == expected_input_file_text
+    assert init.init_icvcontrol == expected_input_file_text
+
+
+def test_input_file_text_time_dependent_pyaction(log_warning):
+    """Test output of the input file text with time dependency."""
+
+    init = InitializationPyaction(ICVReadCasefile(CASE_TEXT_TIME_DEPENDENCY))
+
+    expected_input_file_text = """
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+summary_state['FUD_A'] = 5.0
+summary_state['FUH_A'] = 2.0
+summary_state['FUL_A'] = 0.1
+
+summary_state['FUD_AA'] = 5.0
+summary_state['FUH_AA'] = 2.0
+summary_state['FUL_AA'] = 0.1
+
+# Balance criteria
+
+summary_state['FUTC_A'] = 0
+summary_state['FUTO_A'] = 0
+summary_state['FUP_A'] = 2
+summary_state['FUTC_AA'] = 0
+summary_state['FUTO_AA'] = 0
+summary_state['FUP_AA'] = 2
+
+
+summary_state['FUCH_A'] = 0.0
+summary_state['FUOP_A'] = 1.0
+
+summary_state['FUFRQ_A'] = 30
+summary_state['FUT_A'] = 30
+summary_state['FUCH_AA'] = 0.0
+summary_state['FUOP_AA'] = 1.0
+
+summary_state['FUFRQ_AA'] = 30
+summary_state['FUT_AA'] = 30
+"""
+    assert_match_trailing_whitespace(init.init_icvcontrol, expected_input_file_text)
 
 
 def test_create_icv_opening_table():
@@ -737,6 +1164,87 @@ UDT
     assert result.init_icvcontrol == expected_input_file_text
 
 
+def test_create_icv_opening_table_pyaction():
+    """Test output of the INPUT-file text for well with three icvs."""
+    input_case = CASE_TEXT_THREE_ICVS + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2
+    expected_input_file_text = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+summary_state['FUT_C'] += summary_state['TIMESTEP']
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+# ICV opening position tables as dataframe
+# Table TABEL1 for ICV  A  B
+flow_trim_TABEL1 = [
+    [1, 1, 4.740e-05],
+    [2, 1, 7.900e-05],
+    [3, 1, 1.317e-04],
+    [4, 1, 2.195e-04],
+    [5, 1, 3.659e-04],
+    [6, 1, 6.098e-04],
+    [7, 1, 1.016e-03],
+    [8, 1, 1.694e-03],
+    [9, 1, 2.823e-03],
+    [10, 1, 1.337e-01],
+]
+# Table 311537-03 for ICV  C
+flow_trim_311537-03 = [
+    [1, 1, 1.337e-04],
+    [2, 1, 1.340e-04],
+    [3, 1, 1.341e-04],
+    [4, 1, 1.341e-04],
+    [5, 1, 1.373e-04],
+    [6, 1, 1.400e-04],
+    [7, 1, 1.138e-03],
+    [8, 1, 1.140e-03],
+    [9, 1, 2.141e-03],
+    [10, 1, 4.142e-03],
+]
+
+summary_state['FUARE_A'] = get_area_by_index(summary_state['FUPOS_A'], flow_trim_TABEL1)
+
+summary_state['FUARE_B'] = get_area_by_index(summary_state['FUPOS_B'], flow_trim_TABEL1)
+
+summary_state['FUARE_C'] = get_area_by_index(summary_state['FUPOS_C'], flow_trim_311537-03)
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_file_text)
+
+
 def test_create_icv_opening_table_cv_area():
     """Test output of the INPUT-file text for well with three icvs."""
     input_case = CASE_TEXT_THREE_ICVS + ICV_TABLE_TABEL10_CV10 + ICV_TABLE_TBL20_CV10
@@ -798,8 +1306,89 @@ UDT
 
 """
 
-    result = Initialization(ICVReadCasefile(input_case))
-    assert result.init_icvcontrol == expected_input_file_text
+    init = Initialization(ICVReadCasefile(input_case))
+    assert init.init_icvcontrol == expected_input_file_text
+
+
+def test_create_icv_opening_table_cv_area_pyaction():
+    """Test output of the INPUT-file text for well with three icvs."""
+    input_case = CASE_TEXT_THREE_ICVS + ICV_TABLE_TABEL10_CV10 + ICV_TABLE_TBL20_CV10
+    expected_input_file_text = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+summary_state['FUT_C'] += summary_state['TIMESTEP']
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+# ICV opening position tables as dataframe
+# Table TABEL1 for ICV  A  B
+flow_trim_TABEL1 = [
+    [1, 1, 4.740e-04],
+    [2, 1, 7.900e-04],
+    [3, 1, 1.317e-03],
+    [4, 1, 2.195e-03],
+    [5, 1, 3.659e-03],
+    [6, 1, 6.098e-03],
+    [7, 1, 1.016e-02],
+    [8, 1, 1.694e-02],
+    [9, 1, 2.823e-02],
+    [10, 1, 1.337e+00],
+]
+# Table 311537-03 for ICV  C
+flow_trim_311537-03 = [
+    [1, 1, 1.337e-03],
+    [2, 1, 1.340e-03],
+    [3, 1, 1.341e-03],
+    [4, 1, 1.341e-03],
+    [5, 1, 1.373e-03],
+    [6, 1, 1.400e-03],
+    [7, 1, 1.138e-02],
+    [8, 1, 1.140e-02],
+    [9, 1, 2.141e-02],
+    [10, 1, 4.142e-02],
+]
+
+summary_state['FUARE_A'] = get_area_by_index(summary_state['FUPOS_A'], flow_trim_TABEL1)
+
+summary_state['FUARE_B'] = get_area_by_index(summary_state['FUPOS_B'], flow_trim_TABEL1)
+
+summary_state['FUARE_C'] = get_area_by_index(summary_state['FUPOS_C'], flow_trim_311537-03)
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_file_text)
 
 
 def test_output_input_icvcontrol_file_two_icvs_opening_tableslog_warning():
@@ -837,9 +1426,72 @@ def test_output_input_icvcontrol_file_two_icvs_opening_tableslog_warning():
   DEFINE FUARE_B TU_TABEL1[FUPOS_B] /
 /"""
 
-    result = Initialization(ICVReadCasefile(input_case))
+    init = Initialization(ICVReadCasefile(input_case))
+    assert init.input_icvcontrol == expected_input_icvcontrol_output
 
-    assert result.input_icvcontrol == expected_input_icvcontrol_output
+
+def test_output_input_icvcontrol_file_two_icvs_opening_tableslog_warning_pyaction():
+    """Test output input_icvcontrol.udq when opening tables are supplied."""
+    input_case = CASE_TEXT_TWO_ICVS + ICV_TABLE_TABEL1
+    expected_input_icvcontrol_output = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+# ICV opening position tables as dataframe
+# Table TABEL1 for ICV  A  B
+flow_trim_TABEL1 = [
+    [1, 1, 4.740e-05],
+    [2, 1, 7.900e-05],
+    [3, 1, 1.317e-04],
+    [4, 1, 2.195e-04],
+    [5, 1, 3.659e-04],
+    [6, 1, 6.098e-04],
+    [7, 1, 1.016e-03],
+    [8, 1, 1.694e-03],
+    [9, 1, 2.823e-03],
+    [10, 1, 1.337e-01],
+]
+
+summary_state['FUARE_A'] = get_area_by_index(summary_state['FUPOS_A'], flow_trim_TABEL1)
+
+summary_state['FUARE_B'] = get_area_by_index(summary_state['FUPOS_B'], flow_trim_TABEL1)
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_icvcontrol_output)
 
 
 def test_output_input_icvcontrol_file_three_icvs_opening_tables(log_warning):
@@ -884,52 +1536,203 @@ def test_output_input_icvcontrol_file_three_icvs_opening_tables(log_warning):
   DEFINE FUARE_B TU_TABEL1[FUPOS_B] /
   DEFINE FUARE_C TU_311537-03[FUPOS_C] /
 /"""
-    result = Initialization(ICVReadCasefile(input_case))
+    init = Initialization(ICVReadCasefile(input_case))
 
-    assert result.input_icvcontrol == expected_input_icvcontrol_output
+    assert init.input_icvcontrol == expected_input_icvcontrol_output
 
 
-def test_output_input_icvcontrol_custom_content(log_warning):
+def test_output_input_icvcontrol_file_three_icvs_opening_tables_pyaction(log_warning):
     """Test output input_icvcontrol.udq when two opening tables are supplied."""
-    input_CONTROL_CRITERIA = """
-     \t CONTROL_CRITERIA
-  FUNCTION: [UDQ] -- A Dummy comment
-  ICV: [A, B,                                    C]
-    TEST_x0 TO neigbor_x1 WELL(X0) SEG(X1) INSERT IN POS 1 UDQ REPLACEMENT
-    TEST_x2 COND TO INSERT IN POS 2 WELL(x2) SEG(X2) /
-/
+    input_case = CASE_TEXT_THREE_ICVS + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2
+    expected_input_icvcontrol_output = """# Input for ICV Control in summary state
 
-CONTROL_CRITERIA -- Should not affect the UDQDEFINE file
-  FUNCTION: [CHOKE]
-  ICV: [A, B, C]
-  CRITERIA: [1,2]
- POS1 A, J ICV /
- POS2 A, J ICV /
-/
+#
+# OPM Flow PYACTION Module Script
+#
 
-CONTROL_CRITERIA
-  FUNCTION: [UDQ] -- A Dummy comment
-  ICV: [B, C, A]
-DEFINE PRINT_B
+import pandas as pd
 
-/
+import opm_embedded
 
-CONTROL_CRITERIA
-  FUNCTION: [UDQ] -- A Dummy comment
-  ICV: [B]
-ASSIGN WRITE_B
-/
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
 
-\t CONTROL_CRITERIA
-  FUNCTION: [UDQ] -- A Dummy comment
-  ICV: [B, C, A]
- POS1_x1 test_X2 SEG(x1) WELL(X1) ICV /
-POS2_x1 test_x2 SEG(X2) WELL(x2) ICV -- malformed end of rec
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
 
-/ \t
+# Time-stepping:
 
-    """
-    input_case = CASE_TEXT_THREE_ICVS_NO_TABLE + input_CONTROL_CRITERIA
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+summary_state['FUT_C'] += summary_state['TIMESTEP']
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+# ICV opening position tables as dataframe
+# Table TABEL1 for ICV  A  B
+flow_trim_TABEL1 = [
+    [1, 1, 4.740e-05],
+    [2, 1, 7.900e-05],
+    [3, 1, 1.317e-04],
+    [4, 1, 2.195e-04],
+    [5, 1, 3.659e-04],
+    [6, 1, 6.098e-04],
+    [7, 1, 1.016e-03],
+    [8, 1, 1.694e-03],
+    [9, 1, 2.823e-03],
+    [10, 1, 1.337e-01],
+]
+# Table 311537-03 for ICV  C
+flow_trim_311537-03 = [
+    [1, 1, 1.337e-04],
+    [2, 1, 1.340e-04],
+    [3, 1, 1.341e-04],
+    [4, 1, 1.341e-04],
+    [5, 1, 1.373e-04],
+    [6, 1, 1.400e-04],
+    [7, 1, 1.138e-03],
+    [8, 1, 1.140e-03],
+    [9, 1, 2.141e-03],
+    [10, 1, 4.142e-03],
+]
+
+summary_state['FUARE_A'] = get_area_by_index(summary_state['FUPOS_A'], flow_trim_TABEL1)
+
+summary_state['FUARE_B'] = get_area_by_index(summary_state['FUPOS_B'], flow_trim_TABEL1)
+
+summary_state['FUARE_C'] = get_area_by_index(summary_state['FUPOS_C'], flow_trim_311537-03)
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_icvcontrol_output)
+
+
+def test_output_input_icvcontrol_custom_content_1(log_warning):
+    """Test output input_icvcontrol.udq when two opening tables are supplied."""
+
+    input_case = CASE_TEXT_THREE_ICVS_NO_TABLE + INPUT_CONTROL_CRITERIA_1
+    expected_input_icvcontrol_output = """UDQ
+
+-- Initialization
+
+  ASSIGN FUFRQ_A 30 /
+  ASSIGN FUFRQ_B 30 /
+  ASSIGN FUFRQ_C 30 /
+
+  ASSIGN FUT_A 30 /
+  ASSIGN FUT_B 30 /
+  ASSIGN FUT_C 30 /
+
+  ASSIGN FUCH_A 0.0 /
+  ASSIGN FUOP_A 1.0 /
+
+  ASSIGN FUCH_B 0.0 /
+  ASSIGN FUOP_B 1.0 /
+
+  ASSIGN FUCH_C 0.0 /
+  ASSIGN FUOP_C 0.5 /
+
+  ASSIGN FUTSTP 0 /
+
+  ASSIGN TEST_A 0.01 /
+  ASSIGN TEST_C 0.03 /
+
+  ASSIGN PRINT_B 0.02 /
+  ASSIGN POS1_C 0.03 /
+  ASSIGN POS2_C 0.03 /
+
+-- Definition of parameters,
+-- continuously updated:
+
+  DEFINE FUTSTP TIMESTEP /
+  DEFINE FUT_A FUT_A + TIMESTEP /
+  DEFINE FUT_B FUT_B + TIMESTEP /
+  DEFINE FUT_C FUT_C + TIMESTEP /
+
+  DEFINE TEST_A BOR_B 'A-1' 98 /
+  DEFINE TEST_C 'A-1' 99 /
+  ASSIGN WRITE_B /
+  DEFINE PRINT_B /
+  DEFINE POS1_C TEST_A 99 'A-1' ICV /
+  DEFINE POS2_C TEST_A 97 'A-1' ICV /
+
+/"""
+    input = Initialization(ICVReadCasefile(input_case))
+    assert input.input_icvcontrol == expected_input_icvcontrol_output
+
+
+def test_output_input_icvcontrol_custom_content_1_pyaction(log_warning):
+    """Test output include.py when two opening tables are supplied."""
+
+    input_case = CASE_TEXT_THREE_ICVS_NO_TABLE + INPUT_CONTROL_CRITERIA_1
+    expected_input_icvcontrol_output = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+summary_state['FUT_C'] += summary_state['TIMESTEP']
+
+summary_state['TEST_A'] = summary_state['BOR_B:A-1:98']
+summary_state['TEST_C'] = summary_state['A-1:99']
+summary_state['PRINT_B'] =
+summary_state['POS1_C'] = summary_state['TEST_A:99:A-1:ICV']
+summary_state['POS2_C'] = summary_state['TEST_A:97:A-1:ICV']
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_icvcontrol_output)
+
+
+def test_output_input_icvcontrol_custom_content_2(log_warning):
+    """Test output input_icvcontrol.udq when two opening tables are supplied."""
+
+    input_case = CASE_TEXT_THREE_ICVS_NO_TABLE + INPUT_CONTROL_CRITERIA_2
 
     expected_input_icvcontrol_output = """UDQ
 
@@ -954,7 +1757,12 @@ POS2_x1 test_x2 SEG(X2) WELL(x2) ICV -- malformed end of rec
 
   ASSIGN FUTSTP 0 /
 
+  ASSIGN TEST_A 0.01 /
+  ASSIGN TEST_C 0.03 /
+
   ASSIGN PRINT_B 0.02 /
+  ASSIGN POS1_C 0.03 /
+  ASSIGN POS2_C 0.03 /
 
 -- Definition of parameters,
 -- continuously updated:
@@ -964,36 +1772,77 @@ POS2_x1 test_x2 SEG(X2) WELL(x2) ICV -- malformed end of rec
   DEFINE FUT_B FUT_B + TIMESTEP /
   DEFINE FUT_C FUT_C + TIMESTEP /
 
-  TEST_A TO NEIGBOR_B 'A-1' 98 INSERT IN POS 1 UDQ REPLACEMENT /
-  TEST_C COND TO INSERT IN POS 2 'A-1' 99 /
+  DEFINE TEST_A TO NEIGBOR_B 'A-1' 98 INSERT IN POS 1 UDQ REPLACEMENT /
+  DEFINE TEST_C COND TO INSERT IN POS 2 'A-1' 99 /
   ASSIGN WRITE_B /
   DEFINE PRINT_B /
-  POS1_C TEST_A 99 'A-1' ICV /
-  POS2_C TEST_A 97 'A-1' ICV /
+  DEFINE POS1_C TEST_A 99 'A-1' ICV /
+  DEFINE POS2_C TEST_A 97 'A-1' ICV /
 
 /"""
-    result = Initialization(ICVReadCasefile(input_case))
+    input = Initialization(ICVReadCasefile(input_case))
 
-    assert result.input_icvcontrol == expected_input_icvcontrol_output
+    assert input.input_icvcontrol == expected_input_icvcontrol_output
+
+
+def test_output_input_icvcontrol_custom_content_2_pyaction(log_warning):
+    """Test output include.py when two opening tables are supplied."""
+
+    input_case = CASE_TEXT_THREE_ICVS_NO_TABLE + INPUT_CONTROL_CRITERIA_2
+
+    expected_input_icvcontrol_output = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+summary_state['FUT_C'] += summary_state['TIMESTEP']
+
+summary_state['TEST_A'] = summary_state['TO:NEIGBOR_B:A-1:98:INSERT:IN:POS:1:UDQ:REPLACEMENT']
+summary_state['TEST_C'] = summary_state['COND:TO:INSERT:IN:POS:2:A-1:99']
+summary_state['PRINT_B'] =
+summary_state['POS1_C'] = summary_state['TEST_A:99:A-1:ICV']
+summary_state['POS2_C'] = summary_state['TEST_A:97:A-1:ICV']
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_icvcontrol_output)
 
 
 def test_output_input_icvcontrol_custom_content_icv_table(log_warning):
     """Test output input_icvcontrol.udq when two opening tables are supplied."""
-    input_CONTROL_CRITERIA = """
-     \t CONTROL_CRITERIA
-  FUNCTION: [UDQ] -- A Dummy comment
-  ICV: [A,B,C]
-    DEFINE SPAM_x0 and some other stuff /
-    DEFINE EGGS_x1 -- missing eor
-/
 
-CONTROL_CRITERIA -- Should not affect the UDQDEFINE file
-  FUNCTION: [CHOKE]
-  ICV: [A, B]
-  CRITERIA: [1,2]
- POS1 A, J ICV /
- POS2 A, J ICV /
-/"""
     expected_input_icvcontrol_output = """UDQ
 
 -- Initialization
@@ -1039,23 +1888,98 @@ CONTROL_CRITERIA -- Should not affect the UDQDEFINE file
   DEFINE FUARE_B TU_TABEL1[FUPOS_B] /
   DEFINE FUARE_C TU_311537-03[FUPOS_C] /
 /"""
-    input_case = CASE_TEXT_THREE_ICVS + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2 + input_CONTROL_CRITERIA
-    result = Initialization(ICVReadCasefile(input_case))
+    input_case = CASE_TEXT_THREE_ICVS + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2 + INPUT_CONTROL_CRITERIA_3
+    input = Initialization(ICVReadCasefile(input_case))
+    assert input.input_icvcontrol == expected_input_icvcontrol_output
 
-    assert result.input_icvcontrol == expected_input_icvcontrol_output
+
+def test_output_input_icvcontrol_custom_content_icv_table_pyaction(log_warning):
+    """Test output include.py when two opening tables are supplied."""
+
+    expected_input_icvcontrol_output = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+summary_state['FUT_C'] += summary_state['TIMESTEP']
+
+summary_state['SPAM_A'] = summary_state['AND:SOME:OTHER:STUFF']
+summary_state['EGGS_B'] =
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+# ICV opening position tables as dataframe
+# Table TABEL1 for ICV  A  B
+flow_trim_TABEL1 = [
+    [1, 1, 4.740e-05],
+    [2, 1, 7.900e-05],
+    [3, 1, 1.317e-04],
+    [4, 1, 2.195e-04],
+    [5, 1, 3.659e-04],
+    [6, 1, 6.098e-04],
+    [7, 1, 1.016e-03],
+    [8, 1, 1.694e-03],
+    [9, 1, 2.823e-03],
+    [10, 1, 1.337e-01],
+]
+# Table 311537-03 for ICV  C
+flow_trim_311537-03 = [
+    [1, 1, 1.337e-04],
+    [2, 1, 1.340e-04],
+    [3, 1, 1.341e-04],
+    [4, 1, 1.341e-04],
+    [5, 1, 1.373e-04],
+    [6, 1, 1.400e-04],
+    [7, 1, 1.138e-03],
+    [8, 1, 1.140e-03],
+    [9, 1, 2.141e-03],
+    [10, 1, 4.142e-03],
+]
+
+summary_state['FUARE_A'] = get_area_by_index(summary_state['FUPOS_A'], flow_trim_TABEL1)
+
+summary_state['FUARE_B'] = get_area_by_index(summary_state['FUPOS_B'], flow_trim_TABEL1)
+
+summary_state['FUARE_C'] = get_area_by_index(summary_state['FUPOS_C'], flow_trim_311537-03)
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+    input_case = CASE_TEXT_THREE_ICVS + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2 + INPUT_CONTROL_CRITERIA_3
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_icvcontrol_output)
 
 
 def test_output_input_icvcontrol_custom_content_icv_table2(log_warning):
     """Test output input_icvcontrol.udq when two opening tables are supplied."""
 
-    input_CONTROL_CRITERIA = """
-     \t CONTROL_CRITERIA
-  FUNCTION: [UDQ] -- A Dummy comment
-  ICV: [A,B,C], [B,A], [C,B]
-    DEFINE SPAM_x0 and some other stuff /
-    DEFINE EGGS_x1 -- missing eor
-/
-"""
     expected_input_icvcontrol_output = """UDQ
 
 -- Initialization
@@ -1112,17 +2036,109 @@ def test_output_input_icvcontrol_custom_content_icv_table2(log_warning):
   DEFINE FUARE_C TU_311537-03[FUPOS_C] /
 /"""
 
-    input_case = CASE_TEXT_THREE_ICVS_OPENING + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2 + input_CONTROL_CRITERIA
-    result = Initialization(ICVReadCasefile(input_case))
-    assert result.input_icvcontrol == expected_input_icvcontrol_output
+    input_case = CASE_TEXT_THREE_ICVS_OPENING + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2 + INPUT_CONTROL_CRITERIA_4
+    input = Initialization(ICVReadCasefile(input_case))
+    assert input.input_icvcontrol == expected_input_icvcontrol_output
+
+
+def test_output_input_icvcontrol_custom_content_icv_table2_pyaction(log_warning):
+    """Test output input_icvcontrol.udq when two opening tables are supplied."""
+
+    expected_input_icvcontrol_output = """# Input for ICV Control in summary state
+
+#
+# OPM Flow PYACTION Module Script
+#
+
+import pandas as pd
+
+import opm_embedded
+
+ecl_state = opm_embedded.current_ecl_state
+schedule = opm_embedded.current_schedule
+report_step = opm_embedded.current_report_step
+summary_state = opm_embedded.current_summary_state
+
+if (not 'setup_done' in locals()):
+    executed = False
+    setup_done = True
+
+# Time-stepping:
+
+
+# Continuously updated summary state
+
+summary_state['FUT_A'] += summary_state['TIMESTEP']
+
+summary_state['FUT_B'] += summary_state['TIMESTEP']
+
+summary_state['FUT_C'] += summary_state['TIMESTEP']
+
+summary_state['SPAM_A'] = summary_state['AND:SOME:OTHER:STUFF']
+summary_state['EGGS_B'] =
+summary_state['SPAM_B'] = summary_state['AND:SOME:OTHER:STUFF']
+summary_state['EGGS_A'] =
+summary_state['SPAM_C'] = summary_state['AND:SOME:OTHER:STUFF']
+summary_state['EGGS_B'] =
+
+def get_area_by_index(index, table):
+    for row in table:
+        if row[0] == index:
+            return row[2]
+    return None
+# ICV opening position tables as dataframe
+# Table TABEL1 for ICV  A  B
+flow_trim_TABEL1 = [
+    [1, 1, 4.740e-05],
+    [2, 1, 7.900e-05],
+    [3, 1, 1.317e-04],
+    [4, 1, 2.195e-04],
+    [5, 1, 3.659e-04],
+    [6, 1, 6.098e-04],
+    [7, 1, 1.016e-03],
+    [8, 1, 1.694e-03],
+    [9, 1, 2.823e-03],
+    [10, 1, 1.337e-01],
+]
+# Table 311537-03 for ICV  C
+flow_trim_311537-03 = [
+    [1, 1, 1.337e-04],
+    [2, 1, 1.340e-04],
+    [3, 1, 1.341e-04],
+    [4, 1, 1.341e-04],
+    [5, 1, 1.373e-04],
+    [6, 1, 1.400e-04],
+    [7, 1, 1.138e-03],
+    [8, 1, 1.140e-03],
+    [9, 1, 2.141e-03],
+    [10, 1, 4.142e-03],
+]
+
+summary_state['FUARE_A'] = get_area_by_index(summary_state['FUPOS_A'], flow_trim_TABEL1)
+
+summary_state['FUARE_B'] = get_area_by_index(summary_state['FUPOS_B'], flow_trim_TABEL1)
+
+summary_state['FUARE_C'] = get_area_by_index(summary_state['FUPOS_C'], flow_trim_311537-03)
+
+keyword_1day = f"NEXTSTEP\\n  1.0 / \\n"
+keyword_01day = f"NEXTSTEP\\n  0.1 / \\n"
+keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
+"""
+
+    input_case = CASE_TEXT_THREE_ICVS_OPENING + ICV_TABLE_TABEL1 + ICV_TABLE_TBL2 + INPUT_CONTROL_CRITERIA_4
+    input = InitializationPyaction(ICVReadCasefile(input_case))
+    assert_match_trailing_whitespace(input.input_icvcontrol, expected_input_icvcontrol_output)
 
 
 @pytest.mark.parametrize("icv, expected_num_icvs", (["A", 2], ["B", 2], ["E", 3], ["F", 3], ["G", 3]))
 def test_number_of_icvs(icv, expected_num_icvs):
     """Test to find number of icvs in well from input segment name."""
     initialization = Initialization(ICVReadCasefile(CASE_TEXT_FIVE_ICVS))
+    init_py = InitializationPyaction(ICVReadCasefile(CASE_TEXT_FIVE_ICVS))
     number_of_icvs = initialization.number_of_icvs(icv)
+    number_of_icvs_py = init_py.number_of_icvs(icv)
     assert number_of_icvs == expected_num_icvs
+    assert number_of_icvs_py == expected_num_icvs
 
 
 def test_create_summary_content():
@@ -1174,4 +2190,65 @@ SFOPN
 
 """
     initialization = Initialization(ICVReadCasefile(CASE_TEXT_TWO_ICVS + custom_content))
+    assert expected == initialization.summary
+
+
+def test_create_summary_content_pyaction():
+    """Check that .summary files are created correctly."""
+    custom_content = """
+CONTROL_CRITERIA
+  FUNCTION: [UDQ]
+  ICV: [A]
+  DEFINE TEST_x0 WWIR WELL(x0) * FU_x0 /
+  DEFINE TEST_x0 (-1.0) * SWFR WELL(x1) SEG(x0) /
+/"""
+
+    expected = """FUD_A
+
+FUH_A
+
+FUL_A
+
+FUD_B
+
+FUH_B
+
+FUL_B
+
+FUTC_A
+
+FUTO_A
+
+FUP_A
+
+FUTC_B
+
+FUTO_B
+
+FUP_B
+
+FUCH_A
+
+FUOP_A
+
+FUFRQ_A
+
+FUT_A
+
+FUCH_B
+
+FUOP_B
+
+FUFRQ_B
+
+FUT_B
+
+TIMESTEP
+
+TEST_A
+
+FU_A
+
+"""
+    initialization = InitializationPyaction(ICVReadCasefile(CASE_TEXT_TWO_ICVS + custom_content))
     assert expected == initialization.summary

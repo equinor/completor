@@ -155,6 +155,7 @@ class IcvFunctions:
         """
         icv_function = ICVMethod.CHOKE_WAIT
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
 
         insert_futstp = ""
@@ -181,7 +182,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:
-                return f"if ({insert_parameter_block} + {end_rec}:"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
         if custom_content is not None and custom_content != "":
             return f"{insert_parameter_block} AND /\n{custom_content}"
         return insert_parameter_block + end_rec
@@ -226,6 +227,7 @@ class IcvFunctions:
         """
         icv_function = ICVMethod.OPEN_WAIT
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
 
         insert_futstp = ""
@@ -253,7 +255,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:
-                return f"if ({insert_parameter_block} + {end_rec}:"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
 
         if custom_content is not None and custom_content != "":
             return f"{insert_parameter_block} AND /\n{custom_content}"
@@ -298,6 +300,7 @@ class IcvFunctions:
         """
         icv_function = ICVMethod.CHOKE_READY
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
 
         insert_parameter_block = f"  FUTC_{icv_name} > FUD_{icv_name} AND /\n  FUP_{icv_name} = 2"
@@ -309,7 +312,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:
-                return f"if ({insert_parameter_block} + {end_rec}):"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
         if custom_content is not None and custom_content != "":
             return f"{insert_parameter_block} AND /\n{custom_content}"
         else:
@@ -329,6 +332,7 @@ class IcvFunctions:
 
         icv_function = ICVMethod.OPEN_READY
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
         insert_parameter_block = f"  FUTO_{icv_name} > FUD_{icv_name} AND /\n  FUP_{icv_name} = 2"
         if self.python_dependent:
@@ -339,7 +343,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:
-                return f"if ({insert_parameter_block} + {end_rec}):"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
         if custom_content is not None and custom_content != "":
             return f"{insert_parameter_block} AND /\n{custom_content}"
         else:
@@ -360,6 +364,7 @@ class IcvFunctions:
         insert_parameter_block = f"  FUP_{icv_name} = 4 AND /\n  FUTC_{icv_name} != 0"
 
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
 
         if self.python_dependent:
@@ -367,7 +372,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:
-                return f"if ({insert_parameter_block} + {end_rec}):"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
 
         if custom_content is not None and custom_content != "":
             return f"{insert_parameter_block} AND /\n{custom_content}"
@@ -388,6 +393,7 @@ class IcvFunctions:
         icv_function = ICVMethod.OPEN_STOP
         insert_parameter_block = f"  FUP_{icv_name} = 3 AND /\n  FUTO_{icv_name} != 0"
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
 
         if self.python_dependent:
@@ -395,7 +401,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             else:
-                return f"if ({insert_parameter_block} + {end_rec}):"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
         if custom_content is not None and custom_content != "":
             return f"{insert_parameter_block} AND /\n{custom_content}"
         else:
@@ -415,6 +421,7 @@ class IcvFunctions:
         """
         icv_function = ICVMethod.CHOKE
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         num_icvs = self.initials.number_of_icvs(icv_name)
         custom_content = self.initials.get_custom_content(icv_name, icv_function, criteria)
         insert_parameter_block = (
@@ -438,7 +445,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             if num_icvs == 2:
-                return f"if ({insert_parameter_block} + {end_rec}):"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
             else:
                 insert_futstp = f"""
                 summary_state['TIMESTEP'] < summary_state['FUH_{icv_name}'] and
@@ -487,6 +494,7 @@ class IcvFunctions:
             f"  FUP_{icv_name} = 3"
         )
         end_rec = " /\n/\n"
+        end_rec_pyaction = "\n"
         insert_futstp = ""
 
         if self.python_dependent:
@@ -501,7 +509,7 @@ class IcvFunctions:
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
             if num_icvs == 2:
-                return f"if ({insert_parameter_block} + {end_rec}):"
+                return f"if ({insert_parameter_block} {end_rec_pyaction}):"
             else:
                 insert_futstp = f"""summary_state['TIMESTEP'] < summary_state['FUH_{icv_name}'] and
                 summary_state['TIMESTEP'] > summary_state['FUL_{icv_name}'] and
@@ -757,7 +765,7 @@ class IcvFunctions:
             actionx += self.create_actionx(record1, record2, action)
         actionx += actionx_repeater * "ENDACTIO\n"
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction
@@ -795,7 +803,7 @@ class IcvFunctions:
             action = self.create_action(icv_name, icv_function, step)
             actionx += self.create_actionx(record1, record2, action)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction
@@ -821,10 +829,7 @@ class IcvFunctions:
         actionx += insert_comment(icv_function)
         actionx += self.create_actionx(record1, record2, action)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
-            pyaction += record2 + "\n"
-            pyaction += action + "\n"
-            return pyaction
+            return ""
         return actionx + "ENDACTIO\n\n"
 
     def create_open_wait_stop(self, icv_name: str, criteria: int | None = None) -> str:
@@ -846,10 +851,7 @@ class IcvFunctions:
         actionx += insert_comment(icv_function)
         actionx += self.create_actionx(record1, record2, action)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
-            pyaction += record2 + "\n"
-            pyaction += action + "\n"
-            return pyaction
+            return ""
         return actionx + "ENDACTIO\n\n"
 
     def create_choke_ready(
@@ -880,7 +882,7 @@ class IcvFunctions:
         record2 = self.create_record2_choke_ready(icv_name, criteria)
         action = self.create_action(icv_name, icv_function, None)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction
@@ -915,7 +917,7 @@ class IcvFunctions:
         record2 = self.create_record2_open_ready(icv_name, criteria)
         action = self.create_action(icv_name, icv_function, None)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction
@@ -946,7 +948,7 @@ class IcvFunctions:
         record2 = self.create_record2_choke_stop(icv_name, criteria)
         action = self.create_action(icv_name, icv_function, None)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction
@@ -973,7 +975,7 @@ class IcvFunctions:
         record2 = self.create_record2_open_stop(icv_name, criteria)
         action = self.create_action(icv_name, icv_function, None)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction
@@ -1019,7 +1021,7 @@ class IcvFunctions:
             actionx += self.create_actionx(record1, record2, action)
         actionx += actionx_repeater * "ENDACTIO\n"
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction
@@ -1064,7 +1066,7 @@ class IcvFunctions:
             action = self.create_action(icv_name, icv_function, step, self.initials.case.icv_table)
             actionx += self.create_actionx(record1, record2, action)
         if self.python_dependent:
-            pyaction = f"# TEST PYACTION {icv_function} for {icv_name} criteria number {criteria}\n"
+            pyaction = f"# Pyaction {icv_function} for {icv_name} criteria number {criteria}\n"
             pyaction += record2 + "\n"
             pyaction += action + "\n"
             return pyaction

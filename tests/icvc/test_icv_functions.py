@@ -5,7 +5,16 @@ import pytest
 from completor.constants import ICVMethod
 from completor.icv_functions import IcvFunctions
 from completor.initialization import Initialization
+from completor.initialization_pyaction import InitializationPyaction
 from completor.read_casefile import ICVReadCasefile
+
+
+def assert_match_trailing_whitespace(actual: str, expected: str) -> None:
+    """Remove trailing whitespace from each line."""
+    actual_striped = "\n".join(line.rstrip() for line in actual.splitlines()) + "\n"
+    expected_striped = "\n".join(line.rstrip() for line in expected.splitlines()) + "\n"
+    assert expected_striped == actual_striped
+
 
 CASE_TEXT = """
 SCHFILE
@@ -120,7 +129,130 @@ ICVCONTROL
 /
 """
 
+CASE_TEXT_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL1     1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS       ICVDATE    FREQ  MIN MAX OPENING
+WELL1     A   105         A     100   1.JAN.2022      30    0   1     T10
+WELL1     B   106         A     100   1.JAN.2022      30    0   1      T5
+WELL2     E   142   0.1337      100   1.JAN.2022      30    0   1       0
+WELL2     F   143   0.1337      100   1.JAN.2022      30    0   1       0
+WELL2     G   144   0.1337      100   1.JAN.2022      30    0   1       0
+WELL3    BY   60   1.0077120   1320   1.JAN.2023      30    0   1       0
+WELL3    BX   60   0.0077120   1320   1.JAN.2023      30    0   1       0
+WELL4    A1   60   0.0077120   1320   1.JAN.2023      30    0   1       0
+/
+
+ICVTABLE
+A /
+-- postition cv area
+ 1	1 0
+ 2	1 0
+ 3	1 5.1191E-05
+ 4	1 1.3708E-04
+ 5	1 2.3026E-04
+ 6	1 3.7484E-04
+ 7	1 8.3050E-04
+ 8	1 2.3122E-03
+ 9  1 5.7019E-03
+10	1 7.7120E-03
+/
+
+PYTHON
+TRUE
+/
+"""
+
+CASE_TEXT_3WELLS_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+-- D: FUD
+-- H: FUH
+-- FAC: Maximum rate factor for icv-control
+-- FR: ICV function repetitions
+-- OSTP: OPERSTEP (NEXTSTEP in operation icv-functions)
+-- WSTP: WAITSTEP (NEXTSTEP in waiting icv-functions)
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS     ICVDATE  FREQ MIN MAX OPENING FUD FUH FUL  OPERSTEP WAITSTEP  INIT
+WELL2     E   142   0.1337     100  1.JAN.2022    30   0   1       0   5   2 0.1       0.2      1.0  0.07
+WELL2     F   143   0.1337     100  1.JAN.2022    30   0   1       0   5   2 0.1       0.2      1.0  0.08
+WELL2     G   144   0.1337     100  1.JAN.2022    30   0   1       0   5   2 0.1       0.2      1.0  0.09
+/
+
+ICVTABLE
+A /
+-- postition cv area
+ 1	1 0
+ 2	1 0
+ 3	1 5.1191E-05
+ 4	1 1.3708E-04
+ 5	1 2.3026E-04
+ 6	1 3.7484E-04
+ 7	1 8.3050E-04
+ 8	1 2.3122E-03
+ 9  1 5.7019E-03
+10	1 7.7120E-03
+/
+PYTHON
+TRUE
+/
+"""
+
+CASE_TEXT_OPENING_TABL_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL1     1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+-- D: FUD
+-- H: FUH
+-- FAC: Maximum rate factor for icv-control
+-- FR: ICV function repetitions
+-- OSTP: OPERSTEP (NEXTSTEP in operation icv-functions)
+-- WSTP: WAITSTEP (NEXTSTEP in waiting icv-functions)
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS     ICVDATE  FREQ  MIN MAX OPENING FUD FUH  FUL  OPERSTEP WAITSTEP  INIT
+  WELL1   A     105        A   100  1.JAN.2022    30    0   1     T10   5   2  0.1       0.2      1.0  0.01
+  WELL1   B     106        A   100  1.JAN.2022    30    0   1      T5   5   2  0.1       0.2      1.0  0.02
+/
+
+PYTHON
+TRUE
+/
+"""
+
 TEST_ICV_FUNCTIONS = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT)))
+TEST_ICV_FUNCTIONS_PYACTION = IcvFunctions(InitializationPyaction(ICVReadCasefile(CASE_TEXT_PY)))
 ICV_NAME = "A"
 
 
@@ -198,6 +330,14 @@ def test_create_record2_choke_wait_stop():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_wait_stop_pyaction():
+    """Test creating record 2 in the OPM pyaction keyword for icvc.
+    Two ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait_stop("A")
+    expected_record2 = ""
+    assert record2 == expected_record2
+
+
 def test_create_record2_choke_wait():
     """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc"""
     criteria = 1
@@ -209,6 +349,19 @@ def test_create_record2_choke_wait():
 /
 """
     assert record2 == expected_record2
+
+
+def test_create_record2_choke_wait_pyaction():
+    """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc"""
+    criteria = 1
+    step = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait(ICV_NAME, step, criteria)
+    expected_record2 = (
+        "if (summary_state['FUTC_A'] <= summary_state['FUD_A'] and\n"
+        "summary_state['FUP_A'] == 2 and\n"
+        "summary_state['FUT_A'] > summary_state['FUFRQ_A']\n):"
+    )
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_choke_wait_step2():
@@ -227,6 +380,18 @@ def test_create_record2_choke_wait_step2():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_wait_step2_pyaction():
+    """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    Two ICVs."""
+
+    criteria = 1
+    step = 2
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait("A", step, criteria)
+    expected_record2 = """
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_wait():
     """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -242,6 +407,18 @@ def test_create_record2_open_wait():
     assert record2 == expected_record2
 
 
+def test_create_record2_open_wait_pyaction():
+    """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    Two ICVs."""
+    step = 1
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_wait("A", step, criteria)
+    expected_record2 = """
+"""
+
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_choke_ready_nicv2():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -254,6 +431,16 @@ def test_create_record2_choke_ready_nicv2():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_ready_nicv2_pyaction():
+    """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    Two ICVs."""
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_ready("A", criteria)
+    expected_record2 = """
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_ready():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -263,7 +450,17 @@ def test_create_record2_open_ready():
   FUP_A = 2 /
 /
 """
-    assert record2 == expected_record2
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
+def test_create_record2_open_ready_pyaction():
+    """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    Two ICVs."""
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_ready("A", criteria)
+    expected_record2 = """
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_choke_stop():
@@ -275,6 +472,15 @@ def test_create_record2_choke_stop():
 /
 """
     assert record2 == expected_record2
+
+
+def test_create_record2_choke_stop_pyaction():
+    """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    Three ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_stop("E", 1)
+    expected_record2 = """
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_open_stop_nicv2():

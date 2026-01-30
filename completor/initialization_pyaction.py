@@ -340,10 +340,8 @@ if (not 'setup_done' in locals()):
 
 
 """
-        custom_content_pyaction = None
         for icv_name in self.icv_names:
             custom_assignments = self._find_and_assign(icv_name, icv_function)
-            custom_content_pyaction = ""
 
             if custom_assignments:
                 custom_fu_lines += custom_assignments + "\n"
@@ -352,14 +350,12 @@ if (not 'setup_done' in locals()):
             for icv_name in self.icv_names:
                 define_lines_pyaction += f"summary_state['FUT_{icv_name}'] += summary_state['TIMESTEP']\n\n"
             for icv_name in self.icv_names:
-                if self.case.python_dependent:
-                    custom_content_pyaction = self.get_custom_content(icv_name, icv_function, 1, False)
                 custom_content = self.get_custom_content(icv_name, icv_function, 1, False)
 
                 if custom_content is None:
                     logger.debug(f"No ICVALGORITHM given for icv {icv_name}.")
                 else:
-                    define_lines_pyaction += custom_content_pyaction
+                    define_lines_pyaction += custom_content
         if custom_content is not None:
             if self.custom_conditions.get(icv_function).get("UDQ") is not None:
                 content = self.custom_conditions.get(icv_function).get("UDQ").get("1")
@@ -434,7 +430,7 @@ keyword_2day = f"NEXTSTEP\\n  2.0 / \\n"
                 continue
             fu_pos_pyaction += f"summary_state['FUPOS_{icv}'] = {position}\n"
             fu_area_pyaction += f"""
-summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], flow_trim_{table_name})
+summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], flow_trim_{value})
             """
         return fu_pos_pyaction, fu_area_pyaction
 
