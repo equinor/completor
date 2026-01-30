@@ -356,11 +356,11 @@ def test_create_record2_choke_wait_pyaction():
     criteria = 1
     step = 1
     record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait(ICV_NAME, step, criteria)
-    expected_record2 = (
-        "if (summary_state['FUTC_A'] <= summary_state['FUD_A'] and\n"
-        "summary_state['FUP_A'] == 2 and\n"
-        "summary_state['FUT_A'] > summary_state['FUFRQ_A']\n):"
-    )
+    expected_record2 = """if (summary_state['FUTC_A'] <= summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2 and
+summary_state['FUT_A'] > summary_state['FUFRQ_A']
+):
+"""
     assert_match_trailing_whitespace(record2, expected_record2)
 
 
@@ -381,13 +381,17 @@ def test_create_record2_choke_wait_step2():
 
 
 def test_create_record2_choke_wait_step2_pyaction():
-    """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    """Tests creating record 2 in the OPM Pyaction keyword for icvc.
     Two ICVs."""
 
     criteria = 1
     step = 2
     record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait("A", step, criteria)
-    expected_record2 = """
+    expected_record2 = """if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTC_A'] <= summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2 and
+summary_state['FUT_A'] > summary_state['FUFRQ_A']
+):
 """
     assert_match_trailing_whitespace(record2, expected_record2)
 
@@ -408,12 +412,15 @@ def test_create_record2_open_wait():
 
 
 def test_create_record2_open_wait_pyaction():
-    """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    """Tests creating record 2 in the OPM PyAction keyword for icvc.
     Two ICVs."""
     step = 1
     criteria = 1
     record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_wait("A", step, criteria)
-    expected_record2 = """
+    expected_record2 = """if (summary_state['FUTO_A'] <= summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2 and
+summary_state['FUT_A'] > summary_state['FUFRQ_A']
+):
 """
 
     assert_match_trailing_whitespace(record2, expected_record2)
@@ -432,11 +439,13 @@ def test_create_record2_choke_ready_nicv2():
 
 
 def test_create_record2_choke_ready_nicv2_pyaction():
-    """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
     Two ICVs."""
     criteria = 1
     record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_ready("A", criteria)
-    expected_record2 = """
+    expected_record2 = """if (summary_state['FUTC_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2
+):
 """
     assert_match_trailing_whitespace(record2, expected_record2)
 
@@ -454,11 +463,13 @@ def test_create_record2_open_ready():
 
 
 def test_create_record2_open_ready_pyaction():
-    """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
     Two ICVs."""
     criteria = 1
     record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_ready("A", criteria)
-    expected_record2 = """
+    expected_record2 = """if (summary_state['FUTO_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2
+):
 """
     assert_match_trailing_whitespace(record2, expected_record2)
 
@@ -475,10 +486,12 @@ def test_create_record2_choke_stop():
 
 
 def test_create_record2_choke_stop_pyaction():
-    """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
     Three ICVs."""
     record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_stop("E", 1)
-    expected_record2 = """
+    expected_record2 = """if (summary_state['FUP_E'] == 4 and
+summary_state['FUTC_E'] != 0
+):
 """
     assert_match_trailing_whitespace(record2, expected_record2)
 
@@ -494,6 +507,17 @@ def test_create_record2_open_stop_nicv2():
     assert record2 == expected_record2
 
 
+def test_create_record2_open_stop_nicv2_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_stop("A", 1)
+    expected_record2 = """if (summary_state['FUP_A'] == 3 and
+summary_state['FUTO_A'] != 0
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_wait_stop():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -503,6 +527,14 @@ def test_create_record2_open_wait_stop():
 /
 """
     assert record2 == expected_record2
+
+
+def test_create_record2_open_wait_stop_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_wait_stop("A")
+    expected_record2 = ""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_choke_nicv2():
@@ -520,6 +552,21 @@ def test_create_record2_choke_nicv2():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_nicv2_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    step = 1
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke("A", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and
+summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTC_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 4
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_choke_step_gt1_nicv3():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Three ICVs."""
@@ -528,6 +575,21 @@ def test_create_record2_choke_step_gt1_nicv3():
     record2 = TEST_ICV_FUNCTIONS.create_record2_choke("E", step, criteria)
     expected_record2 = "  FUP_E = 4 /\n/\n"
     assert record2 == expected_record2
+
+
+def test_create_record2_choke_step_gt1_nicv3_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Three ICVs."""
+    step = 2
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke("E", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_E'] and
+summary_state['TIMESTEP'] > summary_state['FUL_E'] and
+summary_state['FUTC_E'] > summary_state['FUD_E'] and
+summary_state['FUP_E'] == 4
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_open_nicv2_step1():
@@ -545,6 +607,21 @@ def test_create_record2_open_nicv2_step1():
     assert record2 == expected_record2
 
 
+def test_create_record2_open_nicv2_step1_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    step = 1
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open("A", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and
+summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTO_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 3
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_step_gt1_nicv2():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc"""
     step = 2
@@ -552,6 +629,19 @@ def test_create_record2_open_step_gt1_nicv2():
     record2 = TEST_ICV_FUNCTIONS.create_record2_open("A", step, criteria)
     expected_record2 = "  FUP_A = 3 /\n/\n"
     assert record2 == expected_record2
+
+
+def test_create_record2_open_step_gt1_nicv2_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc"""
+    step = 2
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open("A", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and
+summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTO_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 3
+):"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 @pytest.mark.parametrize(
@@ -576,13 +666,7 @@ def test_create_record2_open_step_gt1_nicv2():
             3,
             ("UDQ\n  DEFINE FUARE_A (FUARE_A * 0.6) /\n  UPDATE FUARE_A NEXT /\n/\nNEXTSTEP\n  0.1 /\n"),
         ],
-        [
-            ICVMethod.CHOKE,
-            1,
-            ("UDQ\n  DEFINE FUARE_A (FUARE_A * 0.6) /\n  UPDATE FUARE_A NEXT /\n/\nNEXTSTEP\n  0.1 /\n"),
-        ],
         [ICVMethod.CHOKE, 2, "WSEGVALV\n  WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\n/\nNEXTSTEP\n  2.0 /\n"],
-        [ICVMethod.CHOKE_READY, 1, "UDQ\n  ASSIGN FUP_A 4 /\n/"],
         [ICVMethod.CHOKE_READY, 1, "UDQ\n  ASSIGN FUP_A 4 /\n/"],
         [ICVMethod.CHOKE_WAIT, 1, "UDQ\n  DEFINE FUTC_A FUTC_A + TIMESTEP /\n/\nNEXTSTEP\n  1.0 /\n"],
         [
@@ -595,6 +679,67 @@ def test_create_record2_open_step_gt1_nicv2():
 def test_create_actionx(method, step, expected):
     """Test creating an action in the Eclipse ACTIONX keyword for icvc"""
     result = TEST_ICV_FUNCTIONS.create_action(ICV_NAME, method, step)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "method, step, expected",
+    (
+        [
+            ICVMethod.OPEN,
+            2,
+            (
+                "\tsummary_state['FUPOS_A'] += 1\n"
+                "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+                "\tif summary_state['FUP_A'] == 4:\n"
+                "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+                "\t\tsummary_state['FUARE_A'] = area\n"
+                "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+                "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+                "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+            ),
+        ],
+        [
+            ICVMethod.OPEN_WAIT,
+            1,
+            "\tsummary_state['FUTO_A'] += summary_state['TIMESTEP'] \n\tschedule.insert_keywords(keyword_1day, report_step+1)\n",
+        ],
+        [ICVMethod.OPEN_READY, 1, "\tsummary_state['FUP_A'] = 3\n"],
+        [
+            ICVMethod.OPEN_STOP,
+            1,
+            "\tsummary_state['FUP_A'] = 2\n\tsummary_state['FUTO_A'] = 0\n\tsummary_state['FUT_A'] = 0\n",
+        ],
+        [
+            ICVMethod.CHOKE,
+            2,
+            (
+                "\tsummary_state['FUPOS_A'] -= 1\n"
+                "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+                "\tif summary_state['FUP_A'] == 4:\n"
+                "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+                "\t\tsummary_state['FUARE_A'] = area\n"
+                "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+                "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+                "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+            ),
+        ],
+        [ICVMethod.CHOKE_READY, 1, "\tsummary_state['FUP_A'] = 4\n"],
+        [
+            ICVMethod.CHOKE_WAIT,
+            1,
+            "\tsummary_state['FUTC_A'] += summary_state['TIMESTEP'] \n\tschedule.insert_keywords(keyword_1day, report_step+1)\n",
+        ],
+        [
+            ICVMethod.CHOKE_STOP,
+            1,
+            "\tsummary_state['FUP_A'] = 2\n\tsummary_state['FUTC_A'] = 0\n\tsummary_state['FUT_A'] = 0\n",
+        ],
+    ),
+)
+def test_create_pyaction(method, step, expected):
+    """Test creating an action in the OPM Pyaction keyword for icvc"""
+    result = TEST_ICV_FUNCTIONS_PYACTION.create_action(ICV_NAME, method, step, opening_table=True)
     assert result == expected
 
 

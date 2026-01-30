@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from typing import Union
 
 import pandas as pd
 
@@ -19,7 +20,11 @@ class IcvFunctions:
 
     """
 
-    def __init__(self, initials: Initialization, initials_pyaction: InitializationPyaction | None = None) -> None:
+    def __init__(
+        self,
+        initials: Initialization | InitializationPyaction,
+        initials_pyaction: InitializationPyaction | None = None,
+    ) -> None:
         self.initials: Initialization | InitializationPyaction = initials
         self.initials_pyaction = initials_pyaction
         self.opening_icv_lim = [0.01, 0.99]
@@ -307,7 +312,7 @@ class IcvFunctions:
         if self.python_dependent:
             insert_parameter_block = (
                 f"summary_state['FUTC_{icv_name}'] > summary_state['FUD_{icv_name}'] and\n"
-                f"summary_state['FUP_{icv_name}'] == 2\n"
+                f"summary_state['FUP_{icv_name}'] == 2"
             )
             if custom_content is not None and custom_content != "":
                 return f"if ({insert_parameter_block} and \n{custom_content}):"
@@ -447,15 +452,15 @@ class IcvFunctions:
             if num_icvs == 2:
                 return f"if ({insert_parameter_block} {end_rec_pyaction}):"
             else:
-                insert_futstp = f"""
-                summary_state['TIMESTEP'] < summary_state['FUH_{icv_name}'] and
-                summary_state['TIMESTEP'] > summary_state['FUL_{icv_name}'] and
-                """
+                insert_futstp = (
+                    f"summary_state['TIMESTEP'] < summary_state['FUH_{icv_name}'] and\n"
+                    f"summary_state['TIMESTEP'] > summary_state['FUL_{icv_name}'] and\n"
+                )
             return (
                 f"if ({insert_futstp}"
                 f"summary_state['FUTC_{icv_name}'] > summary_state['FUD_{icv_name}'] and \n"
                 f"summary_state['FUP_{icv_name}'] == 4"
-                f" + {end_rec}):"
+                f"{end_rec_pyaction}):"
             )
 
         if step % 2 == 0:
