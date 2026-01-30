@@ -576,6 +576,13 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
           "FUWCT_X0 > FUWCTBRN AND /\nFUPOS_X0 > 1 /\n"
         -> "summary_state['FUWCT_X0'] > summary_state['FUWCTBRN'] and\nsummary_state['FUPOS_X0'] > 1\n"
 
+        Extended examples:
+          "SFOPN 'WELL1' 106 > 0.96 /"
+        -> "summary_state['SFOPN:WELL1:106'] > 0.96\n"
+
+          "AD 'WELL1' > AP 'WELL1' AND /"
+        -> "summary_state['AD:WELL1'] > summary_state['AP:WELL1'] and\n"
+
         Args:
             expression_text: Text containing UDQ expressions.
 
@@ -598,25 +605,36 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
             # Split into tokens and process each
             tokens = line.split()
             processed_tokens = []
-            for token in tokens:
-                # Check if token is a variable (contains letters, underscores, and possibly numbers, but not operators)
-                if re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", token):
-                    # Assume it's a variable if it doesn't match common operators
-                    if token.upper() not in ["AND", "OR", "NOT", "TRUE", "FALSE"]:
-                        processed_tokens.append(f"summary_state['{token}']")
-                    else:
-                        # Convert logical operators to Python equivalents
-                        if token.upper() == "AND":
-                            processed_tokens.append("and")
-                        elif token.upper() == "OR":
-                            processed_tokens.append("or")
-                        elif token.upper() == "NOT":
-                            processed_tokens.append("not")
-                        else:
-                            processed_tokens.append(token.lower())
+            i = 0
+            while i < len(tokens):
+                token = tokens[i]
+                # Check if token is a logical operator
+                if token.upper() in ["AND", "OR", "NOT"]:
+                    processed_tokens.append(token.lower())
+                    i += 1
+                # Check if token is a comparison operator
+                elif token in [">", "<", ">=", "<=", "==", "!="]:
+                    processed_tokens.append(token)
+                    i += 1
+                # Check if token is a variable (letters, underscores, numbers)
+                elif re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", token):
+                    # Collect consecutive non-operator tokens to form a key
+                    group = [token]
+                    i += 1
+                    while (
+                        i < len(tokens)
+                        and tokens[i] not in [">", "<", ">=", "<=", "==", "!=", "and", "or", "not"]
+                        and tokens[i].upper() not in ["AND", "OR", "NOT"]
+                    ):
+                        group.append(tokens[i])
+                        i += 1
+                    # Join with ":" to form the summary_state key
+                    key = ":".join(group)
+                    processed_tokens.append(f"summary_state['{key}']")
                 else:
                     # Keep operators and numbers as is
                     processed_tokens.append(token)
+                    i += 1
 
             out_lines.append(" ".join(processed_tokens))
 

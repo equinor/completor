@@ -515,14 +515,15 @@ class IcvFunctions:
             if num_icvs == 2:
                 return f"if ({insert_parameter_block} {end_rec_pyaction}):"
             else:
-                insert_futstp = f"""summary_state['TIMESTEP'] < summary_state['FUH_{icv_name}'] and
-                summary_state['TIMESTEP'] > summary_state['FUL_{icv_name}'] and
-                """
+                insert_futstp = (
+                    f"summary_state['TIMESTEP'] < summary_state['FUH_{icv_name}'] and\n"
+                    f"summary_state['TIMESTEP'] > summary_state['FUL_{icv_name}'] and\n"
+                )
             return (
                 f"if ({insert_futstp}"
                 f"summary_state['FUTO_{icv_name}'] > summary_state['FUD_{icv_name}'] and \n"
                 f"summary_state['FUP_{icv_name}'] == 3"
-                f" + {end_rec}):"
+                f"{end_rec_pyaction}):"
             )
 
         if step % 2 == 0:
