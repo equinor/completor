@@ -154,7 +154,7 @@ class IcvFileHandling:
 
         """
         if self.initials.case.python_dependent:
-            return "" + content
+            return content
         return f"--- {header} ---\n{content}"
 
     def create_include_files(self):
@@ -192,31 +192,9 @@ class IcvFileHandling:
 
             self.append_content_to_file(self.include_file, self.initials_pyaction.input_icvcontrol)
 
-            for icv_name in self.initials.icv_names:
-                well_name = self.initials.well_names[icv_name]
-                icv_date = self.initials.icv_dates[icv_name]
-
-                for file_type in [ICVMethod.CHOKE_WAIT, ICVMethod.CHOKE, ICVMethod.OPEN_WAIT, ICVMethod.OPEN]:
-                    if (
-                        self.icv_functions.custom_conditions is not None
-                        and file_type in self.icv_functions.custom_conditions
-                        and icv_name in self.icv_functions.custom_conditions[file_type]
-                    ):
-                        custom_criteria = self.icv_functions.custom_conditions[file_type][icv_name].keys()
-                        for criteria in custom_criteria:
-                            if criteria != "map":
-                                self.append_control_criteria_to_file(
-                                    self.include_file, well_name, icv_name, file_type, icv_date, criteria
-                                )
-                    else:
-                        logger.warning(
-                            f"No criteria found for well '{well_name}' icv '{icv_name}' " f"function '{file_type}'."
-                        )
-                        self.append_control_criteria_to_file(
-                            self.include_file, well_name, icv_name, file_type, icv_date, None
-                        )
+            self.custom_content_to_include(self.include_file)
             logger.info(f"Created include file: '{self.init_file}', '{self.include_file}'.")
-            content = self.add_section_header(self.initials_pyaction.summary, "SUMMARY")
+            content = self.initials_pyaction.summary
             self.append_content_to_file(summary_file_path, content)
             logger.info(f"Created summary file: '{summary_file_path}'.")
         else:
@@ -234,33 +212,40 @@ class IcvFileHandling:
 
             content = self.add_section_header(content, f"Completor version: {get_version()}")
 
-            for icv_name in self.initials.icv_names:
-                well_name = self.initials.well_names[icv_name]
-                icv_date = self.initials.icv_dates[icv_name]
-
-                for file_type in [ICVMethod.CHOKE_WAIT, ICVMethod.CHOKE, ICVMethod.OPEN_WAIT, ICVMethod.OPEN]:
-                    if (
-                        self.icv_functions.custom_conditions is not None
-                        and file_type in self.icv_functions.custom_conditions
-                        and icv_name in self.icv_functions.custom_conditions[file_type]
-                    ):
-                        custom_criteria = self.icv_functions.custom_conditions[file_type][icv_name].keys()
-                        for criteria in custom_criteria:
-                            if criteria != "map":
-                                self.append_control_criteria_to_file(
-                                    self.include_file_path, well_name, icv_name, file_type, icv_date, criteria
-                                )
-                    else:
-                        logger.warning(
-                            f"No criteria found for well '{well_name}' icv '{icv_name}' " f"function '{file_type}'."
-                        )
-                        self.append_control_criteria_to_file(
-                            self.include_file_path, well_name, icv_name, file_type, icv_date, None
-                        )
+            self.custom_content_to_include(self.include_file_path)
             logger.info(f"Created include file: '{self.include_file_path}'.")
             content = self.add_section_header(self.initials.summary, "SUMMARY")
             self.append_content_to_file(summary_file_path, content)
             logger.info(f"Created summary file: '{summary_file_path}'.")
+
+    def custom_content_to_include(self, file_path: Path):
+        """Append custom content for every icv and wells.
+
+        Args:
+            file_path: Path to the file.
+
+        """
+        for icv_name in self.initials.icv_names:
+            well_name = self.initials.well_names[icv_name]
+            icv_date = self.initials.icv_dates[icv_name]
+
+            for file_type in [ICVMethod.CHOKE_WAIT, ICVMethod.CHOKE, ICVMethod.OPEN_WAIT, ICVMethod.OPEN]:
+                if (
+                    self.icv_functions.custom_conditions is not None
+                    and file_type in self.icv_functions.custom_conditions
+                    and icv_name in self.icv_functions.custom_conditions[file_type]
+                ):
+                    custom_criteria = self.icv_functions.custom_conditions[file_type][icv_name].keys()
+                    for criteria in custom_criteria:
+                        if criteria != "map":
+                            self.append_control_criteria_to_file(
+                                file_path, well_name, icv_name, file_type, icv_date, criteria
+                            )
+                else:
+                    logger.warning(
+                        f"No criteria found for well '{well_name}' icv '{icv_name}' " f"function '{file_type}'."
+                    )
+                    self.append_control_criteria_to_file(file_path, well_name, icv_name, file_type, icv_date, None)
 
     def create_main_schedule_file(self, input_schedule: Path):
         """Creates the main output schedule file from the input schedule file.
@@ -321,9 +306,11 @@ class IcvFileHandling:
 
         """
         lines_path_to_include = []
-        base_include = "INCLUDE\n"
-        base_include_pyaction = "-------------------------------------\n-- START OF PYACTION SECTION\n"
-        end_include_pyaction = "-- END OF PYACTION SECTION \n -------------------------------------\n\n"
+        BASE_INCLUDE = "INCLUDE\n"
+        BASE_INCLUDE_PYACTION = "-------------------------------------\n-- START OF PYACTION SECTION\n"
+        END_INCLUDE_PYACTION = "-- END OF PYACTION SECTION \n -------------------------------------\n\n"
+        INIT_PYACTION = "PYACTION\nICVC_INIT SINGLE / \n\n"
+        INPUT_PYACTION = "PYACTION\nICVC_INCLUDE UNLIMITED / \n\n"
         for icvdate in sorted_dates:
             try:
                 lines_path_to_include.append(f"DATES\n {icvdate} /{date_comment[icvdate]}\n/\n")
@@ -342,17 +329,17 @@ class IcvFileHandling:
             # The includes of 'init.udq' and 'input.udq' should be placed close to the
             # include 'well' statement.
             if self.initials.case.python_dependent:
-                pyaction_init_to_include = f"PYACTION\nICVC_INIT SINGLE / \n\n '{self.init_file_path}' /\n"
-                pyaction_input_to_include = f"PYACTION\nICVC_INCLUDE UNLIMITED / \n\n '{self.include_file_path}' /\n"
+                pyaction_init_to_include = f"{INIT_PYACTION} '{self.init_file_path}' /\n"
+                pyaction_input_to_include = f"{INPUT_PYACTION} '{self.include_file_path}' /\n"
                 lines_path_to_include.append(
-                    f"{base_include_pyaction}\n{pyaction_init_to_include}\n{end_include_pyaction}"
+                    f"{BASE_INCLUDE_PYACTION}\n{pyaction_init_to_include}\n{END_INCLUDE_PYACTION}"
                 )
                 lines_path_to_include.append(
-                    f"{base_include_pyaction}\n{pyaction_input_to_include}\n{end_include_pyaction}"
+                    f"{BASE_INCLUDE_PYACTION}\n{pyaction_input_to_include}\n{END_INCLUDE_PYACTION}"
                 )
             else:
                 lines_path_to_include.append(
-                    f"{base_include} '{self.schedule_include_file_path}' /\n\n".replace("//", "/")
+                    f"{BASE_INCLUDE} '{self.schedule_include_file_path}' /\n\n".replace("//", "/")
                 )
         return lines_path_to_include
 

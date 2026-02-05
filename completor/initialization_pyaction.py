@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
 
 import pandas as pd
 
 from completor.constants import ICVMethod
+from completor.initialization import Initialization
 from completor.logger import logger
-from completor.read_casefile import ICVReadCasefile
 from completor.utils import reduce_newlines, remove_duplicates
 
 FUTSTP_INIT = 0
@@ -18,187 +17,8 @@ FUTC_INIT = 0
 FUP_INIT = 2
 
 
-class InitializationPyaction:
+class InitializationPyaction(Initialization):
     """Initializes dicts for easy access. Creates initials summary state."""
-
-    def __init__(self, case_object: ICVReadCasefile, schedule_content: str | None = None):
-        self.case = case_object
-
-        if schedule_content is None:
-            schedule_content = ""
-
-        self.schedule_content = schedule_content
-        self.icv_control_table = case_object.icv_control_table
-
-        self.custom_conditions = case_object.custom_conditions
-        self.find_icv_names()
-        self.find_well_names()
-        self.find_segments()
-        self.find_opening_init()
-        self.find_areas()
-        self.find_steps()
-        self.find_frequency()
-        self.find_icv_dates()
-        self.check_dates_in_wells()
-        self.find_icvs_per_well()
-        self.create_init_icvcontrol()
-        self.create_input_icvcontrol()
-        self.create_summary_content()
-
-    def get_props(self, icv_date: datetime, icv_name: str, property: str) -> str | int | float:
-        """Get function for properties in the ICVCONTROL table.
-
-        Args:
-            icv_date: Date for an update in icv properties.
-            icv_name: Icv name. A letter from A through Z.
-            property: Property to be obtained from the ICVCONTROL table.
-
-        Returns:
-            An ICVCONTROL table property at a given date and for a given icv_name.
-        """
-        temp1 = self.icv_control_table[self.icv_control_table["ICVDATE"] == icv_date]
-        temp2 = temp1[temp1["ICV"] == icv_name]
-        return temp2[property].iloc[0]
-
-    def find_icv_names(self):
-        """Find unique icv names in the case file ICVCONTROL keyword."""
-        self.icv_names = self.icv_control_table["ICV"].unique()
-
-    def find_well_names(self):
-        """Find unique active well names in the case file ICVCONTROL keyword."""
-
-        self.well_names = {}
-        for icv_name in self.icv_names:
-            self.well_names[icv_name] = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["WELL"].iloc[
-                0
-            ]
-
-        self.well_names_unique = list(set(self.well_names.values()))
-
-    def find_icvs_per_well(self):
-        """Find the number of unique valves pr well."""
-
-        self.icvs_per_well = {}
-        counted_icv_names = []
-        icv_well_combo = {}
-        for icv_name in self.icv_names:
-            if self.well_names[icv_name] not in self.icvs_per_well.keys():
-                self.icvs_per_well[self.well_names[icv_name]] = 1
-                counted_icv_names.append(icv_name)
-                icv_well_combo.update({icv_name: self.icvs_per_well[self.well_names[icv_name]]})
-            if icv_name not in counted_icv_names:
-                self.icvs_per_well[self.well_names[icv_name]] += 1
-                counted_icv_names.append(icv_name)
-                icv_well_combo.update({icv_name: self.icvs_per_well[self.well_names[icv_name]]})
-        self.icv_well_combo = icv_well_combo
-
-    def find_segments(self):
-        """Find segment number associated with each icv."""
-
-        self.segments = {}
-        for icv_name in self.icv_names:
-            self.segments[icv_name] = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["SEGMENT"].iloc[
-                0
-            ]
-
-    def find_areas(self):
-        """Find unique icv areas in the case file ICVCONTROL keyword."""
-        self.areas = {}
-        for icv_name in self.icv_names:
-            self.areas[icv_name] = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["AC-TABLE"].iloc[0]
-
-    def find_steps(self):
-        """Find opersteps and waitsteps in the case file ICVCONTROL keyword."""
-
-        self.operation_step = {}
-        self.wait_step = {}
-        for icv_name in self.icv_names:
-            self.operation_step[icv_name] = self.icv_control_table[self.icv_control_table["ICV"] == icv_name][
-                "OPERSTEP"
-            ].iloc[0]
-            self.wait_step[icv_name] = self.icv_control_table[self.icv_control_table["ICV"] == icv_name][
-                "WAITSTEP"
-            ].iloc[0]
-
-    def find_opening_init(self):
-        self.init_opening = {}
-        # Add another column for table name`?`
-        for icv_name in self.icv_names:
-            self.init_opening[icv_name] = self.icv_control_table[self.icv_control_table["ICV"] == icv_name][
-                "OPENING"
-            ].iloc[0]
-
-    def find_frequency(self):
-        """Find unique icv frequency in the case file ICVCONTROL keyword."""
-
-        self.frequency = {}
-        for icv_name in self.icv_names:
-            self.frequency[icv_name] = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["FREQ"].iloc[0]
-
-    def find_icv_dates(self):
-        """Find icv_dates in the case file ICVCONTROL keyword.
-
-        Note that this approach reserves icv names such as A and A2 for the first and
-        second appearance of icv A at dates number 1 and 2 in the ICVCONTROL table.
-        Similarly, B, B2 and B3 are reserved for the first, second and third appearance
-        of the icv B. All three appearances have distinct icv dates.
-        """
-
-        self.icv_dates = {}
-        for icv_name in self.icv_names:
-            # Get the ICVDATE for the current icv name
-            tmp_date = self.icv_control_table[self.icv_control_table["ICV"] == icv_name]["ICVDATE"]
-            # Convert the date string to a datetime object
-            tmp = datetime.strptime(tmp_date.iloc[0], "%d.%b.%Y").date()
-            # Format the datetime object as a string in the desired format: 01.JAN.1970
-            tmp = tmp.strftime("%d %b %Y").upper()
-            # Replace the first occurrence of the original date with the formatted date
-            # It is replaced and not set to avoid pandas warnings.
-            tmp_date = tmp_date.replace([0, tmp_date.iloc[0]], [0, tmp])
-            if len(tmp_date) == 1:  # If there is only one date for the icv name
-                self.icv_dates[icv_name] = tmp_date.iloc[0]
-            else:  # If there are multiple dates for the icv name
-                self.icv_dates[icv_name] = tmp_date.iloc[0]
-                for idx in range(1, len(tmp_date)):
-                    self.icv_dates[icv_name + str(idx + 1)] = tmp_date.iloc[idx]
-
-    def check_dates_in_wells(self) -> None:
-        """
-        Check if different ICV dates have been entered for ICVs placed on the same well.
-
-        This method iterates through the well names and ICV names in the
-        `well_names` dictionary and checks if different ICV dates have been
-        assigned to ICVs placed on the same well.
-        """
-        well_dates: dict[str, dict[str, str]] = {}
-        for well in set(self.well_names.values()):
-            well_dates[well] = {}
-            for icv_name in self.well_names:
-                if well == self.well_names[icv_name]:
-                    well_dates[well][icv_name] = self.icv_dates[icv_name]
-            if len(set(well_dates[well].values())) > 1:
-                logger.warning(
-                    "Different ICVDATE has been entered for ICVs placed on the same "
-                    f"well. Well {well} got several dates. See {well_dates[well]}."
-                )
-
-    def number_of_icvs(self, icv_name: str) -> int:
-        """Finds the number of icvs in the well from an input icv_name.
-
-        Args:
-            icv_name: Letter from A through ZZ
-
-        Returns:
-            The number of icvs in the current well.
-
-        """
-        number_of_icvs = 0
-        for icv in self.icv_names:
-            if self.well_names[icv] == self.well_names[icv_name]:
-                number_of_icvs += 1
-        if number_of_icvs > 26:
-            raise ValueError("Not more than twenty-six valves per well")
-        return number_of_icvs
 
     def create_init_icvcontrol(self):
         """Create content of the init_icvcontrol.udq file.
@@ -473,11 +293,23 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
           "ASSIGN FUXXX 0.1 /\nASSIGN FUBAR 2.5 /\n"
         -> "summary_state['FUXXX'] = 0.1\nsummary_state['FUBAR'] = 2.5\n"
 
+          "ASSIGN FUWATASD 0.01 /"
+        -> "summary_state['FUWATASD'] = 0.01\n"
+
+          "ASSIGN FUWATASD WELL 0.05 /"
+        -> "summary_state['FUWATASD:WELL'] = 0.05\n"
+
+          "ASSIGN FUWEL_x0 WELL(x0) SEG(x0) 0.5 /"
+        -> "summary_state['FUWEL_x0:WELL(x0):SEG(x0)'] = 0.5\n"
+
         Args:
             assign_text: Text containing ASSIGN statements.
 
         Returns:
             Pyaction format assignments.
+
+        Raises:
+            ValueError: If no constant value is defined at the end of ASSIGN statement.
 
         """
         if not assign_text:
@@ -491,19 +323,31 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
             body = re.sub(r"^\s*ASSIGN\s+", "", line, flags=re.IGNORECASE).strip()
             body = re.sub(r"\s*/\s*$", "", body).strip()
 
-            # Split into variable and value
+            # Split into parts
             parts = body.split()
-            if len(parts) >= 2:
-                var_name = parts[0]
-                var_value = parts[1]
-                # Try to convert to float for numeric values
-                try:
-                    var_value_num = float(var_value)
-                    var_value = repr(var_value_num)
-                except ValueError:
-                    # Keep original if not numeric (e.g., strings or expressions)
-                    pass
-                out_lines.append(f"summary_state['{var_name}'] = {var_value}")
+            if len(parts) < 2:
+                raise ValueError(f"ASSIGN statement must have at least variable and value: {line}")
+
+            # Last part should be the numeric value
+            var_value = parts[-1]
+            try:
+                var_value_num = float(var_value)
+                var_value = repr(var_value_num)
+            except ValueError:
+                raise ValueError(f"ASSIGN statement must end with a numeric value: {line}")
+
+            # All parts except the last form the variable key
+            var_parts = parts[:-1]
+
+            if len(var_parts) == 1:
+                # Simple case: ASSIGN FUXXX 0.1
+                var_name = var_parts[0]
+            else:
+                # Complex case: ASSIGN FUWEL_x0 WELL(x0) SEG(x0) 0.5
+                # Join with ":"
+                var_name = ":".join(var_parts)
+
+            out_lines.append(f"summary_state['{var_name}'] = {var_value}")
 
         return ("\n".join(out_lines) + "\n") if out_lines else ""
 
@@ -514,6 +358,15 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
         Example:
           "DEFINE SWCT_X0 SWCT WELL(X0) SEG(X0) * FWCT /\n"
         -> "summary_state['SWCT_X0'] = summary_state['SWCT:WELL(X0):SEG(X0)'] * summary_state['FWCT']\n"
+
+        Args:
+            define_text: Text containing DEFINE statements.
+
+        Returns:
+            Pyaction format assignments.
+
+        Raises:
+            ValueError: If DEFINE statement has fewer than 3 bodies (LHS, RHS value, RHS operator).
 
         """
         if not define_text:
@@ -529,23 +382,62 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
 
             # Split into tokens
             tokens = body.split()
-            if not tokens:
-                continue
+            if len(tokens) < 2:
+                raise ValueError(f"DEFINE statement must have at least LHS and RHS value: {line}")
 
             lhs = tokens[0]  # e.g., "SWCT_X0"
             rhs_tokens = tokens[1:]  # e.g., ["SWCT", "WELL(X0)", "SEG(X0)", "*", "FWCT"]
 
+            if not rhs_tokens:
+                raise ValueError(f"DEFINE statement must have RHS expression after LHS: {line}")
+
             # Build RHS: group consecutive non-operator tokens with ":", replace operators
             rhs_expr = ""
             i = 0
+            has_division = "/" in rhs_tokens
+            division_var = None
+
             while i < len(rhs_tokens):
                 token = rhs_tokens[i]
                 # Check if token is an operator
-                if token in ["+", "-", "*", "/", ">", "<", ">=", "<=", "==", "!="]:
-                    rhs_expr += f" {token} "
+                if token in ["+", "-", "*", "/", ">", "<", ">=", "<=", "==", "!=", "(", ")"]:
+                    if token == "/" and i + 1 < len(rhs_tokens):
+                        # Mark division for zero-check
+                        rhs_expr += f" {token} "
+                        # Look ahead to find the divisor variable
+                        i += 1
+                        divisor_group = [rhs_tokens[i]]
+                        i += 1
+                        while i < len(rhs_tokens) and rhs_tokens[i] not in [
+                            "+",
+                            "-",
+                            "*",
+                            "/",
+                            ">",
+                            "<",
+                            ">=",
+                            "<=",
+                            "==",
+                            "!=",
+                            ")",
+                            "\n",
+                        ]:
+                            divisor_group.append(rhs_tokens[i])
+                            i += 1
+                        divisor_key = ":".join(divisor_group)
+                        division_var = divisor_key
+                        rhs_expr += f"summary_state['{divisor_key}']"
+                        continue
+                    else:
+                        rhs_expr += f" {token} " if token not in ["(", ")"] else token
+                        i += 1
+                # Check if token is a numeric constant
+                elif re.match(r"^[+-]?\d+\.?\d*$", token):
+                    rhs_expr += token
                     i += 1
-                else:
-                    # Collect consecutive non-operator tokens and join with ":"
+                # Check if token is a variable (letters, underscores, numbers)
+                elif re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", token):
+                    # Collect consecutive non-operator tokens to form a key
                     group = [token]
                     i += 1
                     while i < len(rhs_tokens) and rhs_tokens[i] not in [
@@ -559,13 +451,31 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
                         "<=",
                         "==",
                         "!=",
+                        "(",
+                        ")",
+                        "\n",
                     ]:
                         group.append(rhs_tokens[i])
                         i += 1
+                    # Join with ":" to form the summary_state key
                     key = ":".join(group)
                     rhs_expr += f"summary_state['{key}']"
+                else:
+                    # Keep other tokens (like "-" in expressions) as is
+                    rhs_expr += token
+                    i += 1
 
-            out_lines.append(f"summary_state['{lhs}'] = {rhs_expr}")
+            # Clean up spacing in RHS expression
+            rhs_expr = re.sub(r"\s+", " ", rhs_expr).strip()
+
+            # Handle division by zero check
+            if has_division and division_var:
+                out_lines.append(f"if summary_state['{division_var}'] == 0:")
+                out_lines.append(f"    summary_state['{lhs}'] = 0")
+                out_lines.append("else:")
+                out_lines.append(f"    summary_state['{lhs}'] = {rhs_expr}")
+            else:
+                out_lines.append(f"summary_state['{lhs}'] = {rhs_expr}")
 
         return ("\n".join(out_lines) + "\n") if out_lines else ""
 
@@ -575,8 +485,6 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
         Example:
           "FUWCT_X0 > FUWCTBRN AND /\nFUPOS_X0 > 1 /\n"
         -> "summary_state['FUWCT_X0'] > summary_state['FUWCTBRN'] and\nsummary_state['FUPOS_X0'] > 1\n"
-
-        Extended examples:
           "SFOPN 'WELL1' 106 > 0.96 /"
         -> "summary_state['SFOPN:WELL1:106'] > 0.96\n"
 

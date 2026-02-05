@@ -14,9 +14,9 @@ from completor.read_casefile import ICVReadCasefile
 
 def assert_match_trailing_whitespace(actual: str, expected: str) -> None:
     """Remove trailing whitespace from each line."""
-    actual_striped = "\n".join(line.rstrip() for line in actual.splitlines()) + "\n"
-    expected_striped = "\n".join(line.rstrip() for line in expected.splitlines()) + "\n"
-    assert expected_striped == actual_striped
+    actual_stripped = "\n".join(line.rstrip() for line in actual.splitlines()) + "\n"
+    expected_stripped = "\n".join(line.rstrip() for line in expected.splitlines()) + "\n"
+    assert expected_stripped == actual_stripped
 
 
 _TESTDIR = Path(__file__).absolute().parent / "data"
@@ -371,7 +371,7 @@ CONTROL_CRITERIA -- Should not affect the UDQDEFINE file
 CONTROL_CRITERIA
   FUNCTION: [UDQ] -- A Dummy comment
   ICV: [B, C, A]
-DEFINE PRINT_B
+DEFINE PRINT_B PRINT_A / PRINT_C /
 
 /
 
