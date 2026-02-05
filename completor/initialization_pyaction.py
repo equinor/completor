@@ -571,13 +571,18 @@ summary_state['FUARE_{icv}'] = get_area_by_index(summary_state['FUPOS_{icv}'], f
         """
         if content is None:
             return ""
+        content_pyaction = ""
         for criteria in custom_data[current_icv]["map"]:
-            if "DEFINE" in content:
-                content_pyaction = self._define_to_pyaction(content)
-            elif "ASSIGN" in content:
-                content_pyaction = self._assign_to_pyaction(content)
-            else:
-                content_pyaction = self._expression_to_pyaction(content)
+            for line in content.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if "DEFINE" in line:
+                    content_pyaction += self._define_to_pyaction(line)
+                elif "ASSIGN" in line:
+                    content_pyaction += self._assign_to_pyaction(line)
+                else:
+                    content_pyaction += self._expression_to_pyaction(line)
             if criteria == "map":
                 pass
             if isinstance(content, dict):
