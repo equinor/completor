@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.0](https://github.com/equinor/completor/compare/v1.4.0...v1.5.0) (2026-01-23)
+
+
+### ✨ Features
+
+* Add icvc ([#300](https://github.com/equinor/completor/issues/300)) ([b32a967](https://github.com/equinor/completor/commit/b32a9677498cec19394f05c23c90927efeb1ca7c))
+
+
+### 🐛 Bug Fixes
+
+* Pytest test collection fix ([#309](https://github.com/equinor/completor/issues/309)) ([c2b40f6](https://github.com/equinor/completor/commit/c2b40f6922617187e4aa07bf759ccae2c45250f6))
+* Update numpy and pandas warning ([#303](https://github.com/equinor/completor/issues/303)) ([6b2dfc7](https://github.com/equinor/completor/commit/6b2dfc74d0566c0ea7df34a28eec747777543d06))
+
+
+### 📝 Documentation
+
+* ICV Control docusaurus ([#308](https://github.com/equinor/completor/issues/308)) ([c82d479](https://github.com/equinor/completor/commit/c82d479304649d8f22ab2f1667da2ce254f1d891))
+
 ## [1.4.0](https://github.com/equinor/completor/compare/v1.3.0...v1.4.0) (2025-10-15)
 
 
