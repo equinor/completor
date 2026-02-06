@@ -42,7 +42,7 @@ def test_output_fmu_directory(tmpdir):
     case = Path(input_dir / "field")
     case.mkdir(parents=True)
     sch = Path(input_dir / "include" / "schedule")
-    sch.mkdir(parents=True),
+    sch.mkdir(parents=True)
     shutil.copy(_TESTDIR / "init.case", case)
     shutil.copy(_TESTDIR_COMPLETOR / "welldefinition.testfile", sch)
     os.chdir(input_dir)
@@ -68,7 +68,7 @@ def test_output_fmu_default_name(tmpdir):
     case = Path(input_dir / "field")
     case.mkdir(parents=True)
     sch = Path(input_dir / "include" / "schedule")
-    sch.mkdir(parents=True),
+    sch.mkdir(parents=True)
     shutil.copy(_TESTDIR / "init.case", case)
     shutil.copy(_TESTDIR_COMPLETOR / "welldefinition.testfile", sch)
     os.chdir(input_dir)
@@ -79,6 +79,29 @@ def test_output_fmu_default_name(tmpdir):
         [
             "include/schedule/summary_icvc.sch",
             "include/schedule/include_icvc.sch",
+            "include/schedule/welldefinition_advanced.wells",
+        ]
+    )
+
+
+def test_output_python(tmpdir):
+    "Test FMU directory with default names"
+    input_dir = tmpdir / "lvl1" / "lvl2" / "lvl3"
+    case = Path(input_dir / "field")
+    case.mkdir(parents=True)
+    sch = Path(input_dir / "include" / "schedule")
+    sch.mkdir(parents=True)
+    shutil.copy(_TESTDIR / "init_py.case", case)
+    shutil.copy(_TESTDIR_COMPLETOR / "welldefinition.testfile", sch)
+    os.chdir(input_dir)
+
+    completor_runner(inputfile="field/init_py.case", schedulefile="include/schedule/welldefinition.testfile")
+
+    assert_files_exist_and_nonempty(
+        [
+            "include/schedule/summary_icvc.sch",
+            "include/schedule/init.py",
+            "include/schedule/include.py",
             "include/schedule/welldefinition_advanced.wells",
         ]
     )

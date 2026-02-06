@@ -18,6 +18,7 @@ from completor.exceptions.clean_exceptions import CompletorError
 from completor.get_version import get_version
 from completor.icv_file_handling import IcvFileHandling
 from completor.initialization import Initialization
+from completor.initialization_pyaction import InitializationPyaction
 from completor.launch_args_parser import get_parser
 from completor.logger import handle_error_messages, logger
 from completor.read_casefile import ICVReadCasefile, ReadCasefile
@@ -292,10 +293,11 @@ def create_icvc(case_content: str, schedule_content: str | None, inputs, new_seg
 
     case = ICVReadCasefile(case_content, schedule_content, new_segments)
     initials = Initialization(case, schedule_content)
+    initials_pyaction = InitializationPyaction(case, schedule_content)
     file_data = {
         "output_file_name": inputs.outputfile,
         "output_directory": inputs.outputdirectory,
         "schedule_file_path": inputs.schedulefile,
         "input_case_file": inputs.inputfile,
     }
-    IcvFileHandling(file_data, initials)
+    IcvFileHandling(file_data, initials, initials_pyaction)
