@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/equinor/completor/compare/v1.5.0...v1.6.0) (2026-02-06)
+
+
+### ✨ Features
+
+* ICV Control with PYACTION ([#315](https://github.com/equinor/completor/issues/315)) ([f7b9bdc](https://github.com/equinor/completor/commit/f7b9bdc9a86cbbb263f9b7e19ffd3205e19e2f58))
+
 ## [1.5.0](https://github.com/equinor/completor/compare/v1.4.0...v1.5.0) (2026-01-23)
 
 
