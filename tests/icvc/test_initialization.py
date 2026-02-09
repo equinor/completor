@@ -524,8 +524,6 @@ def test_input_file_text_two_icvs_pyaction():
 # OPM Flow PYACTION Module Script
 #
 
-import pandas as pd
-
 import opm_embedded
 
 ecl_state = opm_embedded.current_ecl_state
@@ -582,8 +580,6 @@ def test_input_file_text_three_icvs_pyaction():
 #
 # OPM Flow PYACTION Module Script
 #
-
-import pandas as pd
 
 import opm_embedded
 
@@ -740,8 +736,6 @@ def test_output_input_icvcontrol_file_two_icvs_opening_value_pyaction(log_warnin
 #
 # OPM Flow PYACTION Module Script
 #
-
-import pandas as pd
 
 import opm_embedded
 
@@ -932,8 +926,6 @@ def test_output_input_icvcontrol_file_three_icvs_pyaction(log_warning):
 # OPM Flow PYACTION Module Script
 #
 
-import pandas as pd
-
 import opm_embedded
 
 ecl_state = opm_embedded.current_ecl_state
@@ -1039,8 +1031,6 @@ def test_input_file_text_time_dependent_pyaction(log_warning):
 #
 # OPM Flow PYACTION Module Script
 #
-
-import pandas as pd
 
 import opm_embedded
 
@@ -1160,8 +1150,6 @@ def test_create_icv_opening_table_pyaction():
 #
 # OPM Flow PYACTION Module Script
 #
-
-import pandas as pd
 
 import opm_embedded
 
@@ -1307,8 +1295,6 @@ def test_create_icv_opening_table_cv_area_pyaction():
 # OPM Flow PYACTION Module Script
 #
 
-import pandas as pd
-
 import opm_embedded
 
 ecl_state = opm_embedded.current_ecl_state
@@ -1427,8 +1413,6 @@ def test_output_input_icvcontrol_file_two_icvs_opening_tableslog_warning_pyactio
 # OPM Flow PYACTION Module Script
 #
 
-import pandas as pd
-
 import opm_embedded
 
 ecl_state = opm_embedded.current_ecl_state
@@ -1537,8 +1521,6 @@ def test_output_input_icvcontrol_file_three_icvs_opening_tables_pyaction(log_war
 #
 # OPM Flow PYACTION Module Script
 #
-
-import pandas as pd
 
 import opm_embedded
 
@@ -1672,8 +1654,6 @@ def test_output_input_icvcontrol_custom_content_1_pyaction(log_warning):
 # OPM Flow PYACTION Module Script
 #
 
-import pandas as pd
-
 import opm_embedded
 
 ecl_state = opm_embedded.current_ecl_state
@@ -1783,8 +1763,6 @@ def test_output_input_icvcontrol_custom_content_2_pyaction(log_warning):
 #
 # OPM Flow PYACTION Module Script
 #
-
-import pandas as pd
 
 import opm_embedded
 

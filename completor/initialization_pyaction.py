@@ -32,8 +32,6 @@ class InitializationPyaction(Initialization):
 # OPM Flow PYACTION Module Script
 #
 
-import pandas as pd
-
 import opm_embedded
 
 ecl_state = opm_embedded.current_ecl_state
@@ -142,8 +140,6 @@ if (not 'setup_done' in locals()):
 #
 # OPM Flow PYACTION Module Script
 #
-
-import pandas as pd
 
 import opm_embedded
 
