@@ -158,7 +158,7 @@ def format_output(
             well.well_number, df_dual_rate_controlled_production
         )
         # output using ACTIONX (if-else) logic is dual RCP, density driven, and injection valve
-        if case.python_dependent:
+        if case.python_dependent and not df_density_driven.empty:
             # print the python file out
             # append all laterals for density driven, dual RCP, and injection valve
             # TODO(#274): Add functionality for dual RCP

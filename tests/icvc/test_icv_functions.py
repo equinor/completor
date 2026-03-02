@@ -5,7 +5,16 @@ import pytest
 from completor.constants import ICVMethod
 from completor.icv_functions import IcvFunctions
 from completor.initialization import Initialization
+from completor.initialization_pyaction import InitializationPyaction
 from completor.read_casefile import ICVReadCasefile
+
+
+def assert_match_trailing_whitespace(actual: str, expected: str) -> None:
+    """Remove trailing whitespace from each line."""
+    actual_stripped = "\n".join(line.rstrip() for line in actual.splitlines()) + "\n"
+    expected_stripped = "\n".join(line.rstrip() for line in expected.splitlines()) + "\n"
+    assert expected_stripped == actual_stripped
+
 
 CASE_TEXT = """
 SCHFILE
@@ -120,7 +129,161 @@ ICVCONTROL
 /
 """
 
+CASE_TEXT_OPENING_TABLE_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL1     1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+-- D: FUD
+-- H: FUH
+-- FAC: Maximum rate factor for icv-control
+-- FR: ICV function repetitions
+-- OSTP: OPERSTEP (NEXTSTEP in operation icv-functions)
+-- WSTP: WAITSTEP (NEXTSTEP in waiting icv-functions)
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS     ICVDATE  FREQ  MIN MAX OPENING FUD FUH  FUL  OPERSTEP WAITSTEP  INIT
+  WELL1   A     105        A   100  1.JAN.2022    30    0   1     T10   5   2  0.1       0.2      1.0  0.01
+  WELL1   B     106        A   100  1.JAN.2022    30    0   1      T5   5   2  0.1       0.2      1.0  0.02
+/
+
+PYTHON
+TRUE
+/
+"""
+
+CASE_TEXT_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL1     1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS       ICVDATE    FREQ  MIN MAX OPENING
+WELL1     A   105         A     100   1.JAN.2022      30    0   1     T10
+WELL1     B   106         A     100   1.JAN.2022      30    0   1      T5
+WELL2     E   142   0.1337      100   1.JAN.2022      30    0   1       0
+WELL2     F   143   0.1337      100   1.JAN.2022      30    0   1       0
+WELL2     G   144   0.1337      100   1.JAN.2022      30    0   1       0
+WELL3    BY   60   1.0077120   1320   1.JAN.2023      30    0   1       0
+WELL3    BX   60   0.0077120   1320   1.JAN.2023      30    0   1       0
+WELL4    A1   60   0.0077120   1320   1.JAN.2023      30    0   1       0
+/
+
+ICVTABLE
+A /
+-- postition cv area
+ 1	1 0
+ 2	1 0
+ 3	1 5.1191E-05
+ 4	1 1.3708E-04
+ 5	1 2.3026E-04
+ 6	1 3.7484E-04
+ 7	1 8.3050E-04
+ 8	1 2.3122E-03
+ 9  1 5.7019E-03
+10	1 7.7120E-03
+/
+
+PYTHON
+TRUE
+/
+"""
+
+CASE_TEXT_3WELLS_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+-- D: FUD
+-- H: FUH
+-- FAC: Maximum rate factor for icv-control
+-- FR: ICV function repetitions
+-- OSTP: OPERSTEP (NEXTSTEP in operation icv-functions)
+-- WSTP: WAITSTEP (NEXTSTEP in waiting icv-functions)
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS     ICVDATE  FREQ MIN MAX OPENING FUD FUH FUL  OPERSTEP WAITSTEP  INIT
+WELL2     E   142   0.1337     100  1.JAN.2022    30   0   1       0   5   2 0.1       0.2      1.0  0.07
+WELL2     F   143   0.1337     100  1.JAN.2022    30   0   1       0   5   2 0.1       0.2      1.0  0.08
+WELL2     G   144   0.1337     100  1.JAN.2022    30   0   1       0   5   2 0.1       0.2      1.0  0.09
+/
+
+ICVTABLE
+A /
+-- postition cv area
+ 1	1 0
+ 2	1 0
+ 3	1 5.1191E-05
+ 4	1 1.3708E-04
+ 5	1 2.3026E-04
+ 6	1 3.7484E-04
+ 7	1 8.3050E-04
+ 8	1 2.3122E-03
+ 9  1 5.7019E-03
+10	1 7.7120E-03
+/
+PYTHON
+TRUE
+/
+"""
+
+CASE_TEXT_OPENING_TABL_PY = """
+SCHFILE
+  'data/dummy_schedule_file.sch'
+/
+
+COMPLETION
+--WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
+--     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number
+--                       Diameter Diameter
+WELL1     1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+WELL2    1    0 99999     0.10   0.2159   0.00300      GP      1  AICD      1
+/
+
+ICVCONTROL
+-- D: FUD
+-- H: FUH
+-- FAC: Maximum rate factor for icv-control
+-- FR: ICV function repetitions
+-- OSTP: OPERSTEP (NEXTSTEP in operation icv-functions)
+-- WSTP: WAITSTEP (NEXTSTEP in waiting icv-functions)
+--
+-- WELL ICV SEGMENT AC-TABLE STEPS     ICVDATE  FREQ  MIN MAX OPENING FUD FUH  FUL  OPERSTEP WAITSTEP  INIT
+  WELL1   A     105        A   100  1.JAN.2022    30    0   1     T10   5   2  0.1       0.2      1.0  0.01
+  WELL1   B     106        A   100  1.JAN.2022    30    0   1      T5   5   2  0.1       0.2      1.0  0.02
+/
+
+PYTHON
+TRUE
+/
+"""
+
 TEST_ICV_FUNCTIONS = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT)))
+TEST_ICV_FUNCTIONS_PYACTION = IcvFunctions(InitializationPyaction(ICVReadCasefile(CASE_TEXT_PY)))
 ICV_NAME = "A"
 
 
@@ -198,6 +361,14 @@ def test_create_record2_choke_wait_stop():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_wait_stop_pyaction():
+    """Test creating record 2 in the OPM pyaction keyword for icvc.
+    Two ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait_stop("A")
+    expected_record2 = ""
+    assert record2 == expected_record2
+
+
 def test_create_record2_choke_wait():
     """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc"""
     criteria = 1
@@ -209,6 +380,19 @@ def test_create_record2_choke_wait():
 /
 """
     assert record2 == expected_record2
+
+
+def test_create_record2_choke_wait_pyaction():
+    """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc"""
+    criteria = 1
+    step = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait(ICV_NAME, step, criteria)
+    expected_record2 = """if (summary_state['FUTC_A'] <= summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2 and
+summary_state['FUT_A'] > summary_state['FUFRQ_A']
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_choke_wait_step2():
@@ -227,6 +411,22 @@ def test_create_record2_choke_wait_step2():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_wait_step2_pyaction():
+    """Tests creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+
+    criteria = 1
+    step = 2
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_wait("A", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTC_A'] <= summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2 and
+summary_state['FUT_A'] > summary_state['FUFRQ_A']
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_wait():
     """Tests creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -242,6 +442,21 @@ def test_create_record2_open_wait():
     assert record2 == expected_record2
 
 
+def test_create_record2_open_wait_pyaction():
+    """Tests creating record 2 in the OPM PyAction keyword for icvc.
+    Two ICVs."""
+    step = 1
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_wait("A", step, criteria)
+    expected_record2 = """if (summary_state['FUTO_A'] <= summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2 and
+summary_state['FUT_A'] > summary_state['FUFRQ_A']
+):
+"""
+
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_choke_ready_nicv2():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -254,6 +469,18 @@ def test_create_record2_choke_ready_nicv2():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_ready_nicv2_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_ready("A", criteria)
+    expected_record2 = """if (summary_state['FUTC_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_ready():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -263,7 +490,19 @@ def test_create_record2_open_ready():
   FUP_A = 2 /
 /
 """
-    assert record2 == expected_record2
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
+def test_create_record2_open_ready_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_ready("A", criteria)
+    expected_record2 = """if (summary_state['FUTO_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 2
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_choke_stop():
@@ -277,6 +516,17 @@ def test_create_record2_choke_stop():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_stop_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Three ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke_stop("E", 1)
+    expected_record2 = """if (summary_state['FUP_E'] == 4 and
+summary_state['FUTC_E'] != 0
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_stop_nicv2():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -288,6 +538,17 @@ def test_create_record2_open_stop_nicv2():
     assert record2 == expected_record2
 
 
+def test_create_record2_open_stop_nicv2_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_stop("A", 1)
+    expected_record2 = """if (summary_state['FUP_A'] == 3 and
+summary_state['FUTO_A'] != 0
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_wait_stop():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Two ICVs."""
@@ -297,6 +558,14 @@ def test_create_record2_open_wait_stop():
 /
 """
     assert record2 == expected_record2
+
+
+def test_create_record2_open_wait_stop_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open_wait_stop("A")
+    expected_record2 = ""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_choke_nicv2():
@@ -314,6 +583,21 @@ def test_create_record2_choke_nicv2():
     assert record2 == expected_record2
 
 
+def test_create_record2_choke_nicv2_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    step = 1
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke("A", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and
+summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTC_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 4
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_choke_step_gt1_nicv3():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
     Three ICVs."""
@@ -322,6 +606,21 @@ def test_create_record2_choke_step_gt1_nicv3():
     record2 = TEST_ICV_FUNCTIONS.create_record2_choke("E", step, criteria)
     expected_record2 = "  FUP_E = 4 /\n/\n"
     assert record2 == expected_record2
+
+
+def test_create_record2_choke_step_gt1_nicv3_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Three ICVs."""
+    step = 2
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_choke("E", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_E'] and
+summary_state['TIMESTEP'] > summary_state['FUL_E'] and
+summary_state['FUTC_E'] > summary_state['FUD_E'] and
+summary_state['FUP_E'] == 4
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 def test_create_record2_open_nicv2_step1():
@@ -339,6 +638,21 @@ def test_create_record2_open_nicv2_step1():
     assert record2 == expected_record2
 
 
+def test_create_record2_open_nicv2_step1_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc.
+    Two ICVs."""
+    step = 1
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open("A", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and
+summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTO_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 3
+):
+"""
+    assert_match_trailing_whitespace(record2, expected_record2)
+
+
 def test_create_record2_open_step_gt1_nicv2():
     """Test creating record 2 in the Eclipse ACTIONX keyword for icvc"""
     step = 2
@@ -346,6 +660,19 @@ def test_create_record2_open_step_gt1_nicv2():
     record2 = TEST_ICV_FUNCTIONS.create_record2_open("A", step, criteria)
     expected_record2 = "  FUP_A = 3 /\n/\n"
     assert record2 == expected_record2
+
+
+def test_create_record2_open_step_gt1_nicv2_pyaction():
+    """Test creating record 2 in the OPM Pyaction keyword for icvc"""
+    step = 2
+    criteria = 1
+    record2 = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open("A", step, criteria)
+    expected_record2 = """if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and
+summary_state['TIMESTEP'] > summary_state['FUL_A'] and
+summary_state['FUTO_A'] > summary_state['FUD_A'] and
+summary_state['FUP_A'] == 3
+):"""
+    assert_match_trailing_whitespace(record2, expected_record2)
 
 
 @pytest.mark.parametrize(
@@ -370,13 +697,7 @@ def test_create_record2_open_step_gt1_nicv2():
             3,
             ("UDQ\n  DEFINE FUARE_A (FUARE_A * 0.6) /\n  UPDATE FUARE_A NEXT /\n/\nNEXTSTEP\n  0.1 /\n"),
         ],
-        [
-            ICVMethod.CHOKE,
-            1,
-            ("UDQ\n  DEFINE FUARE_A (FUARE_A * 0.6) /\n  UPDATE FUARE_A NEXT /\n/\nNEXTSTEP\n  0.1 /\n"),
-        ],
         [ICVMethod.CHOKE, 2, "WSEGVALV\n  WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\n/\nNEXTSTEP\n  2.0 /\n"],
-        [ICVMethod.CHOKE_READY, 1, "UDQ\n  ASSIGN FUP_A 4 /\n/"],
         [ICVMethod.CHOKE_READY, 1, "UDQ\n  ASSIGN FUP_A 4 /\n/"],
         [ICVMethod.CHOKE_WAIT, 1, "UDQ\n  DEFINE FUTC_A FUTC_A + TIMESTEP /\n/\nNEXTSTEP\n  1.0 /\n"],
         [
@@ -389,6 +710,67 @@ def test_create_record2_open_step_gt1_nicv2():
 def test_create_actionx(method, step, expected):
     """Test creating an action in the Eclipse ACTIONX keyword for icvc"""
     result = TEST_ICV_FUNCTIONS.create_action(ICV_NAME, method, step)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "method, step, expected",
+    (
+        [
+            ICVMethod.OPEN,
+            2,
+            (
+                "\tsummary_state['FUPOS_A'] += 1\n"
+                "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+                "\tif summary_state['FUP_A'] == 4:\n"
+                "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+                "\t\tsummary_state['FUARE_A'] = area\n"
+                "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+                "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+                "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+            ),
+        ],
+        [
+            ICVMethod.OPEN_WAIT,
+            1,
+            "\tsummary_state['FUTO_A'] += summary_state['TIMESTEP'] \n\tschedule.insert_keywords(keyword_1day, report_step+1)\n",
+        ],
+        [ICVMethod.OPEN_READY, 1, "\tsummary_state['FUP_A'] = 3\n"],
+        [
+            ICVMethod.OPEN_STOP,
+            1,
+            "\tsummary_state['FUP_A'] = 2\n\tsummary_state['FUTO_A'] = 0\n\tsummary_state['FUT_A'] = 0\n",
+        ],
+        [
+            ICVMethod.CHOKE,
+            2,
+            (
+                "\tsummary_state['FUPOS_A'] -= 1\n"
+                "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+                "\tif summary_state['FUP_A'] == 4:\n"
+                "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+                "\t\tsummary_state['FUARE_A'] = area\n"
+                "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+                "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+                "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+            ),
+        ],
+        [ICVMethod.CHOKE_READY, 1, "\tsummary_state['FUP_A'] = 4\n"],
+        [
+            ICVMethod.CHOKE_WAIT,
+            1,
+            "\tsummary_state['FUTC_A'] += summary_state['TIMESTEP'] \n\tschedule.insert_keywords(keyword_1day, report_step+1)\n",
+        ],
+        [
+            ICVMethod.CHOKE_STOP,
+            1,
+            "\tsummary_state['FUP_A'] = 2\n\tsummary_state['FUTC_A'] = 0\n\tsummary_state['FUT_A'] = 0\n",
+        ],
+    ),
+)
+def test_create_pyaction(method, step, expected):
+    """Test creating an action in the OPM Pyaction keyword for icvc"""
+    result = TEST_ICV_FUNCTIONS_PYACTION.create_action(ICV_NAME, method, step, opening_table=True)
     assert result == expected
 
 
@@ -434,6 +816,29 @@ ENDACTIO
     assert choke_wait == expected_choke_wait
 
 
+def test_create_choke_wait_nicv2_pyaction(log_warning):
+    """Test creating the wait choke function"""
+    trigger_number_times = 100
+    trigger_minimum_interval = 10
+    actionx_repeater = 2
+    criteria = 1
+    choke_wait = TEST_ICV_FUNCTIONS_PYACTION.create_choke_wait(
+        "A", trigger_number_times, trigger_minimum_interval, actionx_repeater, criteria
+    )
+    expected_choke_wait = (
+        "# Pyaction ICVMethod.CHOKE_WAIT for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTC_A'] <= summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 2 and \n"
+        "summary_state['FUT_A'] > summary_state['FUFRQ_A'] \n"
+        "):\n"
+        "\tsummary_state['FUTC_A'] += summary_state['TIMESTEP'] \n"
+        "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(choke_wait, expected_choke_wait)
+
+
 def test_create_open_wait(log_warning):
     """Test to create the wait open icv function"""
     actionx_repeater = 2
@@ -474,6 +879,27 @@ ENDACTIO
     assert open_wait == expected_open_wait
 
 
+def test_create_open_wait_pyaction(log_warning):
+    """Test to create the wait open icv function"""
+    actionx_repeater = 2
+    criteria = 1
+    icv_name = "A"
+    open_wait = TEST_ICV_FUNCTIONS_PYACTION.create_open_wait(icv_name, actionx_repeater, criteria)
+
+    expected_open_wait = (
+        "# Pyaction ICVMethod.OPEN_WAIT for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTO_A'] <= summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 2 and \n"
+        "summary_state['FUT_A'] > summary_state['FUFRQ_A'] \n"
+        "):\n"
+        "\tsummary_state['FUTO_A'] += summary_state['TIMESTEP'] \n"
+        "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open_wait, expected_open_wait)
+
+
 def test_create_choke_ready(log_warning):
     """Test to create the ready choke icv function"""
     trigger_number_times = 10000
@@ -496,6 +922,27 @@ ENDACTIO
 """
 
     assert choke_ready == expected_choke_ready
+
+
+def test_create_choke_ready_pyaction(log_warning):
+    """Test to create the ready choke icv function"""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    criteria = 1
+
+    choke_ready = TEST_ICV_FUNCTIONS_PYACTION.create_choke_ready(
+        "A", criteria, trigger_number_times, trigger_minimum_interval
+    )
+
+    expected_choke_ready = (
+        "# Pyaction ICVMethod.CHOKE_READY for A criteria number 1\n"
+        "if (summary_state['FUTC_A'] > summary_state['FUD_A'] and\n"
+        "summary_state['FUP_A'] == 2 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 4\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(choke_ready, expected_choke_ready)
 
 
 def test_create_open_ready(log_warning):
@@ -523,6 +970,27 @@ ENDACTIO
     assert open_ready == expected_open_ready
 
 
+def test_create_open_ready_pyaction(log_warning):
+    """Test to create the ready open icv function."""
+    criteria = 1
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+
+    open_ready = TEST_ICV_FUNCTIONS_PYACTION.create_open_ready(
+        ICV_NAME, criteria, trigger_number_times, trigger_minimum_interval
+    )
+
+    expected_open_ready = (
+        "# Pyaction ICVMethod.OPEN_READY for A criteria number 1\n"
+        "if (summary_state['FUTO_A'] > summary_state['FUD_A'] and\n"
+        "summary_state['FUP_A'] == 2 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 3\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open_ready, expected_open_ready)
+
+
 def test_create_choke_stop(log_warning):
     """Test to create the stop choke icv function."""
     trigger_number_times = 10000
@@ -545,6 +1013,27 @@ ENDACTIO
 """
 
     assert choke_stop == expected_choke_stop
+
+
+def test_create_choke_stop_pyaction(log_warning):
+    """Test to create the stop choke icv function."""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    choke_stop = TEST_ICV_FUNCTIONS_PYACTION.create_choke_stop(
+        ICV_NAME, 1, trigger_number_times, trigger_minimum_interval
+    )
+    expected_choke_stop = (
+        "# Pyaction ICVMethod.CHOKE_STOP for A criteria number 1\n"
+        "if (summary_state['FUP_A'] == 4 and \n"
+        "summary_state['FUTC_A'] != 0 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 2\n"
+        "\tsummary_state['FUTC_A'] = 0\n"
+        "\tsummary_state['FUT_A'] = 0\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke_stop, expected_choke_stop)
 
 
 def test_create_open_stop_nicv2(log_warning):
@@ -570,6 +1059,27 @@ ENDACTIO\n
     assert open_stop == expected_open_stop
 
 
+def test_create_open_stop_nicv2_pyaction(log_warning):
+    """Test to create the stop open icv function."""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    open_stop = TEST_ICV_FUNCTIONS_PYACTION.create_open_stop(
+        ICV_NAME, 1, trigger_number_times, trigger_minimum_interval
+    )
+    expected_open_stop = (
+        "# Pyaction ICVMethod.OPEN_STOP for A criteria number 1\n"
+        "if (summary_state['FUP_A'] == 3 and \n"
+        "summary_state['FUTO_A'] != 0 \n"
+        "):\n"
+        "\tsummary_state['FUP_A'] = 2\n"
+        "\tsummary_state['FUTO_A'] = 0\n"
+        "\tsummary_state['FUT_A'] = 0\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(open_stop, expected_open_stop)
+
+
 def test_create_open_wait_stop_nicv3(log_warning):
     """Test to create the stop open icv function."""
     trigger_number_times = 10000
@@ -592,6 +1102,24 @@ ENDACTIO
 """
 
     assert open_stop == expected
+
+
+def test_create_open_wait_stop_nicv3_pyaction(log_warning):
+    """Test to create the stop open icv function."""
+    trigger_number_times = 10000
+    trigger_minimum_interval = ""
+    open_stop = TEST_ICV_FUNCTIONS_PYACTION.create_open_stop("E", 1, trigger_number_times, trigger_minimum_interval)
+    expected = (
+        "# Pyaction ICVMethod.OPEN_STOP for E criteria number 1\n"
+        "if (summary_state['FUP_E'] == 3 and \n"
+        "summary_state['FUTO_E'] != 0 \n"
+        "):\n"
+        "\tsummary_state['FUP_E'] = 2\n"
+        "\tsummary_state['FUTO_E'] = 0\n"
+        "\tsummary_state['FUT_E'] = 0\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open_stop, expected)
 
 
 def test_create_choke_nicv2(log_warning):
@@ -636,6 +1164,38 @@ ENDACTIO
 """
 
     assert choke == expected_choke
+
+
+def test_create_choke_nicv2_pyaction(log_warning):
+    """Test to create the choke icv function."""
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 2
+
+    choke = TEST_ICV_FUNCTIONS_PYACTION.create_choke(
+        "A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
+    )
+
+    expected_choke = (
+        "# Pyaction ICVMethod.CHOKE for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTC_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 4 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] -= 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke, expected_choke)
 
 
 def test_create_choke_opening_table(log_warning):
@@ -757,6 +1317,56 @@ ENDACTIO
     assert choke == expected
 
 
+def test_create_choke_opening_table_pyaction(log_warning):
+    """Test to create the choke icv function when an opening table exists."""
+    icv_table_a_b = """
+ICVTABLE
+-- Valve name
+A /
+-- Position  Cv       Area
+1           1.0  0.0000474
+2           1.0  0.0000790
+3           1.0  0.0001317
+4           1.0  0.0002195
+5           1.0  0.0003659
+6           1.0  0.0006098
+7           1.0  0.0010160
+8           1.0  0.0016938
+9           1.0  0.0028230
+10          1.0  0.13370
+/"""
+
+    case = ICVReadCasefile(CASE_TEXT_PY + icv_table_a_b)
+    initials = InitializationPyaction(case)
+    tests = IcvFunctions(initials)
+
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 6
+
+    choke = tests.create_choke("A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater)
+
+    expected = (
+        "# Pyaction ICVMethod.CHOKE for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTC_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 4 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] -= 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 1.337e-01 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(choke, expected)
+
+
 def test_create_choke_icv_nicv3_criteria2(log_warning):
     """Test to create the close icv function."""
     trigger_number_times = 1
@@ -843,6 +1453,37 @@ ENDACTIO
 """
 
     assert open == expected_open
+
+
+def test_create_open_nicv2_pyaction(log_warning):
+    """Test to create the open icv function."""
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 2
+
+    open = TEST_ICV_FUNCTIONS_PYACTION.create_open(
+        ICV_NAME, criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
+    )
+
+    expected_open = (
+        "# Pyaction ICVMethod.OPEN for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTO_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 3 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] += 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 7.712e-03 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+    assert_match_trailing_whitespace(open, expected_open)
 
 
 def test_create_open_opening_table(log_warning):
@@ -937,6 +1578,58 @@ ENDACTIO
     assert choke == expected_open
 
 
+def test_create_open_opening_table_pyaction(log_warning):
+    """Test to create the open icv function when a opening table exists."""
+
+    icv_table_a_b = """
+ICVTABLE
+-- Valve name
+A /
+-- Position  Cv       Area
+1           1.0  0.0000474
+2           1.0  0.0000790
+3           1.0  0.0001317
+4           1.0  0.0002195
+5           1.0  0.0003659
+6           1.0  0.0006098
+7           1.0  0.0010160
+8           1.0  0.0016938
+9           1.0  0.0028230
+10          1.0  0.13370
+/"""
+
+    case = ICVReadCasefile(CASE_TEXT_OPENING_TABLE_PY + icv_table_a_b)
+    initials = InitializationPyaction(case)
+    tests = IcvFunctions(initials)
+
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 4
+
+    choke = tests.create_open("A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater)
+
+    expected = (
+        "# Pyaction ICVMethod.OPEN for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+        "summary_state['FUTO_A'] > summary_state['FUD_A'] and \n"
+        "summary_state['FUP_A'] == 3 \n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] += 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 1.337e-01 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke, expected)
+
+
 def test_create_open_opening_table_custom_cv(log_warning):
     """Test to create the open icv function when a opening table exists."""
     icv_table_a_b = """
@@ -1028,6 +1721,57 @@ ENDACTIO
     assert choke == expected_open
 
 
+def test_create_open_opening_table_custom_cv_pyaction(log_warning):
+    """Test to create the open icv function when a opening table exists."""
+    icv_table_a_b = """
+ICVTABLE
+-- Valve name
+A /
+-- Position  Cv       Area
+1           10  0.0000474
+2           10  0.0000790
+3           10  0.0001317
+4           10  0.0002195
+5           10  0.0003659
+6           10  0.0006098
+7           10  0.0010160
+8           10  0.0016938
+9           10  0.0028230
+10          10  0.13370
+/"""
+
+    case = ICVReadCasefile(CASE_TEXT_OPENING_TABLE_PY + icv_table_a_b)
+    initials = InitializationPyaction(case)
+    tests = IcvFunctions(initials)
+
+    trigger_number_times = 1
+    trigger_minimum_interval = ""
+    criteria = 1
+    actionx_repeater = 4
+
+    choke = tests.create_open("A", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater)
+
+    expected = (
+        "# Pyaction ICVMethod.OPEN for A criteria number 1\n"
+        "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and\n"
+        "summary_state['TIMESTEP'] > summary_state['FUL_A'] and\n"
+        "summary_state['FUTO_A'] > summary_state['FUD_A'] and\n"
+        "summary_state['FUP_A'] == 3\n"
+        "):\n"
+        "\tsummary_state['FUPOS_A'] += 1\n"
+        "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+        "\tif summary_state['FUP_A'] == 4:\n"
+        "\t\tarea = get_area_by_index(summary_state['FUPOS_A'], flow_trim_A)\n"
+        "\t\tsummary_state['FUARE_A'] = area\n"
+        "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 105 1.0 FUARE_A 5* 1.337e+00 /\\n/'\n"
+        "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+        "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+        "\n"
+    )
+
+    assert_match_trailing_whitespace(choke, expected)
+
+
 def test_create_open_nicv3_criteria1(log_warning):
     """Test to create the open icv function."""
     trigger_number_times = 1
@@ -1091,6 +1835,14 @@ ENDACTIO
     assert open_wait_stop == expected_open_wait_stop
 
 
+def test_open_wait_stop_pyaction(log_warning):
+    """Test creating the choke-wait-stop function."""
+    icv_function = IcvFunctions(InitializationPyaction(ICVReadCasefile(CASE_TEXT_PY)))
+    open_wait_stop = icv_function.create_open_wait_stop("A", None)
+    expected_open_wait_stop = ""
+    assert_match_trailing_whitespace(open_wait_stop, expected_open_wait_stop)
+
+
 def test_open_wait_stop_crit1(log_warning):
     """Test creating the choke-wait-stop function."""
     icv_function = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT)))
@@ -1110,6 +1862,14 @@ ENDACTIO
     assert open_wait_stop == expected_open_wait_stop
 
 
+def test_open_wait_stop_crit1_pyaction(log_warning):
+    """Test creating the choke-wait-stop function."""
+    icv_function = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT_PY)))
+    open_wait_stop = icv_function.create_open_wait_stop("A", 1)
+    expected_open_wait_stop = ""
+    assert open_wait_stop == expected_open_wait_stop
+
+
 def test_choke_wait_stop(log_warning):
     """Test creating the choke-wait-stop function."""
     icv_function = IcvFunctions(Initialization(ICVReadCasefile(CASE_TEXT)))
@@ -1126,6 +1886,14 @@ UDQ
 ENDACTIO
 
 """
+    assert choke_wait_stop == expected_choke_wait_stop
+
+
+def test_choke_wait_stop_pyaction(log_warning):
+    """Test creating the choke-wait-stop function."""
+    icv_function = IcvFunctions(InitializationPyaction(ICVReadCasefile(CASE_TEXT_PY)))
+    choke_wait_stop = icv_function.create_choke_wait_stop("A", 1)
+    expected_choke_wait_stop = ""
     assert choke_wait_stop == expected_choke_wait_stop
 
 
@@ -1442,12 +2210,13 @@ class TestFunctionName:
 class TestCustomCondition:
     case = ICVReadCasefile(CASE_TEXT)
     icv_function = IcvFunctions(Initialization(case))
+    case_pyaction = ICVReadCasefile(CASE_TEXT_PY)
+    icv_function_py = IcvFunctions(InitializationPyaction(case_pyaction))
 
     def test_insert_custom_conditions_open_wait_a(self, log_warning):
         """Test to insert custom conditions in open icv function."""
         actionx_repeater = 2
-
-        self.icv_function.initials.custom_conditions = {
+        custom_method = {
             ICVMethod.OPEN_WAIT: {
                 "A": {
                     "1": """AD WELL(x0) > AP WELL(x0) AND /
@@ -1457,6 +2226,8 @@ SFOPN WELL(x0) SEG(x1) > 0.96 /""",
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = custom_method
+        self.icv_function_py.initials.custom_conditions = custom_method
 
         expected = """ACTIONX
   WO1A_001 10000 10 /
@@ -1494,14 +2265,30 @@ NEXTSTEP
 ENDACTIO
 ENDACTIO
 """
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_WAIT for A criteria number 1\n"
+            "if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+            "summary_state['FUTO_A'] <= summary_state['FUD_A'] and \n"
+            "summary_state['FUP_A'] == 2 and \n"
+            "summary_state['FUT_A'] > summary_state['FUFRQ_A'] and \n"
+            "summary_state['AD:WELL1'] > summary_state['AP:WELL1'] and\n"
+            "summary_state['FURAT_A'] > summary_state['FURAT_B'] and\n"
+            "summary_state['SFOPN:WELL1:106'] > 0.96\n"
+            "):\n"
+            "\tsummary_state['FUTO_A'] += summary_state['TIMESTEP'] \n"
+            "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+            "\n"
+        )
         open = self.icv_function.create_open_wait("A", actionx_repeater, 1)
+        open_pyaction = self.icv_function_py.create_open_wait("A", actionx_repeater, 1)
 
         assert open == expected
+        assert_match_trailing_whitespace(open_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_wait_a_rep4(self, log_warning):
         """Test to insert custom conditions in open icv function."""
         actionx_repeater = 4
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_WAIT: {
                 "A": {
                     "1": """ADC WELL(x0) > APC WELL(x0) AND /
@@ -1511,6 +2298,8 @@ SFOPN WELL(x0) SEG(x1) > 0.96 /""",
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         expected = """ACTIONX
   WO1A_001 10000 10 /
@@ -1584,15 +2373,30 @@ ENDACTIO
 ENDACTIO
 ENDACTIO
 """
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_WAIT for A criteria number 1\n"
+            "if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+            "summary_state['FUTO_A'] <= summary_state['FUD_A'] and \n"
+            "summary_state['FUP_A'] == 2 and \n"
+            "summary_state['FUT_A'] > summary_state['FUFRQ_A'] and \n"
+            "summary_state['ADC:WELL1'] > summary_state['APC:WELL1'] and\n"
+            "summary_state['FURAT_A'] > summary_state['FURAT_B'] and\n"
+            "summary_state['SFOPN:WELL1:106'] > 0.96\n"
+            "):\n"
+            "\tsummary_state['FUTO_A'] += summary_state['TIMESTEP'] \n"
+            "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+            "\n"
+        )
         open = self.icv_function.create_open_wait("A", actionx_repeater, 1)
+        open_pyaction = self.icv_function_py.create_open_wait("A", actionx_repeater, 1)
 
         assert open == expected
+        assert_match_trailing_whitespace(open_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_wait_e(self, log_warning):
         """Test to insert custom conditions in open icv function."""
         actionx_repeater = 2
-
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_WAIT: {
                 "A": {
                     "1": """HEI WELL(x0) > HADE WELL(x1) AND /
@@ -1607,6 +2411,8 @@ SFOPN WELL(x0) SEG(x2) > 0.42 WELL(x1)/""",
                 },
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         expected = """ACTIONX
   WO1E_001 10000 10 /
@@ -1644,8 +2450,24 @@ NEXTSTEP
 ENDACTIO
 ENDACTIO
 """
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_WAIT for E criteria number 1\n"
+            "if (summary_state['TIMESTEP'] > summary_state['FUL_E'] and \n"
+            "summary_state['FUTO_E'] <= summary_state['FUD_E'] and \n"
+            "summary_state['FUP_E'] == 2 and \n"
+            "summary_state['FUT_E'] > summary_state['FUFRQ_E'] and \n"
+            "summary_state['HEI:WELL2'] > summary_state['HADE:WELL2'] and\n"
+            "summary_state['FURAT_E:very:larger:than:FURAT_G'] and\n"
+            "summary_state['SFOPN:WELL2:144'] > 0.42 WELL2\n"
+            "):\n"
+            "\tsummary_state['FUTO_E'] += summary_state['TIMESTEP'] \n"
+            "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+            "\n"
+        )
         open = self.icv_function.create_open_wait("E", actionx_repeater)
+        open_pyaction = self.icv_function_py.create_open_wait("E", actionx_repeater)
         assert open == expected
+        assert_match_trailing_whitespace(open_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_b(self, log_warning):
         """Test to insert custom conditions in open icv function."""
@@ -1653,8 +2475,7 @@ ENDACTIO
         trigger_minimum_interval = ""
         criteria = 1
         actionx_repeater = 4
-
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN: {
                 "A": {
                     "1": """WWIR WELL(x0) > WUMXVDJ2 WELL(x1) AND /
@@ -1669,6 +2490,8 @@ SFOPN WELL(x1) SEG(x0) < 0.99 /""",
                 },
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         expected = """ACTIONX
   OP1B_001 1 /
@@ -1734,11 +2557,35 @@ ENDACTIO
 ENDACTIO
 """
 
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN for B criteria number 1\n"
+            "if (summary_state['TIMESTEP'] < summary_state['FUH_B'] and \n"
+            "summary_state['TIMESTEP'] > summary_state['FUL_B'] and \n"
+            "summary_state['FUTO_B'] > summary_state['FUD_B'] and \n"
+            "summary_state['FUP_B'] == 3 and \n"
+            "summary_state['WWIR:WELL1'] > summary_state['WUMXVDJ2:WELL1'] and\n"
+            "summary_state['FURMAX_B'] < summary_state['FURAT_A'] and\n"
+            "summary_state['SFOPN:WELL1:106'] < 0.99\n"
+            "):\n"
+            "\tsummary_state['FUPOS_B'] += 1\n"
+            "\tschedule.insert_keywords(keyword_01day, report_step+1)\n"
+            "\tif summary_state['FUP_B'] == 4:\n"
+            "\t\tarea = get_area_by_index(summary_state['FUPOS_B'], flow_trim_A)\n"
+            "\t\tsummary_state['FUARE_B'] = area\n"
+            "\t\tkeyword_wsegvalv = f'WSEGVALV\\n WELL1 106 1.0 FUARE_B 5* 7.712e-03 /\\n/'\n"
+            "\t\tschedule.insert_keywords(keyword_wsegvalv, report_step)\n"
+            "\t\tschedule.insert_keywords(keyword_2day, report_step+1)\n"
+            "\n"
+        )
         open = self.icv_function.create_open(
+            "B", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
+        )
+        open_pyaction = self.icv_function_py.create_open(
             "B", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
         )
 
         assert open == expected
+        assert_match_trailing_whitespace(open_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_e(self, log_warning):
         """Test to insert custom conditions in open icv function."""
@@ -1821,7 +2668,6 @@ ENDACTIO
 ENDACTIO
 ENDACTIO
 """
-
         open = self.icv_function.create_open(
             "E", criteria, trigger_number_times, trigger_minimum_interval, actionx_repeater
         )
@@ -1832,7 +2678,7 @@ ENDACTIO
         """Test creating record 2 in the Eclipse ACTIONX keyword for icvc."""
         step = 2
         criteria = 1
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN: {
                 "E": {
                     "1": """WWIR WELL(x0) > WUMXVDJ2 WELL(x0) AND /
@@ -1842,24 +2688,43 @@ SFOPN WELL(x0) SEG(x0) < 0.99 /"""
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         open = TEST_ICV_FUNCTIONS.create_record2_open("E", step, criteria)
+        open_pyaction = TEST_ICV_FUNCTIONS_PYACTION.create_record2_open("E", step, criteria)
         expected = "  FUP_E = 3 /\n/\n"
+        expected_pyaction = (
+            "if (summary_state['TIMESTEP'] < summary_state['FUH_E'] and\n"
+            "summary_state['TIMESTEP'] > summary_state['FUL_E'] and\n"
+            "summary_state['FUTO_E'] > summary_state['FUD_E'] and \n"
+            "summary_state['FUP_E'] == 3\n"
+            "):"
+        )
         assert open == expected
+        assert_match_trailing_whitespace(open_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_stop_a(self, log_warning):
         """Test to insert custom conditions in open icv function."""
-        self.icv_function.initials.custom_conditions = {
-            ICVMethod.OPEN_STOP: {"A": {"1": """FURMAX_x0 < FURAT_x0  /""", "map": {"1": {"x0": "A"}}}}
-        }
+        method = {ICVMethod.OPEN_STOP: {"A": {"1": """FURMAX_x0 < FURAT_x0  /""", "map": {"1": {"x0": "A"}}}}}
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         expected = """  FUP_A = 3 AND /
   FUTO_A != 0 AND /
   FURMAX_A < FURAT_A /
 /
 """
+        expected_pyaction = (
+            "if (summary_state['FUP_A'] == 3 and \n"
+            "summary_state['FUTO_A'] != 0 and \n"
+            "summary_state['FURMAX_A'] < summary_state['FURAT_A']\n"
+            "):"
+        )
         open = self.icv_function.create_record2_open_stop("A", 1)
+        open_pyaction = self.icv_function_py.create_record2_open_stop("A", 1)
         assert open == expected
+        assert_match_trailing_whitespace(open_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_stop_e(self, log_warning):
         """Test to insert custom conditions in open icv function."""
@@ -1888,7 +2753,7 @@ SFOPN WELL(x0) SEG(x0) < 0.99 /"""
     def test_insert_custom_conditions_open_stop_criteria1_record2(self, log_warning):
         """Test to insert custom conditions in open icv function."""
 
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_STOP: {
                 "E": {
                     "1": """FURMAX_x0 > FURAT_x1 /
@@ -1897,6 +2762,8 @@ SFOPN WELL(x0) SEG(x0) < 0.99 /"""
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         expected = """  FUP_E = 3 AND /
   FUTO_E != 0 AND /
@@ -1904,8 +2771,17 @@ SFOPN WELL(x0) SEG(x0) < 0.99 /"""
   sin(pi) = -0 /
 /
 """
+        expected_pyaction = (
+            "if (summary_state['FUP_E'] == 3 and \n"
+            "summary_state['FUTO_E'] != 0 and \n"
+            "summary_state['FURMAX_E'] > summary_state['FURAT_F']\n"
+            "sin(pi) = -0\n"
+            "):"
+        )
         open = self.icv_function.create_record2_open_stop("E", 1)
+        open_pyaction = self.icv_function_py.create_record2_open_stop("E", 1)
         assert open == expected
+        assert_match_trailing_whitespace(open_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_wait_stop(self, log_warning):
         """Test to insert custom conditions in open-wait-stop icv function."""
@@ -1926,8 +2802,11 @@ SFOPN WELL(x0) SEG(x0) < 0.99 /"""
   pi == 3 /
 /
 """
+        expected_pyaction = ""
         open_wait_stop = self.icv_function.create_record2_open_wait_stop("E")
+        open_wait_stop_pyaction = self.icv_function_py.create_record2_open_wait_stop("E")
         assert open_wait_stop == expected_open_wait_stop
+        assert_match_trailing_whitespace(open_wait_stop_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_choke_wait_stop(self, log_warning):
         """Test to insert custom conditions in choke-wait-stop icv function."""
@@ -1956,8 +2835,11 @@ UDQ
 ENDACTIO
 
 """
+        expected_pyaction = ""
         choke_wait_stop = self.icv_function.create_choke_wait_stop("E", 1)
+        choke_wait_stop_pyaction = self.icv_function_py.create_choke_wait_stop("E")
         assert choke_wait_stop == expected_choke_wait_stop
+        assert_match_trailing_whitespace(choke_wait_stop_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_wait_stop_criteria(self, log_warning):
         """Test to insert custom conditions in choke-wait-stop icv function."""
@@ -1986,16 +2868,18 @@ UDQ
 ENDACTIO
 
 """
+        expected_pyaction = ""
         open_wait_stop = self.icv_function.create_open_wait_stop("E", 1)
+        open_wait_stop_pyaction = self.icv_function_py.create_open_wait_stop("E", 1)
         assert open_wait_stop == expected_open_wait_stop
+        assert_match_trailing_whitespace(open_wait_stop_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_ready_nicv2(self, log_warning):
         """Test to create the ready open icv function."""
         criteria = 1
         trigger_number_times = 10000
         trigger_minimum_interval = ""
-
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_READY: {
                 "A": {
                     "1": """WWIR WELL1 > WUMXNG3W WELL1 AND /
@@ -2006,9 +2890,24 @@ SFOPN WELL1 105 < 0.99 /
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         open_ready = self.icv_function.create_open_ready("A", criteria, trigger_number_times, trigger_minimum_interval)
-
+        open_ready_py = self.icv_function_py.create_open_ready(
+            "A", criteria, trigger_number_times, trigger_minimum_interval
+        )
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_READY for A criteria number 1\n"
+            "if (summary_state['FUTO_A'] > summary_state['FUD_A'] and\n"
+            "summary_state['FUP_A'] == 2 and \n"
+            "summary_state['WWIR:WELL1'] > summary_state['WUMXNG3W:WELL1'] and\n"
+            "summary_state['Left_B'] > summary_state['Right_B'] and\n"
+            "summary_state['SFOPN:WELL1:105'] < 0.99\n"
+            "):\n"
+            "\tsummary_state['FUP_A'] = 3\n"
+            "\n"
+        )
         expected_open_ready = """ACTIONX
   READYO1A 10000 /
   FUTO_A > FUD_A AND /
@@ -2025,6 +2924,7 @@ ENDACTIO
 
 """
         assert open_ready == expected_open_ready
+        assert_match_trailing_whitespace(open_ready_py, expected_pyaction)
 
     def test_insert_custom_conditions_open_ready_nicv3_criteria1(self, log_warning):
         """Test to create the ready open icv function."""
@@ -2032,7 +2932,7 @@ ENDACTIO
         trigger_number_times = 10000
         trigger_minimum_interval = ""
 
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_READY: {
                 "E": {
                     "1": """WWIR WELL1 > WUMXNG3W WELL1 AND /
@@ -2043,8 +2943,24 @@ ENDACTIO
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         open_ready = self.icv_function.create_open_ready("E", criteria, trigger_number_times, trigger_minimum_interval)
+        open_ready_pyaction = self.icv_function_py.create_open_ready(
+            "E", criteria, trigger_number_times, trigger_minimum_interval
+        )
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_READY for E criteria number 1\n"
+            "if (summary_state['FUTO_E'] > summary_state['FUD_E'] and\n"
+            "summary_state['FUP_E'] == 2 and \n"
+            "summary_state['WWIR:WELL1'] > summary_state['WUMXNG3W:WELL1'] and\n"
+            "summary_state['Left_F'] > summary_state['Right_F'] and\n"
+            "summary_state['SFOPN:WELL1:105'] < 0.99\n"
+            "):\n"
+            "\tsummary_state['FUP_E'] = 3\n"
+            "\n"
+        )
 
         expected_open_ready = """ACTIONX
   READYO1E 10000 /
@@ -2062,14 +2978,14 @@ ENDACTIO
 
 """
         assert open_ready == expected_open_ready
+        assert_match_trailing_whitespace(open_ready_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_ready_nicv3_criteria13(self, log_warning):
         """Test to create the ready open icv function."""
         criteria = 13
         trigger_number_times = 10000
         trigger_minimum_interval = ""
-
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_READY: {
                 "E": {
                     "13": """WWIR WELL1 > WUMXNG3W WELL1 AND /
@@ -2080,8 +2996,24 @@ ENDACTIO
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         open_ready = self.icv_function.create_open_ready("E", criteria, trigger_number_times, trigger_minimum_interval)
+        open_ready_pyaction = self.icv_function_py.create_open_ready(
+            "E", criteria, trigger_number_times, trigger_minimum_interval
+        )
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_READY for E criteria number 13\n"
+            "if (summary_state['FUTO_E'] > summary_state['FUD_E'] and\n"
+            "summary_state['FUP_E'] == 2 and \n"
+            "summary_state['WWIR:WELL1'] > summary_state['WUMXNG3W:WELL1'] and\n"
+            "summary_state['Left_F'] > summary_state['Right_F'] and\n"
+            "summary_state['SFOPN:WELL1:105'] < 0.99\n"
+            "):\n"
+            "\tsummary_state['FUP_E'] = 3\n"
+            "\n"
+        )
 
         expected_open_ready = """ACTIONX
   REDYO13E 10000 /
@@ -2099,14 +3031,14 @@ ENDACTIO
 
 """
         assert open_ready == expected_open_ready
+        assert_match_trailing_whitespace(open_ready_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_rdy_nicv3_crit9_ICV_EE(self, log_warning):
         """Test to create the ready open icv function."""
         criteria = 9
         trigger_number_times = 10000
         trigger_minimum_interval = ""
-
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_READY: {
                 "BY": {
                     "9": """TEST_x0 < TEST_x1  /
@@ -2115,8 +3047,22 @@ ENDACTIO
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         open_ready = self.icv_function.create_open_ready("BY", criteria, trigger_number_times, trigger_minimum_interval)
+        open_ready_pyaction = self.icv_function_py.create_open_ready(
+            "BY", criteria, trigger_number_times, trigger_minimum_interval
+        )
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_READY for BY criteria number 9\n"
+            "if (summary_state['FUTO_BY'] > summary_state['FUD_BY'] and\n"
+            "summary_state['FUP_BY'] == 2 and \n"
+            "summary_state['TEST_BY'] < summary_state['TEST_BX']\n"
+            "):\n"
+            "\tsummary_state['FUP_BY'] = 3\n"
+            "\n"
+        )
 
         expected_open_ready = """ACTIONX
   REDYO9BY 10000 /
@@ -2132,6 +3078,7 @@ ENDACTIO
 
 """
         assert open_ready == expected_open_ready
+        assert_match_trailing_whitespace(open_ready_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_open_rdy_nicv3_crit13_ICV_EE(self, log_warning):
         """Test to create the ready open icv function."""
@@ -2139,7 +3086,7 @@ ENDACTIO
         trigger_number_times = 10000
         trigger_minimum_interval = ""
 
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.OPEN_READY: {
                 "BY": {
                     "13": """WWIR WELL1 > WUMXNG3W WELL1 /
@@ -2148,8 +3095,22 @@ ENDACTIO
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         open_ready = self.icv_function.create_open_ready("BY", criteria, trigger_number_times, trigger_minimum_interval)
+        open_ready_pyaction = self.icv_function_py.create_open_ready(
+            "BY", criteria, trigger_number_times, trigger_minimum_interval
+        )
+        expected_pyaction = (
+            "# Pyaction ICVMethod.OPEN_READY for BY criteria number 13\n"
+            "if (summary_state['FUTO_BY'] > summary_state['FUD_BY'] and\n"
+            "summary_state['FUP_BY'] == 2 and \n"
+            "summary_state['WWIR:WELL1'] > summary_state['WUMXNG3W:WELL1']\n"
+            "):\n"
+            "\tsummary_state['FUP_BY'] = 3\n"
+            "\n"
+        )
 
         expected_open_ready = """ACTIONX
   RDYO13BY 10000 /
@@ -2165,17 +3126,28 @@ ENDACTIO
 
 """
         assert open_ready == expected_open_ready
+        assert_match_trailing_whitespace(open_ready_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_record2_choke_nicv2(self, log_warning):
         """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
         Two ICVs."""
         step = 1
         criteria = 1
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.CHOKE: {"A": {"2": """ SHOULD NOT BE WRITTEN, Default output!!!""", "map": {"2": {"x0": "A"}}}}
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         record2 = self.icv_function.create_record2_choke("A", step, criteria)
+        record2_pyaction = self.icv_function_py.create_record2_choke("A", step, criteria)
+        expected_pyaction = (
+            "if (summary_state['TIMESTEP'] < summary_state['FUH_A'] and \n"
+            "summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+            "summary_state['FUTC_A'] > summary_state['FUD_A'] and \n"
+            "summary_state['FUP_A'] == 4 \n"
+            "):"
+        )
         expected_record2 = """  FUTSTP < FUH_A AND /
   FUTSTP > FUL_A AND /
   FUTC_A > FUD_A AND /
@@ -2183,13 +3155,14 @@ ENDACTIO
 /
 """
         assert record2 == expected_record2
+        assert_match_trailing_whitespace(record2_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_record2_choke_nicv3_c1337(self, log_warning):
         """Test creating record 2 in the Eclipse ACTIONX keyword for icvc.
         Two ICVs."""
         step = 1
         criteria = 1337
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.CHOKE: {
                 "E": {
                     "1337": """  WWIR WELL(x0) > WUMXNG3W WELL(x0) AND /
@@ -2200,8 +3173,21 @@ SFOPN WELL(x0) 321 > 0.01 /
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
 
         record2 = self.icv_function.create_record2_choke("E", step, criteria)
+        record2_pyaction = self.icv_function_py.create_record2_choke("E", step, criteria)
+        expected_pyaction = (
+            "if (summary_state['TIMESTEP'] < summary_state['FUH_E'] and \n"
+            "summary_state['TIMESTEP'] > summary_state['FUL_E'] and \n"
+            "summary_state['FUTC_E'] > summary_state['FUD_E'] and \n"
+            "summary_state['FUP_E'] == 4 and \n"
+            "summary_state['WWIR:WELL2'] > summary_state['WUMXNG3W:WELL2'] and\n"
+            "summary_state['FURAT_E'] > summary_state['FURMAX_E'] and\n"
+            "summary_state['SFOPN:WELL2:321'] > 0.01\n"
+            "):"
+        )
         expected_record2 = """  FUTSTP < FUH_E AND /
   FUTSTP > FUL_E AND /
   FUTC_E > FUD_E AND /
@@ -2212,6 +3198,7 @@ SFOPN WELL(x0) 321 > 0.01 /
 /
 """
         assert record2 == expected_record2
+        assert_match_trailing_whitespace(record2_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_choke_wait_nicv2(self, log_warning):
         """Test creating the wait choke function"""
@@ -2219,7 +3206,7 @@ SFOPN WELL(x0) 321 > 0.01 /
         trigger_minimum_interval = 10
         actionx_repeater = 2
         criteria = 1
-        self.icv_function.initials.custom_conditions = {
+        method = {
             ICVMethod.CHOKE_WAIT: {
                 "A": {
                     "1": """    WWIR WELL(x0) > WUMXNG3W WELL(x0) AND
@@ -2232,8 +3219,29 @@ SFOPN WELL(x0) 321 > 0.01 /
                 }
             }
         }
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
         choke_wait = self.icv_function.create_choke_wait(
             "A", trigger_number_times, trigger_minimum_interval, actionx_repeater, criteria
+        )
+        choke_wait_pyaction = self.icv_function_py.create_choke_wait(
+            "A", trigger_number_times, trigger_minimum_interval, actionx_repeater, criteria
+        )
+        expected_pyaction = (
+            "# Pyaction ICVMethod.CHOKE_WAIT for A criteria number 1\n"
+            "if (summary_state['TIMESTEP'] > summary_state['FUL_A'] and \n"
+            "summary_state['FUTC_A'] <= summary_state['FUD_A'] and \n"
+            "summary_state['FUP_A'] == 2 and \n"
+            "summary_state['FUT_A'] > summary_state['FUFRQ_A'] and \n"
+            "summary_state['WWIR:WELL1'] > summary_state['WUMXNG3W:WELL1'] and\n"
+            "summary_state['FURAT_A'] > summary_state['FURMAX_A'] and\n"
+            "summary_state['SFOPN:WELL1:106'] > 0.99 and\n"
+            "summary_state['SFOPN:'WELL1':105'] > 0.01\n"
+            "1337 summary_state['x2']\n"
+            "):\n"
+            "\tsummary_state['FUTC_A'] += summary_state['TIMESTEP'] \n"
+            "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+            "\n"
         )
         expected_choke_wait = """ACTIONX
   WC1A_001 100 10 /
@@ -2276,6 +3284,7 @@ ENDACTIO
 ENDACTIO
 """
         assert choke_wait == expected_choke_wait
+        assert_match_trailing_whitespace(choke_wait_pyaction, expected_pyaction)
 
     def test_insert_custom_conditions_choke_wait_nicv3_empty(self, log_warning):
         """Test creating the wait choke function, note criteria does not match"""
@@ -2283,11 +3292,24 @@ ENDACTIO
         trigger_minimum_interval = 10
         actionx_repeater = 1
         criteria = 1
-        self.icv_function.initials.custom_conditions = {
-            ICVMethod.CHOKE_WAIT: {"E": {"3": "DONT WRITE ME", "map": {"1": {"x0": "E"}}}}
-        }
+        method = {ICVMethod.CHOKE_WAIT: {"E": {"3": "DONT WRITE ME", "map": {"1": {"x0": "E"}}}}}
+        self.icv_function.initials.custom_conditions = method
+        self.icv_function_py.initials.custom_conditions = method
         choke_wait = self.icv_function.create_choke_wait(
             "E", trigger_number_times, trigger_minimum_interval, actionx_repeater, criteria
+        )
+        choke_wait_pyaction = self.icv_function_py.create_choke_wait(
+            "E", trigger_number_times, trigger_minimum_interval, actionx_repeater, criteria
+        )
+        expected_pyaction = (
+            "# Pyaction ICVMethod.CHOKE_WAIT for E criteria number 1\n"
+            "if (summary_state['FUTC_E'] <= summary_state['FUD_E'] and \n"
+            "summary_state['FUP_E'] == 2 and \n"
+            "summary_state['FUT_E'] > summary_state['FUFRQ_E'] \n"
+            "):\n"
+            "\tsummary_state['FUTC_E'] += summary_state['TIMESTEP'] \n"
+            "\tschedule.insert_keywords(keyword_1day, report_step+1)\n"
+            "\n"
         )
         expected_choke_wait = """ACTIONX
   WC1E_001 100 10 /
@@ -2305,6 +3327,7 @@ NEXTSTEP
 ENDACTIO
 """
         assert choke_wait == expected_choke_wait
+        assert_match_trailing_whitespace(choke_wait_pyaction, expected_pyaction)
 
     def test_error_empty_custom_content(self, log_warning):
         """Test creating the wait choke function"""
@@ -2324,10 +3347,6 @@ ENDACTIO
 
 class Test_CustomConditionCustomCase:
     CASE_CUSTOM_TEXT = """
-SCHFILE
-  'data/dummy_schedule_file.sch'
-/
-
 COMPLETION
 --WELL Branch Start  End   Screen    Well/ Roughness Annulus Nvalve Valve Device
 --     Number    mD   mD   Tubing   Casing Roughness Content /Joint  Type Number

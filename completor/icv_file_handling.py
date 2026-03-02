@@ -10,15 +10,19 @@ from completor import icv_functions
 from completor.constants import ICVMethod
 from completor.get_version import get_version
 from completor.initialization import Initialization
+from completor.initialization_pyaction import InitializationPyaction
 from completor.logger import logger
 
 
 class IcvFileHandling:
     """Create paths, directories, and output files."""
 
-    def __init__(self, file_data: dict, initials: Initialization):
+    def __init__(
+        self, file_data: dict, initials: Initialization, initials_pyaction: InitializationPyaction | None = None
+    ) -> None:
         self.initials = initials
-        self.icv_functions = icv_functions.IcvFunctions(initials)
+        self.initials_pyaction = initials_pyaction
+        self.icv_functions = icv_functions.IcvFunctions(initials, initials_pyaction)
         self.current_working_directory = Path.cwd()
         self.output_file_name = Path(file_data["output_file_name"])
         self.output_directory = Path(file_data["output_directory"])
@@ -149,6 +153,8 @@ class IcvFileHandling:
             Content with the header added.
 
         """
+        if self.initials.case.python_dependent:
+            return content
         return f"--- {header} ---\n{content}"
 
     def create_include_files(self):
@@ -172,27 +178,53 @@ class IcvFileHandling:
         base_folder.mkdir(parents=True, exist_ok=True)
 
         summary_file_path = Path(base_folder / "summary_icvc.sch")
-        self.include_file_path = Path(base_folder / "include_icvc.sch")
-        self.schedule_include_file_path = Path(base_include_path / "include_icvc.sch")
-        # case_file_path = Path(base_folder / "case_icvc.case")
+        if self.initials.case.python_dependent:
+            self.init_file = Path(base_folder / "init.py")
+            self.init_file_path = Path(base_include_path / "init.py")
+            self.include_file = Path(base_folder / "include.py")
+            self.include_file_path = Path(base_include_path / "include.py")
 
-        summary_file_path.unlink(missing_ok=True)
-        self.include_file_path.unlink(missing_ok=True)
-        # case_file_path.unlink(missing_ok=True)
+            summary_file_path.unlink(missing_ok=True)
+            self.init_file.unlink(missing_ok=True)
+            self.include_file.unlink(missing_ok=True)
 
-        content = self.add_section_header(self.initials.init_icvcontrol, "INIT")
-        self.append_content_to_file(self.include_file_path, content)
+            self.append_content_to_file(self.init_file, self.initials_pyaction.init_icvcontrol)
 
-        content = self.add_section_header(self.initials.input_icvcontrol, "INPUT")
-        self.append_content_to_file(self.include_file_path, content)
+            self.append_content_to_file(self.include_file, self.initials_pyaction.input_icvcontrol)
 
-        content = self.add_section_header(self.initials.summary, "SUMMARY")
-        self.append_content_to_file(summary_file_path, content)
-        logger.info(f"Created summary file: '{summary_file_path}'.")
+            self.custom_content_to_include(self.include_file)
+            logger.info(f"Created include file: '{self.init_file}', '{self.include_file}'.")
+            content = self.initials_pyaction.summary
+            self.append_content_to_file(summary_file_path, content)
+            logger.info(f"Created summary file: '{summary_file_path}'.")
+        else:
+            self.include_file_path = Path(base_folder / "include_icvc.sch")
+            self.schedule_include_file_path = Path(base_include_path / "include_icvc.sch")
 
-        content = self.add_section_header(content, f"Completor version: {get_version()}")
-        # self.append_content_to_file(case_file_path, content)
+            summary_file_path.unlink(missing_ok=True)
+            self.include_file_path.unlink(missing_ok=True)
 
+            content = self.add_section_header(self.initials.init_icvcontrol, "INIT")
+            self.append_content_to_file(self.include_file_path, content)
+
+            content = self.add_section_header(self.initials.input_icvcontrol, "INPUT")
+            self.append_content_to_file(self.include_file_path, content)
+
+            content = self.add_section_header(content, f"Completor version: {get_version()}")
+
+            self.custom_content_to_include(self.include_file_path)
+            logger.info(f"Created include file: '{self.include_file_path}'.")
+            content = self.add_section_header(self.initials.summary, "SUMMARY")
+            self.append_content_to_file(summary_file_path, content)
+            logger.info(f"Created summary file: '{summary_file_path}'.")
+
+    def custom_content_to_include(self, file_path: Path):
+        """Append custom content for every icv and wells.
+
+        Args:
+            file_path: Path to the file.
+
+        """
         for icv_name in self.initials.icv_names:
             well_name = self.initials.well_names[icv_name]
             icv_date = self.initials.icv_dates[icv_name]
@@ -207,16 +239,13 @@ class IcvFileHandling:
                     for criteria in custom_criteria:
                         if criteria != "map":
                             self.append_control_criteria_to_file(
-                                self.include_file_path, well_name, icv_name, file_type, icv_date, criteria
+                                file_path, well_name, icv_name, file_type, icv_date, criteria
                             )
                 else:
                     logger.warning(
                         f"No criteria found for well '{well_name}' icv '{icv_name}' " f"function '{file_type}'."
                     )
-                    self.append_control_criteria_to_file(
-                        self.include_file_path, well_name, icv_name, file_type, icv_date, None
-                    )
-        logger.info(f"Created include file: '{self.include_file_path}'.")
+                    self.append_control_criteria_to_file(file_path, well_name, icv_name, file_type, icv_date, None)
 
     def create_main_schedule_file(self, input_schedule: Path):
         """Creates the main output schedule file from the input schedule file.
@@ -277,8 +306,11 @@ class IcvFileHandling:
 
         """
         lines_path_to_include = []
-        base_include = "INCLUDE\n"
-
+        BASE_INCLUDE = "INCLUDE\n"
+        BASE_INCLUDE_PYACTION = "-------------------------------------\n-- START OF PYACTION SECTION\n"
+        END_INCLUDE_PYACTION = "-- END OF PYACTION SECTION \n -------------------------------------\n\n"
+        INIT_PYACTION = "PYACTION\nICVC_INIT SINGLE / \n\n"
+        INPUT_PYACTION = "PYACTION\nICVC_INCLUDE UNLIMITED / \n\n"
         for icvdate in sorted_dates:
             try:
                 lines_path_to_include.append(f"DATES\n {icvdate} /{date_comment[icvdate]}\n/\n")
@@ -296,7 +328,19 @@ class IcvFileHandling:
                 continue
             # The includes of 'init.udq' and 'input.udq' should be placed close to the
             # include 'well' statement.
-            lines_path_to_include.append(f"{base_include} '{self.schedule_include_file_path}' /\n\n".replace("//", "/"))
+            if self.initials.case.python_dependent:
+                pyaction_init_to_include = f"{INIT_PYACTION} '{self.init_file_path}' /\n"
+                pyaction_input_to_include = f"{INPUT_PYACTION} '{self.include_file_path}' /\n"
+                lines_path_to_include.append(
+                    f"{BASE_INCLUDE_PYACTION}\n{pyaction_init_to_include}\n{END_INCLUDE_PYACTION}"
+                )
+                lines_path_to_include.append(
+                    f"{BASE_INCLUDE_PYACTION}\n{pyaction_input_to_include}\n{END_INCLUDE_PYACTION}"
+                )
+            else:
+                lines_path_to_include.append(
+                    f"{BASE_INCLUDE} '{self.schedule_include_file_path}' /\n\n".replace("//", "/")
+                )
         return lines_path_to_include
 
 
