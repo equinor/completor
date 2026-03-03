@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "completor"
-version = "1.5.0"
+version = "1.6.0"
 description = "Advanced multi-segmented well completion tool."
 authors = ["Equinor ASA <opensource@equinor.com>"]
 repository = "https://github.com/equinor/completor"
