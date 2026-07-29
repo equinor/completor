@@ -217,8 +217,8 @@ def create_tubing_segments(
         # Create tubing layer based on the definition of COMPLETION keyword in the case file.
         # Read all segments except PA (which has no segment length).
         df_temp = df_completion.copy(deep=True)
-        start_measured_depth = df_temp[Headers.START_MEASURED_DEPTH].to_numpy()
-        end_measured_depth = df_temp[Headers.END_MEASURED_DEPTH].to_numpy()
+        start_measured_depth = df_temp[Headers.START_MEASURED_DEPTH].to_numpy(copy=True)
+        end_measured_depth = df_temp[Headers.END_MEASURED_DEPTH].to_numpy(copy=True)
         # Fix the start and end.
         start_measured_depth[0] = max(
             df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0], float(start_measured_depth[0])
@@ -249,8 +249,8 @@ def create_tubing_segments(
         end_welsegs_depth = 0.5 * (well_segments[:-1] + well_segments[1:])
         # The start of the very first segment in any branch is the actual startMD of the first segment.
         start_welsegs_depth = np.insert(end_welsegs_depth[:-1], 0, well_segments[0], axis=None)
-        start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir[Headers.START_MEASURED_DEPTH].to_numpy()
-        end_compsegs_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy()
+        start_compsegs_depth: npt.NDArray[np.float64] = df_reservoir[Headers.START_MEASURED_DEPTH].to_numpy(copy=True)
+        end_compsegs_depth = df_reservoir[Headers.END_MEASURED_DEPTH].to_numpy(copy=True)
         # If there are gaps in compsegs and there are schedule segments that fit in the gaps,
         # insert segments into the compsegs gaps.
         gaps_compsegs = start_compsegs_depth[1:] - end_compsegs_depth[:-1]
@@ -514,9 +514,9 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     Returns:
         Updated well information.
     """
-    number_of_devices = df_well[Headers.NUMBER_OF_DEVICES].to_numpy()
-    annulus_zone = df_well[Headers.ANNULUS_ZONE].to_numpy()
-    segments_descending = df_well[Headers.SEGMENT_DESC].to_numpy()
+    number_of_devices = df_well[Headers.NUMBER_OF_DEVICES].to_numpy(copy=True)
+    annulus_zone = df_well[Headers.ANNULUS_ZONE].to_numpy(copy=True)
+    segments_descending = df_well[Headers.SEGMENT_DESC].to_numpy(copy=True)
     number_of_rows = df_well.shape[0]
     for i in range(number_of_rows):
         if segments_descending[i] != Headers.ADDITIONAL_SEGMENT:
