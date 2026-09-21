@@ -182,7 +182,6 @@ VARIANT_ICVNAME_NA = """
 ICVCONTROL
 -- WELL ICV SEGMENT AC-TABLE STEPS    ICVDATE   FREQ  MIN MAX OPENING
     A-1  NA      97   0.1337    60 1.JAN.2033     90    0   1       0
-    A-1  NB      97   0.1337    60 1.JAN.2033     90    0   1       0
 /
 """
 

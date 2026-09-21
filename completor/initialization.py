@@ -62,8 +62,6 @@ class Initialization:
 
     def find_icv_names(self):
         """Find unique icv names in the case file ICVCONTROL keyword."""
-        if self.icv_control_table["ICV"].isna().any():
-            raise ValueError("Python reads NA as NaN, thus ICV name cannot be NA!")
         self.icv_names = self.icv_control_table["ICV"].unique()
 
     def find_well_names(self):
@@ -223,6 +221,8 @@ class Initialization:
         init_icvcontrol += f"\n{60 * '-'}\n-- Balance criteria\n\n"
         sub_table = {}
         for icv_name, icv_date in self.icv_dates.items():
+            if "na" in icv_name.lower():
+                raise ValueError("Python reads NA as NaN, thus ICV name cannot be NA!")
             if icv_date not in sub_table:
                 sub_table[icv_date] = {}
             if icv_name not in sub_table[icv_date]:
