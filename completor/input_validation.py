@@ -9,6 +9,8 @@ from completor.constants import Content, Headers
 from completor.exceptions.clean_exceptions import CompletorError
 from completor.exceptions.exceptions import CaseReaderFormatError
 
+pd.set_option("future.no_silent_downcasting", True)
+
 
 def set_default_packer_section(df_comp: pd.DataFrame) -> pd.DataFrame:
     """Set the default value for the packer section.

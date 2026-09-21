@@ -59,6 +59,8 @@ if (not 'setup_done' in locals()):
         init_icvcontrol_pyaction += "# Balance criteria\n\n"
         sub_table = {}
         for icv_name, icv_date in self.icv_dates.items():
+            if "na" in icv_name.lower():
+                raise ValueError("Python reads NA as NaN, thus ICV name cannot be NA!")
             if icv_date not in sub_table:
                 sub_table[icv_date] = {}
             if icv_name not in sub_table[icv_date]:

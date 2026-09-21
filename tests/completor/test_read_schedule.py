@@ -90,7 +90,7 @@ def test_reading_compdat():
     Test the whole COMPLETION_DATA and specific on WELL10.
     """
     true_compdat = Path(_TESTDIR / "compdat.true")
-    df_true = pd.read_csv(true_compdat, sep=",", dtype=str)
+    df_true = pd.read_csv(true_compdat, sep=",", dtype=object)
     df_true = parse.remove_string_characters(df_true)
     columns1 = [Headers.I, Headers.J, Headers.K, Headers.K2]
     columns2 = [Headers.CONNECTION_FACTOR, Headers.FORMATION_PERMEABILITY_THICKNESS, Headers.SKIN]
@@ -108,7 +108,7 @@ def test_reading_compsegs():
     Test it on WELL12 branch 1.
     """
     true_compsegs = Path(_TESTDIR / "compsegs_well12.true")
-    df_true = pd.read_csv(true_compsegs, sep=",", dtype=str)
+    df_true = pd.read_csv(true_compsegs, sep=",", dtype=object)
     columns1 = [Headers.I, Headers.J, Headers.K, Headers.BRANCH]
     columns2 = [Headers.START_MEASURED_DEPTH, Headers.END_MEASURED_DEPTH]
     df_true[columns1] = df_true[columns1].astype(np.int64)
@@ -153,7 +153,7 @@ def test_reading_welsegs():
     true_welsegs1 = parse.remove_string_characters(true_welsegs1)
     true_welsegs1 = true_welsegs1.astype({Headers.TRUE_VERTICAL_DEPTH: np.float64, Headers.MEASURED_DEPTH: np.float64})
     true_well4 = Path(_TESTDIR / "welsegs_well4.true")
-    true_well4 = pd.read_csv(true_well4, sep=",", dtype=str)
+    true_well4 = pd.read_csv(true_well4, sep=",", dtype=object)
     true_well4 = parse.remove_string_characters(true_well4)
     true_well4 = true_well4.astype(
         {
