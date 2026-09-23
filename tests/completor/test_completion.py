@@ -967,6 +967,25 @@ def test_lumping_segment_2():
     pd.testing.assert_frame_equal(df_test, df_true)
 
 
+def test_correct_annulus_zone():
+    """Remove disconnected zones but retain zones with devices or perforations."""
+    df_well = pd.DataFrame(
+        {
+            Headers.ANNULUS_ZONE: [0, 1, 1, 2, 2, 3, 3],
+            Headers.NUMBER_OF_DEVICES: [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+            Headers.DEVICE_TYPE: [Content.INFLOW_CONTROL_DEVICE] * 6 + [Content.PERFORATED],
+        },
+        index=[10, 20, 30, 40, 50, 60, 70],
+    )
+    expected = df_well.copy(deep=True)
+    expected[Headers.ANNULUS_ZONE] = [0, 0, 0, 2, 2, 3, 3]
+
+    result = completion.correct_annulus_zone(df_well)
+
+    pd.testing.assert_frame_equal(result, expected)
+    pd.testing.assert_frame_equal(df_well, expected)
+
+
 def test_skin():
     """Test handle_compdat with a mix of values in COMPLETION_DATA, SKIN column."""
     compdat = [

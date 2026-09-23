@@ -12,8 +12,12 @@ Detailed documentation for usage of completor can be found at https://equinor.gi
 ## Getting started as a user
 
 ### Prerequisites
-* [Python](https://www.python.org/), version 3.11 or 3.13.
+* [Python](https://www.python.org/), version 3.11, 3.12 or 3.13.
+* [pandas](https://pandas.pydata.org/), version 2.2 or later, including 3.x (installed automatically).
 * [ERT](https://github.com/equinor/ert) (optional, and only available on Linux.)
+
+Completor supports pandas `>=2.2,<4`. When installing the optional ERT integration,
+the selected ERT release may impose a narrower pandas version range.
 
 ### Installation
 To start using Completor®, you can follow these instructions:

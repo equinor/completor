@@ -216,9 +216,8 @@ def create_tubing_segments(
     elif method == Method.USER:
         # Create tubing layer based on the definition of COMPLETION keyword in the case file.
         # Read all segments except PA (which has no segment length).
-        df_temp = df_completion.copy(deep=True)
-        start_measured_depth = df_temp[Headers.START_MEASURED_DEPTH].to_numpy()
-        end_measured_depth = df_temp[Headers.END_MEASURED_DEPTH].to_numpy()
+        start_measured_depth = df_completion[Headers.START_MEASURED_DEPTH].to_numpy(copy=True)
+        end_measured_depth = df_completion[Headers.END_MEASURED_DEPTH].to_numpy(copy=True)
         # Fix the start and end.
         start_measured_depth[0] = max(
             df_reservoir[Headers.START_MEASURED_DEPTH].iloc[0], float(start_measured_depth[0])
@@ -514,7 +513,7 @@ def lumping_segments(df_well: pd.DataFrame) -> pd.DataFrame:
     Returns:
         Updated well information.
     """
-    number_of_devices = df_well[Headers.NUMBER_OF_DEVICES].to_numpy()
+    number_of_devices = df_well[Headers.NUMBER_OF_DEVICES].to_numpy(copy=True)
     annulus_zone = df_well[Headers.ANNULUS_ZONE].to_numpy()
     segments_descending = df_well[Headers.SEGMENT_DESC].to_numpy()
     number_of_rows = df_well.shape[0]
@@ -609,7 +608,7 @@ def correct_annulus_zone(df_well: pd.DataFrame) -> pd.DataFrame:
             | (df_zone[Headers.DEVICE_TYPE].to_numpy() == Content.PERFORATED)
         ]
         if df_zone_device.shape[0] == 0:
-            df_well[Headers.ANNULUS_ZONE].replace(zone, 0, inplace=True)
+            df_well.loc[df_well[Headers.ANNULUS_ZONE] == zone, Headers.ANNULUS_ZONE] = 0
     return df_well
 
 
