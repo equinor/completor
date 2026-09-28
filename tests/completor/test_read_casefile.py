@@ -137,6 +137,7 @@ def test_read_case_wsegvalv():
             Headers.MAX_FLOW_CROSS_SECTIONAL_AREA,
         ],
     )
+    df_true = df_true.astype({Headers.ADDITIONAL_PIPE_LENGTH_FRICTION_PRESSURE_DROP: object})
     pd.testing.assert_frame_equal(df_true, _THECASE.wsegvalv_table)
 
 

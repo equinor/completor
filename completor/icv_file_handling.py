@@ -394,12 +394,12 @@ def format_date(date_contents: list) -> tuple[dict, dict]:
                             "AUG, SEP, OCT, NOV or DEC.\nThe year is a 4 digit integer."
                             f" See line that states:'{date}'."
                         )
-        try:
+        if isinstance(date, datetime.datetime):
             if date.hour == 0 and date.minute == 0 and date.second == 0:
                 date = date.strftime("%d %b %Y").upper()
             else:
                 date = date.strftime("%d %b %Y %H %M %S").upper()
-        except AttributeError:
+        else:
             logger.warning(f"Something wrong in the date format in line: {date}")
         formatted_data[date] = content
         date_comment[date] = comment

@@ -417,6 +417,9 @@ def set_format_icvcontrol(df_temp: pd.DataFrame) -> pd.DataFrame:
     ``read_casefile.ReadCasefile.read_icv_control``.
     """
 
+    if df_temp["ICV"].isna().any():
+        raise ValueError("Python reads NA as NaN, thus ICV name cannot be NA!")
+
     config = {
         "WELL": str,
         "ICV": str,
