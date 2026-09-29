@@ -901,11 +901,13 @@ class ICVReadCasefile(ReadCasefile):
             )
         value_working = df_new_segment.copy(deep=True)
         for well in value_working["WELL"].unique():
-            if len(value_working[value_working["WELL"] == well]) == df_working[df_working["WELL"] == well].shape[0]:
-                for idx, row in df_working.iterrows():
-                    df_working.loc[idx, "SEGMENT"] = value_working.loc[idx, "NEW_SEGMENT"]
+            well_indices = df_working[df_working["WELL"] == well].index
+            new_segments = value_working[value_working["WELL"] == well]["NEW_SEGMENT"].tolist()
+            if len(new_segments) == len(well_indices):
+                for idx, new_segment in zip(well_indices, new_segments):
+                    df_working.loc[idx, "SEGMENT"] = new_segment
             else:
-                num_icvs_schedule = len(value_working[value_working["WELL"] == well])
+                num_icvs_schedule = len(new_segments)
                 raise CompletorError(
                     f"Number of ICVs defined in ICVCONTROL for well {well} are not the same as ICVs found "
                     f"in schedule file which are {num_icvs_schedule}."
