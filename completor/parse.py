@@ -80,7 +80,7 @@ def locate_keyword(
     start_index: npt.NDArray[np.int64] = np.where(np.asarray(content) == keyword)[0]
     if start_index.size == 0:
         # the keyword is not found
-        return np.asarray([-1]), np.asarray([-1])
+        return np.asarray([-1], dtype=np.int64), np.asarray([-1], dtype=np.int64)
 
     end_index: npt.NDArray[np.int64] = np.array([], dtype="int64")
     idx = 0
@@ -336,8 +336,8 @@ def get_welsegs_table(collections: list[ContentCollection]) -> tuple[pd.DataFram
             well_column = np.full(record_collection.shape[0], collection.well)
             record_collection = np.column_stack((well_column, record_collection))
             try:
-                header_table: npt.NDArray[np.unicode_] | pd.DataFrame
-                record_table: npt.NDArray[np.unicode_] | pd.DataFrame
+                header_table: npt.NDArray[np.str_] | pd.DataFrame
+                record_table: npt.NDArray[np.str_] | pd.DataFrame
                 header_table = np.vstack((header_table, header_collection))
                 record_table = np.vstack((record_table, record_collection))
             except NameError:
