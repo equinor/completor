@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.1](https://github.com/equinor/completor/compare/v1.6.0...v1.6.1) (2026-09-29)
+
+
+### 🐛 Bug Fixes
+
+* Improve pandas compatibility and validation checks ([#331](https://github.com/equinor/completor/issues/331)) ([2701a09](https://github.com/equinor/completor/commit/2701a09c9cf7dfa3360a95b3c94084eff9868f0b))
+* Update segment number for multiple wells and ICVs ([#332](https://github.com/equinor/completor/issues/332)) ([b1bb2be](https://github.com/equinor/completor/commit/b1bb2be22c91dd3458b4be6ce0f540d740c8173e))
+
+
+### 🧹 Chores
+
+* Support pandas3 ([#325](https://github.com/equinor/completor/issues/325)) ([728e0a1](https://github.com/equinor/completor/commit/728e0a1d3bcfd682132fb14f3ec32a746b192bd1))
+
 ## [1.6.0](https://github.com/equinor/completor/compare/v1.5.0...v1.6.0) (2026-03-02)
 
 
